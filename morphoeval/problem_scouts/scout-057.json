@@ -1,0 +1,273 @@
+{
+  "scout": "scout-057",
+  "ground": "lean",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "title": "Sign and test-publish Rule 30 Grand Prize Bayesian Delphi assessments (OP-01 bridge posteriors)",
+      "gap": "Multi-agent bridge posteriors for Wolfram Rule 30 Prizes 1–3 are materialized in morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig (pk:BayesianAssessment + pk:LLMClaimAssessment) but the directory has no signed/ subtree and no published.json, so docs/open-problems.json OP-01 pooled bridge percentages are not anchored to trusty nanopub URIs on the network.",
+      "done": "morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/published.json exists with an entry for rule30_grand_prizes_delphi.trig whose nanopub field matches a https://w3id.org/np/RA… URI; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/*.trig exits 0; published field is test or prod for that entry.",
+      "tool_route": "python3 morphoeval/build_rule30_bayesian_delphi.py (regenerate if audit YAML changed); python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi --publish test; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/signed/rule30_grand_prizes_delphi.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml, morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig, morphoeval/lean/MathOfBiology.lean (Rule 30 theorem block), docs/open-problems.json OP-01.",
+      "prior_attempts": "build_rule30_bayesian_delphi.py wrote the TriG (2026-10-20); no morphoeval/runs record of sign_morphoeval.py on this directory; Conus Rule 30 reproduction nanopubs are signed separately (morphoeval/README.md) — different claim set.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Sibling builder already emitted conformant TriG; sign_morphoeval.py + check_signed.mjs close publication without new science."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Audit YAML and unsigned TriG/TTL already committed; only ~/.nanopub/profile.yml is external."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "published.json + check_signed.mjs are mechanical pass/fail gates."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Rebuild/sign/verify completes in minutes on the MorphoEval stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New signed/ artifacts and published.json under the existing kg dir; no edits to main-branch audits required."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single sign-and-verify loop once nanopub profile is configured."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded failed sign attempt; TriG lacks STAGED template placeholders."
+        }
+      }
+    },
+    {
+      "title": "Publish Flagship-15 montage MorphoEval scores as signed pk:Claims",
+      "gap": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml passes build_morphoeval_kg.py --check (16 montage scripts scored) but morphoeval/kg/2026-10-26-flagship15-audit-v1/ is absent; morphoeval/runs/2026-10-26-flagship15-loop-passN.md documents build abort on invalid taxon URI https://w3id.org/delphi/resource/taxon/scarus-->-pomacanthus from sp_slug on the Thompson ladder species label \"Scarus -> Pomacanthus\".",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --conform --no-verify-loci exits 0 and writes >=10 *.trig under morphoeval/kg/2026-10-26-flagship15-audit-v1/; sign_morphoeval.py + check_signed.mjs pass on that directory.",
+      "tool_route": "Prerequisite: sanitize taxon slug in morphoeval/build_morphoeval_kg.py (sp_slug) or rename the ladder species string; then python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --conform --no-verify-loci; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1 --publish test; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/*.trig",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml, morphoeval/runs/2026-10-26-flagship15-loop-passN.md, morphoeval/build_morphoeval_kg.py L1059-1060 (sp_slug → taxon URI).",
+      "prior_attempts": "2026-10-26 flagship loop attempted Step 9 build with --no-verify-loci; rdflib Turtle serialization failed on the bad taxon URI (documented in passN.md); signing not attempted.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "build_morphoeval_kg.py is the intended emitter once sp_slug is fixed; sign path is standard."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Complete audit YAML already in repo; only a one-line builder fix is missing."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "--conform success plus non-empty signed/ and check_signed.mjs are objective."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "KG build for 16 simulations is small relative to overnight loops."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Requires a tracked edit to build_morphoeval_kg.py (conflicts with zero-conflict parallel agents unless builder fix lands first)."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One builder patch plus one build/sign loop."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Same taxon-URI route already failed once; must not retry without the slug fix."
+        }
+      }
+    },
+    {
+      "title": "Supersede signed Nakamasu zebrafish v3 after Lean IMEX / general-r Routh–Hurwitz closure",
+      "gap": "Production-signed morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v3/ still carries pk:evidenceAgainst remediation that Loop_007 Theorem 5 only checks one dilution instance and lacks IMEX denominator stability for all r, k² ≥ 0 (audit-v3.yaml remediation L339-343; replicated in signed overall.trig), while the assessment graph still links math-law/nakamasu-zebrafish-three-cell-stripes-5 as if the growing-domain stability claim were complete.",
+      "done": "After Lean updates in morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean and matching script loci, a new morphoeval/audits/2026-10-19-zebrafish-three-cell-stripes-audit-v4.yaml removes that remediation string from overall remediation; python3 morphoeval/build_morphoeval_kg.py …-audit-v4.yaml --supersede-from morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v3 --conform succeeds; signed v4 nanopubs publish and the remediation text is absent from v4 signed overall.trig.",
+      "tool_route": "lean morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean (0 sorry); author audit-v4 YAML; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-zebrafish-three-cell-stripes-audit-v4.yaml --supersede-from morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v3 --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-zebrafish-three-cell-stripes-audit-v4 --publish test",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-19-zebrafish-three-cell-stripes-audit-v3.yaml, morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean L176-205, 2009-nakamasu-zebrafish-three-cell-stripes.py L781-783, signed v3 overall.trig remediation paragraph.",
+      "prior_attempts": "Pass 3 audit (v3) closed iridophore/growth remediation but explicitly left this Lean/IMEX item open; no v4 audit or refutation on record.",
+      "factors": {
+        "tool_fit": {
+          "score": 16,
+          "why": "KG supersede/sign ranks closure of the open claim; Lean proof work is prerequisite, not done by the builder alone."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All cited loci, prior signed v3 chain, and math_kg_loops/nakamasu-zebrafish-three-cell-stripes.yaml are in repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Absence of the remediation string in v4 signed overall.trig plus lean exit 0 is checkable without taste."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Lean theorems plus audit authoring dominate wall time; KG step remains fast."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New audit-v4 YAML + new kg dir + Lean loop edits can be isolated on a feature branch."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Needs a Lean pass before the KG verdict loop can run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open remediation recorded as need, not a refuted publication route."
+        }
+      }
+    },
+    {
+      "title": "Supersede Levin YouTube Law 3 nanopub narrative (G_gj “cancellation” scope)",
+      "gap": "Signed morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3/ captures pk:evidenceAgainst that Law 3 G_gj invariance is linear-algebra artifact, not electrodiffusion (audit-v3.yaml L355 supports:false), but morphoeval/math_kg_loops/levin-youtube-channel-math.yaml still advertises Law 3 as “exact G_gj cancellation” and links Loop_levin_youtube_channel_math.lean pietak_levin_nernst_planck_boltzmann_invariant without a superseding assessment that downgrades the public math-law URI text.",
+      "done": "A v4 audit revises model-fidelity evidence for Law 3; build_morphoeval_kg.py --supersede-from v3 emits updated pk:hasEvidence/pk:evidenceAgainst on Law 3; morphoeval/math_kg_loops/levin-youtube-channel-math.yaml law text matches the narrowed zero-flux scope; python3 morphoeval/verify_integrity.py --loop-yaml morphoeval/math_kg_loops/levin-youtube-channel-math.yaml passes; signed v4 test-published.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v4.yaml --supersede-from morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v3 --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-24-levin-youtube-channel-math-audit-v4 --publish test; python3 morphoeval/build_morphoeval_kg.py --list-needs | rg -i 'levin.*Law 3' returns no open remediation for v4 id",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-24-levin-youtube-channel-math-audit-v3.yaml, morphoeval/math_kg_loops/levin-youtube-channel-math.yaml, morphoeval/lean/loops/Loop_levin_youtube_channel_math.lean, models/2026-levin-channel-math-synthesis.py L291-339.",
+      "prior_attempts": "v2→v3 audit passes tightened Law 3 numerics but kept the over-broad Lean law statement; v3 remediation (L520+) still lists Law 1/3 scope decisions and levin_youtube_kg.json integrity — not fully closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "build_morphoeval_kg.py + sign is exactly how MorphoEval re-ranks falsified law scope on the signed chain."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Falsifying evidence already in v3 audit; only v4 audit + yaml alignment remain."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Diff of v3 vs v4 signed model-fidelity trig on Law 3 plus yaml/integrity checks are mechanical."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "No wet lab; audit rewrite + KG rebuild only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New v4 audit/kg files and yaml refresh; touches shared math_kg_loops yaml (coordinate with parallel agents)."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One audit authoring loop plus superseding build/sign."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Partial v3 remediation attempts exist; route is refine-and-supersede, not refuted."
+        }
+      }
+    },
+    {
+      "title": "Nanopublish blind second-assessor Holstein Turing scores (OP-11 R11 dual-assessor chain)",
+      "gap": "Primary morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ is production-published, but blind second-assessor audits (2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit.yaml overall 54.4; -audit-v2.yaml overall 57.7 at Pass 6) have no morphoeval/kg/*second-assessor* directory, so pk:hasAssessment lacks role=second_assessor assessments on the Murray cow claim despite docs/open-problems.json OP-11 calling for a superseding independent re-score.",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2.yaml --check --conform --supersede-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7 exits 0; signed test nanopubs exist; overall.trig includes assessor suffix -second_assessor in assessment URIs/labels.",
+      "tool_route": "Commit datasets/bos_taurus_turing_wavelength/*comparison.png, *montage.png, *animation.gif at audit checkpoint if missing; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2.yaml --conform --supersede-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-second-assessor-audit-v2 --publish test",
+      "deciding_data": "In repo: second-assessor audit YAMLs, morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json, docs/open-problems.json OP-11; media paths cited in audit evidence (currently absent in this cloud checkout — must exist at checkpoint commit 6e00a18b per v2 header).",
+      "prior_attempts": "Primary passes through v7 signed prod (2026-10-26); early second-assessor v1 scored 54.4 pre–Pass-8 pipeline (OP-11 narrative); v2 reassessed Pass 6 ten-specimen tree; neither second-assessor audit has been built into kg/.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Standard MorphoEval audit → build_morphoeval_kg.py --supersede-from + sign publishes the missing assessor role."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Audit YAML in repo; build --check currently fails here on missing PNG/GIF evidence files until dataset media is present at checkpoint."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "--check/--conform plus second_assessor metadata in emitted trig are objective."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "KG build only; no simulation rerun required if loci pinned."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New kg dir for second-assessor audit; supersede links do not edit v7 files."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One build/sign loop after media/commit pin."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "OP-11 marks the biological claim refuted, but publishing dual-assessor scores is still an open KG route, not refuted."
+        }
+      }
+    },
+    {
+      "title": "Close vascular Murray v3 Sherman-hierarchy remediation on the signed KG chain",
+      "gap": "Signed morphoeval/kg/2026-10-19-vascular-cube-law-branching-audit-v3/ still lists remediation that the Sherman (1981) seven-generation hierarchy in datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json is synthetic (generated r_g = 82 µm · 2^(-g/3), audit-v3.yaml L343-344) and that J01–J08 junction rows lack page/figure pins — so pk:evidenceAgainst on morphometric-validation remains open despite five Lean theorems in morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean.",
+      "done": "Digitised Sherman Table I (or cited page-pinned junction table) lands in datasets/vascular_cube_law_branching/ with SHA-256 pins; morphoeval/audits/2026-10-19-vascular-cube-law-branching-audit-v4.yaml removes the Sherman/J01-J08 remediation bullets; build_morphoeval_kg.py --supersede-from v3 --conform succeeds; signed v4 lacks those remediation strings in overall.trig.",
+      "tool_route": "Update dataset JSON + script self_test references; author audit-v4; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-vascular-cube-law-branching-audit-v4.yaml --supersede-from morphoeval/kg/2026-10-19-vascular-cube-law-branching-audit-v3 --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-vascular-cube-law-branching-audit-v4 --publish test",
+      "deciding_data": "In repo: audit-v3.yaml remediation L307-344, datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json, 1959-murray-vascular-cube-law-branching.py, Loop_052 lean file; public Sherman (1981) Table I (Am J Physiol 245:H70–H76).",
+      "prior_attempts": "v1 remediation requested full Murray 1926b asymmetric cos laws + Sherman tau_w sweep; v3 closed many code items but explicitly left Sherman digitisation and J01–J08 provenance open (REPORT.md / remediation block).",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "Digitisation is manual, but ranking closure of the open need is entirely build_morphoeval_kg supersede + sign."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Sherman table is one named literature fetch; repo already carries synthetic hierarchy for diffing."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Remediation string absent in v4 signed overall + JSON SHA pins in script self_test."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Table digitisation is human-hours but no new infrastructure."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "New audit-v4 + dataset JSON update on a branch."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Requires literature digitisation before KG loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Carried forward as open remediation across v2→v3, not refuted."
+        }
+      }
+    },
+    {
+      "title": "Rule 30 Prize 1 transparent-gate closure (Lean proof — not KG-publishable yet)",
+      "gap": "docs/open-problems.json OP-01 and morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml subgoal P1.4 require proving defects D1(t)=1 hit closed gate {c_t=1} (or a counterexample word); morphoeval/lean/MathOfBiology.lean proves local Rule 30 algebra and quadrant bijections but not the global mixing invariant; unsigned Delphi bridge posterior (~11.5% pooled) ranks the gap but does not resolve it.",
+      "done": "Lean 4 proof with 0 sorry of the Prize 1 gate-hit statement (or publication of a minimal counterexample word with reproducible CA trace) checked into morphoeval/lean/; optionally referenced from a future audit YAML evidence block — not merely another pk:BayesianAssessment.",
+      "tool_route": "build_morphoeval_kg.py / sign_morphoeval.py cannot close this; needs Lean/proof-agent or exhaustive search tooling (e.g. extend 1984-wolfram-conus-textile-rule30.py prize-proof gates). After proof exists, build_morphoeval_kg.py could embed loci in a Rule 30 audit supersede.",
+      "deciding_data": "In repo: morphoeval/lean/MathOfBiology.lean Rule 30 section, docs/open-problems.json OP-01, RULE30_BAYESIAN_DELPHI_ASSESSMENT.md; literature: Wolfram Rule 30 prize statement.",
+      "prior_attempts": "Multi-agent Delphi panel scored bridge low (OP-01); 47-theorem architecture documented in rule30 audit; no Lean sorry-free proof of P1.4 on record.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Knowledge lens can rank the open bridge via existing Delphi TriG but cannot produce the missing global invariant proof."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Finite census artifacts and Lean shell exist; counterexample would be repo-local."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "lean … exit 0 with 0 sorry, or a pinned counterexample word, is objective."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Search may be CPU-heavy; proof length unknown."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "New Lean lemmas in MathOfBiology.lean or a new Loop_*.lean file."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Not one-sitting unless a small counterexample is found."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Open prize problem; publishing low bridge posterior is not a refutation of proof work."
+        }
+      }
+    }
+  ]
+}
