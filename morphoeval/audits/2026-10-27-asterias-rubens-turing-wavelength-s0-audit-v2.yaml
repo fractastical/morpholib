@@ -1,0 +1,137 @@
+# MorphoEval audit v2 — Asterias rubens Turing wavelength, 115.2 µm.
+# Fixes Pass-1 R1 (silhouette-domain control) and R2 (within-plate spacing null).
+# R3 (second assessor) and R4 (no scale bar) remain open and are not scored away.
+audit:
+  id: 2026-10-27-asterias-rubens-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-asterias-rubens-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-asterias-rubens-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent; second assessor not run)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. New slot-3123 files are not in this commit; build with --no-verify-loci."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  garm2014:
+    title: "Visual navigation in starfish: first evidence for the use of vision and eyes in starfish"
+    authors: "Garm, A. and Nilsson, D.-E."
+    year: 2014
+    venue: "Proceedings of the Royal Society B 281:20133011 (2014)"
+    doi: 10.1098/rspb.2013.3011
+simulations:
+  - id: delphi10000-asterias-rubens-turing-wavelength-s0
+    name: "Asterias rubens Turing wavelength at 115.2 µm (Holocene, Pass 2)"
+    organism: "Asterias rubens (common starfish), Holocene, 0 Ma"
+    script: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py
+    output: docs/media/asterias_rubens_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/asterias_rubens_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-asterias-rubens-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, garm2014]
+    summary: >-
+      Pass 2 keeps the square 576.0 µm Neumann patch (λ_FFT = 116.4904 µm,
+      dispersion Pearson r = 0.999817, RMSE = 0.003533, KS = 0.0833). The
+      pentaradial photograph, scaled onto that patch, is a negative control:
+      std(u) falls to 0.00144 against 0.0685 on the square (ratio 0.0209), so
+      the organism outline is not the reaction domain at 115.2 µm. Tubercle
+      spacing is now the within-plate median (0.0168 arm-radii) against the
+      within-plate 10th percentile (0.0100), not a transferred 5.8 mm arm.
+      Equal-diffusion max σ remains −0.103. The GIF is 12 frames at 840×666 and
+      ends on the Hillewaert photograph. The plate still has no scale bar.
+      Garm & Nilsson 2014 experimented on Linckia laevigata.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg 1979 two-species reaction with a homogeneous steady state."
+        - "Murray 1981 writes the pre-pattern wavenumber used for animal markings."
+        - "Garm & Nilsson 2014: most starfish have a compound eye at the arm tip; their navigation experiments used Linckia laevigata."
+      reconstructed_in_script:
+        - "a=0.072, b=0.918, D_v/D_u=7.62, domain 576.0 µm = 5 × 115.2 µm, seed 3123."
+        - "FTCS growth versus analytical σ(k), diffusivity sweep, equal-diffusion ablation."
+        - "Silhouette-domain quench control and a within-plate tubercle-spacing null."
+      transfer_boundary:
+        - "The 115.2 µm length is the catalog tier, transferred onto Schnakenberg kinetics. It is not a published Asterias ocellus diameter."
+        - "The Linckia compound-eye result is not an Asterias rubens wavelength."
+      does_not_claim:
+        - "That 115.2 µm was measured on this specimen."
+        - "That the studio photograph is a micrograph, or that its pixel scale is 115.2 µm."
+        - "That the organism silhouette is the correct 576 µm domain. The control shows it quenches the mode."
+        - "A second, independent assessor."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Same Schnakenberg / Turing–Murray core as Pass 1. The silhouette mask was tested as a domain and rejected because it quenches the unstable mode; the production equations are unchanged."
+        evidence:
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [98, 145], note: "Jacobian and k_c", supports: true}
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [574, 606], note: "production square domain plus silhouette control", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The figure still shows the real animal, its outline, and the activator, and the GIF ends on the photograph. Pass 2 states why that outline is not the micro-domain. The photograph remains an unscaled studio plate, so the tubercle field is not a pixel fit at 115.2 µm."
+        evidence:
+          - {file: docs/media/asterias_rubens_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, mask, activator, dispersion, sweep, quench ratio", supports: true}
+          - {file: docs/media/asterias_rubens_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 840×666, last frame is the studio photograph", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Diffusivity scale s moves λ as √s (ratio 2 at s=4). Equal diffusion keeps σ negative. The silhouette mask is a third control: it collapses the activator standard deviation by about 50× instead of preserving the square-domain pattern."
+        evidence:
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [245, 274], note: "diffusivity sweep", supports: true}
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [693, 708], note: "silhouette std ratio versus a null of 1", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Dispersion Pearson r = 0.999817, RMSE = 0.003533, KS = 0.0833. FFT wavelength 116.4904 µm versus 115.2 µm. Silhouette/square std ratio = 0.0209 versus 1. Tubercle median spacing 0.0168 arm-radii versus the within-plate 10th percentile 0.0100. Specimen circularity 0.164 versus a disk. The plate still cannot supply an absolute micrometre."
+        evidence:
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [608, 709], note: "measure_morphoeval, including the quench ratio and the within-plate spacing null", supports: true}
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [351, 373], note: "sub-bin radial FFT wavelength 116.49 µm", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "Unchanged from Pass 1: Crossref DOIs, CC BY-SA specimen, SHA-256, and the Linckia species limit on Garm & Nilsson 2014."
+        evidence:
+          - {file: datasets/asterias_rubens_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "four DOIs", supports: true}
+          - {file: datasets/asterias_rubens_turing_wavelength_s0/asterias_rubens_turing_wavelength_s0_reference.json, lines: [55, 69], note: "pinned specimen hash", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Equation comments and the Lean proofs are unchanged. The quench control is commented at the call site as the Pass-2 test of R1."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3123_asterias_rubens_turing_wavelength_s0.lean, lines: [18, 38], note: "four theorems, no sorry", supports: true}
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [584, 594], note: "R1 silhouette control comment and std ratio", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Same seed, --self-test, and invocation as Pass 1. The extra control is inside run_science, so a plain run reproduces the quench ratio. Near-onset integration remains slow (tens of seconds)."
+        evidence:
+          - {file: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py, lines: [712, 748], note: "--self-test", supports: true}
+          - {file: datasets/asterias_rubens_turing_wavelength_s0/README.md, lines: [1, 30], note: "115 µm and 0 Ma stated, with run commands", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved in this pass. Silhouette scaled onto the 576 µm patch quenches the mode (std ratio 0.0209). Production domain stays the square."
+        status: resolved
+      - id: R2
+        item: "Resolved in this pass. Tubercle spacing reference is the within-plate 10th percentile (0.0100 arm-radii), not an assumed 5.8 mm arm."
+        status: resolved
+      - id: R3
+        item: "No independent second assessor."
+      - id: R4
+        item: "The studio photograph has no scale bar. Absolute tubercle spacing in micrometres is not claimed."
