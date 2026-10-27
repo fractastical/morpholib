@@ -1,0 +1,319 @@
+{
+  "scout": "scout-087",
+  "ground": "nanopub",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "NP-087-01",
+      "title": "Campaign-100 MorphoEval backlog: ~2,930 signed slot audits never registry-published",
+      "gap": "Inventory of morphoeval/kg/*/published.json shows 3,055 entries with published=null versus 197 with published=prod; 293/293 kg directories dated 2026-10-19 (the cloud Campaign 100 slot pass) are signed (signed/*.trig + RA… URIs in manifests) but none are on the nanopub network, so those rubric scores and pk:evidenceAgainst items are not citable or queryable outside the git checkout.",
+      "done": "Automated report lists every morphoeval/kg/<audit-id>/published.json entry where published is null but signed/<name>.trig exists; after a batch publish pass, the same report shows published=test (or prod) for all targeted entries and node morphoeval/check_signed.mjs passes on each signed file; count of prod URIs in manifests increases from 197 to ≥197+N where N is the batch size claimed closed.",
+      "tool_route": "Inventory: python3 -c \"…\" over morphoeval/kg/*/published.json (or morphoeval/visualize_kg_overview.py publish tallies). Publish: python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id> --publish test then --publish prod (requires ~/.nanopub/profile.yml). Verify: node morphoeval/check_signed.mjs morphoeval/kg/<audit-id>/signed/*.trig.",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-19-*/ (293 audit dirs), each with ~10 *.trig, signed/, published.json (published null, nanopub URIs already minted). Public: Knowledge Pixels / w3id.org nanopub registry GET after POST.",
+      "prior_attempts": "morphoeval/README.md documents the sign→test→prod workflow and cites 80 blinded second-assessor nanopubs as signed-only; visualize_kg_overview.py reads published.json but no batch publisher is checked in. docs/open-problems.json does not record a refuted publish-all route—this is operational residue, not a negative scientific result.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "sign_morphoeval.py and check_signed.mjs are the exact publish/verify path; manifests and signed bytes already exist."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All deciding manifests and signed TriG live under morphoeval/kg/; no external fetch required to start."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "published.json flags and registry GET are binary checks without subjective scoring."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Signing is done; posting ~3k nanopubs is hours of registry I/O plus profile setup, still repo-stack only."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Closing updates published.json and registry state; parallel agents should take disjoint audit-id batches to avoid manifest conflicts."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "One audit dir (10 nanopubs) closes in one sitting; full 293-dir wave is multi-session."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior attempt recorded refusing batch publish of these signed URIs."
+        }
+      }
+    },
+    {
+      "id": "NP-087-02",
+      "title": "Blinded second-assessor pass: 80 dual-provider assessments signed but not published",
+      "gap": "morphoeval/kg/2026-10-17-blinded-sample-audit/ holds 80 gemini-4-argon second_assessor pk:LLMClaimAssessment nanopubs (README: Spearman ρ≈0.89 vs builder scores) with published=null in published.json; the graph still cannot treat these as live independent evidence on the public nanopub network.",
+      "done": "All 80 keys in morphoeval/kg/2026-10-17-blinded-sample-audit/published.json show published=prod (or test if stopping at test registry), node morphoeval/check_signed.mjs morphoeval/kg/2026-10-17-blinded-sample-audit/signed/*.trig exits 0, and a registry GET returns each recorded https://w3id.org/np/RA… URI.",
+      "tool_route": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-17-blinded-sample-audit --publish test && python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-17-blinded-sample-audit --publish prod; verify with node morphoeval/check_signed.mjs morphoeval/kg/2026-10-17-blinded-sample-audit/signed/*.trig.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-17-blinded-sample-audit.yaml, morphoeval/kg/2026-10-17-blinded-sample-audit/{*.trig,signed/,published.json}.",
+      "prior_attempts": "morphoeval/README.md § dual-agent second-assessor pass documents concordance statistics and states nanopubs are stored signed in-repo only; not listed as refuted in docs/open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 25,
+          "why": "Pure sign_morphoeval publish + check_signed verification on an existing bundle."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Complete signed bundle and manifest already in morphoeval/kg/."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "80/80 manifest entries reach prod and independent checker passes."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "80 registry POSTs and verification—hours, no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Single audit directory; no edits to shared tracked sources required beyond that dir's published.json."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One bundle fits a single publish+verify loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Publish route not previously attempted or refuted."
+        }
+      }
+    },
+    {
+      "id": "NP-087-03",
+      "title": "Rule 30 Grand Prizes Bayesian Delphi graph is not yet a signable nanopublication bundle",
+      "gap": "docs/open-problems.json OP-01..OP-03 and docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md quote pooled Delphi bridge posteriors (e.g. OP-01 pooled 11.52%), but morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/ contains only rule30_grand_prizes_delphi.trig/.ttl—no published.json, no signed/, and the TriG lacks standard nanopub npx: head/assertion/pubinfo structure, so sign_morphoeval.py cannot mint trustworthy URIs for the BayesianAssessment ledger.",
+      "done": "Directory contains N≥1 MorphoEval-shaped *.trig files (one or more per prize layer), morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/published.json lists RA… URIs, signed/*.trig passes node morphoeval/check_signed.mjs, and at least the three bridge posterior pk:hasProbability values match docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md to stated precision.",
+      "tool_route": "Extend or wrap morphoeval/build_rule30_bayesian_delphi.py to emit build_morphoeval_kg.py-compatible nanopubs (or split the graph into per-claim TriG), then python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi; node morphoeval/check_signed.mjs …/signed/*.trig.",
+      "deciding_data": "In repo: morphoeval/build_rule30_bayesian_delphi.py, morphoeval/audits/2026-10-20-rule30-grand-prizes-bayesian-delphi.yaml, morphoeval/kg/2026-10-20-rule30-grand-prizes-bayesian-delphi/rule30_grand_prizes_delphi.trig, docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md, docs/open-problems.json OP-01..03 viability fields.",
+      "prior_attempts": "build_rule30_bayesian_delphi.py already wrote the RDF graph and human-readable assessment doc; Delphi panel scores in open-problems.json are sourced from that assessment but remain off-network. No record that nanopub-shaped export was tried and failed.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "Requires adapting build_rule30 output to build_morphoeval_kg/sign_morphoeval shape—not run-as-is today."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "All Bayesian factors, agents, and YAML audit inputs already live in-repo."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Signed URIs plus numeric posterior equality checks against the assessment doc."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Builder refactor + conform + sign is hours of engineering, no lab work."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Can close as new kg files under the rule30 audit dir plus builder additions in a dedicated branch."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Needs a small format bridge before the first sign/verify loop succeeds."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Graph export exists; nanopub packaging route not yet executed or refuted."
+        }
+      }
+    },
+    {
+      "id": "NP-087-04",
+      "title": "Flagship-15 Pass N+1 audit YAML has no compiled kg/ nanopub bundle",
+      "gap": "morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml records the OP-06 remediation re-score (growing-domain Turing, autonomous Meinhardt, C. elegans voxel calibration) but there is no morphoeval/kg/2026-10-26-flagship15-audit-v1/ directory—so the Pass N+1 rubric outcomes are not expressed as Project Delphi nanopubs and cannot supersede or complement earlier flagship assessments on the network.",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --conform exits 0; morphoeval/kg/2026-10-26-flagship15-audit-v1/ contains *.trig + REPORT.md; after sign/publish, published.json lists prod URIs for every simulation in the audit YAML.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml --conform [--supersede-from morphoeval/kg/<prior-flagship-dir> if heads resolved]; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-26-flagship15-audit-v1 --publish test; node morphoeval/check_signed.mjs morphoeval/kg/2026-10-26-flagship15-audit-v1/signed/*.trig.",
+      "deciding_data": "In repo: morphoeval/audits/2026-10-26-flagship15-audit-v1.yaml, morphoeval/runs/2026-10-26-flagship15-loop-passN.md; docs/open-problems.json OP-06 (status solved) for cross-check of claimed remediation.",
+      "prior_attempts": "OP-06 marked solved in docs/open-problems.json after Pass N+1 loop (agents gemini, gpt, grok, panel, sonnet); kg compilation/publish step for the v1 audit file not done. Not a refutation of build_morphoeval_kg—absent artifact only.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Standard build_morphoeval_kg.py + sign_morphoeval.py path from an existing audit YAML."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Audit YAML and loop record already in repo; no external dataset fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Directory existence, --conform success, and published.json prod flags."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single-audit build/sign/publish within hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New kg/ subtree only; supersede links optional via --supersede-from."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One audit, one loop to first signed bundle."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior failed build for this audit id recorded."
+        }
+      }
+    },
+    {
+      "id": "NP-087-05",
+      "title": "Superseded re-score heads (11 audit dirs) signed but never registry-published",
+      "gap": "Eleven morphoeval/kg/* directories (e.g. morphoeval/kg/2026-10-19-mechanochemical-chondrogenesis-audit-v3/) have published.json history[] entries showing prior RA… versions replaced by new URIs, yet every current entry remains published=null—so the latest superseding assessments are invisible on the public nanopub network despite npx:supersedes-ready content in signed/.",
+      "done": "For each of the 11 audit ids flagged by history-with-null scan, all current manifest URIs show published=prod and registry GET succeeds; Nanopub Query head for each superseded URI resolves to the new URI (build_morphoeval_kg.py head check policy).",
+      "tool_route": "Detect: python3 script over morphoeval/kg/*/published.json for history[] && published null. Publish latest heads: python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id> --publish test then prod. Optional rebuild guard: python3 morphoeval/build_morphoeval_kg.py … --supersede --query.",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-19-mechanochemical-chondrogenesis-audit-v3/published.json (and 10 sibling dirs), signed/*.trig. Public: Nanopub Query get-latest-version-of-np for chained URIs.",
+      "prior_attempts": "Re-scores were signed locally (history arrays populated) but publish step skipped; morphoeval/sign_morphoeval.py enforces test-before-prod for new prod posts—teams may have stopped after resign. Not documented as refuted in open-problems.json.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "sign_morphoeval publish on existing signed trees; build_morphoeval_kg --supersede documents chain semantics."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Manifests encode both old and new URIs in-repo."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Manifest prod flags plus query head resolution are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "11 dirs × ~10 nanopubs each—moderate registry time."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Partition by audit-id; manifests are per-directory."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One supersede chain closes in one sitting; full set needs a short batch."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Publish-after-resign not previously attempted for these heads."
+        }
+      }
+    },
+    {
+      "id": "NP-087-06",
+      "title": "OP-11 cow Turing independent re-score: publish superseding MorphoEval assessment nanopubs",
+      "gap": "docs/open-problems.json OP-11 requires a blinded independent re-score (audit R11) and optional migration-wave colonisation variant published as superseding assessments; morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/ is already prod (10/10) from the builder-scored Pass 9 tree, but the requested independent/blinded pass is not a separate signed+published bundle on the network.",
+      "done": "New morphoeval/kg/<new-audit-id>/ from morphoeval/audits/<R11-audit>.yaml with --supersede-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7; every overall/claim nanopub includes npx:supersedes pointing at v7 URIs from published.json; blinded assessor fields match preregistration; published=prod after sign/verify.",
+      "tool_route": "Author morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-R11.yaml (blinded assessor); python3 morphoeval/build_morphoeval_kg.py … --conform --supersede-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7 --query; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<new-id> --publish test; node morphoeval/check_signed.mjs …/signed/*.trig.",
+      "deciding_data": "In repo: datasets/bos_taurus_turing_wavelength/, morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7/published.json, morphoeval/audits/2026-10-26-bos-taurus-turing-wavelength-audit-v7.yaml; docs/open-problems.json OP-11 gap/done text.",
+      "prior_attempts": "OP-11 status refuted on scientific grounds for the static-Turing claim (prod nanopubs v7 document p=0.91 growing-RD vs Eden); fable/human/panel attempted follow-ups per open-problems.json. Independent blinded re-score nanopub route not executed—distinct from the negative biological verdict.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "build_morphoeval_kg --supersede-from + sign_morphoeval directly implements OP-11 done clause."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Pass 8+ pipeline outputs and v7 manifests in repo; new blind audit YAML is the missing file."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Supersedes links to v7 URIs and prod publish flags are checkable without judging biology."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Re-score + colonisation variant simulation reruns plus kg build—hours."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New audit yaml + new kg dir; supersede metadata references existing URIs read-only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Needs new audit pass before publish loop completes."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Scientific refutation of the Holstein Turing claim stands; this route targets procedural independence, not reversing OP-11."
+        }
+      }
+    },
+    {
+      "id": "NP-087-07",
+      "title": "Project Delphi ontology 2.0 MorphoEval builds blocked from signing (morpholib #23)",
+      "gap": "morphoeval/vendor/templates/delphi-2.0-template-iris.json is absent; build_morphoeval_kg.py --ontology-version 2.0 fails closed unless --allow-staged-templates, and sign_morphoeval.py refuses TriG containing https://w3id.org/np/STAGED… placeholders—so newer agent/model-shaped assessments (including build_rule30_bayesian_delphi.py output conventions) cannot become production nanopubs yet.",
+      "done": "delphi-2.0-template-iris.json contains published RA…/template IRIs for claim and rubric-assessment; python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-17-blinded-sample-audit.yaml --ontology-version 2.0 --conform succeeds without --allow-staged-templates; resulting *.trig sign and pass check_signed without STAGED refusal.",
+      "tool_route": "When upstream project-delphi-ontology publishes templates: vendor IRIs into morphoeval/vendor/templates/delphi-2.0-template-iris.json, then build/sign as above. Interim offline check only: --ontology-version 2.0 --allow-staged-templates --conform (explicitly must not sign per README).",
+      "deciding_data": "In repo: morphoeval/build_morphoeval_kg.py, morphoeval/sign_morphoeval.py STAGED guard, morphoeval/vendor/templates/*-2.0-staged.STAGED0x.trig. External named source: fractastical/project-delphi-ontology template nanopubs (tracked morpholib #23).",
+      "prior_attempts": "morphoeval/README.md documents staged 2.0 templates and fail-closed signing; nine audit YAMLs mention ontology 2.0 but published prod set remains 1.x-shaped. Staged offline conform path exists; production sign route blocked by missing IRIs—not refuted, waiting on upstream publish.",
+      "factors": {
+        "tool_fit": {
+          "score": 14,
+          "why": "Tools define the gate (build fail-closed, sign STAGED refusal) but cannot unilaterally publish upstream templates."
+        },
+        "data_in_hand": {
+          "score": 12,
+          "why": "Staged template TriG and ontology TTL vendored; missing piece is published template IRIs from upstream."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "File presence + conform/sign pass without STAGED is objective."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Once IRIs land, rebuild/sign is hours; IRI acquisition depends on upstream release."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Vendor json + rebuild outputs can land as new files without touching unrelated audits."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Verdict may wait on external template publication even after local prep."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "Route is knowingly blocked until upstream template nanopubs exist; not a repeated failed sign attempt."
+        }
+      }
+    },
+    {
+      "id": "NP-087-08",
+      "title": "Aggregate math_of_biology.trig is not a trustworthy signed nanopublication (network rank gap)",
+      "gap": "morphoeval/kg/math_of_biology.ttl/.trig (~12 MB merged graph from math_kg.py/aggregate_loops.py) holds thousands of pk:Claim/pk:hasScore triples used by visualize_kg_overview.py and remediation queries, but it is not packaged as RA… nanopubs—only ~197 per-audit prod URIs exist—so most audited simulations lack a live registry rank/linkable assessment despite being in the aggregate graph.",
+      "done": "Either (A) a manifest maps each simulation slug in math_of_biology.ttl to a prod RA… URI in some morphoeval/kg/*/published.json, with coverage ≥ agreed threshold (e.g. 95% of telemetry.sqlite math_models rows), or (B) documented batch policy closes NP-087-01 for the Campaign 100 set and coverage report shows threshold met. visualize_kg_overview.py prod count matches manifest tally.",
+      "tool_route": "Coverage audit: join morphoeval/runs/telemetry.sqlite math_models.sim_id to morphoeval/kg/*/published.json via build_morphoeval_kg slug conventions. Close gap via python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<missing>.yaml batches + sign_morphoeval.py publish (NP-087-01). math_kg.py regenerate only after per-audit publishes update linkage.",
+      "deciding_data": "In repo: morphoeval/kg/math_of_biology.ttl, morphoeval/runs/telemetry.sqlite, morphoeval/kg/*/published.json, morphoeval/visualize_kg_overview.py metrics.",
+      "prior_attempts": "Per-audit kg dirs were built and signed en masse on 2026-10-19 but not published (NP-087-01); aggregate TTL continued to grow via math_kg.py. No refutation that aggregate→nanopub monolith is required—policy choice between bulk publish vs monolith.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Decided by build/sign coverage of existing audits, not by signing the monolithic trig directly."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Telemetry + manifests + aggregate TTL all local."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Coverage ratio sim_id→prod URI is countable; threshold is explicit."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Full coverage reduces to NP-087-01 scale publish work."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Coverage report is new file; publishes touch only kg manifests/registry."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Full closure inherits Campaign 100 batch duration."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Mapping audit not previously run to completion."
+        }
+      }
+    }
+  ]
+}
