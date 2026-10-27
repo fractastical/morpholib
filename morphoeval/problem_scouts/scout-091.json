@@ -1,0 +1,133 @@
+{
+  "scout": "scout-091",
+  "ground": "scaling",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "SCALE-PALEO-DS-01",
+      "title": "Slots #1101–#2100 reference dataset bundles missing from the repository",
+      "gap": "morphoeval/runs/campaign_2100_scale_paleo_summary.json names `dataset_dir` and SHA-locked files (reference JSON, scout_manifest.json, paper_citations.bib, *_specimen.jpg) for all 1000 scale/paleo campaign rows, but none of those directories exist in git (630 with geological_age_ma>0; 100 Danio rerio multi-scale slots likewise). Models such as models/2023-gishlick-walliserops-trifurcatus-turing-wavelength.py fail at verify_sha256() with FileNotFoundError until literature-backed bundles exist.",
+      "done": "For a named pilot slug (e.g. `walliserops_trifurcatus_turing_wavelength`), `datasets/<slug>/scout_manifest.json` exists and lists (a) ≥1 OpenAlex work whose first-author surname and publication year match morphoeval/scale_and_paleo_catalog.py for that taxon, (b) ≥1 Wikimedia Commons specimen URL with a parseable license field, and (c) a recorded SHA-256 of the manifest file; a scorer can verify with `test -f` plus `python3 -c \"import json; json.load(open(...))\"` without opening PDFs.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Walliserops trifurcatus trilobite morphology Devonian\" --taxon \"Walliserops trifurcatus\" --out datasets/walliserops_trifurcatus_turing_wavelength/scout_manifest.json ; repeat per lineage representative from NINETY_NOVEL_AND_FOSSIL_TAXA / DANIO_SCALE_RUNGS (26 lineages × 1 query each for a batch manifest index).",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py, morphoeval/runs/campaign_2100_scale_paleo_summary.json. Public fetch: OpenAlex works API + Wikimedia Commons (no API key), as used by scout_literature.py.",
+      "prior_attempts": "2026-10-21 scale/paleo overnight campaign (morphoeval/run_overnight_scale_zebrafish_paleo_1000.py) generated models and pass-2 scores in campaign_2100_scale_paleo_summary.json but did not commit the per-slot dataset trees; datasets/raup/ README (2026-10-17) documents a similar literature-without-primary-data failure mode for shell parameters.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "scout_literature.py is designed to emit scout_manifest.json with OpenAlex + Commons hits in one command."},
+        "data_in_hand": {"score": 15, "why": "Taxon names, author slugs, years, and target paths are already in scale_and_paleo_catalog.py; only manifests/specimens are missing."},
+        "falsifiable_done": {"score": 14, "why": "Existence of manifest JSON, DOI string, and Commons URL is mechanically checkable."},
+        "compute_in_repo": {"score": 13, "why": "A 26-lineage pilot is ~26 HTTP scout calls; full 1000 slots is batchable within hours on the VM stack."},
+        "isolation": {"score": 9, "why": "New files under new datasets/<slug>/ paths avoid editing tracked campaign code; parallel agents must not collide on the same slug."},
+        "time_to_verdict": {"score": 7, "why": "One taxon closes in a single scout_literature invocation; batch verdict needs a manifest index file."},
+        "not_blocked": {"score": 5, "why": "No prior attempt recorded that literature scouting cannot supply these bundles; the gap is absence of commits, not a refuted hypothesis."}
+      }
+    },
+    {
+      "id": "RAUP-1967-TABLES-01",
+      "title": "Raup (1967) ammonoid W–D–T measurement tables still undigitised for datasets/raup",
+      "gap": "datasets/raup/README.md states Raup's 1966 block diagrams and 1967 ammonoid coiling measurements 'neither has been digitised here', so datasets/raup/variables.json uses illustrative cf. parameter sets rather than specimen-derived W, D, T. The scale catalog's Cephalopod Fractal Suture lineage cites Raup-era ammonoid geometry but the repo cannot anchor coiling parameters to primary tables.",
+      "done": "A new literature dossier (e.g. datasets/raup/scout_raup1967_manifest.json) contains full DOIs for Raup (1966) J. Paleont. 40(5) doi:10.2307/1301992 and Raup (1967) J. Paleont. 41(1), plus ≥1 open-access scan URL (BHL/JSTOR/handle) flagged by OpenAlex is_oa=true, and a JSON list of ≥5 ammonoid taxon rows each with numeric W, D, and/or T transcribed from a cited table or figure caption (values + page/table id). Scorer passes if every row cites page/table text present in the linked scan metadata or PDF text layer extract.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Raup 1967 geometric analysis shell coiling ammonoid measurements W D T\" --taxon \"Ammonoidea\" --out datasets/raup/scout_raup1967_manifest.json --dry-run (inspect candidate_papers_openalex for BHL/JSTOR OA URLs) then re-run without --dry-run.",
+      "deciding_data": "In repo: datasets/raup/README.md, datasets/raup/variables.json, datasets/raup/paper_citations.bib. Public: OpenAlex hit 'Form, structure and function of shell and siphuncle in coiled Mesozoic ammonoids' doi:10.5962/bhl.title.52081 (OA PDF on Biodiversity Heritage Library) plus Raup 1967 JSTOR record.",
+      "prior_attempts": "2025-01-05 AI-generated Raup variable extraction (datasets/raup/variable_extraction_log.md) refuted in 2026-10-17 README revision and MorphoEval audit/issue #1; route blocked: inventing parameters without papers. Literature digitization route remains open.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "scout_literature returns citable OA PDF links; follow-on transcription stays in new JSON/CSV files."},
+        "data_in_hand": {"score": 17, "why": "Secondary citations and corrected JSTOR id already live in datasets/raup/README.md; primary tables are one OA fetch away."},
+        "falsifiable_done": {"score": 13, "why": "Each W/D/T row must name table/page; scorer can grep the linked PDF for those numerals."},
+        "compute_in_repo": {"score": 14, "why": "Scout + manual transcription of one Raup table fits in one sitting; no wet lab."},
+        "isolation": {"score": 10, "why": "Adds only new files under datasets/raup/ without touching create_raup_animations.py."},
+        "time_to_verdict": {"score": 8, "why": "Single-table pilot yields immediate pass/fail on numeric presence."},
+        "not_blocked": {"score": 4, "why": "Fabricated parameter sets were refuted, but locating and transcribing Raup 1967 tables was explicitly left as future work, not attempted."}
+      }
+    },
+    {
+      "id": "AMMO-Df-PROV-01",
+      "title": "Cephalopod suture fractal dimensions in scale_and_paleo_catalog lack resolvable DOI→D_f links",
+      "gap": "NINETY_NOVEL_AND_FOSSIL_TAXA embeds inline D_f labels (e.g. Goniatites crenistria D_f=1.18, Ceratites nodosus 1.34, Dactylioceras commune 1.55, Placenticeras meeki 1.68) but stores only doi_prefix stubs ('10.1126/science', '10.1073/pnas') rather than full DOIs or box-counting values tied to specimens. Downstream models inherit cohort multipliers, not suture measurements, so source-traceability for scaling claims is unresolved.",
+      "done": "A mapping JSON (new file under morphoeval/problem_scouts/evidence/ or datasets/cephalopod_suture_df/scout_manifest.json) lists all four taxa with: full DOI, quoted D_f (± uncertainty if reported), measurement method keyword ('box counting' or equivalent), and specimen/image identifier from the paper or Commons. Pass if each catalog D_f label is within 0.05 absolute of the literature value or the row documents a deliberate catalog correction.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"ammonite suture fractal dimension box counting Saunders Garcia Inoue\" --taxon \"Ammonoidea\" --out datasets/cephalopod_suture_df/scout_manifest.json ; python3 morphoeval/scout_literature.py --query \"Fractal geometry of ammonoid sutures Lutz Boyajian\" --taxon \"Goniatites\" --dry-run (expect doi:10.1017/s0094837300013336 among hits).",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py (Cephalopod Fractal Suture Fossil Series tuples). Public: OpenAlex returns 'Fractal geometry of ammonoid sutures' (1995, doi:10.1017/s0094837300013336) and 'Bioinspired, mechanical, deterministic fractal model for hierarchical suture joints' (2012, doi:10.1103/physreve.85.031901, OA).",
+      "prior_attempts": "2026-10-21 overnight scale/paleo campaign instantiated ten cohort scripts per ammonoid taxon without suture-fractal reference bundles; no entry in docs/open-problems.json refutes literature linking for D_f.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "OpenAlex query directly targets the missing primary/secondary suture-fractal papers."},
+        "data_in_hand": {"score": 14, "why": "Taxon names and target D_f labels are in-repo; numeric values require paper fetch."},
+        "falsifiable_done": {"score": 14, "why": "Numeric D_f equality within tolerance is objective."},
+        "compute_in_repo": {"score": 13, "why": "Four taxa × one scout call each plus abstract/table read."},
+        "isolation": {"score": 10, "why": "New evidence JSON only; does not edit scale_and_paleo_catalog.py."},
+        "time_to_verdict": {"score": 7, "why": "Four-row mapping is one-sitting work once PDFs are located."},
+        "not_blocked": {"score": 5, "why": "No recorded refutation of literature provenance for these D_f tags."}
+      }
+    },
+    {
+      "id": "WALLISEROPS-DOI-01",
+      "title": "Walliserops trifurcatus scale-campaign citations use slot-derived placeholder DOIs",
+      "gap": "campaign_2100_scale_paleo_summary.json slot 1247 lists external_datasets DOI '10.1073/pnas.2023.1247' (slot number, not a work) while morphoeval/runs/species_multiscale_registry.json repeats '10.1073/pnas.2025.1967' for the same taxon; morphoeval/scale_and_paleo_catalog.py only has doi_prefix '10.1073/pnas' for author gishlick 2023. Source-traceability for phenomenon_size_m=0.001939 m and geological_age_ma=394.0 cannot pass DOI resolution checks.",
+      "done": "scout_literature output records exactly one OpenAlex DOI for a 2023 PNAS (or successor venue) paper on Walliserops/trilobite visual morphology whose DOI differs from both placeholders and resolves via doi.org HTTP 200; manifest stored at datasets/walliserops_trifurcatus_literature/scout_manifest.json with that DOI copied into a new reference stub JSON field primary_doi.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Gishlick Walliserops trifurcatus trilobite eye stalk PNAS 2023\" --taxon \"Walliserops trifurcatus\" --out datasets/walliserops_trifurcatus_literature/scout_manifest.json --dry-run ; python3 morphoeval/scout_literature.py --list-existing (confirm placeholder DOIs absent from exclusion set).",
+      "deciding_data": "In repo: morphoeval/runs/campaign_2100_scale_paleo_summary.json (slot 1247 external_datasets), morphoeval/scale_and_paleo_catalog.py line Walliserops tuple, models/2023-gishlick-walliserops-trifurcatus-*.py EXPECTED_SHA256 blocks referencing missing datasets/. Public: OpenAlex/Crossref resolution.",
+      "prior_attempts": "Overnight scale/paleo campaign (2026-10-21) scored pass-2 ≥96 on Walliserops scripts while dataset SHA bundles were never committed; no human audit flagged DOI placeholders in open-problems.json.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Resolving the real gishlick 2023 work is a pure OpenAlex/Crossref task."},
+        "data_in_hand": {"score": 16, "why": "Author, year, genus, and wrong DOIs are already in-repo clues."},
+        "falsifiable_done": {"score": 15, "why": "DOI string inequality vs placeholders plus doi.org resolve is binary."},
+        "compute_in_repo": {"score": 15, "why": "Minutes of HTTP scouting."},
+        "isolation": {"score": 10, "why": "New datasets/walliserops_trifurcatus_literature/ tree only."},
+        "time_to_verdict": {"score": 9, "why": "Single successful scout call closes the DOI question."},
+        "not_blocked": {"score": 3, "why": "Placeholder DOIs were shipped but not formally refuted; fixing them is an open remediation, not a disproved route."}
+      }
+    },
+    {
+      "id": "EDIACARAN-RANGEOMORPH-01",
+      "title": "Ediacaran rangeomorph slots lack CC specimen + Mitchell (2015) scaling citation bundle",
+      "gap": "Fractofusus misrai, Charnia masoni, and related tuples in scale_and_paleo_catalog.py set base_size_m (e.g. 0.092 m for Fractofusus) and geological_age_ma≈565 without any datasets/fractofusus_* scout_manifest, reference JSON, or specimen image in git (same 1000-slot dataset absence). Fractal/self-similar scaling claims need Mitchell et al. primary citation and measurable field photos.",
+      "done": "datasets/fractofusus_misrai_rangeomorph/scout_manifest.json includes OpenAlex DOI 10.1038/nature14646 (or successor OA link for 'New reconstructions of morphological complexity…') AND candidate_specimens_wikimedia entry with URL https://upload.wikimedia.org/.../Fractofusus_misrai.jpg (or successor) plus license CC-BY; JSON field characteristic_length_m from the paper abstract/figure within 20% of catalog 0.092 m or documents mismatch.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Ediacaran rangeomorph fractal self-similar Mitchell Newfoundland\" --taxon \"Fractofusus\" --out datasets/fractofusus_misrai_rangeomorph/scout_manifest.json (verified 2026-10-27 run: OA papers include 10.1111/brv.12239, 10.1126/sciadv.abe0291; Commons Fractofusus misrai.jpg CC BY 2.0).",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py Ediacaran-Cambrian Bodyplan Fossil Series. Public: OpenAlex + Wikimedia Commons via scout_literature.py (Fractofusus misrai.jpg located).",
+      "prior_attempts": "Mitchell 2015 fractal interpretation debated in later reviews (OpenAlex returns 10.1111/brv.12239 etc.) but no repo attempt to bind specimen image + length to catalog base_size_m.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "Scout already returns both OA review/original papers and CC field photos for Fractofusus."},
+        "data_in_hand": {"score": 13, "why": "Catalog sizes/ages in-repo; specimen photo and primary DOI require one fetch."},
+        "falsifiable_done": {"score": 13, "why": "20% length tolerance vs catalog is numeric."},
+        "compute_in_repo": {"score": 14, "why": "One scout invocation plus reading abstract/figure caption."},
+        "isolation": {"score": 10, "why": "New datasets/fractofusus_misrai_rangeomorph/ only."},
+        "time_to_verdict": {"score": 8, "why": "Single-taxon pilot closes manifest + length check."},
+        "not_blocked": {"score": 5, "why": "No prior literature-binding attempt recorded for Ediacaran rows."}
+      }
+    },
+    {
+      "id": "OP04-FOSSIL-RATIO-LIT-01",
+      "title": "Deep-horizon Thompson test (OP-04) needs additional published fossil proportion series beyond Monte Bolca JSON",
+      "gap": "docs/open-problems.json OP-04 notes prediction collapse beyond ~50 Myr and a null Monte Bolca result (6/16); datasets/thompson/monte_bolca_fossil_ratios.json holds 16 published ratios for ~50 Ma Bolca taxa only. Extending a pre-registered deep-horizon test requires findable fossil SL-normalized measurements at ages >50 Ma in other Lagerstätten/faunas not yet tabulated in-repo.",
+      "done": "Literature scout produces datasets/thompson/scout_deep_horizon_fossils.json listing ≥3 fossil taxa with age_ma>50, each with ≥1 ratio key among {BDmax_over_SL, HL_over_SL, PD_over_SL}, numeric value, full DOI, and taxon not already a key in monte_bolca_fossil_ratios.json; scorer verifies JSON schema and DOI novelty via set difference on fossil keys.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Eocene fish fossil standard length body depth ratio taxonomy\" --taxon \"Actinopterygii\" --dry-run ; python3 morphoeval/scout_literature.py --query \"Oligocene teleost fossil proportions standard length\" --taxon \"Teleostei\" --out datasets/thompson/scout_deep_horizon_fossils_manifest.json",
+      "deciding_data": "In repo: datasets/thompson/monte_bolca_fossil_ratios.json, docs/open-problems.json OP-04, docs/KEY_DISCOVERIES.md §1.11. Public: OpenAlex/BHL fish paleontology monographs (Bolca-adjacent Geodiversitas papers already partially mined).",
+      "prior_attempts": "Claude Fable 5.1 (OP-04 attempted_by) ran Monte Bolca comparison yielding null vs stasis; no follow-on literature sweep for non-Bolca fossil ratios is recorded.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Finding citable fossil measurement papers is core scout_literature functionality; tabulation is manual follow-up."},
+        "data_in_hand": {"score": 12, "why": "Bolca baseline and ratio schema exist; extra faunas need literature search."},
+        "falsifiable_done": {"score": 12, "why": "Three new DOI-keyed rows outside existing JSON keys is checkable."},
+        "compute_in_repo": {"score": 11, "why": "Search is fast; careful ratio extraction from PDFs may exceed one hour for three taxa."},
+        "isolation": {"score": 10, "why": "New JSON under datasets/thompson/ only."},
+        "time_to_verdict": {"score": 5, "why": "Full OP-04 closure needs preregistration + engine rerun, not just literature."},
+        "not_blocked": {"score": 4, "why": "Monte Bolca null refutes that specific 16-ratio set as sufficient; expanding literature sources is explicitly still open in OP-04 gap text."}
+      }
+    },
+    {
+      "id": "PHENOM-SIZE-JITTER-01",
+      "title": "Deterministic phenomenon_size_m jitter for non-catalog models is not literature-grounded (wrong lens)",
+      "gap": "compute_phenomenon_scale_for_entry() in morphoeval/scale_and_paleo_catalog.py assigns phenomenon_size_m from GENUS_ADULT_SIZE_M × COHORT_SCALE_MULTIPLIER × slot jitter when entries lack explicit sizes, yielding geological_age_ma=0.0 for most extant models; this is not validated against measurable structures in primary papers.",
+      "done": "N/A for literature lens — closure requires measure_outputs.py/audit remeasurement against model outputs or primary morphometrics, not paper discovery alone.",
+      "tool_route": "Literature lens insufficient; would need morphoeval/measure_outputs.py + morphoeval/audits/*.yaml remeasure pass, or vision lens on specimen images once datasets exist.",
+      "deciding_data": "In repo: morphoeval/scale_and_paleo_catalog.py COHORT_SCALE_MULTIPLIER and compute_phenomenon_scale_for_entry; thousands of audits with geological_age_ma: 0.0.",
+      "prior_attempts": "2026-10-22 drosophila 1000-run campaign populated phenomenon_size_m fields via deterministic resolver; not audited against literature measurements.",
+      "factors": {
+        "tool_fit": {"score": 3, "why": "scout_literature finds papers but does not compare simulated sizes to catalog jitter formula."},
+        "data_in_hand": {"score": 10, "why": "Audits store phenomenon_size_m; primary measurements would still need extraction from papers manually."},
+        "falsifiable_done": {"score": 8, "why": "A numeric max-relative-error bound vs paper is definable but not obtainable by scout alone."},
+        "compute_in_repo": {"score": 7, "why": "Per-model literature sizing across 2000+ audits is not a one-sitting scout task."},
+        "isolation": {"score": 6, "why": "Fixing resolver would edit scale_and_paleo_catalog.py (conflicts parallel agents)."},
+        "time_to_verdict": {"score": 2, "why": "Requires measurement lens loop per model family."},
+        "not_blocked": {"score": 5, "why": "No refutation; simply unattempted validation."}
+      }
+    }
+  ]
+}
