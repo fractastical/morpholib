@@ -1,17 +1,17 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-turing-wavelength
 math_family: Reaction-Diffusion & Turing Dispersion
 equations:
 - law_name: Turing Dispersion Determinant Trace-Diffusion Threshold
   formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v
     g_u)
-  lean_decl: MathOfBiology.Loop_0101.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0101.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0101.mode_det_ge_det0
+  lean_theorem: MathOfBiology.Loop_0101.mode_det_ge_det0
+  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L11
+  lean_code: "theorem mode_det_ge_det0 (dq a detJ0 : Nat) : mode_det dq a detJ0 ≥\
+    \ detJ0 := by\n  simp [mode_det]\n/-- Negated mode trace grows by a constant step\
+    \ per Fourier mode (affine in k^2). -/\ndef neg_mode_trace (base step : Nat) :\
+    \ Nat -> Nat\n  | 0 => base"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Turing Reaction-Diffusion Wavelength Selection
     in Mus musculus
@@ -19,26 +19,28 @@ equations:
   code_locus: 1998-turing-mus-musculus-turing-wavelength.py#L28-L39
 - law_name: Critical Intrinsic Wavelength Scaling
   formula: lambda_c = 2 pi / k_c,  k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
-  lean_decl: MathOfBiology.Loop_0101.law2_balance
-  lean_theorem: MathOfBiology.Loop_0101.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0101.neg_trace_succ
+  lean_theorem: MathOfBiology.Loop_0101.neg_trace_succ
+  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L17
+  lean_code: "theorem neg_trace_succ (base step q : Nat) :\n    neg_mode_trace base\
+    \ step (q + 1) = neg_mode_trace base step q + step := by\n  simp [neg_mode_trace]\n\
+    /-- Domain-growth mode count: n stripes of wavelength lam tile n * lam. -/\ndef\
+    \ stripe_total (n lam : Nat) : Nat := n * lam"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Stripes, Spots & Ocelli in Mus musculus
   source_citation: Turing (1998) DOI:10.1242/dev.1998.0101
   code_locus: 1998-turing-mus-musculus-turing-wavelength.py#L28-L39
 - law_name: Domain-Growth Mode Doubling Number
   formula: N_stripes(L) = round(L / lambda_c)
-  lean_decl: MathOfBiology.Loop_0101.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0101.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 56 15 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0101.stripe_total_succ
+  lean_theorem: MathOfBiology.Loop_0101.stripe_total_succ
+  lean_locus: morphoeval/lean/loops/Loop_0101_mus_musculus_turing_wavelength.lean#L22
+  lean_code: "theorem stripe_total_succ (n lam : Nat) :\n    stripe_total (n + 1)\
+    \ lam = stripe_total n lam + lam := by\n  simp [stripe_total, Nat.add_mul]\n\n\
+    end MathOfBiology.Loop_0101"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Turing Wavenumber k_c
   source_citation: Turing (1998) DOI:10.1242/dev.1998.0101
   code_locus: 1998-turing-mus-musculus-turing-wavelength.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

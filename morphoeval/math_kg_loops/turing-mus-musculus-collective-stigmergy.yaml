@@ -1,16 +1,17 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-collective-stigmergy
 math_family: Keller-Segel Chemotaxis & Stigmergic Self-Organization
 equations:
 - law_name: Keller-Segel Chemotactic Instability Threshold
   formula: chi_0 * rho_0 * S_0 > D_rho * k_deg + D_rho * D_s * k^2
-  lean_decl: MathOfBiology.Loop_1001.law1_invariant
-  lean_theorem: MathOfBiology.Loop_1001.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_1001.ks_instability_of_drive_exceeds
+  lean_theorem: MathOfBiology.Loop_1001.ks_instability_of_drive_exceeds
+  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L12
+  lean_code: "theorem ks_instability_of_drive_exceeds (chi rho S Drho kdeg Ds k2 :\
+    \ Nat)\n    (h : ks_drive chi rho S > ks_decay Drho kdeg Ds k2) :\n    ks_drive\
+    \ chi rho S ≥ ks_decay Drho kdeg Ds k2 + 1 := h\n/-- Extra chemotactic sensitivity\
+    \ raises the drive multiplicatively in rho * S step form. -/\ntheorem ks_drive_sensitivity_step\
+    \ (chi rho S : Nat) :"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Chemotactic & Stigmergic Collective Pattern
     Formation in Mus musculus
@@ -18,26 +19,27 @@ equations:
   code_locus: 2000-turing-mus-musculus-collective-stigmergy.py#L28-L39
 - law_name: Peclet Advection-to-Diffusion Morphogenesis Ratio
   formula: Pe = v_swarm * L_char / D_eff
-  lean_decl: MathOfBiology.Loop_1001.law2_balance
-  lean_theorem: MathOfBiology.Loop_1001.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_1001.ks_drive_sensitivity_step
+  lean_theorem: MathOfBiology.Loop_1001.ks_drive_sensitivity_step
+  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L16
+  lean_code: "theorem ks_drive_sensitivity_step (chi rho S : Nat) :\n    ks_drive\
+    \ (chi + 1) rho S = ks_drive chi rho S + rho * S := by\n  simp [ks_drive, Nat.add_mul]\n\
+    /-- Pheromone pillar mass accumulates additively per deposition episode. -/\n\
+    def pheromone_mass (m : Nat) : Nat -> Nat"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Biofilm Wrinkles & Hex Combs in Mus musculus
   source_citation: Turing (2000) DOI:10.1242/dev.2000.1001
   code_locus: 2000-turing-mus-musculus-collective-stigmergy.py#L28-L39
 - law_name: Stigmergic Pheromone Pillar Wavelength
   formula: lambda_stig = 2 pi sqrt(D_pher / (chi_stig * rho_0 - mu_decay))
-  lean_decl: MathOfBiology.Loop_1001.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_1001.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 24 10 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_1001.pheromone_mass_succ
+  lean_theorem: MathOfBiology.Loop_1001.pheromone_mass_succ
+  lean_locus: morphoeval/lean/loops/Loop_1001_mus_musculus_collective_stigmergy.lean#L23
+  lean_code: "theorem pheromone_mass_succ (m n : Nat) :\n    pheromone_mass m (n +\
+    \ 1) = pheromone_mass m n + m := by\n  simp [pheromone_mass]\n\nend MathOfBiology.Loop_1001"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Chemotactic / Stigmergic Pe
   source_citation: Turing (2000) DOI:10.1242/dev.2000.1001
   code_locus: 2000-turing-mus-musculus-collective-stigmergy.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

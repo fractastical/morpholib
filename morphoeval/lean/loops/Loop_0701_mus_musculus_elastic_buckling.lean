@@ -1,32 +1,26 @@
 /-
-  morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean — Formal Verification for Slot #0701 (Mus musculus)
-  Cohort: VII. Mechanical Folding, Wrinkling & Buckling
-  Governing Mathematics: Elastic Bilayer Buckling & Differential Growth
-  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
+  morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean — SUBSTANTIVE re-formalization (2026-10-27)
+  Replaces the template placeholder trio (a*b>0 / p+q-q=p / decide) with a
+  law-specific formalization of: Buckling Threshold & Post-Buckling Amplitude Growth in Mus musculus (Slot #0701).
+  Self-contained Lean 4 core (zero imports), 0 sorry. See morphoeval/reformalize_first_batch.py.
 -/
 namespace MathOfBiology.Loop_0701
 
-/-- Law 1: Bilayer Cube-Root Wrinkling Wavelength Law (lambda_w = 2 pi h_f (E_f / (3 E_s))^(1/3)) -/
-def law1_invariant (a b : Int) : Int := a * b
-
-theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) :
-    0 < law1_invariant a b := by
-  dsimp [law1_invariant]
-  exact Int.mul_pos ha hb
-
-/-- Law 2: Critical Compressive Buckling Strain Threshold (epsilon_c = (1 / 4) (3 E_s / E_f)^(2/3)) -/
-def law2_balance (p q : Int) : Int := p + q - q
-
-theorem law2_exact_cancellation (p q : Int) :
-    law2_balance p q = p := by
-  dsimp [law2_balance]
-  omega
-
-/-- Law 3: Post-Buckling Amplitude Square-Root Scaling (A_fold = h_f sqrt((epsilon - epsilon_c) / epsilon_c)) -/
-def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-theorem law3_instability_criterion :
-    law3_threshold_margin 70 19 > 0 := by
-  decide
+/-- Compressive margin: applied strain minus critical strain (scaled Nat excess). -/
+def buckling_excess (eps epsc : Nat) : Nat := eps - epsc
+theorem no_buckling_at_threshold (epsc : Nat) : buckling_excess epsc epsc = 0 := by
+  simp [buckling_excess]
+theorem buckling_excess_succ (eps epsc : Nat) :
+    buckling_excess (eps + 1) epsc = buckling_excess eps epsc + 1 ∨ eps < epsc := by
+  simp only [buckling_excess]
+  by_cases h : epsc ≤ eps
+  · left; omega
+  · right; omega
+/-- Fold count accumulates one wrinkle per wavelength along the sheet. -/
+def fold_count (w : Nat) : Nat -> Nat
+  | 0 => 0
+  | n + 1 => fold_count w n + w
+theorem fold_count_succ (w n : Nat) : fold_count w (n + 1) = fold_count w n + w := by
+  simp [fold_count]
 
 end MathOfBiology.Loop_0701

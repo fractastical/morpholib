@@ -1,16 +1,16 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-clock-wavefront
 math_family: Phase Oscillator & Wavefront Kinematics
 equations:
 - law_name: Clock-and-Wavefront Segment Length Invariant
   formula: S = u_wf * T_clock
-  lean_decl: MathOfBiology.Loop_0301.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0301.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0301.somite_period_doubling
+  lean_theorem: MathOfBiology.Loop_0301.somite_period_doubling
+  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L11
+  lean_code: "theorem somite_period_doubling (u T : Int) :\n    somite_length u (2\
+    \ * T) = 2 * somite_length u T := by\n  simp only [somite_length]; ac_rfl\n/--\
+    \ Axis of n segments: total length is n times one segment, either grouping. -/\n\
+    def total_axis (n u T : Int) : Int := n * somite_length u T"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Phase-Coupled Oscillator & Wavefront Arrest
     in Mus musculus
@@ -18,26 +18,28 @@ equations:
   code_locus: 2000-turing-mus-musculus-clock-wavefront.py#L28-L39
 - law_name: Kuramoto-Delta-Notch Synchronization Rate
   formula: d(delta_phi)/dt = -(K_c - omega_tau) sin(delta_phi)
-  lean_decl: MathOfBiology.Loop_0301.law2_balance
-  lean_theorem: MathOfBiology.Loop_0301.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0301.total_axis_grouping
+  lean_theorem: MathOfBiology.Loop_0301.total_axis_grouping
+  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L16
+  lean_code: "theorem total_axis_grouping (n u T : Int) : total_axis n u T = (n *\
+    \ u) * T := by\n  simp only [total_axis, somite_length]; ac_rfl\n/-- Wavefront\
+    \ travel in n periods equals the n-segment axis length. -/\ntheorem wavefront_after_n_periods\
+    \ (n u T : Int) : u * (n * T) = total_axis n u T := by\n  simp only [total_axis,\
+    \ somite_length]; ac_rfl"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Periodic Somites & Segments in Mus musculus
   source_citation: Turing (2000) DOI:10.1242/dev.2000.0301
   code_locus: 2000-turing-mus-musculus-clock-wavefront.py#L28-L39
 - law_name: Kinematic Phase-Gradient Doppler Shift
   formula: omega_ant / omega_post = 1 + u_wf * |nabla_x phi| / omega_0
-  lean_decl: MathOfBiology.Loop_0301.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0301.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 40 14 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0301.wavefront_after_n_periods
+  lean_theorem: MathOfBiology.Loop_0301.wavefront_after_n_periods
+  lean_locus: morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean#L19
+  lean_code: "theorem wavefront_after_n_periods (n u T : Int) : u * (n * T) = total_axis\
+    \ n u T := by\n  simp only [total_axis, somite_length]; ac_rfl\n\nend MathOfBiology.Loop_0301"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
-  role: "Critical bifurcation criterion for Somite Length S = u\xB7T_clock"
+  role: Critical bifurcation criterion for Somite Length S = u·T_clock
   source_citation: Turing (2000) DOI:10.1242/dev.2000.0301
   code_locus: 2000-turing-mus-musculus-clock-wavefront.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

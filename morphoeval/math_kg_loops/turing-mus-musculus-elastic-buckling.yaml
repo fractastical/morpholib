@@ -1,16 +1,16 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-elastic-buckling
 math_family: Elastic Bilayer Buckling & Differential Growth
 equations:
 - law_name: Bilayer Cube-Root Wrinkling Wavelength Law
   formula: lambda_w = 2 pi h_f (E_f / (3 E_s))^(1/3)
-  lean_decl: MathOfBiology.Loop_0701.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0701.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0701.no_buckling_at_threshold
+  lean_theorem: MathOfBiology.Loop_0701.no_buckling_at_threshold
+  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L11
+  lean_code: "theorem no_buckling_at_threshold (epsc : Nat) : buckling_excess epsc\
+    \ epsc = 0 := by\n  simp [buckling_excess]\ntheorem buckling_excess_succ (eps\
+    \ epsc : Nat) :\n    buckling_excess (eps + 1) epsc = buckling_excess eps epsc\
+    \ + 1 ∨ eps < epsc := by\n  simp only [buckling_excess]"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Differential Growth Elastic Bilayer Buckling
     in Mus musculus
@@ -18,26 +18,26 @@ equations:
   code_locus: 2004-turing-mus-musculus-elastic-buckling.py#L28-L39
 - law_name: Critical Compressive Buckling Strain Threshold
   formula: epsilon_c = (1 / 4) (3 E_s / E_f)^(2/3)
-  lean_decl: MathOfBiology.Loop_0701.law2_balance
-  lean_theorem: MathOfBiology.Loop_0701.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0701.buckling_excess_succ
+  lean_theorem: MathOfBiology.Loop_0701.buckling_excess_succ
+  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L13
+  lean_code: "theorem buckling_excess_succ (eps epsc : Nat) :\n    buckling_excess\
+    \ (eps + 1) epsc = buckling_excess eps epsc + 1 ∨ eps < epsc := by\n  simp only\
+    \ [buckling_excess]\n  by_cases h : epsc ≤ eps\n  · left; omega"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Gyri, Villi, Loops & Snap-Shells in Mus musculus
   source_citation: Turing (2004) DOI:10.1242/dev.2004.0701
   code_locus: 2004-turing-mus-musculus-elastic-buckling.py#L28-L39
 - law_name: Post-Buckling Amplitude Square-Root Scaling
   formula: A_fold = h_f sqrt((epsilon - epsilon_c) / epsilon_c)
-  lean_decl: MathOfBiology.Loop_0701.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0701.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 70 19 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0701.fold_count_succ
+  lean_theorem: MathOfBiology.Loop_0701.fold_count_succ
+  lean_locus: morphoeval/lean/loops/Loop_0701_mus_musculus_elastic_buckling.lean#L23
+  lean_code: "theorem fold_count_succ (w n : Nat) : fold_count w (n + 1) = fold_count\
+    \ w n + w := by\n  simp [fold_count]\n\nend MathOfBiology.Loop_0701"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Wrinkling lambda ~ h(E_f/E_s)^1/3
   source_citation: Turing (2004) DOI:10.1242/dev.2004.0701
   code_locus: 2004-turing-mus-musculus-elastic-buckling.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

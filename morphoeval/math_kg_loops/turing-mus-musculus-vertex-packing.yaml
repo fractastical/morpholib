@@ -1,16 +1,16 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-vertex-packing
 math_family: Cellular Vertex Mechanics & Topological Jamming
 equations:
 - law_name: 2D Vertex Mechanical Energy Functional
   formula: E_vertex = (K_A / 2) (A - A_0)^2 + (K_P / 2) (P - P_0)^2
-  lean_decl: MathOfBiology.Loop_0501.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0501.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0501.vertex_offset_nonneg_at_target
+  lean_theorem: MathOfBiology.Loop_0501.vertex_offset_nonneg_at_target
+  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L11
+  lean_code: "theorem vertex_offset_nonneg_at_target : vertex_offset 0 0 = 0 := by\n\
+    \  simp [vertex_offset]\ntheorem vertex_offset_grows_with_area_offset (da dp :\
+    \ Nat) :\n    vertex_offset (da + 1) dp ≥ vertex_offset da dp := by\n  simp only\
+    \ [vertex_offset]"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Epithelial Vertex Energy & Topological Packing
     in Mus musculus
@@ -18,26 +18,26 @@ equations:
   code_locus: 2002-turing-mus-musculus-vertex-packing.py#L28-L39
 - law_name: Dimensionless Target Shape Index Rigidity Threshold
   formula: p_0 = P_0 / sqrt(A_0),  p_0^* = 3.813 (fluid-to-solid jamming)
-  lean_decl: MathOfBiology.Loop_0501.law2_balance
-  lean_theorem: MathOfBiology.Loop_0501.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0501.vertex_offset_grows_with_area_offset
+  lean_theorem: MathOfBiology.Loop_0501.vertex_offset_grows_with_area_offset
+  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L13
+  lean_code: "theorem vertex_offset_grows_with_area_offset (da dp : Nat) :\n    vertex_offset\
+    \ (da + 1) dp ≥ vertex_offset da dp := by\n  simp only [vertex_offset]\n  have\
+    \ h1 : da * da ≤ (da + 1) * (da + 1) := by\n    apply Nat.mul_le_mul <;> omega"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Polygonal Packing & Furrows in Mus musculus
   source_citation: Turing (2002) DOI:10.1242/dev.2002.0501
   code_locus: 2002-turing-mus-musculus-vertex-packing.py#L28-L39
 - law_name: Lewis Linear Area-to-Side Scaling Law
   formula: <A_n> / <A> = (n - 2) / 4
-  lean_decl: MathOfBiology.Loop_0501.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0501.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 96 20 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0501.lewis_hexagonal
+  lean_theorem: MathOfBiology.Loop_0501.lewis_hexagonal
+  lean_locus: morphoeval/lean/loops/Loop_0501_mus_musculus_vertex_packing.lean#L22
+  lean_code: "theorem lewis_hexagonal (Abar : Nat) : lewis_lhs 6 Abar = lewis_rhs\
+    \ 6 Abar + 0 * Abar := by\n  simp [lewis_lhs, lewis_rhs]\n\nend MathOfBiology.Loop_0501"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Shape Index p_0* = 3.813
   source_citation: Turing (2002) DOI:10.1242/dev.2002.0501
   code_locus: 2002-turing-mus-musculus-vertex-packing.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

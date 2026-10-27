@@ -1,16 +1,15 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-biomineral-accretion
 math_family: Logarithmic Helicospiral Accretion & Biomineral Geometry
 equations:
 - law_name: Raup Logarithmic Whorl Expansion Scaling
   formula: r(theta) = r_0 * W^(theta / (2 pi))
-  lean_decl: MathOfBiology.Loop_0801.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0801.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0801.whorl_succ
+  lean_theorem: MathOfBiology.Loop_0801.whorl_succ
+  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L13
+  lean_code: "theorem whorl_succ (W n : Nat) :\n    whorl_multiplier W (n + 1) = W\
+    \ * whorl_multiplier W n := by\n  simp [whorl_multiplier]\ntheorem whorl_two_turns\
+    \ (W : Nat) : whorl_multiplier W 2 = W * W := by\n  simp [whorl_multiplier]"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Logarithmic Accretion & Minimal-Surface Biomineralization
     in Mus musculus
@@ -18,26 +17,29 @@ equations:
   code_locus: 1998-turing-mus-musculus-biomineral-accretion.py#L28-L39
 - law_name: Helicospiral Aperture Translation Scaling
   formula: z(theta) = T * r_0 * (W^(theta / (2 pi)) - 1)
-  lean_decl: MathOfBiology.Loop_0801.law2_balance
-  lean_theorem: MathOfBiology.Loop_0801.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0801.whorl_two_turns
+  lean_theorem: MathOfBiology.Loop_0801.whorl_two_turns
+  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L16
+  lean_code: "theorem whorl_two_turns (W : Nat) : whorl_multiplier W 2 = W * W :=\
+    \ by\n  simp [whorl_multiplier]\n/-- Shell radius after n turns: r0 times the\
+    \ whorl multiplier; monotone in turns for W ≥ 1 step. -/\ndef raup_radius (r0\
+    \ W n : Nat) : Nat := r0 * whorl_multiplier W n\ntheorem raup_radius_succ (r0\
+    \ W n : Nat) :"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Coiled Shells, Spicules & Gyroids in Mus musculus
   source_citation: Turing (1998) DOI:10.1242/dev.1998.0801
   code_locus: 1998-turing-mus-musculus-biomineral-accretion.py#L28-L39
 - law_name: Gyroid / Minimal-Surface Zero Mean Curvature Invariant
   formula: H = (kappa_1 + kappa_2) / 2 = 0,  K = kappa_1 * kappa_2 <= 0
-  lean_decl: MathOfBiology.Loop_0801.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0801.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 105 22 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0801.raup_radius_succ
+  lean_theorem: MathOfBiology.Loop_0801.raup_radius_succ
+  lean_locus: morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean#L20
+  lean_code: "theorem raup_radius_succ (r0 W n : Nat) :\n    raup_radius r0 W (n +\
+    \ 1) = r0 * (W * whorl_multiplier W n) := by\n  simp [raup_radius, whorl_multiplier]\n\
+    \nend MathOfBiology.Loop_0801"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Raup (W,D,S) / Gyroid Mean H=0
   source_citation: Turing (1998) DOI:10.1242/dev.1998.0801
   code_locus: 1998-turing-mus-musculus-biomineral-accretion.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

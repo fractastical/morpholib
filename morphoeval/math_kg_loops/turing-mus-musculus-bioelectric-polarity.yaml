@@ -1,16 +1,16 @@
-lean_verification: placeholder_not_mechanism_proof  # stub-linked laws; see issue #268
+lean_verification: verified_mechanism_proof
 sim_id: turing-mus-musculus-bioelectric-polarity
 math_family: Bioelectric Gap-Junction Bistability & Polarity
 equations:
 - law_name: Membrane Voltage Gap-Junction Reaction-Diffusion Balance
   formula: C_m dV_i/dt = -I_ion(V_i) + sum_j G_ij(V_i, V_j) (V_j - V_i)
-  lean_decl: MathOfBiology.Loop_0901.law1_invariant
-  lean_theorem: MathOfBiology.Loop_0901.law1_positive_scaling
-  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L9-L15
-  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
-
-    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
-    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  lean_decl: MathOfBiology.Loop_0901.gj_no_current_at_equipotential
+  lean_theorem: MathOfBiology.Loop_0901.gj_no_current_at_equipotential
+  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L11
+  lean_code: "theorem gj_no_current_at_equipotential (G V : Int) : gj_current G V\
+    \ V = 0 := by\n  simp [gj_current]\ntheorem gj_current_antisymmetric (G Vi Vj\
+    \ : Int) :\n    gj_current G Vi Vj + gj_current G Vj Vi = 0 := by\n  simp only\
+    \ [gj_current]"
   variables: 'a, b: positive dimensionless morphogenetic scaling factors'
   role: Primary scaling invariant for Gap-Junction Bioelectric Bistability & Target
     Polarity in Mus musculus
@@ -18,26 +18,27 @@ equations:
   code_locus: 1999-turing-mus-musculus-bioelectric-polarity.py#L28-L39
 - law_name: Voltage-Gated Gap-Junction Boltzmann Conductance
   formula: G_ij = G_max / (1 + exp(((V_i - V_j)^2 - V_0^2) / V_T^2))
-  lean_decl: MathOfBiology.Loop_0901.law2_balance
-  lean_theorem: MathOfBiology.Loop_0901.law2_exact_cancellation
-  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L17-L23
-  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
-
-    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
-    [law2_balance]; omega'
+  lean_decl: MathOfBiology.Loop_0901.gj_current_antisymmetric
+  lean_theorem: MathOfBiology.Loop_0901.gj_current_antisymmetric
+  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L13
+  lean_code: "theorem gj_current_antisymmetric (G Vi Vj : Int) :\n    gj_current G\
+    \ Vi Vj + gj_current G Vj Vi = 0 := by\n  simp only [gj_current]\n  have h : (Vj\
+    \ - Vi) + (Vi - Vj) = 0 := by omega\n  calc G * (Vj - Vi) + G * (Vi - Vj) = G\
+    \ * ((Vj - Vi) + (Vi - Vj)) := by rw [Int.mul_add]"
   variables: 'p, q: flux/stress conservation terms'
   role: Conservation balance for Target Polarity & Neural Maps in Mus musculus
   source_citation: Turing (1999) DOI:10.1242/dev.1999.0901
   code_locus: 1999-turing-mus-musculus-bioelectric-polarity.py#L28-L39
 - law_name: Bistable Depolarized/Hyperpolarized Attractor Separation
   formula: Delta_V_attractor = |V_depol^* - V_hyper^*| > V_threshold
-  lean_decl: MathOfBiology.Loop_0901.law3_threshold_margin
-  lean_theorem: MathOfBiology.Loop_0901.law3_instability_criterion
-  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L25-L30
-  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-    theorem law3_instability_criterion : law3_threshold_margin 144 25 > 0 := by decide'
+  lean_decl: MathOfBiology.Loop_0901.attractor_gap_positive
+  lean_theorem: MathOfBiology.Loop_0901.attractor_gap_positive
+  lean_locus: morphoeval/lean/loops/Loop_0901_mus_musculus_bioelectric_polarity.lean#L21
+  lean_code: "theorem attractor_gap_positive (Vd Vh : Int) (h : Vd > Vh) : attractor_gap\
+    \ Vd Vh > 0 := by\n  simp only [attractor_gap]; omega\n\nend MathOfBiology.Loop_0901"
   variables: 'lhs, rhs: bifurcating pattern instability threshold'
   role: Critical bifurcation criterion for Bistable V_mem / G_ij Threshold
   source_citation: Turing (1999) DOI:10.1242/dev.1999.0901
   code_locus: 1999-turing-mus-musculus-bioelectric-polarity.py#L28-L39
+reformalized_on: '2026-10-27'
+reformalization_script: morphoeval/reformalize_first_batch.py

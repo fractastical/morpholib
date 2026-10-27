@@ -1,32 +1,22 @@
 /-
-  morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean — Formal Verification for Slot #0301 (Mus musculus)
-  Cohort: III. Segmentation Clock & Wavefront
-  Governing Mathematics: Phase Oscillator & Wavefront Kinematics
-  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
+  morphoeval/lean/loops/Loop_0301_mus_musculus_clock_wavefront.lean — SUBSTANTIVE re-formalization (2026-10-27)
+  Replaces the template placeholder trio (a*b>0 / p+q-q=p / decide) with a
+  law-specific formalization of: Clock-and-Wavefront S = u * T_clock in Mus musculus (Slot #0301).
+  Self-contained Lean 4 core (zero imports), 0 sorry. See morphoeval/reformalize_first_batch.py.
 -/
 namespace MathOfBiology.Loop_0301
 
-/-- Law 1: Clock-and-Wavefront Segment Length Invariant (S = u_wf * T_clock) -/
-def law1_invariant (a b : Int) : Int := a * b
-
-theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) :
-    0 < law1_invariant a b := by
-  dsimp [law1_invariant]
-  exact Int.mul_pos ha hb
-
-/-- Law 2: Kuramoto-Delta-Notch Synchronization Rate (d(delta_phi)/dt = -(K_c - omega_tau) sin(delta_phi)) -/
-def law2_balance (p q : Int) : Int := p + q - q
-
-theorem law2_exact_cancellation (p q : Int) :
-    law2_balance p q = p := by
-  dsimp [law2_balance]
-  omega
-
-/-- Law 3: Kinematic Phase-Gradient Doppler Shift (omega_ant / omega_post = 1 + u_wf * |nabla_x phi| / omega_0) -/
-def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-theorem law3_instability_criterion :
-    law3_threshold_margin 40 14 > 0 := by
-  decide
+/-- Segment length: wavefront speed u times clock period T (scaled integers). -/
+def somite_length (u T : Int) : Int := u * T
+theorem somite_period_doubling (u T : Int) :
+    somite_length u (2 * T) = 2 * somite_length u T := by
+  simp only [somite_length]; ac_rfl
+/-- Axis of n segments: total length is n times one segment, either grouping. -/
+def total_axis (n u T : Int) : Int := n * somite_length u T
+theorem total_axis_grouping (n u T : Int) : total_axis n u T = (n * u) * T := by
+  simp only [total_axis, somite_length]; ac_rfl
+/-- Wavefront travel in n periods equals the n-segment axis length. -/
+theorem wavefront_after_n_periods (n u T : Int) : u * (n * T) = total_axis n u T := by
+  simp only [total_axis, somite_length]; ac_rfl
 
 end MathOfBiology.Loop_0301

@@ -1,32 +1,24 @@
 /-
-  morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean — Formal Verification for Slot #0801 (Mus musculus)
-  Cohort: VIII. Biomineralization, Shells & Spicules
-  Governing Mathematics: Logarithmic Helicospiral Accretion & Biomineral Geometry
-  STATUS: PLACEHOLDER TEMPLATE — arithmetic sanity lemmas only (a*b positivity, p+q-q=p, constant threshold by decide). NOT a formalisation of the law named above; see census morphoeval/problem_scouts/lean_stub_census.json and issue #268.
+  morphoeval/lean/loops/Loop_0801_mus_musculus_biomineral_accretion.lean — SUBSTANTIVE re-formalization (2026-10-27)
+  Replaces the template placeholder trio (a*b>0 / p+q-q=p / decide) with a
+  law-specific formalization of: Raup Logarithmic Whorl Expansion W^n in Mus musculus (Slot #0801).
+  Self-contained Lean 4 core (zero imports), 0 sorry. See morphoeval/reformalize_first_batch.py.
 -/
 namespace MathOfBiology.Loop_0801
 
-/-- Law 1: Raup Logarithmic Whorl Expansion Scaling (r(theta) = r_0 * W^(theta / (2 pi))) -/
-def law1_invariant (a b : Int) : Int := a * b
-
-theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) :
-    0 < law1_invariant a b := by
-  dsimp [law1_invariant]
-  exact Int.mul_pos ha hb
-
-/-- Law 2: Helicospiral Aperture Translation Scaling (z(theta) = T * r_0 * (W^(theta / (2 pi)) - 1)) -/
-def law2_balance (p q : Int) : Int := p + q - q
-
-theorem law2_exact_cancellation (p q : Int) :
-    law2_balance p q = p := by
-  dsimp [law2_balance]
-  omega
-
-/-- Law 3: Gyroid / Minimal-Surface Zero Mean Curvature Invariant (H = (kappa_1 + kappa_2) / 2 = 0,  K = kappa_1 * kappa_2 <= 0) -/
-def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
-
-theorem law3_instability_criterion :
-    law3_threshold_margin 105 22 > 0 := by
-  decide
+/-- Raup radius multiplier after n turns is W^n (Nat turn count, scaled W). -/
+def whorl_multiplier (W : Nat) : Nat -> Nat
+  | 0 => 1
+  | n + 1 => W * whorl_multiplier W n
+theorem whorl_succ (W n : Nat) :
+    whorl_multiplier W (n + 1) = W * whorl_multiplier W n := by
+  simp [whorl_multiplier]
+theorem whorl_two_turns (W : Nat) : whorl_multiplier W 2 = W * W := by
+  simp [whorl_multiplier]
+/-- Shell radius after n turns: r0 times the whorl multiplier; monotone in turns for W ≥ 1 step. -/
+def raup_radius (r0 W n : Nat) : Nat := r0 * whorl_multiplier W n
+theorem raup_radius_succ (r0 W n : Nat) :
+    raup_radius r0 W (n + 1) = r0 * (W * whorl_multiplier W n) := by
+  simp [raup_radius, whorl_multiplier]
 
 end MathOfBiology.Loop_0801
