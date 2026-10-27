@@ -1,0 +1,159 @@
+# Pass 1 — Chrysomallon squamiferum Turing wavelength, 2.0 nm detail scale, slot 3147.
+# Holocene extant, 0 Ma, chronoseries 1/1.
+# The onset formula k_c^2 = (D_v f_u + D_u g_v)/(2 D_u D_v) was solved so that
+# expression equals 2π/2.0 nm. The PDE radial peak was 2.52 nm, because above
+# onset the maximum of σ(k) is not that onset wavenumber. Eigenvalue-vs-closed-form
+# Pearson r was 1.0 (the same matrix, two evaluations). No sweep, no ablation, no KS.
+audit:
+  id: 2026-10-27-chrysomallon-squamiferum-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 1 baseline before fastest-mode calibration, sweep, ablation, and specimen KS."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  waren2003:
+    title: "A hot-vent gastropod with iron sulfide dermal sclerites"
+    authors: "Warén A, Bengtson S, Goffredi SK, Van Dover CL"
+    venue: "Science 302:1007 (2003)"
+    doi: 10.1126/science.1087696
+    year: 2003
+  yao2010:
+    title: "Protection mechanisms of the iron-plated armor of a deep-sea hydrothermal vent gastropod"
+    authors: "Yao H, Dao M, Imholt T, Huang J, Wheeler K, Bonilla A, Suresh S, Ortiz C"
+    venue: "PNAS 107:987-992 (2010)"
+    doi: 10.1073/pnas.0912988107
+    year: 2010
+  chen2015:
+    title: "The scaly-foot gastropod: a new genus and species of hydrothermal vent-endemic gastropod"
+    authors: "Chen C, Linse K, Copley JT, Rogers AD"
+    venue: "Journal of Molluscan Studies 81:322-334 (2015)"
+    doi: 10.1093/mollus/eyv013
+    year: 2015
+  chen2015gigantopelta:
+    title: "A new genus of large hydrothermal vent-endemic gastropod (Neomphalina: Peltospiridae)"
+    authors: "Chen C, Linse K, Roterman CN, Copley JT, Rogers AD"
+    venue: "Zoological Journal of the Linnean Society 175:319-335 (2015)"
+    doi: 10.1111/zoj.12279
+    year: 2015
+  sun2020:
+    title: "The Scaly-foot Snail genome and implications for the origins of biomineralised armour"
+    authors: "Sun J et al."
+    venue: "Nature Communications 11:1657 (2020)"
+    doi: 10.1038/s41467-020-15522-3
+    year: 2020
+  skinner1964:
+    title: "Greigite, the thio-spinel of iron; a new mineral"
+    authors: "Skinner BJ, Erd RC, Grimaldi FS"
+    venue: "American Mineralogist 49:543-555 (1964)"
+    url: https://pubs.geoscienceworld.org/msa/ammin/article/49/5-6/543/54000
+    year: 1964
+simulations:
+  - id: delphi10000-chrysomallon-squamiferum-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 2.0 nm on Chrysomallon squamiferum (Pass 1)"
+    organism: "Chrysomallon squamiferum (Holocene extant, 0 Ma)"
+    script: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py
+    output: docs/media/chrysomallon_squamiferum_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, waren2003, yao2010, chen2015, chen2015gigantopelta, sun2020, skinner1964]
+    summary: >-
+      Pass 1 integrates one Schnakenberg field (a=0.062, b=1.084, D_v/D_u=36, seed 3147)
+      with diffusivities chosen so the onset wavenumber is 2π/2.0 nm. Closed-form σ(k)
+      matches numpy eigenvalues at r=1.0. The PDE radial peak is 2.52 nm, not 2.0 nm.
+      The paratype photograph is the anatomical canvas. No parameter sweep, no
+      equal-diffusion ablation, and no KS comparison against the specimen were run.
+    claim_boundary:
+      reported_in_source:
+        - "Iron-sulfide sclerites (Warén 2003) and multilayer armor mechanics (Yao 2010)"
+        - "Turing wavenumber selection (Turing 1952) and Schnakenberg kinetics (1979)"
+        - "Greigite cubic cell near 0.988 nm (Skinner, Erd and Grimaldi 1964)"
+      reconstructed_in_script:
+        - "Onset k_c solved for D_u at λ=2.0 nm and one IMEX Schnakenberg integration"
+        - "Activator painted on the MNHN-IM-2000-30072 sclerite mask"
+      transfer_boundary:
+        - "No source measures a 2.0 nm pigment stripe on this snail. 2.0 nm is the assigned detail-scale wavelength, about two greigite cells."
+      does_not_claim:
+        - "Does not claim Yao et al. 2010 stated a reaction-diffusion equation"
+        - "Does not claim the Pass 1 PDE peak equals 2.0 nm"
+        - "Does not claim a successor chronospecies after the Holocene animal"
+    provenance:
+      spec_fingerprint: 5a948670023100da2057a11d9e5a60a14e996d44987bb98d540f2f6d1fbf8647
+      artifact_sha256: f78b2d8abd16f668188f1f75d9a33d749cbc8e44b01e0b5814be146d1e378f5d
+      input_dataset_sha256:
+        chrysomallon_squamiferum_specimen.jpg: 0312a80d873d68d229c1523444b95929eaac44b585739be0466370b66eaa08fd
+        paper_citations.bib: 63b7c502b791e3c144ac849003a298bab1a54963adc6074c1491a4e4dee301cd
+        scout_manifest.json: ea589eba9289f0c94d761fb2f96b855145e51bced0057442146e416b15af60cf
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: "Schnakenberg kinetics and the Turing onset formula are implemented and the integer identity matches Loop_3147. Above onset, that formula is not the fastest mode, and Pass 1 still reports λ=2.0 nm from the formula while the PDE peak is 2.52 nm."
+        evidence:
+          - {file: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py, lines: [105, 132], note: "onset diffusivity solve and closed-form dispersion", supports: true}
+          - {file: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py, lines: [350, 407], note: "Pass 1 single integration; PDE wavelength 2.52 nm recorded in pass1_metrics.json", supports: false}
+      specimen-match:
+        value: 76
+        rationale: "The frame is the real CC BY 4.0 paratype (MNHN-IM-2000-30072, Marie Hennion), so the animal is the animal. Pass 1 modulation of the sclerite mask is weak, and there is no 2 nm micrograph to match."
+        evidence:
+          - {file: datasets/chrysomallon_squamiferum_turing_wavelength_s0/chrysomallon_squamiferum_specimen.jpg, lines: [0, 0], note: "paratype photograph used as the canvas", supports: true}
+          - {file: docs/media/chrysomallon_squamiferum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "comparison figure; pixels regenerated in Pass 2", supports: true}
+      parameter-expressivity:
+        value: 46
+        rationale: "Only λ=2.0 nm is integrated. γ, a, and b are constants. Nothing in the Pass 1 path shows that wavelength moves when the diffusivity scale moves."
+        evidence:
+          - {file: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py, lines: [350, 370], note: "run_pass1 calls diffusivities once", supports: false}
+      morphometric-validation:
+        value: 58
+        rationale: "Eigenvalue Pearson r=1.0 compares two evaluations of the same Jacobian. The PDE wavelength 2.520 nm versus the 2.0 nm assignment is a 26% miss. Foreground fraction 0.394 versus prior 0.55 is a real mask measurement, not a fit."
+        evidence:
+          - {file: datasets/chrysomallon_squamiferum_turing_wavelength_s0/pass1_metrics.json, lines: [0, 0], note: "lambda_measured_nm 2.520, eig_pearson_r 1.0, foreground 0.394", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Warén, Yao, Chen, and Sun; Skinner 1964 cited by journal URL; specimen SHA-256, catalog number, and CC BY 4.0 attribution are pinned."
+        evidence:
+          - {file: datasets/chrysomallon_squamiferum_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "DOI bibliography", supports: true}
+          - {file: datasets/chrysomallon_squamiferum_turing_wavelength_s0/chrysomallon_squamiferum_turing_wavelength_s0_reference.json, lines: [1, 40], note: "2.0 nm and 0 Ma stated with specimen SHA-256", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "Dispersion and Jacobian are commented against Turing 1952 and Schnakenberg 1979. The Lean integer identity is the same thousandths (f_u=892, g_v=-1313, ratio 36)."
+        evidence:
+          - {file: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py, lines: [1, 40], note: "module docstring states the transfer boundary and the law", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3147_chrysomallon_squamiferum_turing_wavelength_s0.lean, lines: [40, 42], note: "kc2_division_algorithm, 0 sorry", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Deterministic seed 3147, pinned specimen hash, and a passing --self-test. Pass 1 self-test accepts the tautological eigenvalue correlation and does not check the PDE wavelength."
+        evidence:
+          - {file: models/2026-delphi10000-chrysomallon-squamiferum-turing-wavelength-s0.py, lines: [66, 81], note: "SHA-256 check of the paratype against the reference JSON", supports: true}
+          - {file: datasets/chrysomallon_squamiferum_turing_wavelength_s0/README.md, lines: [24, 36], note: "invocation for --self-test and the default run", supports: true}
+    remediation:
+      - id: R1
+        item: "Sweep target wavelength (diffusivity scale) and report Pearson r and RMSE of PDE radial-FFT peaks against the targets."
+      - id: R2
+        item: "Run an equal-diffusion ablation (D_u=D_v) and report the amplitude ratio against the patterned field."
+      - id: R3
+        item: "Segment the paratype and compare it to the render with structure-tensor coherency, circularity, and a KS test."
+      - id: R4
+        item: "Retune diffusivities so the maximum of σ(k), not the onset formula, sits on 2.0 nm, and require the PDE peak within 8%."
