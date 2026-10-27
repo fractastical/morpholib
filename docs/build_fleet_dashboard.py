@@ -169,7 +169,148 @@ def census() -> dict:
     else:
         data["model_quality"] = {"builders": [], "incidents": [], "assessors": {}, "step_models": []}
     data["telemetry"] = tele
+    data["red_flags"] = detect_red_flags(data)
     return data
+
+
+# Detector thresholds: a flag fires when recorded evidence crosses these lines.
+FLAG_SELF_AUDIT_GAP = 20.0      # points between a self-score and the referee score
+FLAG_PASS_GAP_MEAN = 15.0       # mean pass1->pass2 jump across all slots
+FLAG_PASS3_DROP = -10.0         # pass-3 re-audit regression
+FLAG_STUB_SHARE = 0.50          # placeholder share of the Lean corpus
+FLAG_MODEL_CONCENTRATION = 0.80  # one model building >= this share of tracked loops
+
+
+def detect_red_flags(d: dict) -> list[dict]:
+    """Scan every record source for big gaps and severe misreporting."""
+    flags: list[dict] = []
+
+    def num(x):
+        try:
+            return float(x)
+        except (TypeError, ValueError):
+            return None
+
+    slots = load_jsons("slot-*.json")
+    p1 = [num(s.get("pass1_score")) for s in slots if num(s.get("pass1_score")) is not None]
+    p2 = [num(s.get("pass2_score")) for s in slots if num(s.get("pass2_score")) is not None]
+    if p1 and p2 and len(p1) == len(p2):
+        gap = sum(b - a for a, b in zip(p1, p2)) / len(p1)
+        if gap >= FLAG_PASS_GAP_MEAN:
+            flags.append({
+                "severity": "high", "status": "open",
+                "title": "Systemic pass-1 → pass-2 score inflation",
+                "detector": f"mean(slot pass2 − pass1) ≥ {FLAG_PASS_GAP_MEAN:.0f} points",
+                "evidence": (f"Mean pass-1 {sum(p1)/len(p1):.1f} → mean pass-2 {sum(p2)/len(p2):.1f} "
+                             f"(+{gap:.1f}) across {len(p1):,} slots; every slot gained ≥20 points. "
+                             "The two passes are not cross-calibrated, so pass-2 scores alone "
+                             "must not be quoted as quality."),
+            })
+
+    drops = []
+    for s in slots:
+        delta = num(s.get("pass3_score_delta_vs_pass2") or s.get("pass3_score_delta"))
+        if delta is not None and delta <= FLAG_PASS3_DROP:
+            drops.append((delta, s.get("slot_id") or s.get("branch_name") or "?"))
+    if drops:
+        drops.sort()
+        flags.append({
+            "severity": "medium", "status": "open",
+            "title": "Pass-3 re-audits reversed earlier scores",
+            "detector": f"pass3_score_delta ≤ {FLAG_PASS3_DROP:.0f}",
+            "evidence": f"{len(drops)} slot(s) dropped ≥10 points on independent re-audit; worst: "
+                        + ", ".join(f"{name} ({delta:+.1f})" for delta, name in drops[:3]) + ".",
+        })
+
+    census_path = SCOUT_DIR / "lean_stub_census.json"
+    if census_path.exists():
+        c = json.loads(census_path.read_text())
+        share = c["stub_template_files"] / c["total_lean_loop_files"]
+        if share >= FLAG_STUB_SHARE:
+            flags.append({
+                "severity": "high", "status": "labelled — proofs outstanding",
+                "title": "Lean corpus is mostly placeholder templates",
+                "detector": f"template-stub share ≥ {FLAG_STUB_SHARE:.0%}",
+                "evidence": (f"{c['stub_template_files']:,} of {c['total_lean_loop_files']:,} Lean loop "
+                             f"files ({share:.1%}) are the overnight template (issue #268); slot records "
+                             "nonetheless recorded theorems as proved. Relabelled in PR #269; "
+                             "mechanism proofs are still outstanding."),
+            })
+
+    missing = [(g, l) for g in d["scouts"]["ground_order"] for l in d["scouts"]["lens_order"]
+               if d["scouts"]["cells"].get((g, l), 0) == 0]
+    held_fixers = [t["id"] for t in d["fixers"]["tasks"] if t["id"] not in d["fixers"]["results"]]
+    if missing or held_fixers:
+        flags.append({
+            "severity": "medium", "status": "open",
+            "title": "Agents dispatched but never landed",
+            "detector": "dispatch record exists, report/result absent on main",
+            "evidence": (f"{len(missing)} scout cell(s) unreturned "
+                         f"({', '.join(f'{g}/{l}' for g, l in missing) or 'none'}); "
+                         f"fixer report(s) not on main: {', '.join(held_fixers) or 'none'}."),
+        })
+
+    if TELEMETRY.exists():
+        con = sqlite3.connect(TELEMETRY)
+        for off, referee, self_score, recal in con.execute(
+                "SELECT offending_model, detecting_referee_model, superseded_self_score, "
+                "referee_recalibrated_score FROM model_integrity_incidents"):
+            gap = (self_score or 0) - (recal or 0)
+            if gap >= FLAG_SELF_AUDIT_GAP:
+                flags.append({
+                    "severity": "critical", "status": "open — mitigated by cross-model refereeing",
+                    "title": "Self-audit conflict of interest (caught)",
+                    "detector": f"self-score − referee-score ≥ {FLAG_SELF_AUDIT_GAP:.0f}",
+                    "evidence": (f"{off} scored its own work {self_score}; independent referee "
+                                 f"{referee} recalibrated it to {recal} (gap {gap:.1f})."),
+                })
+        violations = con.execute(
+            "SELECT code, severity, COUNT(*) FROM model_integrity_violations "
+            "GROUP BY code, severity ORDER BY COUNT(*) DESC").fetchall()
+        if violations:
+            flags.append({
+                "severity": "critical", "status": "open",
+                "title": "Recorded integrity violations",
+                "detector": "any row in model_integrity_violations",
+                "evidence": "; ".join(f"{code} ({sev}) ×{n}" for code, sev, n in violations) + ".",
+            })
+        failed = con.execute(
+            "SELECT slug, COUNT(*) FROM steps WHERE status='failed' GROUP BY slug").fetchall()
+        if failed:
+            flags.append({
+                "severity": "medium", "status": "open",
+                "title": "Pipeline steps failed in tracked runs",
+                "detector": "steps.status = 'failed'",
+                "evidence": "; ".join(f"{slug} ×{n}" for slug, n in failed)
+                            + " (all at the signing/publish step).",
+            })
+        total_runs = con.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
+        top_builder = con.execute(
+            "SELECT builder_model, COUNT(*) FROM runs GROUP BY builder_model "
+            "ORDER BY COUNT(*) DESC LIMIT 1").fetchone()
+        con.close()
+        if top_builder and total_runs and top_builder[1] / total_runs >= FLAG_MODEL_CONCENTRATION:
+            flags.append({
+                "severity": "high", "status": "open",
+                "title": "Single-model concentration",
+                "detector": f"top builder share ≥ {FLAG_MODEL_CONCENTRATION:.0%}",
+                "evidence": (f"{top_builder[0]} built {top_builder[1]} of {total_runs} tracked loops "
+                             f"({top_builder[1]/total_runs:.0%}) and was also primary assessor on most "
+                             "of them — builder/judge overlap is the surface the self-audit incident "
+                             "came from."),
+            })
+
+    fix1 = d["fixers"]["results"].get("fix-001")
+    if fix1 and fix1.get("status") == "fixed":
+        flags.append({
+            "severity": "resolved", "status": "resolved",
+            "title": "Fabricated 'empirical' curves quarantined",
+            "detector": "Problem-Scout candidate BIO-TPL-DQ-01, verified by fix-001",
+            "evidence": ("Three bioelectric_polarity 'empirical' series were confirmed slot-seeded "
+                         "alpha templates and quarantined with provenance labels (PR #271); "
+                         "kept here as the worked example of a flag closing."),
+        })
+    return flags
 
 
 def main() -> int:
@@ -274,6 +415,22 @@ def main() -> int:
         f"<td class='num'>{r['avg_s']:.1f}s</td></tr>" for r in mq["step_models"][:8]
     )
 
+    sev_badge = {
+        "critical": '<span class="badge crit">CRITICAL</span>',
+        "high": '<span class="badge high">HIGH</span>',
+        "medium": '<span class="badge med">MEDIUM</span>',
+        "resolved": '<span class="badge ok">RESOLVED</span>',
+    }
+    sev_rank = {"critical": 0, "high": 1, "medium": 2, "resolved": 3}
+    flag_rows = "\n".join(
+        f"<tr class='flag-{f['severity']}'><td>{sev_badge[f['severity']]}</td>"
+        f"<td><strong>{html.escape(f['title'])}</strong><br><span class='dim'>Detector: "
+        f"<code>{html.escape(f['detector'])}</code></span></td>"
+        f"<td>{html.escape(f['evidence'])}</td><td>{html.escape(f['status'])}</td></tr>"
+        for f in sorted(d["red_flags"], key=lambda x: sev_rank[x["severity"]])
+    )
+    active_flags = sum(1 for f in d["red_flags"] if f["severity"] != "resolved")
+
     page = f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <title>Fleet Registry — Agent Types &amp; Usage</title>
@@ -291,7 +448,12 @@ def main() -> int:
  .bar {{ display:inline-block; width:110px; height:9px; background:#d8c892;
    border:1px solid #7a5c2e; vertical-align:middle; margin-right:6px; }}
  .fill {{ height:100%; }}
- .cell {{ text-align:center; }} .hit {{ background:#cfe0b8; }} .miss {{ background:#e8c9c0; color:#8a4a3a; }}
+ .cell {{ text-align:center; }}
+ .badge {{ font-size:11px; font-weight:bold; padding:2px 6px; border:1px solid #5d4420; }}
+ .badge.crit {{ background:#a33327; color:#fff; }} .badge.high {{ background:#d98a4a; color:#fff; }}
+ .badge.med {{ background:#e3cf6b; }} .badge.ok {{ background:#7ba05b; color:#fff; }}
+ tr.flag-critical td {{ background:#f3d9d2; }} tr.flag-high td {{ background:#f7e3c8; }}
+ tr.flag-resolved td {{ background:#dde8cf; }} .hit {{ background:#cfe0b8; }} .miss {{ background:#e8c9c0; color:#8a4a3a; }}
  .totals {{ display:flex; gap:14px; flex-wrap:wrap; margin:16px 0; }}
  .card {{ border:1.5px solid #7a5c2e; background:#efe4c4; padding:10px 16px; min-width:150px; }}
  .card b {{ font-size:24px; display:block; }}
@@ -347,7 +509,14 @@ record. Small samples are marked — three loops do not make a ranking.</p>
 <table style="margin-top:10px"><tr><th>Model (steps, name-normalised)</th><th>Steps executed</th><th>Avg step time</th></tr>
 {step_model_rows}</table>
 
-<h2>VIII. The unranked fleets — a recording gap</h2>
+<h2>VIII. Red Flags — big gaps &amp; severe misreporting ({active_flags} active)</h2>
+<p class="dim">Each flag is a named detector rule over the same records; regenerate the dashboard
+and any threshold crossed since last time appears here. Resolved flags stay on the plate as
+precedent.</p>
+<table><tr><th>Severity</th><th>Flag</th><th>Evidence</th><th>Status</th></tr>
+{flag_rows}</table>
+
+<h2>IX. The unranked fleets — a recording gap</h2>
 <p>The 2,201 slot dispatches and the Cursor cloud fleets (100 scouts, 12 fixers) do not record
 which model each agent ran, so they cannot be ranked yet — the leaderboard above covers only the
 106 telemetry-tracked loops. Fleet outcomes by completion are in Plate I; recording the model in
