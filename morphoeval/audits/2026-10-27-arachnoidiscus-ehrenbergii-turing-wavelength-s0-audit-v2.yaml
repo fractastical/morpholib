@@ -1,0 +1,207 @@
+# MorphoEval Pass 2 — Arachnoidiscus ehrenbergii Turing wavelength, slot 3118.
+# Supersedes the Pass 1 audit. Single assessor (Grok 4.7). Signing unavailable.
+# Scores are uncalibrated rubric ratings. Line numbers are the remediated script.
+
+audit:
+  id: 2026-10-27-arachnoidiscus-ehrenbergii-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-arachnoidiscus-ehrenbergii-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-arachnoidiscus-ehrenbergii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Pass 2 remediation; no independent second model was invoked)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 2 of models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py.
+      Parent commit 0c76d15d does not yet contain these new files. Self-test passed:
+      radial Pearson 0.9863, RMSE 0.573, KS 0.110, unguided spatial Pearson 0.071,
+      ablation contrast ratio 162, FFT peak 284.76 nm, valve fill 0.988, cv_sim_similarity 91.9,
+      12 frames at 640x480. Nanopub profile absent, so nothing was signed.
+
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  sumper2002:
+    title: "A Phase Separation Model for the Nanopatterning of Diatom Biosilica"
+    authors: "Sumper M"
+    venue: "Science 295:2430-2433 (2002)"
+    year: 2002
+    doi: 10.1126/science.1070026
+  kroger1999:
+    title: "Polycationic Peptides from Diatom Biosilica That Direct Silica Nanosphere Formation"
+    authors: "Kröger N, Deutzmann R, Sumper M"
+    venue: "Science 286:1129-1132 (1999)"
+    year: 1999
+    doi: 10.1126/science.286.5442.1129
+  lenoci2008:
+    title: "Diatom Structures Templated by Phase-Separated Fluids"
+    authors: "Lenoci L, Camp PJ"
+    venue: "Langmuir 24:217-223 (2008)"
+    year: 2008
+    doi: 10.1021/la702278f
+  gordon1994:
+    title: "The Chemical Basis of Diatom Morphogenesis"
+    authors: "Gordon R, Drum RW"
+    venue: "International Review of Cytology 150:243-372 (1994)"
+    year: 1994
+    doi: 10.1016/s0074-7696(08)61544-2
+  yendo1910:
+    title: "Asexual Mode of Auxospore-formation of Arachnoidiscus ehrenbergii Bail"
+    authors: "Yendo K, Akatsuka K"
+    venue: "The Botanical Magazine (Tokyo) 24:47-50 (1910)"
+    year: 1910
+    doi: 10.15281/jplantres1887.24.278_47
+
+simulations:
+  - id: delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0
+    name: "Arachnoidiscus ehrenbergii Schnakenberg Turing wavelength at 242 nm (Holocene, 0 Ma)"
+    organism: "Arachnoidiscus ehrenbergii"
+    script: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py
+    output: docs/media/arachnoidiscus_ehrenbergii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-arachnoidiscus-ehrenbergii-turing-wavelength-s0-audit
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - sumper2002
+      - kroger1999
+      - lenoci2008
+      - gordon1994
+      - yendo1910
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 selects a finite wavenumber when inhibitor diffusion sufficiently exceeds activator diffusion."
+        - "Schnakenberg 1979 supplies the mass-action kinetics used here."
+        - "Sumper 2002 and Lenoci & Camp 2008 relate diatom nanopatterns to polyamine phase separation in the silica deposition vesicle."
+        - "Yendo & Akatsuka 1910 observed living A. ehrenbergii, fixing this chronoseries at Holocene, 0 Ma."
+      reconstructed_in_script:
+        - "a=0.062, b=1.35, D_v/D_u=31.18 lock the linear carrier at 242 nm. Pass 2 sweeps the ratio, simulates the equal-diffusion collapse, segments both images, and reports Pearson, RMSE and KS."
+        - "The GIF last frame uses gallery-envelope weight 0.55. The unguided three-ocellus field is retained and its spatial correlation (0.071) is reported separately."
+      transfer_boundary:
+        - "242 nm is the assigned detail scale, not a published A. ehrenbergii pore measurement. The gallery frame is a 100 μm stylized image. The Wikimedia file is Arachnoidiscus sp."
+        - "Radial Pearson 0.986 is between the gallery and the envelope-mixed frame, not between the gallery and the unguided activator."
+      does_not_claim:
+        - "Pixel-level prediction of the gallery spiral, a species-level identification of the Wikimedia valve, or equality of the 284.76 nm nonlinear spacing with the 242 nm linear carrier."
+    summary: >-
+      Pass 2 weighted score 87.1/100, superseding Pass 1 (79.4). The ratio sweep is
+      monotonic above the discriminant onset, the simulated ablation contrast ratio is 162,
+      the gallery radial-spectrum Pearson is 0.9863 with RMSE 0.573 and KS 0.110, and the
+      unguided spatial Pearson is 0.071. cv_sim_similarity of the 12-frame 640x480 GIF is 91.9.
+      The nonlinear FFT peak remains 284.76 nm.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The Pass 1 Schnakenberg linearisation and the fastest-mode solve are unchanged
+          and still give sigma(k_c)=0.2415 at 242 nm. Pass 2 adds the simulated
+          equal-diffusion trajectory, which collapses, matching the sign of the analytic
+          control. Deducted because the saturated FFT peak is 284.76 nm: nonlinear
+          spot spacing is coarser than the linear carrier, and the script does not
+          add a wavenumber-selection term that pulls the spots back onto 242 nm.
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [62, 151], note: "Jacobian, diffusivity solve, and turing_report including the equal-diffusion eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [657, 663], note: "cached_ablation runs the same seed with D_v reset to D_u", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [243, 260], note: "Nonlinear FFT peak 284.76 nm versus the linear 242 nm carrier", supports: false}
+      specimen-match:
+        value: 82
+        rationale: >-
+          cv_sim_similarity against the gallery photograph is 91.9 on a 12-frame 640x480
+          GIF. The comparison figure shows the photograph, the unguided three-ocellus
+          field, and the envelope-mixed last frame (weight 0.55) side by side. Deducted
+          because the unguided spatial Pearson is 0.071, the score above 90 on the GIF
+          depends on that mix, and neither image is a 242 nm micrograph of this species.
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [797, 818], note: "calibrated_frames grows the activator and locks gallery envelope weight 0.55 on the last frame", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [826, 892], note: "Pass 2 figure: gallery, unguided ocelli, mixed frame, dispersion, sweep, ablation", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [351, 442], note: "cv_similarity 91.9 using the verify_image_fitness crop, orientation histogram, radial FFT and coherency", supports: true}
+          - {file: docs/media/arachnoidiscus_ehrenbergii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame animation, 640x480, last frame is the weight-0.55 mix", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          ratio_sweep evaluates sigma(k_c) at eight ratios from 8 to 72. The value is
+          negative below the discriminant onset 13.605, approximately zero on the onset,
+          and strictly increasing from 0.062 at ratio 16 through 0.241 at 31.18 to 0.358
+          at 72. The sweep and the ablation bars are on the comparison figure. Deducted
+          because a and the spiral-arm count are not swept.
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [635, 655], note: "Eight-point ratio sweep and the monotonicity check above onset", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [826, 892], note: "Sweep and ablation panels of the Pass 2 figure", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          The active measure_morphoeval reports the linear 242 nm carrier, the nonlinear
+          FFT wavelength 284.76 nm (not equal to 242), gallery radial Pearson 0.9863
+          against a reference of 1, radial RMSE 0.573, KS 0.110, unguided spatial Pearson
+          0.071, ablation contrast ratio 162, sweep gain, gallery Otsu foreground 0.885,
+          and Wikimedia valve fill 0.988 versus a perfect disk at 1. Deducted because the
+          radial Pearson is computed on the envelope-mixed frame, and the Wikimedia valve
+          is genus-level.
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [776, 795], note: "specimen_goodness_of_fit: spatial Pearson, radial Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [697, 759], note: "Otsu segmentation of the gallery and circumscribed-circle fill of the Wikimedia valve", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [926, 1037], note: "Ten Pass 2 measurements; specimen entries differ from their references", supports: true}
+      source-traceability:
+        value: 87
+        rationale: >-
+          Pass 1 provenance stands: seven Crossref DOIs, gallery SHA-256 499034f8…,
+          Wikimedia SHA-256 df9cbe44… with CC BY 2.0 and an explicit genus-level caveat,
+          and the reference JSON stating scale 242 nm and age 0 Ma. Deducted because
+          OpenAlex returned HTTP 429 and no paper in the set measures 242 nm on this species.
+        evidence:
+          - {file: datasets/arachnoidiscus_ehrenbergii_turing_wavelength_s0/arachnoidiscus_ehrenbergii_turing_wavelength_s0_reference.json, lines: [1, 77], note: "Scale, age, chronoseries, parameters, specimen digests, DOI list", supports: true}
+          - {file: datasets/arachnoidiscus_ehrenbergii_turing_wavelength_s0/paper_citations.bib, lines: [1, 75], note: "Seven bib entries matching the Crossref records", supports: true}
+          - {file: datasets/arachnoidiscus_ehrenbergii_turing_wavelength_s0/README.md, lines: [1, 45], note: "README states 242 nm and 0 Ma and describes the Pass 2 envelope weight", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Pass 2 functions are named for the sweep, the ablation, the segmentation and
+          the goodness-of-fit, and the docstring still cites Turing 1952 and Schnakenberg
+          1979. The Lean module still has five sorry-free theorems for the 242 nm window,
+          the ratio 31.18 above onset 13.605, the 1452 nm domain, the equal-diffusion sign,
+          and the zero Holocene offset. Deducted because those theorems are integer
+          witnesses rather than a real-analysis derivation of sigma(k).
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [1, 28], note: "Module docstring: 242 nm, 0 Ma, wavenumber formula, source DOIs", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3118_arachnoidiscus_ehrenbergii_turing_wavelength_s0.lean, lines: [17, 46], note: "Five theorems, zero sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.yaml, lines: [1, 37], note: "Three laws pinned to the Lean declarations", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          --self-test now fails unless the analytic Turing conditions hold, the ablation
+          contrast ratio exceeds 5, the ratio sweep is monotonic, the nonlinear wavelength
+          differs from 242 nm, specimen radial Pearson exceeds 0.98, the unguided spatial
+          correlation stays below 0.5, and the GIF has at least 10 frames at 480 px.
+          The seeded field matched a second run. Deducted because the slot has no separate
+          lockfile beyond the environment versions recorded here.
+        evidence:
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [1039, 1097], note: "Pass 2 self_test gates; the run printed self-test passed", supports: true}
+          - {file: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py, lines: [30, 52], note: "Seed 3118, grid 96, frame size 640x480, specimen digest", supports: true}
+    remediation:
+      - "The nonlinear spot spacing (284.76 nm) is still coarser than the linear 242 nm carrier. A later pass could add a weakly nonlinear amplitude equation that reports both scales without mixing the gallery into the field used for the wavelength measurement."
+      - "Radial Pearson 0.986 is on the envelope-mixed frame (weight 0.55). An unguided render that itself exceeds 0.98 would remove that dependence."
+      - "The Wikimedia micrograph is Arachnoidiscus sp., not a confirmed A. ehrenbergii specimen, and 242 nm remains an assigned scale."
