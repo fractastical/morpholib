@@ -1,0 +1,189 @@
+# Pass 2 — Ambystoma mexicanum Turing wavelength, 184 µm, Holocene 0 Ma.
+# Supersedes the Pass 1 audit. Noise-seeded saturation, periodic-shell
+# wavelength comparison, labeled dispersion branch point. Single assessor.
+audit:
+  id: 2026-10-27-ambystoma-mexicanum-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-ambystoma-mexicanum-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second provider still not run)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  signing: "unavailable — ~/.nanopub/profile.yml is absent; nanopubs are unsigned drafts"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: dddc48a7fadc3d15f0038b8b8ef2a781309b9d10
+    note: "Pass 2 script and regenerated comparison figure and growth GIF."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  epperlein1989:
+    title: "The development of the larval pigment patterns in Triturus alpestris and Ambystoma mexicanum"
+    authors: "Epperlein, H.-H. and Löfberg, J."
+    year: 1989
+    venue: "Advances in Anatomy, Embryology and Cell Biology (1989)"
+    doi: 10.1007/978-3-642-75056-4
+  frostmason1996:
+    title: "What insights into vertebrate pigmentation has the axolotl model system provided?"
+    authors: "Frost-Mason, S. K. and Mason, K. A."
+    year: 1996
+    venue: "The International Journal of Developmental Biology 40:685-693 (1996)"
+    doi: 10.1387/ijdb.8877441
+  epperlein1988:
+    title: "Identification of pigment cells during early amphibian development (Triturus alpestris, Ambystoma mexicanum)"
+    authors: "Epperlein, H.-H., Ziegler, I. and Perris, R."
+    year: 1988
+    venue: "Cell and Tissue Research 253 (1988)"
+    doi: 10.1007/bf00219740
+  erickson1993:
+    title: "From the crest to the periphery: control of pigment cell migration and lineage segregation"
+    authors: "Erickson, C. A."
+    year: 1993
+    venue: "Pigment Cell Research 6:336-347 (1993)"
+    doi: 10.1111/j.1600-0749.1993.tb00611.x
+simulations:
+  - id: delphi10000-ambystoma-mexicanum-turing-wavelength-s0
+    name: "Ambystoma mexicanum Schnakenberg onset wavelength at 184.3 µm (Pass 2)"
+    organism: "Ambystoma mexicanum"
+    script: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py
+    output: docs/media/ambystoma_mexicanum_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-ambystoma-mexicanum-turing-wavelength-s0-audit
+    source_refs: [turing1952, murray1981, epperlein1989, frostmason1996, epperlein1988, erickson1993]
+    summary: >-
+      Same onset law as Pass 1: Schnakenberg (a, b) = (0.10, 0.90), Dv/Du = 9,
+      λ_c = 184.3 µm = 0.0001843 m, Holocene age 0 Ma, eight-wavelength periodic
+      patch. The nonlinear run now starts from noise (seed 3107) plus a shallow
+      domain-scale source gradient, and the dominant shell that emerges is
+      n = 8 (184.3 µm). Band-weighted wavelength is 176.47 µm. Continuum versus
+      periodic-shell sweep: Pearson r = 0.9996, RMSE = 2.02 µm. Ratio sweep
+      9 → 14 moves the fastest wavelength from 187.2 µm to 212.1 µm. Ablation
+      Dv = Du keeps max σ = −0.10. Specimen dark fraction 0.380 versus model
+      0.314; coherency 0.485 versus 0.904; luminance KS = 0.302; radial-spectrum
+      r = 0.910. Computer-vision similarity of the 12-frame 640 px GIF against
+      the micrograph is 87.5. The micrograph still has no scale bar.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and diffusion-driven instability"
+        - "Murray 1981 coat pre-pattern and domain-growth scale argument"
+        - "Epperlein & Löfberg 1989 larval Ambystoma mexicanum pigment pattern"
+        - "Frost-Mason & Mason 1996 review of axolotl pigmentation"
+      reconstructed_in_script:
+        - "Schnakenberg parameters with Du set so the onset wavelength is 184.3 µm"
+        - "Noise-seeded spectral integration and a shallow source gradient of amplitude 0.12"
+        - "Periodic-shell quantization of the continuum wavelength, ratio sweep, and Dv = Du ablation"
+        - "Quantile segmentation and structure-tensor coherency of the CC BY-SA micrograph"
+      transfer_boundary:
+        - "184.3 µm is the slot scale coordinate, not a number measured on the photograph"
+        - "The source gradient is a reconstruction that keeps the patch from crystallizing; it is not in the constant-coefficient Turing paper"
+        - "Adult ocellus size is a longer scale of this same Holocene species, not a successor chronospecies"
+      does_not_claim:
+        - "That stellate melanophore geometry is generated by the PDE"
+        - "A micrometre scale bar on the Wikimedia micrograph"
+        - "A second independent assessor"
+    scores:
+      model-fidelity:
+        value: 89
+        rationale: >-
+          The homogeneous law is unchanged and checked: trace −0.2, det 1,
+          ratio 9 above r_c ≈ 8.568, onset wavenumber fixed at 2π/184.3 µm,
+          linear fastest mode 187.19 µm. Pass 2 integrates from noise. The
+          shell that wins is n = 8, the onset shell, rather than a mode that
+          was planted in the initial condition. A shallow source gradient of
+          amplitude 0.12 is an extra term, stated as such. The dispersion
+          cusp is the discriminant branch point (vertical tangent where
+          disc = 0), drawn on a 900-point grid and labeled.
+        evidence:
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [140, 165], note: "continuous real part of σ(k); cusp at disc = 0", supports: true}
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [234, 289], note: "noise seed, shallow a(x), spectral step", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Panel B is now a broken spot-and-labyrinth field in the micrograph's
+          circular stop, colored with melanophore and xanthophore means taken
+          from the photograph, beside the real dendritic chromatophores.
+          It is the same kind of image and no longer a perfect crystal.
+          Coherency is still 0.904 against 0.485: the render is smoother and
+          more locally aligned than stellate cells, and the blue edge of the
+          micrograph is not in the model. Not a pixel copy. GIF-to-specimen
+          computer-vision similarity on the last frame is 87.5.
+        evidence:
+          - {file: docs/media/ambystoma_mexicanum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 2 side-by-side", supports: true}
+          - {file: docs/media/ambystoma_mexicanum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640 px growth, last frame scored", supports: true}
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [328, 368], note: "palette and circular display mask", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Diffusivity scale s moves the fastest wavelength from about 112 µm
+          to about 337 µm, and the periodic shell tracks it (figure C).
+          Raising Dv/Du from 9 to 14, with the onset wavenumber held fixed,
+          moves the fastest wavelength monotonically from 187.2 µm to 212.1 µm.
+          Dv = Du remains stable.
+        evidence:
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [172, 219], note: "wavelength_sweep and ratio_sweep", supports: true}
+          - {file: docs/media/ambystoma_mexicanum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panels C and D", supports: true}
+      morphometric-validation:
+        value: 87
+        rationale: >-
+          Continuum versus periodic-shell Pearson r = 0.999595, RMSE = 2.02 µm,
+          residual CV = 0.0089. The reference for r is 1, and the measured
+          value is not 1. Linear fastest wavelength 187.19 µm versus onset
+          184.3 µm. Noise-selected shell 184.3 µm (n = 8). Band-weighted
+          wavelength 176.47 µm, which is not the reference. Specimen dark
+          fraction 0.380 versus model 0.314. Specimen coherency 0.485 versus
+          model 0.904. Luminance KS = 0.302. Radial-spectrum r = 0.910.
+          No specimen number is copied onto its reference, and the photo is
+          not given a false micrometre scale.
+        evidence:
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [577, 699], note: "measurement table including band-weighted wavelength and KS", supports: true}
+          - {file: datasets/ambystoma_mexicanum_turing_wavelength_s0/ambystoma_mexicanum_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "Pass 2 numeric dump", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Unchanged provenance from Pass 1, still accurate after the rerun:
+          Crossref DOIs, CC BY-SA 4.0 chromatophore original, SHA-256
+          cc106cdbb5c28a40a47946801d35e6f13ada02665b8c773180123279a6cf22c8,
+          and an explicit statement that 0.0001843 m is the scale coordinate.
+        evidence:
+          - {file: datasets/ambystoma_mexicanum_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "six citations", supports: true}
+          - {file: datasets/ambystoma_mexicanum_turing_wavelength_s0/ambystoma_mexicanum_turing_wavelength_s0_reference.json, lines: [1, 40], note: "0.0001843 m, 0 Ma, specimen digest", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Docstring, dispersion function, and Lean module MathOfBiology.Loop_3107
+          still name the same Jacobian integers, the eight-wavelength patch,
+          and the positive onset numerator. Pass 2 comments separate the
+          homogeneous onset law from the shallow source gradient. Lean was
+          not executed in this environment (no lean binary); the proofs are
+          decide/integer and contain no sorry.
+        evidence:
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [1, 48], note: "PDE header", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3107_ambystoma_mexicanum_turing_wavelength_s0.lean, lines: [1, 62], note: "five theorems, zero sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3107, --self-test, pinned digest, deterministic spectral step.
+          Pass 2 self-test passed: fastest λ 187.19 µm, Pearson r 0.9996,
+          ablation σ −0.10, GIF 640×640 × 12 frames. Signing keys are absent,
+          which is recorded rather than simulated.
+        evidence:
+          - {file: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py, lines: [708, 770], note: "assert_science and main", supports: true}
+          - {file: docs/media/ambystoma_mexicanum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "animation gate", supports: true}
+    remediation:
+      - "R5 remains open: this pass is still a single assessor (Grok 4.7). No second provider was available, and none was invented."
+      - "Resolved from Pass 1 R1: the cos+cos lattice is no longer the initial condition. The n=8 shell is selected from noise."
+      - "Resolved from Pass 1 R2: periodic-shell comparison gives Pearson r 0.999595 and RMSE 2.02 µm, not a bitwise copy of the reference 1."
+      - "Resolved from Pass 1 R3: the dispersion cusp is labeled as the disc=0 branch point and sampled on 900 wavenumbers."
+      - "Partly resolved from Pass 1 R4: the field is a broken labyrinth rather than a crystal. Coherency is still 0.904 versus 0.485, so stellate cell geometry is not claimed."
