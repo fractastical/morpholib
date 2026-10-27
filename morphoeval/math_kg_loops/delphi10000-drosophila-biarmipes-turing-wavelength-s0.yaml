@@ -1,0 +1,91 @@
+sim_id: delphi10000-drosophila-biarmipes-turing-wavelength-s0
+slot: 3177
+organism: Drosophila biarmipes
+phenomenon_size_m: 1.486e-06
+log10_size_m: -5.828
+size_human: "1.5 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila biarmipes (1.5 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora suzukii–biarmipes Wing-Spot Clade"
+chronoseries_predecessor: Drosophila ananassae
+chronoseries_successor: Drosophila bipectinata
+math_family: Reaction-Diffusion & Turing Dispersion (1. Chemical Turing / RD)
+model_spec:
+  kinetics: Schnakenberg
+  lambda_c_um: 1.486
+  patch_side_um: 17.832
+  grid_n: 96
+  Du_um2: 0.010351010904
+  Dv_um2: 0.372636392556
+  seed: 3177
+  age_ma: 0.0
+  inputs:
+    - datasets/drosophila_biarmipes_turing_wavelength_s0/drosophila_biarmipes_turing_wavelength_s0_reference.json
+    - datasets/drosophila_biarmipes_turing_wavelength_s0/drosophila_biarmipes_specimen.jpg
+    - datasets/drosophila_biarmipes_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_biarmipes_turing_wavelength_s0/scout_manifest.json
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Jacobian trace at the biarmipes steady state
+    formula: "tr J = f_u + g_v = -0.2 < 0"
+    lean_decl: MathOfBiology.Loop_3177.jacobianTraceMilli
+    lean_theorem: MathOfBiology.Loop_3177.jacobian_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L23-L24
+    variables: "f_u = 0.800, g_v = -1.000 at (a, b) = (0.10, 0.90)"
+    role: Well-mixed steady state is not a source at the 1.5 µm detail scale
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; spot CRE Gompel 2005 DOI:10.1038/nature03235"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+  - law_name: Jacobian determinant
+    formula: "det J = f_u g_v - f_v g_u = 1 > 0"
+    lean_decl: MathOfBiology.Loop_3177.jacobianDetMicro
+    lean_theorem: MathOfBiology.Loop_3177.jacobian_det_positive
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L30-L31
+    variables: "f_u, f_v, g_u, g_v in thousandths"
+    role: Both eigenvalues of J are stable before diffusion is introduced
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+  - law_name: Turing diffusion inequality at 1.486 µm
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det J"
+    lean_decl: MathOfBiology.Loop_3177.turing_diffusion_inequality
+    lean_theorem: MathOfBiology.Loop_3177.turing_diffusion_inequality
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L37-L40
+    variables: "D_u = 0.010351 µm², D_v = 0.372636 µm²"
+    role: Diffusion-driven instability selects the 1.5 µm pigment wavelength
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+  - law_name: Twelve wavelengths on the 17.832 µm patch
+    formula: "N = L / lambda_c = 17832 / 1486 = 12"
+    lean_decl: MathOfBiology.Loop_3177.detail_patch_holds_twelve_wavelengths
+    lean_theorem: MathOfBiology.Loop_3177.detail_patch_holds_twelve_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L44-L46
+    variables: "L = 17.832 µm, lambda_c = 1.486 µm"
+    role: Mode count at the detail scale (intensive wavelength, extensive count)
+    source_citation: "Kondo & Miura 2010 DOI:10.1126/science.1179047"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+  - law_name: Successor autocatalysis is stronger
+    formula: "f_u(bipectinata) = 33/37 > 4/5 = f_u(biarmipes)"
+    lean_decl: MathOfBiology.Loop_3177.successor_autocatalysis_stronger
+    lean_theorem: MathOfBiology.Loop_3177.successor_autocatalysis_stronger
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L52-L54
+    variables: "bipectinata (a, b) = (0.06, 1.05); biarmipes (0.10, 0.90); shared D"
+    role: At 1.5 µm the successor change is a shorter wavelength, not a new organ
+    source_citation: "Prud'homme et al. 2006 DOI:10.1038/nature04597"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+  - law_name: Predecessor activator is subcritical
+    formula: "f_u(ananassae) = -0.375 < 0"
+    lean_decl: MathOfBiology.Loop_3177.predecessor_activator_subcritical
+    lean_theorem: MathOfBiology.Loop_3177.predecessor_activator_subcritical
+    lean_locus: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean#L59-L61
+    variables: "ananassae (a, b) = (0.55, 0.25) at the biarmipes diffusivities"
+    role: Without the spot-enhancer balance the 1.5 µm band does not open
+    source_citation: "Gompel et al. 2005 DOI:10.1038/nature03235"
+    code_locus: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
