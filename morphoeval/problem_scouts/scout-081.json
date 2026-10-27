@@ -1,0 +1,319 @@
+{
+  "scout": "scout-081",
+  "ground": "nanopub",
+  "lens": "literature",
+  "candidates": [
+    {
+      "id": "NP081-CHEM-SCOUT-V2",
+      "title": "Chemotactic stripe-splitting KG: superseded OpenAlex title in SHA-pinned scout_manifest",
+      "gap": "The signed nanopub bundle morphoeval/kg/2026-10-19-chemotactic-stripe-splitting-audit-v3/ still embeds source-traceability evidence tied to scout_manifest.json (SHA 4b4e20a9…), whose seed title is the non-existent string \"Stripe and spotilihood in chemotactic pattern formation\" while the audit v3 canonical title is Painter, Maini & Othmer (1999) PNAS 96(10):5549–5554 (doi:10.1073/pnas.96.10.5549, PMID 10318921).",
+      "done": "A new scout dossier file datasets/chemotactic_stripe_splitting/scout_manifest_v2.json exists whose candidate_papers_openalex[0].doi equals 10.1073/pnas.96.10.5549 and whose title contains \"Stripe formation in juvenile Pomacanthus\"; morphoeval/kg/…/painter-chemotactic-stripe-splitting-source-traceability.trig (or its signed successor) cites that v2 manifest SHA-256 in pk:evidenceFor without editing the pinned v1 manifest bytes.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Stripe formation juvenile Pomacanthus Turing chemotaxis Painter Maini Othmer 1999\" --out datasets/chemotactic_stripe_splitting/scout_manifest_v2.json",
+      "deciding_data": "In repo: datasets/chemotactic_stripe_splitting/README.md (Pass 3 correction), morphoeval/audits/2026-10-19-chemotactic-stripe-splitting-audit-v3.yaml (remediation bullet on scout_manifest_v2). Public: OpenAlex/Crossref record for doi:10.1073/pnas.96.10.5549.",
+      "prior_attempts": "Pass 3 audit v3 (2026-10-19) corrected the bib and reference JSON but left scout_manifest.json byte-identical for hash pinning; KG source-traceability nanopub still documents the superseded title.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "scout_literature.py emits the corrected OpenAlex record and specimen block as a new JSON dossier without touching pinned v1."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Correct DOI and title are already documented in-repo; OpenAlex resolves the same DOI online."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Done is a file existence check plus exact DOI/title substring match in scout_manifest_v2.json."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Single CLI call plus a new JSON file; no simulation or wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Adds scout_manifest_v2.json only; v1 pin and existing trig files stay untouched until a separate remediation agent updates KG."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One scout_literature run and JSON inspection close the literature-discovery step."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit v3 explicitly requests scout_manifest_v2; no prior attempt refuted literature lookup for this DOI."
+        }
+      }
+    },
+    {
+      "id": "NP081-POMACANTHUS-SPECIMEN",
+      "title": "Chemotactic stripe-splitting KG specimen-match: vendored Pomacanthus photograph",
+      "gap": "The signed specimen-match nanopub (morphoeval/kg/2026-10-19-chemotactic-stripe-splitting-audit-v3/painter-chemotactic-stripe-splitting-specimen-match.trig) scores 90/100 but states no Pomacanthus photograph is vendored, so Panel H curvature-dependent stripe geometry is not validated against a fish (only Kondo & Asai stripe counts).",
+      "done": "scout_literature returns at least one candidate_specimens_wikimedia entry with license in {CC BY, CC BY-SA, Public domain} and title matching Pomacanthus semicirculatus; a follow-up remediation commit adds that image URL and SHA-256 to datasets/chemotactic_stripe_splitting/ and the KG specimen-match evidence cites the new file (Panel H no longer marked \"no photograph\").",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Pomacanthus semicirculatus juvenile pigment stripes Kondo Asai\" --taxon \"Pomacanthus semicirculatus\" --out datasets/chemotactic_stripe_splitting/pomacanthus_scout_specimens.json",
+      "deciding_data": "In repo: morphoeval/kg/…/painter-chemotactic-stripe-splitting-specimen-match.trig (deduction text). Public: Wikimedia Commons (verified 2026-10-27 run returned CC BY-SA 4.0 File:Pomacanthus semicirculatus juvenile Kasai aquarium.jpg).",
+      "prior_attempts": "Audit v3 Pass 3 added the Pomacanthus PDE model and Kondo & Asai count table but did not scout a fish specimen; Myxococcus specimen remains the only vendored photo.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "scout_literature.py Wikimedia search is the designated specimen-discovery path for Step 1 dossiers."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Commons candidates exist now; vendoring the chosen file is one download away from the scout JSON."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Scout JSON license/title checks are objective; KG update is a separate file-add remediation with a hash check."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Scout plus image fetch is minutes; segmentation validation is vision-lens follow-up."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Scout output is a new JSON under datasets/chemotactic_stripe_splitting/; image pin is an additive dataset file."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Literature/specimen discovery completes in one sitting; KG rescore is a second loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior scout run recorded a failed Commons search for this taxon."
+        }
+      }
+    },
+    {
+      "id": "NP081-CERVERA-2021-OA",
+      "title": "Cervera–Levin–Mafe audit KG: locate full-text OA for BioSystems 2021:104511",
+      "gap": "morphoeval/audits/2026-10-17-cervera-audit-v2.yaml and the linked KG claim state the full 2021 paper was unavailable during scoring, so equation-level fidelity stays unverified and model-fidelity remains 45/100 despite the script citing Cervera, Levin & Mafe (2021, BioSystems 209:104511).",
+      "done": "A scout dossier under datasets/planform/ (or models/) lists candidate_papers_openalex[0].doi == 10.1016/j.biosystems.2021.104511 with is_oa true and a non-empty oa_url; a remediation ticket records that URL as the canonical full-text source for equation audit (PK source-traceability evidence updated in a new trig bundle).",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Morphology changes induced by intercellular gap junction blocking Cervera Levin Mafe BioSystems 104511\" --out datasets/planform/cervera_2021_scout_manifest.json",
+      "deciding_data": "In repo: models/2021-Cervera–Levin–Mafe.py docstring (BioSystems 209:104511), morphoeval/audits/2026-10-17-cervera-audit-v2.yaml L172–177. Public: OpenAlex work doi:10.1016/j.biosystems.2021.104511 (hybrid OA PDF URL present as of 2026-10-27).",
+      "prior_attempts": "Cervera audit v1–v2 (2026-10-17) scored with abstract/presentation only; Pass 2 improved disclaimers but did not fetch the paper.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "scout_literature OpenAlex query returns DOI, title, and oa_url—the missing bibliographic fetch the audit lacked."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "DOI is already in the model docstring; OpenAlex resolves it without guessing."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done checks exact DOI and boolean is_oa plus non-empty oa_url in the scout JSON."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "One HTTP scout call; equation extraction is human/measure follow-up, not required for this scout step."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout JSON only; KG trig update is a separate superseding bundle."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single scout run confirms OA availability."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit explicitly blamed unavailable paper; no refutation that OA does not exist."
+        }
+      }
+    },
+    {
+      "id": "NP081-DM-MUR-DIAMETERS",
+      "title": "DM-MUR-NEG-01 KG residue: tabulated Drosophila tracheal diameters for Murray exponent test",
+      "gap": "docs/open-problems.json registered_prediction_followups DM-MUR-NEG-01 and predictions/resolutions/drosophila.json mark the negative Murray branching prediction partially_resolved: insect non-Murray bounds are established (e.g. doi:10.1371/journal.pcbi.1007853) but no Drosophila parent/daughter diameter series exists in-repo to fit against the registered 2.8–3.2 exponent band linked to drosophila_melanogaster_branching_tree datasets and audits.",
+      "done": "scout_literature output lists at least one OpenAlex hit whose title contains \"tracheal\" and \"Drosophila\" with doi resolving on Crossref, and the abstract or linked full text (human check of scout JSON oa_url) contains numeric lumen/tube diameter measurements at two or more branch orders; a tabulation CSV path is named in the scout dossier metadata for the remediation agent.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Drosophila melanogaster tracheal tube lumen diameter branch order morphometry\" --taxon \"Drosophila melanogaster\" --out datasets/drosophila_melanogaster_branching_tree/tracheal_diameter_scout.json",
+      "deciding_data": "In repo: predictions/resolutions/drosophila.json (DM-MUR-NEG-01 partial), docs/open-problems.json registered_prediction_followups. Public: OpenAlex (e.g. candidate doi:10.1371/journal.pone.0028985 \"Tramtrack… Tracheal Tube Size in Drosophila\" surfaced in targeted search 2026-10-27).",
+      "prior_attempts": "2026-10-26 resolution pass used OpenAlex for bounds papers but did not extract a Drosophila diameter table; outcome left partially_resolved by design.",
+      "factors": {
+        "tool_fit": {
+          "score": 18,
+          "why": "scout_literature finds candidate primary papers; extracting diameters from PDF figures is measure/vision follow-up."
+        },
+        "data_in_hand": {
+          "score": 11,
+          "why": "Bounds literature is in-repo; species-specific morphometry table is not yet vendored."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Scout step done is objective (DOI + Drosophila/tracheal title match); full prediction close needs numeric CSV."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Scout is fast; PDF digitization may take hours but stays in-repo."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout JSON under the branching_tree dataset directory only."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Paper discovery is one loop; tabulation and registry re-score need a second pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Partial resolution explicitly invites the missing series; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "NP081-AVIAN-SCOUT-V2",
+      "title": "Avian feather-bud KG: superseded fabricated Glimm 2014 seed in pinned scout_manifest",
+      "gap": "morphoeval/kg entries for avian_feather_bud_hexagonal cite scout_manifest.json (SHA 1ff38c1e…) that still lists the non-existent \"Glimm, Bhat & Newman (2014)\" seed paper although Pass 3 README and paper_citations.bib were Crossref-corrected to Ho et al. (2019) and Painter et al. (2018).",
+      "done": "scout_manifest_v2.json under datasets/avian_feather_bud_hexagonal/ has candidate_papers_openalex[0].doi == 10.1371/journal.pbio.3000132 (Ho et al. 2019) and no author slug \"glimm\"; KG source-traceability nanopub for 2026-10-19-avian-feather-bud-hexagonal-audit references the v2 manifest hash in a new evidence triple.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"Feather arrays patterned interacting signalling cell density waves Ho Headon 2019\" --taxon \"Gallus gallus\" --out datasets/avian_feather_bud_hexagonal/scout_manifest_v2.json",
+      "deciding_data": "In repo: datasets/avian_feather_bud_hexagonal/README.md (provenance correction), morphoeval/kg/math_of_biology.ttl (fabricated seed deduction). Public: doi:10.1371/journal.pbio.3000132 (Crossref-verified 2026-10-20 per README).",
+      "prior_attempts": "Pass 3 (2026-10-20) fixed bib and reference JSON; scout_manifest left pinned; audits v1–v2 historically cited the fake paper.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "scout_literature replaces the erroneous seed landmark with OpenAlex metadata for Ho 2019."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Correct DOIs and specimen JPG already live in the dataset; scout only materializes the dossier."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Exact DOI equality and absence of \"glimm\" in v2 JSON are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "One CLI invocation."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Additive scout_manifest_v2.json; v1 hash pin preserved."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Immediate after scout run."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Documented remediation path; not previously attempted for v2 manifest."
+        }
+      }
+    },
+    {
+      "id": "NP081-SPONGE-PASS3-DOI",
+      "title": "Sponge spicule hexactin KG: verify six offline Pass 3 DOIs via literature scout",
+      "gap": "morphoeval/audits/2026-10-19-sponge-spicule-hexactin-audit-v3.yaml and morphoeval/kg bundle score down source-traceability because datasets/sponge_spicule_hexactin/pass3_citations.bib lists six DOIs with doi_verified_offline: false (Sundar 2003, Aizenberg 2004, Woesz 2006, He & Hutchinson 1989, Hillerborg 1976, Gloge 1971).",
+      "done": "For each of the six DOIs, a scout_literature --query using the bib title returns candidate_papers_openalex[0].doi equal to the bib entry (case-insensitive); a verification manifest JSON maps doi -> openalex_id + title match flag true for all six.",
+      "tool_route": "for doi in 10.1038/424899a 10.1073/pnas.0307843101 10.1557/jmr.2006.0251; do python3 morphoeval/scout_literature.py --query \"$(grep -A2 $doi datasets/sponge_spicule_hexactin/pass3_citations.bib | head -1)\" --out datasets/sponge_spicule_hexactin/scout_verify_${doi//\\//_}.json; done && python3 -c \"merge six files -> datasets/sponge_spicule_hexactin/pass3_doi_verification_manifest.json\"",
+      "deciding_data": "In repo: datasets/sponge_spicule_hexactin/pass3_citations.bib, morphoeval/audits/2026-10-19-sponge-spicule-hexactin-audit-v3.yaml. Public: OpenAlex/Crossref for each listed DOI.",
+      "prior_attempts": "Pass 3 audit (2026-10-19) transcribed DOIs offline during a no-network pass; KG records explicit -4 source-traceability deduction.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "scout_literature OpenAlex search confirms each offline DOI against title metadata."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "All six DOIs and titles already sit in pass3_citations.bib; only verification is missing."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Six boolean DOI matches in a merged manifest JSON."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Six sequential scout calls under an hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New JSON manifests only under datasets/sponge_spicule_hexactin/."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Batch scout run; KG resign is separate."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit requested online verification when permitted; not refuted."
+        }
+      }
+    },
+    {
+      "id": "NP081-ZF-VTX-01",
+      "title": "Registered prediction ZF-VTX-01: zebrafish epiboly shape-index series from published imaging literature",
+      "gap": "docs/open-problems.json lists ZF-VTX-01 as partially_resolved: vertex-model jamming at 3.813 is established but no zebrafish EVL/epiboly measured shape-index transition inside 3.76–3.87 is tabulated; associated danio_rerio_vertex_packing dataset and KG loops lack the deciding time series.",
+      "done": "scout_literature dossier datasets/danio_rerio_vertex_packing/epiboly_shape_index_scout.json includes at least one open-access paper with is_oa true whose title or abstract mentions zebrafish epiboly/epithelial jamming/shape index, plus at least one CC-licensed Wikimedia or paper-linked specimen image of Danio rerio epiboly stages.",
+      "tool_route": "python3 morphoeval/scout_literature.py --query \"zebrafish epiboly epithelial cell shape index jamming vertex model\" --taxon \"Danio rerio\" --out datasets/danio_rerio_vertex_packing/epiboly_shape_index_scout.json",
+      "deciding_data": "In repo: docs/open-problems.json registered_prediction_followups ZF-VTX-01, predictions/resolutions/zebrafish.json. Public: OpenAlex hits from 2026-10-27 scout (e.g. doi:10.1038/s41598-018-20678-6 combining Turing and 3D vertex models).",
+      "prior_attempts": "2026-10-26 resolution pass searched literature and found no tabulated zebrafish shape-index transition dataset; left partially_resolved.",
+      "factors": {
+        "tool_fit": {
+          "score": 17,
+          "why": "scout_literature is the mandated discovery tool for missing quantitative imaging sources."
+        },
+        "data_in_hand": {
+          "score": 9,
+          "why": "Prediction metadata in-repo; deciding measurements must be fetched from OA papers/images."
+        },
+        "falsifiable_done": {
+          "score": 11,
+          "why": "Scout-step done is checkable JSON fields; full ZF-VTX-01 close needs numeric series extraction."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Scout is quick; figure digitization is vision-lens work."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New scout JSON under danio_rerio_vertex_packing dataset."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Discovery one sitting; registry close needs follow-up tabulation."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Partial resolution explicitly names missing series; prior pass did not refute existence of OA epiboly imaging."
+        }
+      }
+    },
+    {
+      "id": "NP081-PROD-PUBLISH-GAP",
+      "title": "MorphoEval KG prod-publication gap (~315 signed bundles, ~17 prod-published)",
+      "gap": "morphoeval/sign_morphoeval.py can sign trig bundles and record trusty URIs in published.json, but the territory has hundreds of morphoeval/kg/*/published.json manifests with \"published\": null (signed test/local only); the Problem-Scout 100 ground text cites ~327 published of thousands audited—closing the network-publication backlog is not a literature-discovery task.",
+      "done": "N/A for scout_literature lens—would require sign_morphoeval.py --publish test|prod with ~/.nanopub/profile.yml and human confirmation for prod.",
+      "tool_route": "python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-chemotactic-stripe-splitting-audit-v3/  # example unsigned manifest; prod publish gated interactively",
+      "deciding_data": "In repo: morphoeval/sign_morphoeval.py, morphoeval/kg/**/published.json counts (315 manifests, 17 prod as of 2026-10-27 shell audit).",
+      "prior_attempts": "Nanopub batch scripts in nanopubs/ target Planform/waves corpora, not the full MorphoEval KG audit tree.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "scout_literature cannot sign or publish nanopubs; use knowledge lens (sign_morphoeval.py / build_morphoeval_kg.py)."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Signed trig files and manifests already exist locally."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "published.json \"published\": \"prod\" is objective, but outside this lens."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Signing is local; prod publish needs network and keys."
+        },
+        "isolation": {
+          "score": 3,
+          "why": "Publishing mutates published.json and network state—conflicts with parallel agents."
+        },
+        "time_to_verdict": {
+          "score": 4,
+          "why": "Batch prod publish is not a single-sitting scout task."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Workflow exists; blocked only by lens mismatch and prod immutability policy."
+        }
+      }
+    }
+  ]
+}
