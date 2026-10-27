@@ -1,0 +1,319 @@
+{
+  "scout": "scout-047",
+  "ground": "bioelectric",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "BE-KG-921",
+      "title": "Slot 921 Xenopus tropicalis bioelectric polarity — Pass-2 score exists but no MorphoEval KG / nanopub bundle",
+      "gap": "morphoeval/runs/2026-10-19-xenopus-tropicalis-bioelectric-polarity-loop.md records Pass 2 at 93.8/100 (Pearson r=0.9992), and morphoeval/runs/species_multiscale_registry.json reserves https://w3id.org/delphi/resource/claim/morphoeval-keller-xenopus-tropicalis-bioelectric-polarity, but there is no morphoeval/kg/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2/ directory and the audit YAML is a non-conformant stub (flat keys, scores use `score` not rubric `value`, no `audit:` block, no evidence or claim_boundary). The Levin latent-space Claim 5 pillar therefore lacks a ranked, signable assessment for the Xenopus bioelectric slot.",
+      "done": "A conformant morphoeval/audits/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2.yaml passes `python3 morphoeval/build_morphoeval_kg.py … --check` and `--conform`; morphoeval/kg/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2/ contains 10 *.trig; `node morphoeval/check_signed.mjs morphoeval/kg/…/signed/*.trig` exits 0 after signing; published.json lists 10 entries each with non-null `published` (test then prod).",
+      "tool_route": "(1) Normalize the audit YAML to the same schema as morphoeval/audits/2026-10-19-planarian-hk-atpase-anterior-audit-v2.yaml using datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json and 2009-keller-xenopus-tropicalis-bioelectric-polarity.py --self-test outputs. (2) `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2.yaml --conform`. (3) `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2 --publish test` then `--publish prod`.",
+      "deciding_data": "In repo: datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json, datasets/xenopus_tropicalis_bioelectric_polarity/scout_manifest.json, morphoeval/lean/loops/Loop_0921_xenopus_tropicalis_bioelectric_polarity.lean, morphoeval/runs/2026-10-19-xenopus-tropicalis-bioelectric-polarity-loop.md. Public DOI anchor: Keller (2009) 10.1126/science.2009.0921 (placeholder DOI in stub audit).",
+      "prior_attempts": "Pass 2 loop scored 93.8/100 (claude-sonnet-5-5-high + gemini-4-argon per stub audit header) but the 12-step loop never materialized a kg/ bundle (unlike Slot 081/082/085). docs/open-problems.json has no OP for this gap. Not refuted — absent serialization only.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "build_morphoeval_kg.py + sign_morphoeval.py decide publication once a conformant audit exists; stub audit must be upgraded first (remediation lens assists YAML, not this lens alone)."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Reference JSON, script, Lean loop, and loop report are already vendored; no wet-lab fetch required."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Mechanical checks: --check/--conform, 10 trig files, check_signed.mjs, published.json field counts."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "KG build + sign + test publish is minutes on the repo Python/Node stack."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Closable as new audit sidecar + new kg directory; may touch campaign registry only if explicitly merged later."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting once the audit YAML is normalized."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded attempt refuted network publication for this slot; route is simply undone."
+        }
+      }
+    },
+    {
+      "id": "BE-PUB-081-082-084-085",
+      "title": "Levin latent-space bioelectric Pass-2 bundles (planarian + Xenopus) — locally signed, never test/prod published",
+      "gap": "Four flagship bioelectric audits have full morphoeval/kg/*-audit-v2 trees with signed/*.trig and trustworthy URIs in published.json, but every entry has `\"published\": null` (zero test/prod registry posts): 2026-10-19-planarian-hk-atpase-anterior-audit-v2 (Beane 2011, Slot 081), 2026-10-19-bioelectric-morphogen-coupling-audit-v2 (Pietak & Levin 2017, Slot 082), 2026-10-19-bioelectric-target-morphology-memory-audit-v2 (Pezzulo 2015, Slot 084), 2026-10-19-xenopus-craniofacial-remap-audit-v2 (Picasso tadpoles, Slot 085). docs/LEVIN_LATENT_SPACE_METHODS.md cites these as signed production nanopubs, but they are not ranked on the public registry — an unpublished-claim gap for the knowledge graph.",
+      "done": "For each of the four kg directories, after `python3 morphoeval/sign_morphoeval.py <kg_dir> --publish test`, all 10 published.json entries show `published: \"test\"` and Nanopub Query resolves each URI; after guarded `--publish prod`, all show `published: \"prod\"`. `node morphoeval/check_signed.mjs <kg_dir>/signed/*.trig` exits 0 for all four.",
+      "tool_route": "Per directory D in {planarian-hk-atpase-anterior, bioelectric-morphogen-coupling, bioelectric-target-morphology-memory, xenopus-craniofacial-remap}: `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-<D>-audit-v2 --publish test` then `--publish prod`; verify with `node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-<D>-audit-v2/signed/*.trig`. Rebuild only if unsigned root *.trig drift from signed/ (prefer sign-only).",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-19-{planarian-hk-atpase-anterior,bioelectric-morphogen-coupling,bioelectric-target-morphology-memory,xenopus-craniofacial-remap}-audit-v2/signed/*.trig and matching published.json trusty URIs; morphoeval/audits/*-audit-v2.yaml checkpoints.",
+      "prior_attempts": "Pass 2 loops built and signed locally (Oct 2026); morphoeval/sign_morphoeval.py prod gate requires test-first — never completed. Zhang sorting and Cervera v2 counterparts are prod-published for contrast. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "sign_morphoeval.py + check_signed.mjs are the exact publish/verify toolchain; KG already built."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Signed TriG and manifests already on disk; only registry POST missing."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "published.json `published` field and registry HEAD resolution are binary."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Network publish of 40 nanopubs is under an hour with existing keys (~/.nanopub/profile.yml)."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Fix updates existing published.json in tracked kg dirs (not zero-conflict for parallel agents on same paths)."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "One loop: test publish all four bundles, verify, then prod."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior test/prod publish attempt recorded; route not refuted."
+        }
+      }
+    },
+    {
+      "id": "BE-PLATONIC-4",
+      "title": "Ingressing Minds Sec 6.3 — four Platonic sorting sub-claims lack separate ranked claim nanopubs",
+      "gap": "sorting-morphogenesis/PLATONIC_SPACE_CLAIMS_EVALUATION.md and docs/LEVIN_LATENT_SPACE_METHODS.md assign four checkable verdicts (no error-handling code; delayed gratification metaphor; algotype clustering; weak vs strong Platonism), but morphoeval/kg/2026-10-22-zhang-sorting-morphogenesis-audit-v2/ publishes only one composite pk:Claim whose claim_boundary embeds all four as prose. There are no four distinct morphoeval-platonic-claim-* assessments with pk:hasVerdict / evidenceAgainst edges queryable independently — an unranked-claim gap for Levin's latent-space narrative.",
+      "done": "Four additional claim nanopubs (ids morphoeval-platonic-claim-1..4) are built via build_morphoeval_kg from a dedicated audit YAML, signed, test+prod published, and each carries a verdict token matching PLATONIC_SPACE_CLAIMS_EVALUATION.md row {Partially Refuted, Metaphor Overstated, Empirically Justified, Split Verdict} with prov:wasDerivedFrom sorting-morphogenesis/audit_platonic_space_claims.py output JSON.",
+      "tool_route": "Author morphoeval/audits/2026-10-22-levin-platonic-subclaims-audit.yaml (four simulations or four claims referencing audit_platonic_space_claims.py metrics) → `python3 morphoeval/build_morphoeval_kg.py … --conform` → `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-22-levin-platonic-subclaims-audit --publish test` → `--publish prod`.",
+      "deciding_data": "In repo: sorting-morphogenesis/audit_platonic_space_claims.py, PLATONIC_SPACE_CLAIMS_EVALUATION.md, docs/media/zhang_levin_platonic_claims_audit.png, existing prod bundle morphoeval/kg/2026-10-22-zhang-sorting-morphogenesis-audit-v2/ for supersession links.",
+      "prior_attempts": "Composite zhang-sorting audit v2 prod-published (10 nanopubs); ablation script and md evaluation complete. Sub-claim decomposition not attempted. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "build_morphoeval_kg.py emits per-claim assessments once audit YAML enumerates them; no new wet-lab data."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All deciding metrics already produced by audit_platonic_space_claims.py runs."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Four published URIs with explicit verdict literals matching the md table; slight schema work for verdict enum."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "KG build + 4–40 nanopubs + publish fits one sitting."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit + new kg directory only; supersede links optional to composite claim."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Needs new audit authoring before mechanical publish."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior route refuted splitting Platonic verdicts; composite publish does not block add-on claims."
+        }
+      }
+    },
+    {
+      "id": "BE-PLANFORM-S1S9",
+      "title": "PlanformDB bioelectric series S1–S9 hold-out calibration — fixture validated, no signed pk:Claim",
+      "gap": "models/planform_bioelectric.py and datasets/planform/planform_bioelectric_series_v1.json implement the S1-fit / S2–S9-test policy for planarian gap-junction and voltage perturbations (Oviedo 2010, Nogi & Levin 2005, Beane 2011, Nogi 2009), but no morphoeval/kg audit names hold-out RMSE or frequency errors as pk:EvidenceItem measurements. The prod Cervera–Levin–Mafé nanopub (morphoeval/kg/2026-10-17-cervera-audit-v2/, 55.6/100) cites planform_canonical_silhouettes_v1.json, not planform_bioelectric_series_v1.json — so the pole-identity link claim is unranked in the public graph.",
+      "done": "New audit morphoeval/audits/2026-10-26-planform-bioelectric-series-audit.yaml references `python3 models/planform_bioelectric.py --self-test` hold-out table; build_morphoeval_kg produces a signed published claim whose morphometric-validation assessment lists per-series (S2–S9) error metrics with reference values from the fixture JSON; published.json shows prod for all trig files.",
+      "tool_route": "`python3 models/planform_bioelectric.py --self-test` (capture metrics) → author audit YAML + optional .measurements.yaml → `python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-26-planform-bioelectric-series-audit.yaml --conform` → sign_morphoeval test/prod.",
+      "deciding_data": "In repo: datasets/planform/planform_bioelectric_series_v1.json (sha256 b3fe2ef5… per datasets/planform_multiway/README.md), models/planform_bioelectric.py, datasets/planform/damaged/* negative controls.",
+      "prior_attempts": "Created during Cervera remediation (gpt-5.6-sol audits, morphoeval/audits/2026-10-17-cervera-audit-v2.yaml); extractor self-test passes; no KG claim for series hold-outs. Cervera v2 prod does not supersede this distinct evidentiary claim. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "build_morphoeval_kg + sign directly serialize extractor self-test metrics as ranked evidence."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Fixture and validator fully in repo; PlanformDB raw pin documented but not required for --validate."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Per-series RMSE rows in measurements YAML vs fixture JSON fields are mechanically checkable."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Self-test + KG build + publish in under an hour."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New audit + kg directory; no edits to cervera prod bundle required."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "Single loop after audit authoring."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Distinct from published Cervera simulation audit; no refuted prior for series claim nanopub."
+        }
+      }
+    },
+    {
+      "id": "BE-CANONICAL-V2",
+      "title": "Foundational canonical Pass-2 audit (Planform + Cervera bioelectric pillar) — scored YAML, zero kg/",
+      "gap": "morphoeval/audits/2026-10-21-foundational-canonical-audit-v2.yaml scores planform-morphology-animation and cervera-levin-mafe alongside Thompson/Raup pillars, but no morphoeval/kg/2026-10-21-foundational-canonical-audit-v2/ exists. The Levin latent-space portfolio therefore lacks a single superseding ranked bundle tying PlanformDB graph formalism to the bioelectric 2H0T model at the remediated Pass-2 scores.",
+      "done": "`python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-21-foundational-canonical-audit-v2.yaml --conform` succeeds (after marking thompson-scarus-pomacanthus status not-evaluated without scores or splitting simulations); resulting kg dir signed with test+prod published entries.",
+      "tool_route": "Patch audit YAML to satisfy build_morphoeval_kg validate (evaluated sims need evidence blocks; not-evaluated sims drop scores) → build_morphoeval_kg --conform → sign_morphoeval test/prod.",
+      "deciding_data": "In repo: audit YAML, models/2013-lobo-planform-morphology.py, models/2021-Cervera–Levin–Mafe.py, existing per-model kg dirs for supersede-from pointers.",
+      "prior_attempts": "Pass 2 remediated scores recorded Oct 2026; per-model cervera and planform loops have separate kg (cervera prod; planform animation loop may lack kg — check). Composite bundle never built. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Standard build_morphoeval_kg path once YAML validates; some audit cleanup required."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Scripts and audits in repo; thompson entry flagged not-evaluated in YAML comments."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "--conform + publish.json prod flags are checkable; audit split rules need explicit scorer agreement."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Multi-simulation kg build moderate cost."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "New kg dir; may use --supersede-from without editing old prod trig."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Audit YAML remediation plus multi-sim build exceeds one quick command."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded composite-bundle attempt or refutation."
+        }
+      }
+    },
+    {
+      "id": "BE-DURANT-MEMORY",
+      "title": "Durant 2017 cryptic 2H0T planarian memory — simulated in Pietak script but no standalone ranked claim",
+      "gap": "morphoeval/audits/2026-10-19-bioelectric-morphogen-coupling-audit-v2.yaml claim_boundary includes Durant et al. 2017 permanent cryptic two-headed memory after 8-octanol washout, and the script reproduces 2H0T after eta_oct→0, but the published graph only exposes this inside the Pietak overall claim (which is signed yet unpublished on the registry). There is no separate signed pk:Claim whose dct:subject is the Durant memory phenotype with pk:weightOfEvidence — leaving a Levin bioelectric-memory sub-claim unranked for cross-linking to Claim 5 in LEVIN_LATENT_SPACE_METHODS.",
+      "done": "Either (A) prod-publish the existing pietak kg bundle, or (B) add a superseding audit with a dedicated simulation id `durant-cryptic-2H0T-memory` and publish a standalone claim nanopub whose morphometric-validation evidence cites the cryptic washout head-count measurement; published.json prod for that claim URI.",
+      "tool_route": "Preferred minimal: `python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-bioelectric-morphogen-coupling-audit-v2 --publish test --publish prod`. If claim granularity insufficient: new audit YAML extracting only Durant rows → build_morphoeval_kg → sign.",
+      "deciding_data": "In repo: 2017-pietak-bioelectric-morphogen-coupling.py, morphoeval/kg/2026-10-19-bioelectric-morphogen-coupling-audit-v2/pietak-bioelectric-morphogen-coupling-claim.trig, Durant doi:10.1016/j.bpj.2017.04.011 in audit references.",
+      "prior_attempts": "Pietak Pass 2 audit 91.7/100; kg signed locally Oct 2026; registry publish never done. Not refuted.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "sign_morphoeval resolves registry gap immediately; optional build_morphoeval_kg split for finer claim."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Signed trig already encodes Durant boundary in claim text and measurements."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Registry publish state is binary; standalone claim needs explicit URI check."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Publish-only path is minutes."
+        },
+        "isolation": {
+          "score": 7,
+          "why": "Publish updates existing kg published.json; split-claim path is cleaner isolation."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Test+prod publish is one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refuted publish attempt on this bundle."
+        }
+      }
+    },
+    {
+      "id": "BE-WRONG-LENS-XT-CLK",
+      "title": "XT-CLK-01 Xenopus clock-wavefront proportional law — partially resolved, not a knowledge-graph claim gap",
+      "gap": "predictions/prediction_registry.json and docs/open-problems.json registered_prediction_followups mark XT-CLK-01 partially_resolved for lack of paired period+somite-length series; predictions/resolutions/xenopus.json documents the literature bound only. This is missing quantitative data, not an unsigned MorphoEval/Delphi nanopub.",
+      "done": "N/A for knowledge lens — would be satisfied by registry/scout_literature supplying tabulated T,S series then score_resolutions.py, or a new registered prediction nanopub after data exist.",
+      "tool_route": "Wrong lens: use predictions/build_prediction_registry.py + score_resolutions.py or scout_literature.py (registry/literature scouts). build_morphoeval_kg.py only ranks existing audit evidence, not absent wet-lab series.",
+      "deciding_data": "Named public gap: paired Xenopus hes-period and somite-length measurements (see predictions/resolutions/xenopus.json XT-CLK-01 evidence field). Repo has xenopus clock-wavefront simulation slot datasets but not the decisive paired series.",
+      "prior_attempts": "Local resolution pass 2026-10-26 marked partially_resolved as forecast; META-RES-03 expected partial. Not blocked for literature fetch — blocked for kg-only closure.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Knowledge lens cannot manufacture missing measurements; tool_fit near zero per rubric."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Literature exists but decisive paired series not tabulated in repo."
+        },
+        "falsifiable_done": {
+          "score": 8,
+          "why": "Registry scoring rules are clear once data appear, but not closable by kg today."
+        },
+        "compute_in_repo": {
+          "score": 5,
+          "why": "Mining literature is hours; kg publish does not resolve."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Future registry update could be isolated."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "Not one-sitting for this lens."
+        },
+        "not_blocked": {
+          "score": 3,
+          "why": "Partial resolution recorded; not refuted, but wrong tool."
+        }
+      }
+    },
+    {
+      "id": "BE-BLOCKED-OP07",
+      "title": "OP-07 Xenopus Ca2+ neighbour-transfer blind test — refuted; not fixable by publishing kg claims",
+      "gap": "docs/open-problems.json OP-07 status refuted: LOOO AUC 0.484 with orientation confound (0.833). embryo-blind/ and wave-vector-analysis/ hold the hash-locked scorer, not an unsigned Levin bioelectric claim.",
+      "done": "Do not re-propose as a knowledge-scout win; any v2 preregistration belongs to wavevector/registry lenses per OP-07 done-criteria.",
+      "tool_route": "Blocked for knowledge lens. wave-vector-analysis + embryo-blind preregistration (wavepipe/registry scouts).",
+      "deciding_data": "In repo: embryo-blind/README.md, XENOPUS_BLIND_RESULTS.md, docs/open-problems.json OP-07.",
+      "prior_attempts": "Multi-agent panel refuted headline blind test; OP-07 explicitly refuted. Re-publishing nanopubs of wave audits does not address orientation confound.",
+      "factors": {
+        "tool_fit": {
+          "score": 1,
+          "why": "build_morphoeval_kg does not retest blind Ca2+ videos; wrong problem class."
+        },
+        "data_in_hand": {
+          "score": 10,
+          "why": "Blind data exist but deciding question is wave prediction, not claim publication."
+        },
+        "falsifiable_done": {
+          "score": 10,
+          "why": "OP-07 done string is clear but not for this lens."
+        },
+        "compute_in_repo": {
+          "score": 8,
+          "why": "Wave rescoring possible but not kg publish."
+        },
+        "isolation": {
+          "score": 5,
+          "why": "N/A — route blocked."
+        },
+        "time_to_verdict": {
+          "score": 2,
+          "why": "N/A — route blocked."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Prior attempt refuted exact neighbour-transfer route (OP-07 status refuted)."
+        }
+      }
+    }
+  ]
+}
