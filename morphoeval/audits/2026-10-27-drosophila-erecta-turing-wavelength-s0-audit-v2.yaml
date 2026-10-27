@@ -1,0 +1,140 @@
+# Pass 2 — re-score after the sweep, ablation, and specimen GOF were measured.
+# Supersedes the Pass 1 audit. R4 (second assessor) and R5 (no wild CC photo) stay open.
+audit:
+  id: 2026-10-27-drosophila-erecta-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-drosophila-erecta-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: "https://creativecommons.org/licenses/by/4.0/"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor; second assessor still not run (R4)"
+  domain: morphogenesis
+  ontology:
+    version: "1.3"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Parent commit at audit time. Slot 3183 files are new in the working tree. Nanopubs are unsigned because ~/.nanopub/profile.yml is absent."
+references:
+  turing1952:
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+    title: "The Chemical Basis of Morphogenesis"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+  schnakenberg1979:
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+  yassin2016:
+    doi: 10.1038/ncomms10400
+    year: 2016
+    title: "Ancient balancing selection at tan underlies female colour dimorphism in Drosophila erecta"
+    venue: "Nat. Commun. 7:10400 (2016)"
+  kondo2010:
+    doi: 10.1126/science.1179047
+    year: 2010
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    venue: "Science 329:1616-1620 (2010)"
+  gierer1972:
+    doi: 10.1007/BF00289234
+    year: 1972
+    title: "A theory of biological pattern formation"
+    venue: "Kybernetik 12:30-39 (1972)"
+simulations:
+  - id: delphi10000-drosophila-erecta-turing-wavelength-s0
+    name: "Schnakenberg–Turing critical wavelength for Drosophila erecta at 2.262 µm (Pass 2)"
+    organism: "Drosophila erecta"
+    script: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py
+    output: docs/media/drosophila_erecta_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_erecta_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, yassin2016, kondo2010, gierer1972]
+    summary: >-
+      Dispersion wavelength is 2.262 µm at a=0.17, b=0.93, Dv/Du=16, age 0 Ma.
+      Gallery annulus Pearson r=0.99803, RMSE=1.966 gray levels, KS=0.064.
+      Annulus radius 97.30 µm versus the elegans primordium anchor 101.1 µm.
+      δ sweep λ falls 2.847, 2.415, 2.310, 2.262, 2.217, 2.183 µm.
+      Critical-mode std ratio 3.36; equal-diffusion ratio 7.5e-5; ablation ratio 2.1e-7.
+      Dark/light production shift 1.24 exceeds wavelength shift 0.30.
+      Wavenumber versus elegans is ×44.69. GIF CV similarity against the gallery
+      image is 82.0 (16 frames, 640×480).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation"
+        - "Schnakenberg 1979 kinetics"
+        - "Yassin et al. 2016 tan balancing selection in female D. erecta"
+        - "Gallery image has a drawn 100 µm scale bar (measured run 111 px)"
+      reconstructed_in_script:
+        - "Du = 3.987e-14 m^2/s and Dv = 6.380e-13 m^2/s so lambda_c = 2.262 µm"
+        - "Dark a=0.29 and light a=0.08 at fixed Du, Dv"
+        - "Damped J0 disk mode fitted to the gallery radial profile"
+        - "Fourier ring at 2.262 µm used as the fine texture on the GIF"
+      transfer_boundary:
+        - "2.262 µm is the assigned detail tier, not a length Yassin et al. measured"
+        - "The 97.3 µm dark ring is the primordium-scale annulus in the same image, not the detail wavelength"
+      does_not_claim:
+        - "Does not claim geological age changes among elegans, erecta, and eugracilis (all 0 Ma)"
+        - "Does not claim the tan enhancer numerically equals Dv/Du"
+        - "Does not claim a wild-caught CC photograph was obtained"
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "k_c^2 = (Dv fu + Du gv)/(2 Du Dv) is solved so the physical wavelength is 2.262 µm (Du=3.987e-14 m^2/s, δ=16). Trace=-0.519 and det=1.210, so the homogeneous state is stable until diffusion. The disk-mode envelope is an extra radial fit on top of that law, which is why this is not 100."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [78, 111], note: "critical_kc2, physical_diffusivity, turing_capable", supports: true}
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [124, 188], note: "integrate_patch Schnakenberg update and ablation switch", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "Direct CV similarity of the 16-frame 640×480 GIF against the gallery specimen is 82.0 (Sobel 12-bin, radial FFT, coherency, occupancy). The annulus reads as the same bright core and dark ring. The image is the project gallery field, not a wild fly, so the score stays below the mid-90s."
+        evidence:
+          - {file: docs/media/drosophila_erecta_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16 frames, 640×480, CV 82.0", supports: true}
+          - {file: docs/media/drosophila_erecta_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, render, radial overlay, chronoseries bars", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "At fixed Du, λ(δ) for δ=4,8,12,16,24,40 is 2.847, 2.415, 2.310, 2.262, 2.217, 2.183 µm, strictly decreasing. Dark versus light production shift is 1.235 while the wavelength shift is 0.305. Equal diffusion and autocatalysis removal both kill the pattern."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [351, 392], note: "sweep, dark/light a, equal-diffusion control, quadratic ablation", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Annulus Pearson r=0.99803 against reference ceiling 1.0 (RMSE=1.966, so the series are not copies). KS=0.064 against anchor 0.5. Segmented ring radius 97.30 µm against the elegans primordium anchor 101.1 µm. PDE patch grows by 3.36× at the critical mode; the negative controls fall below 1e-4."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [236, 258], note: "Pearson, RMSE, KS on the radial samples", supports: true}
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [482, 551], note: "measure_morphoeval anchors differ from measured values", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOIs resolve for Turing 1952, Schnakenberg 1979, Gierer & Meinhardt 1972, Yassin et al. 2016, Kondo & Miura 2010, and Aguilar-Hidalgo et al. 2016. Specimen SHA-256 ef1ddb03… is pinned. The empty Wikimedia/GBIF search is recorded in the scout manifest."
+        evidence:
+          - {file: datasets/drosophila_erecta_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "citation DOIs", supports: true}
+          - {file: datasets/drosophila_erecta_turing_wavelength_s0/scout_manifest.json, lines: [1, 80], note: "OpenAlex hits, GBIF usageKey 5074045, empty media", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "critical_kc2 cites the Turing quotient. Lean theorems pin 2262 nm < 101100 nm and 100600 nm, the δ=16 threshold 16×691 > 1210, and the equal-diffusion failure. The script's self-test checks those same inequalities."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3183_drosophila_erecta_turing_wavelength_s0.lean, lines: [16, 47], note: "six decide theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-erecta-turing-wavelength-s0.yaml, lines: [1, 58], note: "model_spec and equation variables", supports: true}
+      repro-package:
+        value: 90
+        rationale: "Seed 3183, --self-test, and a deterministic GIF (16 frames, 640×480). Self-test passed on the dispersion identity, r>0.98, both controls, and the Lean module. Dependencies are the repo scientific stack (numpy, scipy, Pillow, matplotlib)."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-erecta-turing-wavelength-s0.py, lines: [553, 616], note: "self_test, render, GIF frame gate", supports: true}
+          - {file: datasets/drosophila_erecta_turing_wavelength_s0/README.md, lines: [1, 47], note: "invocation and the 2.3 µm / 0 Ma statement", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved in this pass: δ sweep is monotonic (2.847 µm at δ=4 down to 2.183 µm at δ=40)."
+        status: resolved
+      - id: R2
+        item: "Resolved in this pass: equal-diffusion std ratio 7.5e-5 and ablation ratio 2.1e-7 versus critical-mode ratio 3.36."
+        status: resolved
+      - id: R3
+        item: "Resolved in this pass: Pearson r=0.99803, RMSE=1.966, KS=0.064, ring 97.30 µm ≠ 101.1 µm anchor, GIF CV=82.0."
+        status: resolved
+      - id: R4
+        item: "No second assessor from another provider. Still open."
+        status: open
+      - id: R5
+        item: "No CC wild photograph. Gallery fallback remains the specimen. Still open."
+        status: open
