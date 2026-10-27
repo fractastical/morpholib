@@ -373,9 +373,6 @@ def render_portrait(
         yt_g = yb - growth * (yb - yt)
         ax = (xb - xt) * w
         ay = (yb - yt_g) * h
-        px = (xx - xt * w)
-        py = (yy - yt_g * h)
-        # px is relative to the top point in pixels. xx is already pixels.
         px = xx - xt * w
         py = yy - yt_g * h
         l2 = ax * ax + ay * ay + 1e-9
@@ -393,21 +390,30 @@ def render_portrait(
         cross = tx * ry - ty * rx
         light = 0.22 + 0.78 * shade * (0.65 + 0.35 * np.clip(cross / np.maximum(r_px, 1e-6), -1, 1))
         if wrap:
+            # Reference radius (mid-tube) keeps one λ_c in pixels along the whole
+            # body wall. Using the local radius aliases the narrow osculum into bands.
             theta = np.arcsin(np.clip(cross / np.maximum(r_px, 1e-6), -1.0, 1.0))
-            arc = theta * r_px
+            r_ref = 0.5 * (rt + rb) * w
+            arc = theta * r_ref
             s_px = t * tlen
             phi = lattice_phi(arc, s_px, rel, k) * scale
+            # Bare cap: the osculum rim is a smooth silica lip, not a compressed lattice.
+            phi = np.where(t < 0.14, -1.0, phi)
         else:
             phi = lattice_phi(xx.astype(float), yy.astype(float), rel, k) * scale
-        pores = inside & (phi > 0.28)
+        pores = inside & (phi > 0.22)
         osculum = inside & (t < 0.055) & (nd < 0.48) & (growth > 0.85)
         silica = np.clip(35.0 + 205.0 * light, 0, 245)
         for c, gain in enumerate((0.90, 0.97, 1.03)):
             ch = img[:, :, c]
             ch = np.where(inside, silica * gain, ch)
-            ch = np.where(pores, ch * 0.20, ch)
-            ch = np.where(osculum, ch * 0.15, ch)
+            # Soft pores: the photograph's tube edges, not the mesh, carry coherency.
+            ch = np.where(pores, ch * 0.55, ch)
+            ch = np.where(osculum, ch * 0.25, ch)
             img[:, :, c] = ch
+    from scipy import ndimage as ndi
+
+    img = ndi.gaussian_filter(img, sigma=(1.1, 1.1, 0.0))
     rgb = np.clip(img, 0, 255).astype(np.uint8)
     # Title and footer sit in the outer 12% so the fitness crop reads the animal.
     pil = Image.fromarray(rgb)
