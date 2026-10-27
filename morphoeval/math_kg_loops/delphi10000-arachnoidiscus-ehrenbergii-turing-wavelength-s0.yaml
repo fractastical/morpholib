@@ -1,0 +1,37 @@
+sim_id: delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0
+slot: 3118
+organism: Arachnoidiscus ehrenbergii
+scale_m: 2.42e-07
+scale_nm: 242
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "Arachnoidiscus 1/1 — no predecessor, no successor"
+math_family: Reaction-Diffusion and Turing wavenumber selection
+equations:
+  - law_name: Schnakenberg Jacobian at the homogeneous SDV steady state
+    formula: "u0 = a + b, v0 = b/u0^2, f_u = -1 + 2 b/u0, g_v = -u0^2, with a = 0.062, b = 1.35"
+    lean_decl: MathOfBiology.Loop_3118.wavelengthNm
+    lean_theorem: MathOfBiology.Loop_3118.equal_diffusion_trace_term_is_negative
+    lean_locus: morphoeval/lean/loops/Loop_3118_arachnoidiscus_ehrenbergii_turing_wavelength_s0.lean
+    variables: "a = 0.062 (silaffin production), b = 1.35 (polyamine production); f_u = +0.912, g_v = -1.994"
+    role: Trace f_u + g_v < 0 so the well-mixed sol is stable; equal diffusion cannot select a wavelength
+    source_citation: "Schnakenberg 1979 JTB 81:389-400, doi:10.1016/0022-5193(79)90042-0; Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py
+  - law_name: Selected Turing wavenumber at 242 nm
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 242 nm, D_v/D_u = 31.18"
+    lean_decl: MathOfBiology.Loop_3118.diffusionRatioMilli
+    lean_theorem: MathOfBiology.Loop_3118.diffusion_ratio_exceeds_turing_onset
+    lean_locus: morphoeval/lean/loops/Loop_3118_arachnoidiscus_ehrenbergii_turing_wavelength_s0.lean
+    variables: "D_v/D_u = 31.18 > discriminant onset 13.605; lambda_c = 2.42e-7 m"
+    role: Locks the cribral carrier on the Holocene valve at the detail scale of this slot
+    source_citation: "Turing 1952 Phil Trans R Soc B 237:37-72, doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py
+  - law_name: Six-wavelength detail domain versus the unpatterned predecessor state
+    formula: "L = 6 lambda_c = 1452 nm; equal-diffusion control has max Re sigma(k) < 0; patterned state has sigma(k_c) > 0"
+    lean_decl: MathOfBiology.Loop_3118.domainNm
+    lean_theorem: MathOfBiology.Loop_3118.detail_domain_holds_six_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3118_arachnoidiscus_ehrenbergii_turing_wavelength_s0.lean
+    variables: "L = 1.452e-6 m; age offset 0 Ma (theorem holocene_chronoseries_age_offset_is_zero)"
+    role: States what changes at 0 Ma and 242 nm relative to the homogeneous SDV sol, the only predecessor this 1/1 series has
+    source_citation: "Sumper 2002 Science 295:2430-2433, doi:10.1126/science.1070026; Lenoci and Camp 2008 Langmuir 24:217-223, doi:10.1021/la702278f"
+    code_locus: models/2026-delphi10000-arachnoidiscus-ehrenbergii-turing-wavelength-s0.py
