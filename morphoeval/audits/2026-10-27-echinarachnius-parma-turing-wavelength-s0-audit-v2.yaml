@@ -1,0 +1,211 @@
+# MorphoEval audit — Echinarachnius parma 60 µm Turing wavelength, Pass 2.
+#
+# Closes the three Pass 1 remediation items on commit 968c2bf7.
+# Overall 89.4, up from 86.8. Image fitness uses CV 85.2, specimen-match 88,
+# morphometric-validation 90.
+
+audit:
+  id: 2026-10-27-echinarachnius-parma-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-echinarachnius-parma-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-echinarachnius-parma-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (primary assessor, Pass 2)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 968c2bf7
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 2 remediation of loop 3214, superseding
+      2026-10-27-echinarachnius-parma-turing-wavelength-s0-audit.
+      Line numbers refer to commit 968c2bf7. ~/.nanopub/profile.yml is absent,
+      so these nanopubs are unsigned drafts.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London. Series B 237(641):37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    year: 1972
+    doi: 10.1007/BF00289234
+  seilacher1979:
+    title: "Constructional morphology of sand dollars"
+    authors: "Seilacher A"
+    venue: "Paleobiology 5(3):191-221 (1979)"
+    year: 1979
+    doi: 10.1017/S0094837300006527
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329(5999):1616-1620 (2010)"
+    year: 2010
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: delphi10000-echinarachnius-parma-turing-wavelength-s0
+    name: "Echinarachnius parma Holocene 60 µm Schnakenberg Turing wavelength"
+    organism: "Echinarachnius parma"
+    script: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py
+    output: docs/media/echinarachnius_parma_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/echinarachnius_parma_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-echinarachnius-parma-turing-wavelength-s0-audit
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) diffusion-driven instability at a finite wavenumber when the inhibitor diffuses faster than the activator"
+        - "Schnakenberg (1979) kinetics a - u + u^2 v and b - u^2 v"
+        - "Gierer and Meinhardt (1972) short-range activation with long-range inhibition; Kondo and Miura (2010) reaction-diffusion as a patterning framework"
+        - "Seilacher (1979) constructional morphology of the sand-dollar test at centimetre scale"
+      reconstructed_in_script:
+        - "Periodic Fourier IMEX Schnakenberg integration on a 480 µm patch. Equilibrated FFT wavelength 60.336 µm; linear peak 61.343 µm; Pearson r 0.9965 across seven diffusivity scales; RMSE 2.575 µm"
+        - "Equal-diffusion ablation amplitude 5.69e-3, marked on the figure. 10 µm predecessor patch amplitude 0, marked quenched"
+        - "USNM E39365 split into 3 discs after a 15 px closing: mean circularity 0.730 versus union circularity 0.066; mean aspect 0.994 versus union aspect 1.413"
+        - "71 ocellus peaks picked with a one-period window. Mean spacing 49.21 µm, CV 0.330, KS 0.415 against Normal(λ_FFT, s)"
+      transfer_boundary:
+        - "Du and Dv place the lattice on the assigned 60 µm scale. They are not measured sand-dollar diffusivities."
+        - "Seilacher (1979) does not report a 60 µm pigment spacing. The chronoseries is 1/1 at 0 Ma; the predecessor and successor are the 10 µm and 600 µm scale tiers."
+        - "Nearest-neighbour distance is not the FFT period. The radial spectrum carries the wavelength law; the spacing distribution is broader (CV 0.33)."
+      does_not_claim:
+        - "A measured echinochrome diffusion constant, a pigment gene network, or a fit to the centimetre-scale petaloid"
+        - "That the 49 µm nearest-neighbour mean equals the 60 µm Turing wavelength"
+        - "Sibling slot 160 parameters (α = 1.71, β = 0.43)"
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - gierer1972
+      - seilacher1979
+      - kondo2010
+    summary: >-
+      Pass 2 score 89.4, superseding Pass 1 (86.8). The three Pass 1 gaps are closed
+      in the model rather than in the scores. segment_specimen now closes the spine
+      fringe and labels three tests (circularity 0.730, 0.725, 0.730; aspects 1.035,
+      0.998, 0.949). Ocellus peaks use a one-period window (71 peaks); their spacing
+      sample has mean 49.21 µm, CV 0.330, and KS 0.415 against a normal centred on the
+      FFT wavelength 60.336 µm. The comparison figure marks the equal-diffusion bar
+      "ablated" and the 10 µm bar "quenched". The wavelength law is unchanged:
+      Pearson r = 0.9965, RMSE = 2.575 µm, GIF 560 px × 12 frames, CV similarity 85.2
+      against USNM E39365. What remains is structural: nearest neighbours are shorter
+      and more variable than the Fourier period, and the diffusivities are calibrations.
+    remediation:
+      - "Nearest-neighbour spacing remains shorter and broader than the FFT period (mean 49.21 µm, CV 0.330, KS 0.415 versus Normal centred at 60.336 µm). The wavelength law is the radial spectrum, which already tracks the linear peak at r = 0.9965; a further lattice-phase fit is not required for the gates."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Unchanged mechanism from Pass 1, re-checked on this commit. jacobian
+          (L85-L104), dispersion_sigma (L107-L114) and the periodic IMEX step
+          (L160-L200) are the Schnakenberg system and the Turing eigenvalue.
+          Ratio 12 opens the trace gap; Du = Dv closes it. Lean still proves the
+          integer form of that sign and the 10/480/600 µm counts, with no sorry.
+          The same deduction stands: Du and Dv are calibrations to 60 µm (-10).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [85, 128], note: "Jacobian, dispersion eigenvalue, and trace gap", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [160, 200], note: "Periodic Fourier IMEX integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean, lines: [36, 53], note: "Scale counts and both trace-gap signs, no sorry", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [70, 76], note: "Du and Dv remain frozen calibrations", supports: false}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Pass 1's union mask is kept (circularity 0.066, the three-test plate) and
+          segment_specimen (L273-L339) now closes a 15 px spine fringe and returns
+          three discs with mean circularity 0.730 and mean aspect 0.994. The figure's
+          spacing panel states "3 discs, circ 0.73". The GIF is still the 480 µm
+          lattice in the plate's mean pigment, 560 px, 12 frames, CV similarity 85.2.
+          Deduction: the render is a microscopic patch beside whole tests, not a
+          pixel overlay of the petaloid or the spine canopy (-12).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [305, 339], note: "15 px closing, connected components, per-disc circularity and aspect", supports: true}
+          - {file: docs/media/echinarachnius_parma_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "USNM plate beside the lattice; spacing panel reports 3 discs, circ 0.73", supports: true}
+          - {file: docs/media/echinarachnius_parma_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 560 px growth GIF; CV similarity 85.2 versus USNM E39365", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [345, 372], note: "Disc tint uses the plate mean; it does not copy spine geometry", supports: false}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          The diffusivity sweep, equal-diffusion ablation, and 10–600 µm ladder are
+          the Pass 1 controls. Pass 2 draws a marker and the words "ablated" and
+          "quenched" on the two near-zero bars (L448-L466), so the 10 µm quench is
+          readable. Endpoints of the sweep remain ordered, and Pearson r is 0.9965.
+          Feed rates a and b are still not swept (-9).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [202, 247], note: "Sweep, ablation, and domain ladder", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [448, 466], note: "Zero bars annotated ablated and quenched", supports: true}
+          - {file: docs/media/echinarachnius_parma_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Figure shows the quenched and ablated markers", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          FFT wavelength 60.336 µm versus the 60 µm slot. Sweep Pearson r 0.9965,
+          RMSE 2.575 µm. The new spacing test uses 71 peaks: mean 49.21 µm (reference
+          60), CV 0.330 (reference 0), KS 0.415 against Normal(λ_FFT, s) (reference 0).
+          Per-disc circularity 0.730 versus the union value 0.066; per-disc aspect
+          0.994 versus the union aspect 1.413. The 10 µm amplitude is 0 against the
+          480 µm amplitude 0.437, not against a copy of itself. Deduction: the
+          spacing sample is a poor match to the Fourier period (KS 0.415, CV 0.33),
+          so the lattice is less regular than the dispersion law (-10).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [249, 271], note: "One-period peak window for nearest neighbours", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [509, 668], note: "Fifteen measurements, including spacing KS, spacing CV, and per-disc shape; references differ from values", supports: true}
+          - {file: datasets/echinarachnius_parma_turing_wavelength_s0/echinarachnius_parma_turing_wavelength_s0_run_results.json, lines: [11, 16], note: "Pearson r 0.9965, RMSE 2.575 µm", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [620, 640], note: "Spacing KS 0.415 shows the nearest-neighbour sample is not the FFT wavelength", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Unchanged provenance from Pass 1: five Crossref DOIs, USNM E39365 CC0
+          plate, SHA-256 1af65dc69de55d4b0ff00c1f4134565eed1f5e151e1539fbbdc52730ed880787,
+          and an explicit statement that the 60 µm scale is the slot assignment rather
+          than a Seilacher measurement. Same deductions as Pass 1 (-8).
+        evidence:
+          - {file: datasets/echinarachnius_parma_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "Five Crossref DOIs", supports: true}
+          - {file: datasets/echinarachnius_parma_turing_wavelength_s0/echinarachnius_parma_turing_wavelength_s0_reference.json, lines: [1, 80], note: "60 µm, 0 Ma, specimen SHA-256", supports: true}
+          - {file: datasets/echinarachnius_parma_turing_wavelength_s0/README.md, lines: [1, 40], note: "Scale ladder and the exclusion of slot 160 parameters", supports: true}
+      code-traceability:
+        value: 87
+        rationale: >-
+          Pass 2 code is still pointed at from the math-kg yaml, including the
+          shifted ablation and domain-series ranges. The docstring, the dispersion
+          functions, and the six Lean theorems (no sorry) still match the integer
+          scale ladder and the trace-gap sign. Deduction for the integer stand-in
+          Jacobian in Lean (-8) and for the spacing-window comment being operational
+          rather than a cited equation (-5).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [1, 48], note: "Docstring states the PDE, 60 µm, and 0 Ma", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-echinarachnius-parma-turing-wavelength-s0.yaml, lines: [1, 75], note: "Laws linked to Lean and to the Pass 2 line ranges", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3214_echinarachnius_parma_turing_wavelength_s0.lean, lines: [19, 53], note: "Six theorems, zero sorry", supports: true}
+      repro-package:
+        value: 89
+        rationale: >-
+          --self-test now also requires exactly three discs, mean circularity above
+          0.60, and mean aspect between 0.85 and 1.15, on top of the Pass 1 checks
+          (SHA-256, Lean text, repeated-run identity, ablation, 10 µm quench,
+          Pearson r > 0.98). This run passed. GIF gate remains 12 frames at 560 px.
+          Same environment deductions: no script-specific lock file (-6) and no
+          lean binary on this machine (-5).
+        evidence:
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [731, 785], note: "Self-test, including the three-disc assertions", supports: true}
+          - {file: models/2026-delphi10000-echinarachnius-parma-turing-wavelength-s0.py, lines: [54, 58], note: "Pinned specimen SHA-256", supports: true}
+          - {file: datasets/echinarachnius_parma_turing_wavelength_s0/README.md, lines: [28, 40], note: "Documented invocation", supports: true}
