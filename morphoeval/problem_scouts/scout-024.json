@@ -1,0 +1,280 @@
+{
+  "scout": "scout-024",
+  "ground": "wavevector",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "id": "WV-SIM-CONTACT-01",
+      "title": "Contact vs no-contact neighbor attenuation (Hypothesis 2) — synthetic ground-truth closure",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md marks the contact-vs-non-contact claim as CANNOT TEST because it needs separate real spark_tracks CSVs per condition; the wave catalog has contact/no-contact labels in paths but no registered paired scorer on spark_tracks.",
+      "done": "Run seed-locked paired lanes with `generate_simulated_data.py --compare-ab two_embryos_isolated_control two_embryos_coupled` (seed=42, duration_s=30); JSON summary must show `primary_embryo_a_seed_locked_identical` true, `lane_a_embryos_recruited` == [\"A\"], `lane_b_embryos_recruited` includes \"B\", and `delta_total_states_b_minus_a` > 0; then on lane B CSV, `analyze_experimental_hypotheses.analyze_oscillatory_coherence` must yield `inter_embryo_plv` at least 0.10 higher than on lane A.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_isolated_control two_embryos_coupled --output wave-vector-analysis/simulations/sim_contact_ab --seed 42 --duration 30; python3 -c \"from analyze_experimental_hypotheses import analyze_oscillatory_coherence; import pandas as pd; ...\" (run from wave-vector-analysis/ on *_lane_a.csv and *_lane_b.csv)",
+      "deciding_data": "In repo: predefined scenarios in wave-vector-analysis/simulations/generate_simulated_data.py and reference paired summary wave-vector-analysis/simulations/sim_paired_ab_summary.json. Real Box calcium TIFFs are not vendored (batch_wave_catalog.py default root is external).",
+      "prior_attempts": "Repo documents Hypothesis 2 as untestable on real tracks (EXPERIMENTAL_HYPOTHESES.md §2). No morphoeval audit refutes the simulation A/B route; open-problems.json does not list this sim closure.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "`--compare-ab` and oscillatory-coherence analysis are implemented and exit with explicit PASS/summary fields."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All deciding inputs are in-repo scenarios plus optional reuse of sim_paired_ab_summary.json; no external fetch required for the synthetic verdict."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Verdict is a checklist on JSON keys and a numeric PLV gap, no visual judgment."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Sub-minute runs on CPU with requirements.txt stack (pandas, numpy, scipy)."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Can write only new sweep output CSV/JSON under simulations/ or /tmp without touching tracked pipeline code."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single compare-ab invocation plus one coherence call per lane."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded prior attempt refutes this synthetic contact/no-contact discrimination route."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-OP08-CONF-01",
+      "title": "OP-08 mirror vs headward confound — seed-locked orientation ablation on synthetic embryos",
+      "gap": "open-problems.json OP-08: post-unblinding HTHT mirror signal (AUC ~0.61–0.65) is exploratory and confounded because pokes were at the tail; there is no seed-locked ablation showing how much orientation geometry alone moves neighbour-prediction features independent of true inter-embryo coupling.",
+      "done": "With fixed seed=42, generate two 30 s simulations: `two_embryos_head_head` and `two_embryos_tail_tail` (same poke embryo A). After `spark_tracks_to_clusters.py` on both CSVs, a pre-registered orientation-only feature (e.g., mean cluster `mean_angle_deg` on embryo B) must differ between scenarios with |Δ| ≥ 15° while `analyze_oscillatory_coherence` `inter_embryo_plv` differs by ≤ 0.15 (proving geometry can dominate unless explicitly regressed out).",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_head_head --output /tmp/hh.csv --seed 42 --duration 30; same for two_embryos_tail_tail → /tmp/tt.csv; python3 wave-vector-analysis/spark_tracks_to_clusters.py /tmp/hh.csv /tmp/hh_clusters.csv (and tt); python3 wave-vector-analysis/analyze_experimental_hypotheses.py (oscillatory coherence + cluster angles on both pairs).",
+      "deciding_data": "In repo: scenario definitions in generate_simulated_data.py; OP-08 context in docs/open-problems.json. Held-out pixel blind videos are not in this workspace — synthetic ground truth only.",
+      "prior_attempts": "Multi-agent panel attempted real pixel blind v1/v2 (OP-08 partial); no hash-locked simulation ablation on record.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Scenario sweeps plus existing coherence/angle metrics decide the confound; no new model code required."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Uses only in-repo scenario presets; real blind TIFFs absent but not needed for this synthetic done-criterion."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Numeric angle gap and PLV gap thresholds are machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Two short simulations and two cluster passes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Outputs can live in new files under morphoeval/runs/ or /tmp."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting: four CLI steps."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "OP-08 real-blind route is open but not refuted; this sim route is distinct and unattempted."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-TTT-NEG-01",
+      "title": "Posterior poke, tail–tail layout: does the simulator suppress neighbour waves? (Hypothesis 5 partial)",
+      "gap": "EXPERIMENTAL_HYPOTHESES.md §5 (posterior damage, tail–tail) is PARTIAL with n=2 real videos and a comment that embryo B still shows slight activity; there is no deterministic negative control showing whether the current SimulationGenerator agrees or disagrees with the written claim.",
+      "done": "Compare `two_embryos_tail_tail` vs `two_embryos_head_head` at seed=42, duration_s=30. Count spark track states with `embryo_id=='B'` and `time_s>0`. Done if either (A) tail–tail neighbour states < 50% of head–head neighbour states, supporting the negative claim under this model, or (B) tail–tail ≥ head–head, falsifying the model relative to the claim and requiring catalog transfer_boundary update.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --scenario two_embryos_tail_tail --output /tmp/tt_neg.csv --seed 42 --duration 30; same for two_embryos_head_head; python3 -c \"import pandas as pd; ...\" to compare embryo B post-poke row counts.",
+      "deciding_data": "In repo: tail_tail and head_head scenarios in generate_simulated_data.py; qualitative real note in EXPERIMENTAL_HYPOTHESES.md. Full real TIFF catalog external.",
+      "prior_attempts": "Claims inventory / wave_laterality_analysis tested real videos; no paired sim-versus-claim table recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Pure scenario generation and embryo_id counting — native simulation outputs."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Simulator in repo; real tail–tail posterior-poke series not vendored as CSV."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Ratio threshold on integer state counts."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Two 30 s simulations."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New result JSON only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Minutes."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior sim-claim reconciliation attempt logged."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-CPL-THRESH-01",
+      "title": "Inter-embryo coupling_range_lengths recruitment threshold (catalog transfer boundary)",
+      "gap": "wave-vector-analysis/simulations/catalog.json transfer_boundary states inter-embryo triggering uses `dist < coupling_range_lengths * embryo.length` but no tabulated sweep shows the minimum coupling_range_lengths that recruits embryo B or matches neighbour onset lags from wave_laterality_analysis.",
+      "done": "For coupling_range_lengths in {0.0, 0.5, 1.0, 1.5, 2.0, 2.5}, generate `two_embryos_head_head`-geometry configs (JSON via calibrate template or inline WaveConfig edits) at seed=42; record smallest value where `embryo_id B` has ≥1 post-poke track state. Publish monotonicity: recruitment count non-decreasing in coupling_range_lengths.",
+      "tool_route": "Loop: python3 wave-vector-analysis/simulations/generate_simulated_data.py --config <json> --output /tmp/cpl_<x>.csv --seed 42 --duration 30; or extend generate_simulated_data.py with a one-off sweep script in a new file; summarize with pandas groupby on embryo_id.",
+      "deciding_data": "In repo: coupling parameter in WaveConfig (generate_simulated_data.py) and claim text in simulations/catalog.json. Real wave_laterality.csv not present in workspace snapshot — optional external compare later (wavepipe lens).",
+      "prior_attempts": "sim_paired_ab_summary.json documents 2.0 vs 0.0 paired delta but not a full threshold curve.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Parameter ablation is native to SimulationGenerator; only needs repeated runs or a small new sweep wrapper."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Simulator and catalog in repo; real laterality CSV missing from checkout."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Threshold is first coupling value with B recruited plus monotonicity check."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Six short simulations."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New sweep JSON/CSV only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop under an hour."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No refutation of coupling sweeps on record."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-TELEM-01",
+      "title": "Telemetry dropout/jitter tolerance envelope for PLV-based hypotheses",
+      "gap": "generate_simulated_data.py --self-test hard-codes PASS at dropout≤15% and jitter≤1.5 px with |ΔPLV|<0.25 and |ΔH_norm|<0.15, but the repo lacks a published maximum dropout/jitter pair where downstream oscillatory-coherence still passes — MesmerPrism/rusty-lsl realism claim in docstring is unbounded above 15%.",
+      "done": "`python3 wave-vector-analysis/simulations/generate_simulated_data.py --self-test` exits 0 (all grid points PASS). Then a grid sweep using `apply_telemetry_perturbations` on baseline `two_embryos_coupled` output must report the largest dropout in {0.05,0.10,0.15,0.20,0.25,0.30} with jitter=1.0 px such that |ΔPLV|<0.25 still holds; publish that numeric ceiling in a new JSON artifact.",
+      "tool_route": "python3 wave-vector-analysis/simulations/generate_simulated_data.py --self-test; optional extension: python3 -c \"from wave-vector-analysis.simulations.generate_simulated_data import ...\" grid loop calling apply_telemetry_perturbations + analyze_oscillatory_coherence (same functions as run_telemetry_stress_benchmark).",
+      "deciding_data": "In repo: run_telemetry_stress_benchmark in generate_simulated_data.py; requires scipy from requirements.txt.",
+      "prior_attempts": "Self-test benchmark added with catalog validation; no extended dropout grid documented.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "--self-test already encodes the decision logic; sweep reuses the same functions."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Fully synthetic; no external data."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Largest passing dropout is a single scalar from a fixed grid."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Grid of ~6–12 perturbed runs, each small."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New telemetry_envelope.json only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sitting including self-test."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of extended telemetry grid."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-CAL-01",
+      "title": "Calibrated simulation speed distribution vs real spark_tracks subset (KS gate)",
+      "gap": "simulations/CALIBRATION_GUIDE.md instructs iterative calibration but states no pass/fail statistic comparing simulated speeds to real spark_tracks after calibrate_from_real_data.py → generate_simulated_data.py --config.",
+      "done": "Run calibrate_from_real_data.py on wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv (clusters from spark_tracks_to_clusters.py on same file). Generate 30 s simulated CSV with --config. Two-sample KS test on per-track mean speed (real vs sim): if p≥0.05 and median speeds within 20%, PASS calibration adequacy; else FAIL with documented gap.",
+      "tool_route": "python3 wave-vector-analysis/spark_tracks_to_clusters.py wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv /tmp/subset_clusters.csv; python3 wave-vector-analysis/simulations/calibrate_from_real_data.py wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv --clusters-csv /tmp/subset_clusters.csv --output /tmp/calibrated_config.json; python3 wave-vector-analysis/simulations/generate_simulated_data.py --config /tmp/calibrated_config.json --output /tmp/sim_cal.csv --duration 30; python3 -c \"from scipy.stats import ks_2samp; ...\"",
+      "deciding_data": "In repo: spark_tracks_subset.csv (~57k rows). Full production spark_tracks.csv not vendored.",
+      "prior_attempts": "Calibration tooling exists; no KS gate in README or audits.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Uses calibrate + generate scripts; KS is a one-liner, not a new model."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Subset CSV in repo; clusters must be generated once locally."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "KS p-value and median ratio thresholds."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "Clustering subset + one simulation may take minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Artifacts under /tmp or new morphoeval/runs file."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Single pipeline pass, longer than pure sim but still one sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Unattempted calibration gate."
+        }
+      }
+    },
+    {
+      "id": "WV-SIM-OP07-BLOCKED",
+      "title": "OP-07 Xenopus neighbour-transfer v2 on real ground-truth geometry (not simulation-decidable)",
+      "gap": "open-problems.json OP-07 status refuted for headline blind test; v2 needs hash-locked preregistration on ground-truth-geometry videos only — cannot be closed by SimulationGenerator alone.",
+      "done": "N/A for simulation lens: would require embryo-blind hash-locked scorer on held-out videos (registry/wavepipe lens), not synthetic CSV.",
+      "tool_route": "Wrong lens: use embryo-blind preregistration + wave-vector pipeline on real TIFFs (`wave-vector-tiff-parser.py` → features → blind scorer). Simulation can only supply orientation-confound priors (see WV-SIM-OP08-CONF-01), not OP-07 closure.",
+      "deciding_data": "XENOPUS_BLIND_RESULTS.md / embryo-blind README referenced in open-problems.json but not present in this workspace snapshot; videos external.",
+      "prior_attempts": "Multi-agent panel; OP-07 marked refuted; orientation AUC 0.833 vs LOOO 0.484 documented in open-problems.json gap text.",
+      "factors": {
+        "tool_fit": {
+          "score": 3,
+          "why": "Simulation cannot unblind or score real neighbour transfer; at most feeds confound priors."
+        },
+        "data_in_hand": {
+          "score": 4,
+          "why": "Held-out Xenopus videos and v2 prereg not in repo checkout."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Real OP-07 done-criterion is clear but belongs to registry lens."
+        },
+        "compute_in_repo": {
+          "score": 6,
+          "why": "Parser pipeline runs in-repo if TIFFs were mounted."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Blind workflow uses new prereg files."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Blocked on data + prereg, not one sim loop."
+        },
+        "not_blocked": {
+          "score": 1,
+          "why": "Headline route refuted; v2 prereg explicitly still open but not via simulation."
+        }
+      }
+    }
+  ]
+}
