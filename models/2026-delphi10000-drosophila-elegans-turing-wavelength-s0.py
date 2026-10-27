@@ -23,10 +23,10 @@ with periodic boundaries. Du is solved so the fastest linear wavelength of
 D. elegans is 1.803 µm. Deflecta and erecta keep that Du and change only the
 inhibitor/activator ratio.
 
-Pass 1 pins the linear wavelength and reports the nonlinear FFT wavelength
-without retuning it. The ratio sweep, equal-diffusion simulation, specimen
-segmentation beyond a green-screen fraction, and the KS / seed CV are the
-Pass 2 remediation.
+Pass 2 retunes Du so the nonlinear FFT wavelength meets 1.803 µm, sweeps the
+inhibitor ratio, simulates the equal-diffusion ablation, and segments the
+yellow leaf, red eye, and 1 mm scale bar. The Pass 1 leaf test (G > R+18)
+scored a foreground fraction of 1.0 on this photograph and is not used.
 """
 from __future__ import annotations
 
@@ -65,10 +65,11 @@ ELEGANS_FRAC = 1.06
 DEFLECTA_FRAC = 2.65
 ERECTA_FRAC = 1.48
 SEED = 3182
-PASS_ID = 1
-# Pass 2 sets this to k_nonlinear / k_linear so the emergent FFT wavelength
-# lands on 1.803 µm. Pass 1 leaves the linear law uncorrected.
-NONLINEAR_K_CORRECTION = 1.0
+PASS_ID = 2
+# Pass 1 measured k_nonlinear / k_linear = 1.80273 / 1.66898. Dividing the
+# linear target by this factor lengthens the linear mode so the emergent
+# FFT wavelength lands on 1.803 µm.
+NONLINEAR_K_CORRECTION = 1.08014
 
 
 def verify_dataset_integrity() -> dict[str, str]:
@@ -258,14 +259,143 @@ def dominant_wavelength_um(field: np.ndarray, dx: float) -> float:
 
 
 def leaf_mask(rgb: np.ndarray) -> np.ndarray:
+    """Yellow-green leaf: R ≈ G and B is low.
+
+    Pass 1 required G > R + 18. On this JPEG that predicate is false everywhere
+    (median G − R is 0), so the whole frame was called fly. The low-B test is
+    the Pass 2 replacement.
+    """
     R = rgb[:, :, 0].astype(np.int16)
     G = rgb[:, :, 1].astype(np.int16)
     B = rgb[:, :, 2].astype(np.int16)
-    return (G > R + 18) & (G > B + 8) & (rgb[:, :, 1] > 90)
+    return (np.abs(R - G) < 28) & (B < 110) & (G > 140) & ((G - B) > 50)
 
 
 def foreground_fraction(rgb: np.ndarray) -> float:
     return float((~leaf_mask(rgb)).mean())
+
+
+def _longest_dark_run(mask: np.ndarray) -> int:
+    best = 0
+    for row in mask:
+        padded = np.concatenate([[0], row.astype(np.uint8), [0]])
+        delta = np.diff(padded.astype(np.int16))
+        starts = np.where(delta == 1)[0]
+        ends = np.where(delta == -1)[0]
+        if len(starts):
+            best = max(best, int((ends - starts).max()))
+    return best
+
+
+def segment_specimen(rgb: np.ndarray) -> dict[str, float]:
+    """Body, red-eye component, and the drawn 1 mm scale bar.
+
+    The transparent wing is optically the leaf, so wing pigment in the GIF is
+    still placed by an ellipse on the body centroid. These metrics are measured
+    on the photograph, not copied from the reference constants.
+    """
+    from scipy import ndimage as ndi
+
+    leaf = leaf_mask(rgb)
+    fg = float((~leaf).mean())
+    R = rgb[:, :, 0].astype(np.int16)
+    G = rgb[:, :, 1].astype(np.int16)
+    B = rgb[:, :, 2].astype(np.int16)
+    eye = (R > 180) & (R > G + 60) & (G < 120) & (B < 100)
+    labeled, n = ndi.label(eye)
+    eye_area = 0.0
+    eye_circ = 0.0
+    if n:
+        sizes = ndi.sum(np.ones_like(labeled), labeled, range(1, n + 1))
+        main = labeled == (1 + int(np.argmax(sizes)))
+        eye_area = float(main.sum())
+        perimeter = float(np.sum(main & ~ndi.binary_erosion(main)))
+        eye_circ = float(4.0 * math.pi * eye_area / (perimeter * perimeter + 1e-9))
+    H, W = rgb.shape[:2]
+    corner = rgb[int(H * 0.75):, int(W * 0.45):]
+    dark = corner.sum(axis=2) < 150
+    scale_px = float(_longest_dark_run(dark))
+    mm_per_px = 1.0 / scale_px if scale_px > 20 else float("nan")
+    body = ~leaf
+    body = ndi.binary_opening(body, iterations=1)
+    blab, bn = ndi.label(body)
+    width_mm = float("nan")
+    height_mm = float("nan")
+    if bn and scale_px > 20:
+        bsizes = ndi.sum(np.ones_like(blab), blab, range(1, bn + 1))
+        bmain = blab == (1 + int(np.argmax(bsizes)))
+        ys, xs = np.where(bmain)
+        width_mm = float((xs.max() - xs.min()) * mm_per_px)
+        height_mm = float((ys.max() - ys.min()) * mm_per_px)
+    return {
+        "foreground_fraction": fg,
+        "eye_circularity": eye_circ,
+        "eye_area_px": eye_area,
+        "scale_bar_px": scale_px,
+        "mm_per_px": mm_per_px,
+        "body_bbox_width_mm": width_mm,
+        "body_bbox_height_mm": height_mm,
+    }
+
+
+def ratio_sweep(Du: float, jac: dict[str, float], r_c: float) -> dict:
+    """Linear wavelength versus supercriticality at the Pass-1 activator diffusivity."""
+    fracs = (1.02, 1.06, 1.20, 1.48, 2.00, 2.65, 3.20)
+    points = []
+    for frac in fracs:
+        r = r_c * frac
+        k_max, s_max = fastest_wavenumber(Du, r * Du, jac)
+        points.append({
+            "supercriticality": frac,
+            "wavelength_um": 2.0 * math.pi / k_max,
+            "sigma_max": s_max,
+        })
+    lams = [p["wavelength_um"] for p in points]
+    return {
+        "points": points,
+        "monotonic_increasing": all(lams[i] < lams[i + 1] for i in range(len(lams) - 1)),
+        "lambda_at_1_02": lams[0],
+        "lambda_at_3_20": lams[-1],
+    }
+
+
+def ablation_and_ks(Du: float, jac: dict[str, float], pattern: np.ndarray) -> dict[str, float]:
+    """Equal-diffusion control on a shorter grid, scored against the patterned field."""
+    from scipy import stats
+
+    ab = simulate_schnakenberg(
+        Du, Du, jac, n_wavelengths=12.0, nx=120, ny=88, steps=700, dt=0.2, seed=SEED, n_snapshots=2,
+    )
+    pat = pattern.ravel()[::8]
+    ctl = np.asarray(ab["U"]).ravel()[::4]
+    n = min(pat.size, ctl.size, 6000)
+    ks = stats.ks_2samp(pat[:n], ctl[:n])
+    pat_std = float(np.std(pattern))
+    ctl_std = float(np.std(ab["U"]))
+    return {
+        "pattern_std": pat_std,
+        "ablation_std": ctl_std,
+        "std_ratio": pat_std / (ctl_std + 1e-12),
+        "ks_statistic": float(ks.statistic),
+        "ks_pvalue": float(ks.pvalue),
+    }
+
+
+def seed_wavelength_cv(Du: float, Dv: float, jac: dict[str, float]) -> dict[str, float]:
+    lams = []
+    for seed in (3182, 3183, 3184):
+        sim = simulate_schnakenberg(
+            Du, Dv, jac, n_wavelengths=12.0, nx=120, ny=88, steps=800, dt=0.2, seed=seed, n_snapshots=2,
+        )
+        lams.append(dominant_wavelength_um(np.asarray(sim["U"]), float(sim["dx_um"])))
+    arr = np.array(lams, dtype=float)
+    mean = float(np.mean(arr))
+    std = float(np.std(arr, ddof=1)) if arr.size > 1 else 0.0
+    return {
+        "wavelengths_um": [float(x) for x in arr],
+        "mean_um": mean,
+        "cv": std / mean if mean else float("nan"),
+    }
 
 
 def wing_ellipse_from_body(rgb: np.ndarray) -> np.ndarray:
@@ -347,50 +477,68 @@ def render_comparison(
     rows: list[dict],
     gof: dict[str, float],
     nonlinear_um: float,
+    sweep: dict,
+    seg: dict[str, float],
+    ablation: dict[str, float],
+    seed_cv: dict[str, float],
     path: Path,
 ) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(2, 2, figsize=(12.2, 8.2), dpi=110)
+    fig, axes = plt.subplots(2, 3, figsize=(13.6, 8.4), dpi=110)
     axes[0, 0].imshow(specimen)
     axes[0, 0].set_title("D. elegans adult, Holocene 0 Ma\n(gallery specimen, 1 mm bar)")
     axes[0, 0].axis("off")
 
     im = axes[0, 1].imshow(field, cmap="magma", origin="lower")
-    axes[0, 1].set_title(
-        f"Pass 1 activator field\nnonlinear λ = {nonlinear_um:.3f} µm (target 1.803)"
-    )
+    axes[0, 1].set_title(f"Pass 2 activator lattice\nnonlinear λ = {nonlinear_um:.3f} µm")
     axes[0, 1].set_xlabel("grid x")
     fig.colorbar(im, ax=axes[0, 1], fraction=0.046, pad=0.04)
 
+    fracs = [p["supercriticality"] for p in sweep["points"]]
+    lams_s = [p["wavelength_um"] for p in sweep["points"]]
+    axes[0, 2].plot(fracs, lams_s, "o-", color="#6a1b9a")
+    axes[0, 2].axhline(LAMBDA_UM, color="#333", ls="--", lw=1)
+    axes[0, 2].set_xlabel("r / r_c at fixed Du")
+    axes[0, 2].set_ylabel("linear λ (µm)")
+    axes[0, 2].set_title(
+        "Ratio sweep\n" + ("monotonic" if sweep["monotonic_increasing"] else "NOT monotonic")
+    )
+
     names = [r["species"].split()[-1] for r in rows]
     lams = [float(r["wavelength_um"]) for r in rows]
-    colors = ["#8d6e63", "#c62828", "#ef6c00"]
-    axes[1, 0].bar(names, lams, color=colors)
-    axes[1, 0].axhline(LAMBDA_UM, color="#333", ls="--", lw=1, label="1.803 µm")
+    axes[1, 0].bar(names, lams, color=["#8d6e63", "#c62828", "#ef6c00"])
+    axes[1, 0].axhline(LAMBDA_UM, color="#333", ls="--", lw=1, label="1.803 µm nonlinear target")
     axes[1, 0].set_ylabel("linear fastest wavelength (µm)")
-    axes[1, 0].set_title("Chronoseries at fixed Du\ndeflecta → elegans → erecta")
+    axes[1, 0].set_title("Chronoseries at the retuned Du")
     axes[1, 0].legend(frameon=False, fontsize=8)
     axes[1, 0].set_ylim(0, max(lams) * 1.25)
 
-    axes[1, 1].axis("off")
-    elegans = next(r for r in rows if r["role"] == "focal")
-    text = (
-        "Slot 3182  ·  1.8 µm  ·  age 0 Ma\n"
-        f"Schnakenberg (a, b) = ({A_PROD}, {B_PROD})\n"
-        f"elegans r/r_c = {ELEGANS_FRAC}   linear λ = {float(elegans['wavelength_um']):.4f} µm\n"
-        f"nonlinear FFT λ = {nonlinear_um:.4f} µm   (not yet retuned)\n"
-        f"dispersion Pearson r = {gof['pearson_r']:.4f}\n"
-        f"dispersion RMSE = {gof['rmse']:.4f}   (n = {gof['n_modes']}, dx = {gof['dx_um']:.3f} µm)\n"
-        f"deflecta λ = {float(rows[0]['wavelength_um']):.3f} µm\n"
-        f"erecta λ = {float(rows[2]['wavelength_um']):.3f} µm\n"
-        "Pass 1 gaps: no ratio sweep, no simulated\n"
-        "equal-diffusion control, no KS / seed CV,\n"
-        "wing prior is an ellipse, not a segmentation."
+    axes[1, 1].bar(
+        ["ablation\nDu = Dv", "elegans\npattern"],
+        [ablation["ablation_std"], ablation["pattern_std"]],
+        color=["#90a4ae", "#c62828"],
     )
-    axes[1, 1].text(0.02, 0.98, text, va="top", ha="left", family="monospace", fontsize=9)
+    axes[1, 1].set_ylabel("activator std")
+    axes[1, 1].set_title(f"Equal-diffusion control\nstd ratio {ablation['std_ratio']:.1f}")
+
+    axes[1, 2].axis("off")
+    text = (
+        "Slot 3182 · 1.8 µm · age 0 Ma · Pass 2\n"
+        f"nonlinear FFT λ = {nonlinear_um:.4f} µm\n"
+        f"dispersion r = {gof['pearson_r']:.4f}  RMSE = {gof['rmse']:.4f}\n"
+        f"KS(pattern, ablation) = {ablation['ks_statistic']:.3f}\n"
+        f"seed CV of λ = {seed_cv['cv']:.4f}\n"
+        f"foreground = {seg['foreground_fraction']:.3f}\n"
+        f"eye circularity = {seg['eye_circularity']:.3f}\n"
+        f"scale bar = {seg['scale_bar_px']:.0f} px = 1 mm\n"
+        f"body bbox = {seg['body_bbox_width_mm']:.2f} × {seg['body_bbox_height_mm']:.2f} mm\n"
+        f"sweep λ {sweep['lambda_at_1_02']:.3f} → {sweep['lambda_at_3_20']:.3f} µm\n"
+        "deflecta longer than erecta longer than elegans"
+    )
+    axes[1, 2].text(0.02, 0.98, text, va="top", ha="left", family="monospace", fontsize=8.5)
     fig.suptitle(
         "Drosophila elegans Turing wavelength at 1.8 µm (Holocene, 0 Ma)",
         fontsize=13,
@@ -409,7 +557,10 @@ def assemble_metrics(
     rows: list[dict],
     gof: dict[str, float],
     nonlinear_um: float,
-    fg: float,
+    seg: dict[str, float],
+    sweep: dict,
+    ablation: dict[str, float] | None,
+    seed_cv: dict[str, float] | None,
     gif_info: dict[str, int] | None,
 ) -> dict:
     elegans = next(r for r in rows if r["role"] == "focal")
@@ -428,7 +579,11 @@ def assemble_metrics(
         "linear_wavelength_um": float(elegans["wavelength_um"]),
         "nonlinear_wavelength_um": nonlinear_um,
         "dispersion": gof,
-        "foreground_fraction": fg,
+        "segmentation": seg,
+        "foreground_fraction": seg["foreground_fraction"],
+        "ratio_sweep": sweep,
+        "ablation": ablation,
+        "seed_cv": seed_cv,
         "gif": gif_info,
         "input_sha256": digests,
         "seed": SEED,
@@ -460,7 +615,7 @@ def measure_morphoeval() -> list[dict]:
             "method": "power-weighted radial FFT peak of the steady activator",
             "reference_value": LAMBDA_UM,
             "reference_source": "assigned detail scale 1.803 µm",
-            "note": "Pass 1 does not retune Du to close this gap",
+            "note": "Pass 2 retunes Du by the Pass-1 k ratio; residual vs 1.803 µm remains",
             "derived_from": "output",
         },
         {
@@ -505,13 +660,63 @@ def measure_morphoeval() -> list[dict]:
         },
         {
             "name": "specimen_foreground_fraction",
-            "value": m["foreground_fraction"],
+            "value": m["segmentation"]["foreground_fraction"],
             "unit": "1",
-            "method": "fraction of pixels failing the green-leaf test G > R+18 and G > B+8",
+            "method": "fraction of pixels outside the yellow-leaf mask |R-G|<28, B<110, G>140",
             "reference_value": 0.50,
             "reference_source": "neutral half-frame prior, not the measured fraction",
-            "note": "Pass 1 green screen only; eye circularity and the scale bar are Pass 2",
+            "note": "replaces the Pass 1 G>R+18 test, which returned 1.0",
             "derived_from": "output",
+        },
+        {
+            "name": "specimen_eye_circularity",
+            "value": m["segmentation"]["eye_circularity"],
+            "unit": "1",
+            "method": "4π area / perimeter^2 of the largest red-eye connected component",
+            "reference_value": 1.0,
+            "reference_source": "a perfect circle, not the measured eye",
+            "note": f"eye area {m['segmentation']['eye_area_px']:.0f} px",
+            "derived_from": "output",
+        },
+        {
+            "name": "specimen_body_bbox_width",
+            "value": m["segmentation"]["body_bbox_width_mm"],
+            "unit": "mm",
+            "method": "non-leaf bounding-box width times 1 mm / detected scale-bar pixels",
+            "reference_value": 2.62,
+            "reference_source": "species-manifest characteristic size 0.00262 m; the bbox includes wings and legs",
+            "note": f"scale bar {m['segmentation']['scale_bar_px']:.0f} px",
+            "derived_from": "output",
+        },
+        {
+            "name": "ablation_std_ratio",
+            "value": m["ablation"]["std_ratio"],
+            "unit": "1",
+            "method": "std(patterned activator) / std(equal-diffusion control)",
+            "reference_value": 1.0,
+            "reference_source": "null in which diffusion does not increase contrast",
+            "note": f"KS statistic {m['ablation']['ks_statistic']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "pattern_vs_ablation_ks",
+            "value": m["ablation"]["ks_statistic"],
+            "unit": "1",
+            "method": "two-sample Kolmogorov-Smirnov statistic, patterned field vs Du=Dv control",
+            "reference_value": 0.0,
+            "reference_source": "identical-distribution null",
+            "note": f"p = {m['ablation']['ks_pvalue']:.3g}",
+            "derived_from": "script",
+        },
+        {
+            "name": "nonlinear_wavelength_seed_cv",
+            "value": m["seed_cv"]["cv"],
+            "unit": "1",
+            "method": "sample CV of the FFT wavelength across seeds 3182, 3183, 3184",
+            "reference_value": 0.0,
+            "reference_source": "a seed-invariant wavelength",
+            "note": "seeds " + ", ".join(f"{x:.3f}" for x in m["seed_cv"]["wavelengths_um"]),
+            "derived_from": "script",
         },
     ]
 
@@ -539,16 +744,20 @@ def run_pass1(render: bool) -> dict:
         raise RuntimeError("elegans ratio is not above onset")
     if turing_margin(1.0, jac) >= 0:
         raise RuntimeError("equal diffusion should be below onset")
+    Du_law = solve_activator_diffusivity(jac, r_elegans, 2.0 * math.pi / LAMBDA_UM)
+    law_rows = chronospecies_table(Du_law, jac, r_c)
+    law_elegans = float(next(r["wavelength_um"] for r in law_rows if r["role"] == "focal"))
+    if abs(law_elegans - LAMBDA_UM) / LAMBDA_UM > 0.005:
+        raise RuntimeError(f"law-table wavelength {law_elegans} drifted from {LAMBDA_UM}")
     k_target = (2.0 * math.pi / LAMBDA_UM) / NONLINEAR_K_CORRECTION
     Du = solve_activator_diffusivity(jac, r_elegans, k_target)
     rows = chronospecies_table(Du, jac, r_c)
-    elegans_lam = float(next(r["wavelength_um"] for r in rows if r["role"] == "focal"))
-    if abs(elegans_lam - LAMBDA_UM) / LAMBDA_UM > 0.005 and NONLINEAR_K_CORRECTION == 1.0:
-        raise RuntimeError(f"linear wavelength {elegans_lam} drifted from {LAMBDA_UM}")
     order = [float(r["wavelength_um"]) for r in rows]
     if not (order[0] > order[2] > order[1]):
         raise RuntimeError(f"expected deflecta > erecta > elegans wavelengths, got {order}")
-    # dx of the production grid, used for the dispersion comparison.
+    sweep = ratio_sweep(Du_law, jac, r_c)
+    if not sweep["monotonic_increasing"]:
+        raise RuntimeError(f"ratio sweep is not monotonic: {sweep['points']}")
     dx = (22.0 * LAMBDA_UM) / 220.0
     gof = dispersion_goodness_of_fit(Du, r_elegans * Du, jac, dx)
     if gof["pearson_r"] <= 0.98:
@@ -561,20 +770,36 @@ def run_pass1(render: bool) -> dict:
 
     specimen = Image.open(SPECIMEN)
     rgb = np.asarray(specimen.convert("RGB"))
-    fg = foreground_fraction(rgb)
+    seg = segment_specimen(rgb)
+    if not (0.05 < seg["foreground_fraction"] < 0.6):
+        raise RuntimeError(f"leaf segmentation implausible: {seg['foreground_fraction']}")
     nonlinear_um = float("nan")
     gif_info = None
+    ablation = None
+    seed_cv = None
     if render:
         sim = simulate_schnakenberg(Du, r_elegans * Du, jac)
         nonlinear_um = dominant_wavelength_um(sim["U"], float(sim["dx_um"]))
-        render_comparison(specimen, sim["U"], rows, gof, nonlinear_um, MEDIA_PNG)
+        if abs(nonlinear_um - LAMBDA_UM) / LAMBDA_UM > 0.025:
+            raise RuntimeError(
+                f"nonlinear wavelength {nonlinear_um:.4f} µm is still outside 2.5% of {LAMBDA_UM}"
+            )
+        ablation = ablation_and_ks(Du, jac, np.asarray(sim["U"]))
+        if ablation["std_ratio"] < 3.0:
+            raise RuntimeError(f"ablation did not stay flat: {ablation}")
+        seed_cv = seed_wavelength_cv(Du, r_elegans * Du, jac)
+        render_comparison(
+            specimen, sim["U"], rows, gof, nonlinear_um, sweep, seg, ablation, seed_cv, MEDIA_PNG,
+        )
         gif_info = render_growth_gif(specimen, list(sim["snapshots"]), MEDIA_GIF)
         with Image.open(MEDIA_GIF) as gif:
             n_frames = getattr(gif, "n_frames", 1)
             w, h = gif.size
         if n_frames < 10 or min(w, h) < 480:
             raise RuntimeError(f"GIF failed the fitness gate: frames={n_frames}, size={w}x{h}")
-    metrics = assemble_metrics(digests, jac, r_c, Du, rows, gof, nonlinear_um, fg, gif_info)
+    metrics = assemble_metrics(
+        digests, jac, r_c, Du, rows, gof, nonlinear_um, seg, sweep, ablation, seed_cv, gif_info,
+    )
     metrics["lean"] = lean_msg
     if render:
         METRICS_PATH.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
@@ -598,6 +823,12 @@ def main() -> int:
         "pearson_r": metrics["dispersion"]["pearson_r"],
         "rmse": metrics["dispersion"]["rmse"],
         "foreground_fraction": metrics["foreground_fraction"],
+        "eye_circularity": metrics["segmentation"]["eye_circularity"],
+        "body_bbox_width_mm": metrics["segmentation"]["body_bbox_width_mm"],
+        "sweep_monotonic": metrics["ratio_sweep"]["monotonic_increasing"],
+        "ablation_std_ratio": None if metrics["ablation"] is None else metrics["ablation"]["std_ratio"],
+        "ks_statistic": None if metrics["ablation"] is None else metrics["ablation"]["ks_statistic"],
+        "seed_cv": None if metrics["seed_cv"] is None else metrics["seed_cv"]["cv"],
         "deflecta_um": metrics["chronospecies"][0]["wavelength_um"],
         "erecta_um": metrics["chronospecies"][2]["wavelength_um"],
         "Du_um2": metrics["Du_um2"],
