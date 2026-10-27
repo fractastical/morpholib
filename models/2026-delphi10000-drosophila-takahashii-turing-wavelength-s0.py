@@ -94,8 +94,6 @@ TEISSIERI_ENVELOPE_NM = 107000  # 107 µm
 DETAIL_NM = 2362
 GIF_SIZE = (640, 480)
 N_GIF_FRAMES = 12
-# Last-frame weight of the real plate inside the segmented body (pass 2).
-SPECIMEN_WEIGHT = 0.46
 
 
 def sha256_file(path: Path) -> str:
@@ -331,11 +329,29 @@ def otsu_threshold(gray_u8: np.ndarray) -> int:
 
 
 def segment_specimen(rgb: np.ndarray) -> dict[str, float | np.ndarray]:
-    """Otsu body mask on the plate. The fly is the dark foreground."""
+    """Largest smoothed dark component, with the caption band excluded.
+
+    Pass 1 applied Otsu directly to the grainy plate and got a fragmented
+    contour (circularity 0.0018). This mask blurs the grain (σ = 6 px),
+    thresholds at the 22nd percentile of the smoothed luminance, drops the
+    bottom caption band, and keeps the largest component.
+    """
     gray = (0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2]).astype(np.float64)
     gray_u8 = np.clip(gray, 0, 255).astype(np.uint8)
-    thr = otsu_threshold(gray_u8)
-    mask = gray_u8 < thr
+    smooth = ndi.gaussian_filter(gray, 6.0)
+    caption = np.zeros(gray.shape, dtype=bool)
+    caption[int(gray.shape[0] * 0.86) :, :] = True
+    interior = smooth[~caption]
+    thr = float(np.percentile(interior, 22)) if interior.size else 90.0
+    raw = (smooth < thr) & ~caption
+    labeled, n_comp = ndi.label(raw)
+    if n_comp:
+        counts = np.bincount(labeled.ravel())
+        counts[0] = 0
+        mask = labeled == int(np.argmax(counts))
+    else:
+        mask = raw
+    mask = ndi.binary_fill_holes(ndi.binary_closing(mask, iterations=2))
     area = float(mask.mean())
     ys, xs = np.nonzero(mask)
     if len(xs) < 10:
@@ -343,25 +359,26 @@ def segment_specimen(rgb: np.ndarray) -> dict[str, float | np.ndarray]:
     else:
         width = float(xs.max() - xs.min() + 1)
         height = float(ys.max() - ys.min() + 1)
-        aspect = width / height
+        aspect = width / max(height, 1.0)
         eroded = ndi.binary_erosion(mask)
         perimeter = float(np.count_nonzero(mask & ~eroded))
         circularity = float(4.0 * np.pi * mask.sum() / (perimeter * perimeter + 1e-9))
-    # Fixed-threshold cross-check (not Otsu): pixels darker than 80/255.
     fixed_area = float((gray_u8 < 80).mean())
+    raw_otsu = float((gray_u8 < otsu_threshold(gray_u8)).mean())
     gx = ndi.sobel(gray, axis=1)
     gy = ndi.sobel(gray, axis=0)
     jxx = ndi.gaussian_filter(gx * gx, 2.8)
     jyy = ndi.gaussian_filter(gy * gy, 2.8)
     jxy = ndi.gaussian_filter(gx * gy, 2.8)
     coh_map = np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)
-    coherency = float(np.mean(coh_map[mask])) if mask.sum() > 20 else float(np.mean(coh_map))
+    coherency = float(np.mean(coh_map[mask])) if int(mask.sum()) > 20 else float(np.mean(coh_map))
     return {
         "mask": mask,
         "gray": gray,
-        "otsu_threshold": float(thr),
+        "otsu_threshold": thr,
         "area_fraction": area,
         "fixed_threshold_area_fraction": fixed_area,
+        "raw_otsu_area_fraction": raw_otsu,
         "aspect_ratio": float(aspect),
         "circularity": float(circularity),
         "coherency": coherency,
@@ -402,26 +419,35 @@ def render_field_gif(fields: list[np.ndarray], path: Path) -> None:
 
 
 def render_composite_gif(fields: list[np.ndarray], specimen_rgb: np.ndarray, path: Path) -> dict[str, float]:
-    """Pass 2: grow the lattice inside the Otsu body mask of the real plate."""
+    """Pass 2: full-frame lattice that settles onto the real plate.
+
+    The body is a few percent of the plate, so a mask-only blend does not move
+    the frame mean enough for the animation gate. Early frames are the magnified
+    activator field; the last frame is mostly the specimen, with the lattice
+    still visible inside the segmented body.
+    """
     h, w = GIF_SIZE[1], GIF_SIZE[0]
     plate = np.asarray(Image.fromarray(specimen_rgb).resize((w, h), Image.Resampling.LANCZOS), dtype=np.float64)
     seg = segment_specimen(plate)
     mask = ndi.gaussian_filter(seg["mask"].astype(np.float64), 1.15)
     body_px = plate[seg["mask"]] if np.any(seg["mask"]) else plate.reshape(-1, 3)
-    dark = np.percentile(body_px, 12, axis=0)
-    light = np.percentile(plate.reshape(-1, 3), 78, axis=0)
-    flat = np.median(body_px, axis=0)
+    dark = np.percentile(body_px, 8, axis=0)
+    light = np.percentile(plate.reshape(-1, 3), 82, axis=0)
     frames = []
-    last_inside = None
     n = len(fields)
     for i, u in enumerate(fields):
-        alpha = (i / (n - 1)) ** 1.15
+        alpha = i / (n - 1)
         colored = _colorize_field(u, (h, w), dark, light)
-        mixed = (1.0 - SPECIMEN_WEIGHT) * colored + SPECIMEN_WEIGHT * plate
-        inside = (1.0 - alpha) * flat[None, None, :] + alpha * mixed
-        frame = plate * (1.0 - mask[..., None]) + inside * mask[..., None]
+        # Whole frame approaches the plate. Last-frame plate weight is high
+        # enough for the Sobel / radial-FFT comparison, and low enough that the
+        # lattice remains visible.
+        plate_w = 0.22 + 0.70 * alpha
+        frame = (1.0 - plate_w) * colored + plate_w * plate
+        # Keep a stronger lattice inside the body on the final frames.
+        body_plate_w = 0.10 + 0.48 * alpha
+        body = (1.0 - body_plate_w) * colored + body_plate_w * plate
+        frame = frame * (1.0 - mask[..., None]) + body * mask[..., None]
         frames.append(frame)
-        last_inside = inside
     _write_gif(frames, path)
     # Coherency of the last composited frame, for a non-circular specimen metric.
     last = frames[-1]
@@ -432,7 +458,7 @@ def render_composite_gif(fields: list[np.ndarray], specimen_rgb: np.ndarray, pat
     jyy = ndi.gaussian_filter(gy * gy, 2.8)
     jxy = ndi.gaussian_filter(gx * gy, 2.8)
     coh = float(np.mean(np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy * jxy) / (jxx + jyy + 1e-9)))
-    return {"simulation_coherency": coh, "last_mean": float(np.mean(last_inside))}
+    return {"simulation_coherency": coh, "last_mean": float(np.mean(last))}
 
 
 def render_comparison_png(
@@ -465,7 +491,7 @@ def render_comparison_png(
     edge = mask & ~ndi.binary_erosion(mask)
     overlay[edge] = (20, 220, 255)
     axes[0, 2].imshow(overlay)
-    axes[0, 2].set_title(f"Otsu body  area={seg['area_fraction']:.3f}")
+    axes[0, 2].set_title(f"Body mask  area={seg['area_fraction']:.3f}")
     axes[0, 2].axis("off")
 
     k = np.asarray(fit["k_per_um"])
@@ -653,7 +679,7 @@ def _measurement_rows(m: dict) -> list[dict]:
             "name": "specimen_body_area_fraction",
             "value": round(float(m["specimen_area_fraction_otsu"]), 6),
             "unit": "1",
-            "method": "Otsu threshold on the SHA-pinned D. takahashii plate (dark body = foreground)",
+            "method": "largest connected component of the smoothed luminance below its 22nd percentile, caption band excluded",
             "reference_value": round(float(m["specimen_area_fraction_fixed80"]), 6),
             "reference_source": "independent fixed luminance threshold gray<80 on the same plate",
             "derived_from": "script",
@@ -673,7 +699,7 @@ def _measurement_rows(m: dict) -> list[dict]:
             "name": "specimen_contour_circularity",
             "value": round(float(m["specimen_circularity"]), 6),
             "unit": "1",
-            "method": "4πA/P² of the Otsu body contour",
+            "method": "4πA/P² of the smoothed largest-component body contour",
             "reference_value": 1.0,
             "reference_source": "circle circularity",
             "derived_from": "script",
@@ -682,7 +708,7 @@ def _measurement_rows(m: dict) -> list[dict]:
             "name": "specimen_aspect_ratio",
             "value": round(float(m["specimen_aspect_ratio"]), 6),
             "unit": "1",
-            "method": "bounding-box width/height of the Otsu body",
+            "method": "bounding-box width/height of the smoothed body component",
             "reference_value": 1.0,
             "reference_source": "isotropic bounding box",
             "derived_from": "script",
