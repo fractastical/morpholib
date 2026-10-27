@@ -1,0 +1,311 @@
+{
+  "scout": "scout-023",
+  "ground": "wavevector",
+  "lens": "lean",
+  "candidates": [
+    {
+      "title": "AP-norm head–tail swap law for Ca²⁺ geometry features",
+      "gap": "The TIFF parser defines `ap_norm` as projection onto the head→tail axis divided by axis length (`wave-vector-tiff-parser.py` ~L1179–1182), but there is no machine-checked theorem that swapping head and tail sends `ap_norm ↦ 1 − ap_norm` on the open segment—exact algebra OP-08 needs to separate mirror-symmetric vs headward spatial-matching scores.",
+      "done": "A new Lean loop file compiles with 0 `sorry` and proves: for head H, tail T with L = ‖T−H‖ > 0 and point P, letting ap(H,T,P) = dot(P−H, T−H)/L², then ap(H,T,P) + ap(T,H,P) = 1; plus a Python spot-check on ≥100 synthetic (H,T,P) triples matches the parser within 1e−6.",
+      "tool_route": "Author `morphoeval/lean/loops/Loop_xenopus_ca2_ap_norm_head_tail_swap.lean`; verify with `lean morphoeval/lean/loops/Loop_xenopus_ca2_ap_norm_head_tail_swap.lean` (exit 0, 0 sorry); optional `python3 -m compileall wave-vector-analysis/wave-vector-tiff-parser.py`.",
+      "deciding_data": "In repo: parser AP definition and `HEAD_TAIL_ASSIGNMENT_LOGIC.md`. No TIFF required for the deciding proof.",
+      "prior_attempts": "Head/tail heuristics documented and debugged in `wave-vector-analysis/HEAD_TAIL_ASSIGNMENT_LOGIC.md`; no Lean loop or formal proof recorded in `docs/open-problems.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Standard MorphoEval Lean loop + `lean` compile is the named 0-sorry contract used across `morphoeval/lean/loops/`."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Deciding evidence is pure geometry from committed parser code; no external fetch."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Scorer checks Lean exit code and optional numeric spot-check threshold without judgment."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Sub-minute Lean proof on core arithmetic; no wet lab."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New loop file (+ optional scout-only test script) only; zero edits to tracked pipeline files."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single sitting: one loop file and compile."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior refutation of a formal AP-swap lemma in open-problems or audits."
+        }
+      }
+    },
+    {
+      "title": "Mirror vs headward spatial-matching disambiguation under tail poke (OP-08)",
+      "gap": "OP-08 (`docs/open-problems.json`): post-unblinding HTHT mirror AUC 0.61–0.65 is exploratory and confounded with headward propagation when pokes are tail (`pT`). The registered question needs a formal predicate for ‘mirror-matched AP distance’ vs ‘headward-only’ that is provably non-equivalent when poke AP ≠ 0.5 on a symmetric pair.",
+      "done": "Lean defines `mirror_ap_match` and `headward_only` on normalized AP coordinates for two embryos; theorem shows the predicates differ iff poke_ap ≠ 1/2 (or stated rational counterpart on ℤ/1000); 0 sorry. Separately, `wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_head_head two_embryos_tail_tail --seed 42` writes summary JSON with distinct neighbor-recruitment deltas (machine-readable, not AUC).",
+      "tool_route": "`morphoeval/lean/loops/Loop_xenopus_ca2_mirror_headward_separation.lean` + `lean …`; simulation check: `python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_head_head two_embryos_tail_tail --output /tmp/mirror_headward --seed 42`.",
+      "deciding_data": "In repo: OP-08 text, `EXPERIMENTAL_HYPOTHESES.md` spatial-matching section, simulation scenarios `two_embryos_head_head` / `two_embryos_tail_tail` in `generate_simulated_data.py`. Held-out blind TIFFs not required for the formal separation lemma.",
+      "prior_attempts": "Multi-agent panel (`docs/open-problems.json` OP-08, status partial); exploratory mirror AUC cited in `docs/morphoswarm.html`; no hash-locked v2 separating mirror and headward yet.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Lean loop proves the disambiguation; repo simulator supplies a deterministic secondary check, not the primary theorem."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Scenario definitions and OP-08 record are in repo; full pixel-blind held-out set is referenced but absent from this snapshot."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Lean compile + explicit iff condition on poke_ap; simulation summary fields are JSON-scalar comparable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Lean plus one paired simulation run completes in minutes on cloud VM."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New Lean loop and `/tmp` simulation outputs only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One loop plus one `--compare-ab` run; preregistered blind scoring is out of scope for Lean lens."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Exploratory mirror AUC exists but the formal mirror≠headward predicate route is not listed as refuted."
+        }
+      }
+    },
+    {
+      "title": "Brightness-weighted wave-front centroid invariance under positive scaling",
+      "gap": "Production and pedagogical pipelines define the front centroid as x = Σ(b·x)/Σ(b) (`rollup_pixel_vectors_to_waves.py`, `bigpixel_illustration/BIGPIXEL_APPROACH.md` Step 6). Claims about ΔF/F₀ thresholds tacitly assume centroids are unchanged when all brightness weights are multiplied by c > 0, but this is not Lean-checked.",
+      "done": "Lean proves for finite index sets: if w_i' = c·w_i with c > 0 then Σ(w_i'·x_i)/Σ w_i' = Σ(w_i·x_i)/Σ w_i; 0 sorry. Optional: `python3 wave-vector-analysis/bigpixel_illustration/bigpixel_walkthrough.py` regenerates `bigpixel_numbers.txt` with identical centroid x to prior committed sample within 1 px.",
+      "tool_route": "`morphoeval/lean/loops/Loop_xenopus_ca2_brightness_centroid_scale.lean` + `lean …`; optional bigpixel walkthrough for numeric regression.",
+      "deciding_data": "In repo: BIGPIXEL approach equations and rollup summarizer code; sample output path documented in BIGPIXEL_APPROACH.md.",
+      "prior_attempts": "Bigpixel doc states parity with production; no formal proof in math KG for xenopus-ca2 slug.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Pure Lean algebra matches existing loop-file workflow."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "Formulas in repo; optional walkthrough may need local TIFF path if not bundled."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "0-sorry compile plus optional 1 px numeric bound."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Minutes at most."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New loop file only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Single arithmetic loop."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior negative on this lemma."
+        }
+      }
+    },
+    {
+      "title": "Embryo-unit speed conversion chain (px/s → em/s → μm/s)",
+      "gap": "`embryo_units.py` converts speeds with guards for invalid reference length but does not state/prove the compositional identity linking `speed_px_s_to_um_s(s, um_per_px)` to `speed_px_s_to_em_s(s, L_px)` when `um_per_px · L_px` equals embryo length in μm—cross-video comparability in `SPEED_COMPARISON.md` assumes this.",
+      "done": "Lean encodes conversions as total functions on positive rationals/reals with `Option` for invalid inputs; theorem: `speed_um s u = speed_em s L * (u * L)` when L,u,s > 0; mirrors Python within stated guards; 0 sorry.",
+      "tool_route": "`morphoeval/lean/loops/Loop_xenopus_ca2_embryo_unit_speed_chain.lean` + `lean …`; cross-check: `python3 -c \"from wave_vector_analysis.embryo_units import …\"` or inline import via `sys.path` on `wave-vector-analysis/embryo_units.py` for 10 random triples.",
+      "deciding_data": "In repo: `wave-vector-analysis/embryo_units.py`, `wave-vector-analysis/SPEED_COMPARISON.md` (empirical ranges as context, not proof inputs).",
+      "prior_attempts": "Units module added for pipeline; no Lean loop tied to `xenopus-ca2-wave-vectors` sim_id in `morphoeval/runs/species_multiscale_registry.json`.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Lean loop directly formalizes the module’s algebra."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All definitions already committed."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Compile + finite Python numeric table equality."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Trivial compute."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New loop only."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "One sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Not attempted formally."
+        }
+      }
+    },
+    {
+      "title": "Missing Lean loop for morphoeval-xenopus-ca2-wave-vectors claim",
+      "gap": "KG and registry carry `xenopus-ca2-wave-vectors` / `morphoeval-xenopus-ca2-wave-vectors` (`morphoeval/kg/math_of_biology.ttl`, `species_multiscale_registry.json`) but `morphoeval/lean/loops/` has no xenopus laevis Ca²⁺ wave-vector loop (unlike Xenopus tropicalis clock/turing slots). MorphoEval integrity expects loop YAML pairing for flagship claims.",
+      "done": "New `Loop_<slot>_xenopus_laevis_ca2_wave_vectors.lean` compiles 0 sorry with ≥2 structural theorems tied to pipeline contracts (e.g., path-length additivity on consecutive track rows; non-negativity of `px_to_em` for non-negative px). `python3 morphoeval/verify_integrity.py --loop-yaml` passes on the new `morphoeval/math_kg_loops/xenopus-ca2-wave-vectors.yaml` if added in the same isolated branch.",
+      "tool_route": "Lean loop + optional new `morphoeval/math_kg_loops/xenopus-ca2-wave-vectors.yaml`; verify via `lean morphoeval/lean/loops/Loop_*_xenopus_laevis_ca2_wave_vectors.lean` and `python3 morphoeval/verify_integrity.py --loop-yaml`.",
+      "deciding_data": "In repo: claim URIs in KG, `wave-vector-analysis/README.md`, smoke CSV `wave-vector-analysis/analysis_results/detection_summary_npz_smoke/spark_tracks_subset.csv` for schema reference.",
+      "prior_attempts": "Image fitness and aristotelian registry score the slug (`morphoeval/verify_image_fitness.py`); no 0-sorry Lean artifact recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Lean loop is the named MorphoEval closure tool; YAML verifier is repo-standard."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Schema sample in repo; full Box TIFF corpus external."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "0 sorry + verify_integrity exit 0 are mechanical."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "Hours if YAML/loci alignment included; still no wet lab."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Requires new loop + new YAML (both new files); must not edit existing KG TTL on zero-conflict branch."
+        },
+        "time_to_verdict": {
+          "score": 6,
+          "why": "Likely spans multiple lemmas beyond one hour."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Gap is absence of proof, not a refuted route."
+        }
+      }
+    },
+    {
+      "title": "PCA 2-means embryo split vs ground-truth segment labeling (OP-07 confound)",
+      "gap": "OP-07 (`docs/open-problems.json`, status refuted for raw LOOO AUC 0.484): orientation feature AUC 0.833 implicates geometry estimators. `wave_laterality_analysis.py` falls back to brightness-weighted PCA + 1-D 2-means when ground truth is missing, but there is no theorem or counterexample showing PCA labels can disagree with Left/Right segment labels even when `sep` is high.",
+      "done": "Lean exhibits a finite configuration of wave-origin points in ℤ² with two parallel embryo segments and weights such that PCA/2-means assigns an origin to the wrong side while ground-truth `_seg_dist` labeling assigns the opposite; 0 sorry. Document counterexample coordinates in loop header.",
+      "tool_route": "`morphoeval/lean/loops/Loop_xenopus_ca2_pca_split_counterexample.lean` + `lean …`; optional replay: `python3 wave-vector-analysis/wave_laterality_analysis.py` on synthetic CSV injected in `/tmp` only.",
+      "deciding_data": "In repo: `wave_laterality_analysis.py` PCA branch (~L202–205) vs ground-truth branch (~L182–201); OP-07 record in `docs/open-problems.json`.",
+      "prior_attempts": "Multi-agent panel blind test (`embryo-blind/README.md`, `XENOPUS_BLIND_RESULTS.md` referenced in OP-07 but not in snapshot); v2 ground-truth-only prereg not closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Lean can host explicit finite counterexample; full OP-07 AUC closure needs ML/stats lens (report separately)."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Algorithm in repo; blind outcome docs referenced but missing locally."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Counterexample coordinates are checkable by independent short Python script."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Finite search/counterexample construction in hours."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New loop + temp synthetic data only."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Counterexample may need search beyond one hour."
+        },
+        "not_blocked": {
+          "score": 2,
+          "why": "OP-07 headline blind route refuted; formal counterexample route is distinct but related—partial prior attempt on orientation confound."
+        }
+      }
+    },
+    {
+      "title": "Paired simulation seed-lock lemma for `--compare-ab` catalog claim",
+      "gap": "`wave-vector-analysis/simulations/catalog.json` claims `--compare-ab` locks RNG across lanes; `generate_paired_ab` empirically sets `primary_embryo_a_seed_locked_identical` but there is no formal statement of when shared `(seed, embryo-A geometry, poke on A, wave_config)` implies identical primary-A trajectories.",
+      "done": "Lean models generator state as a deterministic function `step : State → State` and proves `∀ seed, traj seed cfg = traj seed cfg` (reflexivity) and a nontrivial lemma: if `cfg₁.embryoA = cfg₂.embryoA` and pokes/wave_config on A match, then embryo-A sub-trajectories are equal even if B differs; 0 sorry. Python: `--compare-ab two_embryos_head_head two_embryos_coupled --seed 42` must print `primary_embryo_a_seed_locked_identical: True`.",
+      "tool_route": "`morphoeval/lean/loops/Loop_xenopus_ca2_sim_seed_lock.lean` + `lean …`; `python3 wave-vector-analysis/simulations/generate_simulated_data.py --compare-ab two_embryos_head_head two_embryos_coupled --output /tmp/seedlock --seed 42`.",
+      "deciding_data": "In repo: `generate_simulated_data.py` `generate_paired_ab`, catalog.json entry, scenario dict `create_experiment_scenarios()`.",
+      "prior_attempts": "Telemetry self-test in same file exercises perturbations; no Lean seed-lock proof.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Lean proves abstract deterministic contract; exact bitwise float identity remains Python-checked."
+        },
+        "data_in_hand": {
+          "score": 19,
+          "why": "Simulator and catalog fully in repo."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Boolean summary flag plus Lean compile."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Paired sim ~minutes."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New loop; sim outputs under /tmp."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "Abstracting PRNG may take more than one pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Catalog claim untested formally, not refuted."
+        }
+      }
+    },
+    {
+      "title": "OP-07 v2 hash-locked neighbour-transfer blind AUC (orientation removed)",
+      "gap": "OP-07 done-criterion is a v2 pre-registration on ground-truth-geometry videos with hash-locked scoring—empirical ML, not a Lean theorem.",
+      "done": "N/A for Lean lens: would be LOOO AUC reported per sealed contract in `embryo-blind/` artifacts.",
+      "tool_route": "Would require blind-test scorer scripts + prereg manifest (stats/ML scout lens), not `morphoeval/lean/loops/*.lean`.",
+      "deciding_data": "Referenced: `embryo-blind/README.md`, `XENOPUS_BLIND_RESULTS.md` (not present in workspace snapshot); wave features from `spark_tracks.csv` pipeline.",
+      "prior_attempts": "OP-07 status refuted in `docs/open-problems.json` (LOOO AUC 0.484; orientation AUC 0.833); panel attempted; v2 not closed.",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Outcome is AUC on held-out labels; Lean loops cannot score LOOO without embedding the entire feature pipeline proof."
+        },
+        "data_in_hand": {
+          "score": 8,
+          "why": "Pipeline code in repo; blind seals and results docs missing locally."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Hash-locked contract is objectively scorable once prereg exists."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Feasible if CSVs present; hours."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Could be new scorer scripts only, but not Lean-route."
+        },
+        "time_to_verdict": {
+          "score": 5,
+          "why": "Depends on data mount and prereg."
+        },
+        "not_blocked": {
+          "score": 0,
+          "why": "Same headline route refuted; v2 explicitly required—re-running v1 feature set blocked."
+        }
+      }
+    }
+  ]
+}
