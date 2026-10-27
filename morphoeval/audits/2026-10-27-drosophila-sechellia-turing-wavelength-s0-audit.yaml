@@ -1,0 +1,146 @@
+# MorphoEval Pass 1 — Drosophila sechellia, 1.5 µm Turing wavelength, slot 3202.
+# Scores are criterion-referenced ratings on the rubric's 0–100 scale, not probabilities.
+audit:
+  id: 2026-10-27-drosophila-sechellia-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider in this run)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3a2687497deaf1d3dae381dbe02b0ce57adcd532
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 1 working tree committed at 3a268749. Self-test and full render both completed. Line numbers refer to that commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+  mcgregor2007:
+    title: "Morphological evolution through multiple cis-regulatory mutations at a single gene"
+    doi: 10.1038/nature05988
+    year: 2007
+    venue: "Nature 448:587-590 (2007)"
+  sucena2000:
+    title: "Divergence of larval morphology between Drosophila sechellia and its sibling species caused by cis-regulatory evolution of a single gene"
+    doi: 10.1073/pnas.97.9.4530
+    year: 2000
+    venue: "Proc. Natl. Acad. Sci. USA 97:4530-4534 (2000)"
+  jeong2008:
+    title: "The evolution of gene regulation underlies a morphological difference between two Drosophila sister species"
+    doi: 10.1016/j.cell.2008.01.014
+    year: 2008
+    venue: "Cell 132:783-793 (2008)"
+  chenoweth2005:
+    title: "Contrasting mutual sexual selection on homologous signal traits in Drosophila serrata"
+    doi: 10.1086/427271
+    year: 2005
+    venue: "Am. Nat. 165:281-289 (2005)"
+  shoup1966:
+    title: "The development of pigment granules in the eyes of wild type and mutant Drosophila melanogaster"
+    doi: 10.1083/jcb.29.2.223
+    year: 1966
+    venue: "J. Cell Biol. 29:223-249 (1966)"
+simulations:
+  - id: delphi10000-drosophila-sechellia-turing-wavelength-s0
+    name: "Drosophila sechellia Turing wavelength at 1.5 µm (Holocene, detail scale s0)"
+    organism: Drosophila sechellia
+    script: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py
+    output: docs/media/drosophila_sechellia_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, mcgregor2007, sucena2000, jeong2008, chenoweth2005, shoup1966]
+    phenomenon_size_m: 1.548e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: Holocene (Extant)
+    summary: >-
+      Pass 1 implements the Turing 1952 critical-wavenumber law on an 18 µm × 13.5 µm
+      periodic patch. The sechellia Jacobian is pinned at λ_c = 1.500 µm with trace < 0,
+      det > 0 and h_min = −0.035. Predecessor D. santomea (f_u = 1.327) selects 1.921 µm;
+      successor D. serrata (f_u = 1.458) selects 1.680 µm. The activator-gain sweep has
+      Pearson r = 0.9996. The equal-diffusion control has σ_max = −0.176. The render-grid
+      Fourier peak is 1.480 µm (1.3% short of 1.500). The comparison figure's panel F
+      annotation collides with the tick labels, and the dispersion panel's y-range hides
+      the σ ≈ 0.004 unstable lobe. Age 0 Ma and scale 1.5 µm are stated in the reference
+      record and the figure title.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: k_c from the dispersion relation, and instability only when diffusivities differ."
+        - "McGregor 2007 and Sucena & Stern 2000: D. sechellia larval trichome loss is cis-regulatory at shavenbaby."
+        - "Jeong 2008: D. santomea lost abdominal pigment via a tan enhancer."
+        - "Chenoweth & Blows 2005: D. serrata signal traits are under mutual sexual selection."
+      reconstructed_in_script:
+        - "Near-onset Jacobians with analytical wavelengths 1.921, 1.680 and 1.500 µm."
+        - "Fourier integrator, seven-point f_u sweep, four-seed CV, KS against a Gaussian ring, Otsu metrics on the ovary micrograph."
+      transfer_boundary:
+        - "The CC-BY image is a nucleic-acid stain of an ovary, not an ocellar pigment-granule micrograph."
+        - "Shoup 1966 is D. melanogaster ultrastructure, used only as a scale class."
+      does_not_claim:
+        - "That 1.5 µm was measured as a granule spacing in D. sechellia."
+        - "That Morinda octanoic-acid resistance sets k_c."
+        - "The 88 µm cellular wavelength already modelled in slot 2711."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The script implements the Turing PDE, the classical k_c formula, periodic boundaries, cubic saturation, and a true equal-diffusion ablation. g_u is co-adapted to hold h_min fixed rather than taken from a measured rate, so this is a reconstruction of the dispersion law at the assigned scale, not a transcription of a numbered table from McGregor 2007."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [97, 129], note: "critical_wavenumber and species_jacobian (trace, det, h_min)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [161, 202], note: "implicit Fourier step, periodic patch, cubic saturation", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean, lines: [26, 34], note: "trace < 0 and det > 0 with no sorry", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "Panel A is the real CC-BY D. sechellia ovary micrograph and panel C modulates it by the field. The growth GIF is 12 frames at 720×540 and its last frame scores CV 96 against that micrograph. Panel F's equal-diffusion annotation is drawn on top of the species names, and the micrograph is ovarian nuclei rather than the ocellar lattice the wavelength refers to."
+        evidence:
+          - {file: docs/media/drosophila_sechellia_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "six-panel comparison; panel F label collides with ticks", supports: true}
+          - {file: docs/media/drosophila_sechellia_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540, last frame specimen-modulated", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [698, 705], note: "annotation anchored at axes fraction (0.02, 0.02), over the tick labels", supports: false}
+      parameter-expressivity:
+        value: 84
+        rationale: "Raising f_u, with g_u co-adapted to the same onset depth, shortens λ monotonically across seven values (r = 0.9996). The dispersion panel plots all three chronospecies but the positive lobe (σ_max ≈ 0.004) is lost on an axis that runs down to −0.5."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [256, 291], note: "parameter_sweep over f_u with co-adapted g_u", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [648, 666], note: "dispersion curves for santomea, serrata, sechellia", supports: true}
+      morphometric-validation:
+        value: 85
+        rationale: "Analytical λ_c is 1.500 µm. The render-grid Fourier peak is 1.480 µm (relative error 1.3%). Sweep RMSE after the stated affine calibration is 0.0040 µm. Four-seed CV is 0.006. Otsu foreground fraction 0.352, aspect  and coherency are compared with priors they do not equal. KS distance to a narrow Gaussian ring is 0.229, which is reported rather than forced to zero."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [430, 555], note: "measurements_from: r, RMSE, KS, CV, ablation, specimen Otsu metrics", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [306, 371], note: "segment_specimen Otsu, aspect, circularity, coherency", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref- or OpenAlex-checked DOIs for Turing, McGregor, Sucena, Jeong, Chenoweth & Blows, and Shoup. The ovary JPEG is CC BY 2.0 and SHA-256 pinned. The transfer limits are written in the reference JSON."
+        evidence:
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/paper_citations.bib, lines: [1, 78], note: "eight BibTeX entries with DOIs", supports: true}
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/drosophila_sechellia_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 1.5 µm and age 0 Ma stated; specimen SHA-256", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "The module docstring and critical_wavenumber cite the Turing formula. Chronospecies comments name Jeong, McGregor, and Chenoweth. The Fourier discretisation is not tied to a numbered equation in a methods paper beyond Turing 1952."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [1, 40], note: "docstring states the PDE, k_c, the 1.5 µm scale and 0 Ma", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-sechellia-turing-wavelength-s0.yaml, lines: [24, 68], note: "four laws with Lean loci", supports: true}
+      repro-package:
+        value: 84
+        rationale: "--self-test checks the Turing inequalities, the wavelength order, the ablation, monotonicity, and Pearson r > 0.98. Seed 3202 is fixed. The render-grid peak (1.480 µm) and the self-test grid peak (1.500 µm) are not the same number, so a reader can miss which grid the figure used."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [734, 776], note: "assert_science and self_test", supports: true}
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/README.md, lines: [1, 40], note: "invocation, scale 1.5 µm, age 0 Ma", supports: true}
+    remediation:
+      - id: R1
+        item: "Move the equal-diffusion annotation in render_png off the panel F tick labels."
+      - id: R2
+        item: "Show the unstable lobe of σ(k). The near-onset peak is about +0.004 and is invisible on the current y-range."
+      - id: R3
+        item: "Bring the render-grid Fourier peak from 1.480 µm to within 0.5% of the analytical 1.500 µm."
+      - id: R4
+        item: "A second assessor from another provider has not scored this audit. Do not invent one."
