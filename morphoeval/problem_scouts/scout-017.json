@@ -1,0 +1,154 @@
+{
+  "scout": "scout-017",
+  "ground": "thompson",
+  "lens": "knowledge",
+  "candidates": [
+    {
+      "id": "TH-KG-01",
+      "title": "Publish the blinded second-assessor Thompson MorphoEval nanopub bundle (Gemini 90.8/100)",
+      "gap": "Eight Thompson Scarus→Pomacanthus assessment nanopubs under morphoeval/kg/2026-10-17-blinded-sample-audit/ are RSA-signed locally (trusty URIs in published.json) but every entry has published: null; only the primary Fable pass (morphoeval/kg/2026-10-17-thompson-audit/, 9/9 prod) is on the registry. The dual-referee claim in docs/THOMPSON_METHODS.md is therefore unverifiable on the public nanopub network.",
+      "done": "For all eight thompson-scarus-pomacanthus-*.trig files: node morphoeval/check_signed.mjs morphoeval/kg/2026-10-17-blinded-sample-audit/signed/thompson-scarus-pomacanthus-*.trig exits 0; python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-17-blinded-sample-audit --only <each thompson file> --publish test then prod updates published.json published fields to test/prod; Nanopub Query resolves each URI.",
+      "tool_route": "node morphoeval/check_signed.mjs morphoeval/kg/2026-10-17-blinded-sample-audit/signed/thompson-scarus-pomacanthus-overall.trig (repeat per file); python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-17-blinded-sample-audit --only thompson-scarus-pomacanthus-overall.trig --publish test",
+      "deciding_data": "In repo: morphoeval/kg/2026-10-17-blinded-sample-audit/published.json, signed/*.trig, morphoeval/audits/2026-10-17-thompson-audit.yaml (primary checkpoint); no external fetch.",
+      "prior_attempts": "Gemini 4 Argon blinded second assessor scored 90.8/100 (docs/THOMPSON_METHODS.md, morphoeval/kg/2026-10-17-blinded-sample-audit/thompson-scarus-pomacanthus-overall.trig). Signing/publish to prod not completed for this bundle.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "sign_morphoeval.py and check_signed.mjs are the exact publish/verify path for these MorphoEval trig bundles."},
+        "data_in_hand": {"score": 20, "why": "Signed trig and URIs already exist locally; only registry publication is missing."},
+        "falsifiable_done": {"score": 15, "why": "published.json published==prod and independent signature check are binary."},
+        "compute_in_repo": {"score": 15, "why": "Minutes of signing and registry POST; no recomputation."},
+        "isolation": {"score": 9, "why": "Updates published.json and registry only if run as-is; a zero-conflict agent can limit scope to Thompson-only --only files."},
+        "time_to_verdict": {"score": 10, "why": "One sitting: verify signatures, test publish, prod publish."},
+        "not_blocked": {"score": 5, "why": "No record of a failed publish attempt for these URIs."}
+      }
+    },
+    {
+      "id": "TH-KG-02",
+      "title": "MorphoEval KG audit for the multi-clade portfolio synthesis (45/90 hypotheses, failed clades)",
+      "gap": "docs/portfolio/PORTFOLIO_STATUS.md and clade outcome nanopubs (nanopubs/multiclade_portfolio_to_nanopubs.py) record Leporidae 0/3 and Vespinae wings 0/7, but there is no morphoeval/audits/*portfolio* YAML and no build_morphoeval_kg.py bundle with pk:hasScore / pk:weightOfEvidence for OP-10 (open-problems.json node t7). The problem graph marks this node grey (not_scored).",
+      "done": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new>-thompson-portfolio-residue-audit.yaml --check && --conform exit 0; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<same-audit-id>/ --publish test; overall assessment nanopub pk:hasScore equals documented Brier 0.174 (fish) and lists leporidae_skulls + vespinae_wings as pk:evidenceAgainst with SHA-256 of thompson/portfolio/results/{leporidae_skulls,vespinae_wings}.json.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new>-thompson-portfolio-residue-audit.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<new>-thompson-portfolio-residue-audit/ --publish test",
+      "deciding_data": "In repo: docs/portfolio/PORTFOLIO_STATUS.md, thompson/portfolio/results/*.json, thompson/portfolio/scout_preregistration_manifest.json, docs/open-problems.json OP-10.",
+      "prior_attempts": "Claude Fable 5.1 Thinking High marked OP-10 partial (portfolio residue autopsy). vespinae_venation_mechanics (7/8) explains hornet failure but is not encoded as a MorphoEval rubric assessment.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "build_morphoeval_kg.py + sign_morphoeval.py is the prescribed path to ranked pk:Claim assessments."},
+        "data_in_hand": {"score": 19, "why": "All scored metrics and hypothesis JSON already live under thompson/portfolio/."},
+        "falsifiable_done": {"score": 13, "why": "Conform check plus pinned JSON SHA in evidence items are machine-checkable; audit YAML authoring adds one human step."},
+        "compute_in_repo": {"score": 14, "why": "KG build and sign are hours-scale at most; no new GM runs required for a synthesis audit."},
+        "isolation": {"score": 8, "why": "Requires new audit YAML and kg/ subtree (new files only) if no tracked files are edited."},
+        "time_to_verdict": {"score": 7, "why": "One loop if audit YAML is templated from 2026-10-17-thompson-audit.yaml."},
+        "not_blocked": {"score": 4, "why": "OP-10 partial work exists; route is not refuted but not yet attempted as MorphoEval KG."}
+      }
+    },
+    {
+      "id": "TH-KG-03",
+      "title": "Rank the revised >50 Myr deep-horizon claim (post-H4) in MorphoEval KG for problem-graph node t5",
+      "gap": "FishShapes blind outcome nanopub (RAJancwGOPEkHzBoZXGv_vu_snW0Lff2FktE85Me1P-fI) and docs/THOMPSON_BLIND_TEST_RESULTS.md state H4 failed and the correct statement is 'degrades to a clade-wide prior, not the grand consensus', but docs/open-problems.json OP-04 notes viability kind not_scored and explicitly asks for a pre-registered Delphi scoring. No morphoeval audit encodes pk:weightOfEvidence for that revised claim.",
+      "done": "A signed MorphoEval overall nanopub (build_morphoeval_kg.py) carries pk:weightOfEvidence for claim label deep-horizon-clade-prior-2026 with pk:hasEvidence derived from thompson/score_blind_predictions.py output rows for tau>=50 Myr (median |err| ratio 0.52 vs consensus documented in THOMPSON_BLIND_TEST_RESULTS.md table); --conform passes; published.json shows prod.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new>-thompson-deep-horizon-claim-audit.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<new>-thompson-deep-horizon-claim-audit/ --publish test",
+      "deciding_data": "In repo: docs/THOMPSON_BLIND_TEST_RESULTS.md, thompson_blind_predictions_registered.json hashes, nanopubs/thompson_predictions/signed.np_thompson_blind-test-outcome-2026-10-22.trig.",
+      "prior_attempts": "OP-04 partial; Fable attempted deep-horizon framing. H4 preregistered hypothesis failed as stated (not supported). Narrative revision is documented in prose but not as a ranked MorphoEval claim.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "Knowledge lens can seal the revised claim as pk:Claim + assessments; full Delphi posterior still needs delphi lens (problem-graph scoring)."},
+        "data_in_hand": {"score": 18, "why": "Blind test tables and outcome nanopub already fix the deciding numbers."},
+        "falsifiable_done": {"score": 14, "why": "Audit must pin exact tau-bin medians and ratio 0.52; scorer diffs YAML vs THOMPSON_BLIND_TEST_RESULTS.md."},
+        "compute_in_repo": {"score": 14, "why": "No re-download of FishShapes if audit cites committed results only."},
+        "isolation": {"score": 9, "why": "New audit + kg directory only."},
+        "time_to_verdict": {"score": 8, "why": "Single build/sign loop once audit YAML exists."},
+        "not_blocked": {"score": 3, "why": "Delphi scoring for OP-04 not done; MorphoEval rank route not refuted."}
+      },
+      "lens_note": "Bayesian Delphi viability for OP-04 is scout with delphi lens (build_problem_graph_html / Delphi panel); this candidate only closes the unsigned MorphoEval claim rank."
+    },
+    {
+      "id": "TH-KG-04",
+      "title": "Supersede cross-kingdom synthesis nanopub to include vespinae_venation_mechanics (7/8 repair)",
+      "gap": "Production synthesis RAOvI_PZUXLZtKjyVfq4ILVoIxqVCsTXmLXd0J7ZujfEo (2026-10-23) links 15 clade GM outcome nanopubs from multiclade_portfolio_to_nanopubs.py clade_ids list but omits vespinae_venation_mechanics, which was scored 2026-10-24 (7/8, Brier 0.131) and published separately (RAhDgbkGRriVeuYJ4E85P3d_vZJlrMYYeU-8jIqRD2pqQ). PORTFOLIO_STATUS.md table includes the repair row; the master synthesis graph edge is missing.",
+      "done": "A superseding np_thompson_cross-kingdom-synthesis-*.trig is signed and published with prov:wasDerivedFrom including RAhDgbk... URI; Nanopub Query get-latest-version-of-np on the synthesis URI returns the new head; optional: python3 morphoeval/build_morphoeval_kg.py on an audit whose pk:hasEvidence lists both URIs with matching clade counts (16 clade studies incl. repair).",
+      "tool_route": "Extend nanopubs/multiclade_portfolio_to_nanopubs.py clade_ids + rebuild synthesis (sign via tp.sign in that script); verify with build_morphoeval_kg.py --conform only if mirrored as MorphoEval audit evidence.",
+      "deciding_data": "In repo: nanopubs/thompson_predictions/published_manifest_prod.txt lines for RAOvI and RAhDgbk; docs/portfolio/vespinae_venation_mechanics.md; docs/portfolio/PORTFOLIO_STATUS.md §4 bottom row.",
+      "prior_attempts": "vespinae_venation_mechanics.py run 2026-10-24; D1-D8 preregistered at commit 838a7fe1. multiclade script not re-run after that clade was added.",
+      "factors": {
+        "tool_fit": {"score": 14, "why": "Primary fix is multiclade_portfolio_to_nanopubs.py signing, not build_morphoeval_kg; MorphoEval KG can only witness the link afterward."},
+        "data_in_hand": {"score": 20, "why": "Both nanopubs and portfolio doc already exist in repo."},
+        "falsifiable_done": {"score": 15, "why": "SPARQL/count of linked clade URIs in synthesis assertion must include vespinae_venation_mechanics."},
+        "compute_in_repo": {"score": 15, "why": "Regenerate one synthesis trig and sign."},
+        "isolation": {"score": 6, "why": "Default script edit touches tracked multiclade_portfolio_to_nanopubs.py unless a fork-only rebuild path is used."},
+        "time_to_verdict": {"score": 9, "why": "One script run + sign/publish sitting."},
+        "not_blocked": {"score": 5, "why": "No prior supersede attempt recorded."}
+      },
+      "lens_note": "Nanopub scout (nanopub ground) owns the multiclade script change; knowledge lens closes verification via sign_morphoeval if a MorphoEval audit mirrors the synthesis."
+    },
+    {
+      "id": "TH-KG-05",
+      "title": "Signed outcome for portfolio hypothesis P7 (coverage-collapse horizon fraction)",
+      "gap": "THOMPSON_DATASET_PORTFOLIO.md registers P7 (95% coverage falls below 75% at 0.28±50% of crown age for every group) with subjective confidence 0.4, but thompson/register_dataset_portfolio.py never wrote a portfolio_verdict block and no outcome nanopub cites P7. Problem remains an unranked registered claim.",
+      "done": "Either (A) a signed mlt outcome nanopub via nanopubs/thompson_predictions_to_nanopubs.py pattern with pass/fail computed from existing per-clade coverage columns in docs/portfolio/*.md, or (B) a MorphoEval audit whose morphometric-validation dimension lists each clade's first tau bin with coverage<75% and compares to 0.28±50%×crown age; build_morphoeval_kg --conform OK; sign_morphoeval --publish test.",
+      "tool_route": "Score: thompson/portfolio/summarise_portfolio.py or new small extractor → morphoeval/audits/<new>-thompson-portfolio-p7-audit.yaml → python3 morphoeval/build_morphoeval_kg.py ... --conform → python3 morphoeval/sign_morphoeval.py ...",
+      "deciding_data": "In repo: docs/THOMPSON_DATASET_PORTFOLIO.md §3 P7 row; per-clade horizon tables in docs/portfolio/fishbase_morphmet.md, fishshapes_v1.md, and other scored clade reports.",
+      "prior_attempts": "Portfolio fish and multi-clade runs scored P1-P6 and clade hyps; P7 not extracted in summarise_portfolio output.",
+      "factors": {
+        "tool_fit": {"score": 17, "why": "KG publication needs build_morphoeval_kg + sign; extracting P7 metrics needs a short portfolio script first."},
+        "data_in_hand": {"score": 17, "why": "Coverage-by-tau-bin already printed in portfolio markdown tables."},
+        "falsifiable_done": {"score": 14, "why": "Pass/fail is a table lookup against registered 0.28±50% rule per clade crown age."},
+        "compute_in_repo": {"score": 13, "why": "Parser over committed markdown/JSON, then KG build."},
+        "isolation": {"score": 8, "why": "New audit + optional new scorer script as new files."},
+        "time_to_verdict": {"score": 6, "why": "Two steps: metric extraction then KG."},
+        "not_blocked": {"score": 5, "why": "P7 never scored; route open."}
+      }
+    },
+    {
+      "id": "TH-KG-06",
+      "title": "Mark post-hoc B_dip7 hornet basis (64.2% variance) as unsigned exploratory in the KG",
+      "gap": "docs/portfolio/vespinae_venation_mechanics.md reports B_dip7 antiparallel dipole modes at 64.2% variance as a post-run finding; thompson/portfolio/groups/vespinae_venation_mechanics_hypotheses.json at prereg commit 838a7fe1 locked D1-D8 only on B_ven7 (D4 failed at 42.6%). The 64.2% figure is an unregistered, unsigned claim that readers could confuse with preregistered D4.",
+      "done": "Signed nanopub or MorphoEval assessment with pk:evidenceAgainst on claim URI stating B_dip7 is post-hoc (not in scout_preregistration_manifest.json or hypothesis file SHA at 838a7fe1); SHA-256 of vespinae_venation_mechanics_hypotheses.json matches manifest; check_signed.mjs passes on the amendment trig.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new>-vespinae-dip7-exploratory-audit.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id>/ --publish test (or superseding clade nanopub via nanopubs/thompson_predictions_to_nanopubs.py with npx:supersedes).",
+      "deciding_data": "In repo: docs/portfolio/vespinae_venation_mechanics.md §Summary table; thompson/portfolio/groups/vespinae_venation_mechanics_hypotheses.json; scout_preregistration_manifest.json (no vespinae_venation entry).",
+      "prior_attempts": "D4 preregistered and failed honestly (3.8 pp gain). Post-hoc dip7 analysis documented in markdown only.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "build_morphoeval_kg can attach pk:evidenceAgainst; signing makes the exploratory status public."},
+        "data_in_hand": {"score": 20, "why": "All text and JSON hashes are in repo."},
+        "falsifiable_done": {"score": 15, "why": "Manifest hash list either contains vespinae_venation_mechanics_hypotheses.json or it does not (binary)."},
+        "compute_in_repo": {"score": 15, "why": "Audit + sign only."},
+        "isolation": {"score": 10, "why": "New audit/kg files only."},
+        "time_to_verdict": {"score": 9, "why": "Single conform + sign loop."},
+        "not_blocked": {"score": 5, "why": "Negative knowledge route; not a retry of failed D4 prereg."}
+      }
+    },
+    {
+      "id": "TH-KG-07",
+      "title": "MorphoEval claim assessments for UNTESTED Thompson 1917 inventory rows (e.g. T1917-051 crocodile skulls)",
+      "gap": "thompson/thompson_1917_claims.json lists 21 UNTESTED claims (T1917-051 crocodile skulls, T1917-056 Eohippus→Equus, etc.). Process-example nanopubs (np_thompson_process-example-t1917-*.trig) describe workflow but do not emit per-claim pk:LLMClaimAssessment verdicts in morphoeval/kg/. Claim inventory pass2 status remains UNTESTED without signed morphoeval scores.",
+      "done": "For a chosen claim ID, morphoeval/build_morphoeval_kg.py emits a signed claim nanopub with pk:hasVerdict open-untested, prov:wasDerivedFrom commit-pinned thompson/thompson_1917_claims.json line range, and pk:hasEvidence pointing to docs/THOMPSON_1917_CLAIM_INVENTORY.md row; --conform passes; node morphoeval/check_signed.mjs on signed/*.trig exits 0.",
+      "tool_route": "python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<new>-t1917-051-croc-skulls-claim-audit.yaml --conform; python3 morphoeval/sign_morphoeval.py morphoeval/kg/<audit-id>/ --publish test",
+      "deciding_data": "In repo: thompson/thompson_1917_claims.json, docs/THOMPSON_1917_CLAIM_INVENTORY.md; public Dryad crocodile skull GM dataset named in inventory (fetch only if an agent later runs the test — audit can still seal UNTESTED status now).",
+      "prior_attempts": "np_thompson_process-1917-claim-validation-workflow.trig defines merge-back rules; no per-claim MorphoEval audits for UNTESTED rows.",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Sealing UNTESTED as a signed pk:Claim is exactly build_morphoeval_kg + sign."},
+        "data_in_hand": {"score": 18, "why": "Registry JSON and inventory markdown fully in repo."},
+        "falsifiable_done": {"score": 15, "why": "Verdict open-untested plus claim ID match in trig is checkable without taste."},
+        "compute_in_repo": {"score": 15, "why": "KG build/sign only for status sealing; actual GM test is separate."},
+        "isolation": {"score": 10, "why": "One claim → one new audit/kg subtree."},
+        "time_to_verdict": {"score": 8, "why": "One loop per claim ID."},
+        "not_blocked": {"score": 5, "why": "Workflow nanopub explicitly invites loops; route not refuted."}
+      },
+      "lens_note": "Running the crocodile GM test itself is simulation/measure lens; knowledge lens only ranks publication status."
+    },
+    {
+      "id": "TH-KG-BLOCKED-01",
+      "title": "BLOCKED: Re-run Vespinae W1-W7 on Open Tree polytomy expecting Thompson-7 phylogenetic win",
+      "gap": "N/A — negative knowledge entry.",
+      "done": "Scorer confirms docs/portfolio/vespinae_wings.md records 0/7 with LOO ratio 1.00 and white-noise lambda; no new preregistration nanopub is minted for the same tree/topology.",
+      "tool_route": "Do not re-propose; repair route D1-D8 on Perrard tree is documented and signed (vespinae_venation_mechanics).",
+      "deciding_data": "In repo: thompson/portfolio/results/vespinae_wings.json; signed np_thompson_clade-gm-vespinae-wings.trig.",
+      "prior_attempts": "vespinae_wings.py scored 2026-10-22; vespinae_venation_mechanics.py 2026-10-24 superseding explanation. OP-10 notes failure concentrated in these clades.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "KG can only re-record a known failure; no deciding evidence left to publish."},
+        "data_in_hand": {"score": 20, "why": "Outcome already signed."},
+        "falsifiable_done": {"score": 15, "why": "Already closed."},
+        "compute_in_repo": {"score": 15, "why": "N/A."},
+        "isolation": {"score": 10, "why": "N/A."},
+        "time_to_verdict": {"score": 10, "why": "Already at verdict."},
+        "not_blocked": {"score": 0, "why": "Exact OpenTree W3 route refuted; repair is a different preregistration."}
+      }
+    }
+  ]
+}
