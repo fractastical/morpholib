@@ -1,0 +1,192 @@
+# MorphoEval audit — T1917-031 Thompson (1917) horns as logarithmic spirals on a cone, Pass 1 (2026-10-28)
+#
+# Single-assessor Pass 1 for thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py
+# (v1.0.1-pass1).  LIMITATION: builder and assessor are the same cloud agent (Claude Fable 5.1); no
+# independent second assessor has scored this script.  This audit must not be quoted as dual-agent
+# consensus (remediation R1).
+#
+# Headline of Pass 1: the outer horn edge of Thompson's own Fig. 320 (Ovis ammon) is better described
+# by a logarithmic spiral than by a circle (delta-AIC 246) or an Archimedean spiral (delta-AIC 12), but
+# the projected spiral angle is 85.9 deg, not Thompson's ~75 deg, and ln(rho) vs theta is only r = 0.91.
+# Pass 1 tests ONE drawing, no real specimen, no inner edge / breadth (gnomonic) test, no uncertainty,
+# and its verdict logic treats the alpha mismatch as a refutation although a 2D projection measures
+# only sin(beta) cot(alpha) — these are the Pass 2 remediation items.
+
+audit:
+  id: 2026-10-28-t1917-031-the-shapes-of-horns-and-of-tee-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 1; second assessor pending)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: b0060c02
+    note: >-
+      Cloud loop thompson1917-t1917-031 (slot 225) on branch cursor/t1917-031-bovid-horn-spiral-1bd0,
+      based on origin/main fc7454cd8. Environment: Python 3.12.3, numpy/scipy/scikit-image/Pillow/
+      matplotlib from requirements.txt, Lean 4.35.0 (elan). Script v1.0.1-pass1 (measure_morphoeval
+      list API added on top of the committed v1.0.0 baseline; otherwise identical).
+
+references:
+  thompson1917:
+    title: "On Growth and Form — Ch. XIII, The Shapes of Horns, and of Teeth or Tusks: with a Note on Torsion"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), pp. 612-634, Figs. 318-324; IA scan ongrowthform1917thom"
+    url: https://archive.org/details/ongrowthform1917thom
+  skalak1997:
+    title: "Kinematics of surface growth"
+    authors: "Skalak R, Farrow DA, Hoger A"
+    venue: "Journal of Mathematical Biology 35:869-907 (1997)"
+    doi: 10.1007/s002850050081
+  evans2021:
+    title: "A universal power law for modelling the growth and form of teeth, claws, horns, thorns, beaks, and shells"
+    authors: "Evans AR, Pollock TI, Cleuren SGC, et al."
+    venue: "BMC Biology 19:58 (2021)"
+    doi: 10.1186/s12915-021-00990-w
+  tidiere2020data:
+    title: "Data from: Variation in the ontogenetic allometry of horn length in bovids along a body mass continuum"
+    authors: "Tidiere M, Gaillard J-M, Garel M, Lemaitre J-F, Toigo C, Pelabon C"
+    venue: "Dryad (2020), CC0"
+    doi: 10.5061/dryad.qz612jmb4
+    role: registry-named dataset; species match, shape-variable mismatch (not used for the verdict)
+
+simulations:
+  - id: thompson1917-t1917-031
+    name: "Thompson (1917) Ch. XIII — bovid horns as logarithmic spirals wound on a cone (Pass 1)"
+    organism: "Ovis ammon (Argali); Thompson's Fig. 320 lateral drawing"
+    domain: morphogenesis
+    script: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py
+    output: docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png
+    extra_outputs:
+      - docs/media/t1917_031_the_shapes_of_horns_and_of_tee_growth.gif
+      - datasets/thompson_1917/t1917-031/t1917_031_metrics.json
+      - datasets/thompson_1917/t1917-031/result.json
+    status: evaluated
+    source_refs: [thompson1917, skalak1997, evans2021, tidiere2020data]
+    claim_boundary:
+      reported_in_source:
+        - "Ovis ammon spiral angle about 75 deg; Highland ram a little more; Scinde wild goat < 70 deg; Oryx 20-40 deg (p. 617)"
+        - "Argali species share alpha but differ in the cone/helical component beta (pp. 617-618)"
+        - "trihedral edge lengths 80:74:45 cm (p. 618); St Venant torsion curves on the rings (pp. 621-624)"
+      reconstructed_in_script:
+        - "E1 free-pole log-spiral fit of the outer edge of Fig. 320; AIC vs Archimedean spiral and circle"
+        - "E2/E3 helico-spiral rendering and whorl-ratio table; gnomonic growth animation"
+      transfer_boundary:
+        - "a lateral 2D projection measures k_proj = sin(beta) cot(alpha), not alpha itself"
+      does_not_claim:
+        - "torsion / St Venant warping; inter-species beta differences; anything about teeth or tusks"
+    summary: >-
+      Fig. 320 outer edge (550 points, 278 deg sweep) fitted by a free-pole logarithmic spiral:
+      alpha_proj = 85.9 deg, whorl ratio 1.57, Pearson r(ln rho, theta) = 0.91, RMSE 16.7 px
+      (4.6 % of mean radius). Log spiral beats circle (delta-AIC 246) and Archimedean spiral
+      (delta-AIC 12). Thompson's alpha = 75 deg (R = 5.4) is NOT reproduced by the projection
+      (alpha_proj - 75 = +10.9 deg). The v1 verdict logic returns "refuted" because both the
+      r >= 0.95 and the |alpha - 75| <= 5 deg criteria fail; that logic ignores the
+      sin(beta) cot(alpha) degeneracy and is itself a Pass-1 defect. Overall 48.9/100.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          E1-E3 are implemented exactly as Thompson states them (k = sin(beta) cot(alpha),
+          R = e^(2 pi sin beta cot alpha), p. 558) and the gnomonic tube (E4) is rendered; the Lean
+          module proves the whorl-ratio invariance, breadth law, projection non-identifiability and
+          growth-velocity lemmas with 0 sorry. Deductions: the fit is done to a 2D projection with
+          beta = 90 deg assumed when converting k to alpha, so the quantity compared to Thompson's
+          75 deg is alpha_proj, not alpha; E4 (breadth shares k) is formalised but not measured;
+          E5 (velocity ratio) is only a rendering, not a fitted quantity.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [70, 117], note: "log_spiral, k_from_alpha, whorl_ratio, helico_spiral, horn_surface implement E1-E4 verbatim", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_031.lean, lines: [32, 101], note: "whorl_ratio_invariant, lag_ratio_independent_of_position, breadth_shares_whorl_ratio, alpha_beta_not_identifiable_from_projection; lean exit 0, 0 sorry", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [444, 473], note: "verdict_from compares alpha_proj (beta = 90 assumed) directly with Thompson's 75 deg", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          The rendered comparison overlays the fitted spiral on Thompson's own figure and the
+          overlay follows the dorsal and posterior edge closely, but (i) no real specimen is used
+          in Pass 1 — the CC BY-SA Argali photograph is vendored and pinned but not analysed;
+          (ii) the ventral end of the digitised edge includes the mandible junction (ln rho rises
+          at the last 15 deg); (iii) the 3D helicoid panel uses beta = 60 deg chosen by hand, not
+          fitted; (iv) only one species is shown, so the "distinct morphologies distinct" test
+          is not exercised.
+        evidence:
+          - {file: docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png, lines: [0, 0], note: "Fig. 320 + fitted spiral, ln rho vs theta, AIC bars, E2 helicoid, alpha sweep", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [291, 311], note: "analyse_specimen raises NotImplementedError for photo_hsv / figure_halftone: real specimen and Capra figure skipped", supports: false}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [172, 189], note: "outer_edge_points uses the fixed sector from reference.json; mandible contamination at the -125 deg end is not trimmed", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          The alpha sweep panel (65-85 deg) and the model_regime_table (alpha x beta -> k, R) show
+          the monotone effect of both parameters, and the self-test checks R(90) = 1 and that an
+          acute cone shrinks R. But nothing is swept against the data: no beta sweep is rendered,
+          no breadth ratio or handedness control, and no CLI parameters.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [322, 339], note: "model_regime_table alpha in {60..85} x beta in {30,60,90}", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [395, 404], note: "alpha sweep panel only; beta and breadth not rendered", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          Quantitative: alpha_proj, R, Pearson r, RMSE and two delta-AIC values are computed on the
+          digitised figure and compared with Thompson's published 75 deg and with explicit null
+          models; measure_morphoeval returns 6 rows with reference values. Missing: no uncertainty
+          (bootstrap CI, KS test), no breadth / inner-edge gnomonic test (E4), n = 1 drawing, no
+          real specimen, and the registry Dryad table is pinned but not even summarised.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [275, 284], note: "model_comparison: AIC of log spiral vs Archimedean vs circle", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [341, 364], note: "measure_morphoeval rows with reference_value = 75 deg and R = 5.4", supports: true}
+          - {file: datasets/thompson_1917/t1917-031/t1917_031_metrics.json, lines: [0, 0], note: "no CI / KS / bootstrap fields in Pass 1", supports: false}
+      source-traceability:
+        value: 78
+        rationale: >-
+          Thompson's text is pinned to the IA scan (identifier, leaf mapping verified against
+          page_numbers.json, OCR line range), every vendored image and the Dryad table carry
+          SHA-256 digests re-verified at runtime, the Commons licence/author/URL are recorded, the
+          Dryad DOI/version/zip digest are recorded, and the registry-dataset mismatch is stated
+          explicitly. Deductions: the Dryad primary article DOI is in the .bib but the OpenAlex
+          hits are not DOI-verified against Crossref; Brooke 1875 has no DOI.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-031/t1917_031_the_shapes_of_horns_and_of_tee_reference.json, lines: [0, 0], note: "input_dataset_sha256 for 5 inputs, IA page digests, Commons original + derivative digests", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [120, 139], note: "sha256_file + verify_inputs, asserted in self_test", supports: true}
+          - {file: datasets/thompson_1917/t1917-031/scout_manifest.json, lines: [0, 0], note: "Dryad verification: matches_claim_variables = false, rationale and fallback recorded", supports: true}
+      code-traceability:
+        value: 70
+        rationale: >-
+          The module docstring maps E1-E5 to Thompson's pages; each model function cites its
+          equation id; reference.json carries the thompson_locus for each equation; the Lean file
+          cites pages and equation ids. Deductions: the figure-digitisation steps (sector choice,
+          farthest-point rule) are documented in reference.json but not tied to any Thompson
+          procedure (he measured whorl breadth ratios, Ch. XI p. 558), and verdict thresholds
+          are asserted in reference.json without derivation.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [1, 52], note: "docstring: equations with page loci, test design, claim boundary", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-031.yaml, lines: [0, 0], note: "5 laws with lean_decl/lean_theorem/lean_locus/code_locus", supports: true}
+      repro-package:
+        value: 60
+        rationale: >-
+          Deterministic (seed 1917 used only in the self-test synthetic controls; the fit itself
+          is deterministic), --self-test passes in ~1.3 s, full run ~3 s, inputs SHA-verified at
+          runtime, outputs written to documented paths, invocation documented. Deductions:
+          dependency versions are not pinned per script (requirements.txt lower bounds only),
+          the checkpoint commit does not include the v1.0.1 list-API change, and skimage emits
+          deprecation warnings that will break on 0.28.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [475, 540], note: "self_test: E3 identities, positive control recovers alpha = 75 within 1 deg, circle null classified as circle, inputs verified", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [147, 158], note: "skimage.morphology.closing used; binary_* deprecations avoided but no version pin", supports: false}
+    remediation:
+      - id: R1
+        item: "Independent second assessor from a different provider — this round is builder-scored"
+      - id: R2
+        item: "Analyse the real Ovis ammon specimen photograph (HSV segmentation of the horn sheath) and Thompson's Capra sinaitica figure so that two species and one real specimen are fitted"
+      - id: R3
+        item: "Add the projection-invariant gnomonic test (E4): inner edge and breadth profile along rays from the fitted pole; compare k_breadth with k_edge; report the implied cone semi-angle beta for Thompson's alpha = 75 deg"
+      - id: R4
+        item: "Add uncertainty: bootstrap CI on alpha and k, KS test on standardised residuals, relative RMSE; add synthetic positive/negative controls and a shuffled-angle ablation to the measured rows"
+      - id: R5
+        item: "Replace the alpha-only verdict logic with one that separates (a) spiral-vs-null model comparison, (b) alpha/beta identifiability and (c) gnomonic self-similarity, and label the Dryad table as a non-shape analogue in the result"
+      - id: R6
+        item: "Trim the mandible junction from the Fig. 320 ventral sector automatically (monotone ln rho criterion) instead of relying on the hand-set sector end"
+      - id: R7
+        item: "Render a beta sweep (acute vs blunt cone, Thompson's O. poli vs O. ammon contrast) alongside the alpha sweep"

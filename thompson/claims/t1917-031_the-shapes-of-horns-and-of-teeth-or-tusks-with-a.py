@@ -55,7 +55,7 @@ from pathlib import Path
 
 import numpy as np
 
-SCRIPT_VERSION = "1.0.0-pass1"
+SCRIPT_VERSION = "1.0.1-pass1"
 REPO = Path(__file__).resolve().parents[2]
 DATA = REPO / "datasets" / "thompson_1917" / "t1917-031"
 MEDIA = REPO / "docs" / "media"
@@ -311,8 +311,8 @@ def analyse_specimen(spec: dict) -> dict:
 
 
 # --------------------------------------------------------------------------- measurement API
-def measure_morphoeval(ref: dict | None = None) -> dict:
-    """Quantitative morphometrics for the MorphoEval audit (Pass 1: Fig. 320 only)."""
+def analyse_all(ref: dict | None = None) -> dict:
+    """Full analysis dictionary (Pass 1: Fig. 320 only)."""
     ref = ref or load_reference()
     specs = [s for s in ref["digitised_specimens"] if s["segmentation"]["mode"] == "figure_ink"]
     results = {s["id"]: analyse_specimen(s) for s in specs}
@@ -336,6 +336,29 @@ def measure_morphoeval(ref: dict | None = None) -> dict:
         "model_regime_table": model_table,
         "_results": results,
     }
+
+
+def measure_morphoeval(ref: dict | None = None) -> list[dict]:
+    """Morphometric rows for morphoeval/measure_outputs.py (name/value/unit/method/reference_value)."""
+    m = analyse_all(ref)
+    ls = m["specimens"]["fig320_ovis_ammon"]["log_spiral"]
+    s = m["specimens"]["fig320_ovis_ammon"]
+    return [
+        {"name": "fig320 projected spiral angle alpha_proj", "value": round(ls["alpha_deg"], 2), "unit": "deg",
+         "method": "free-pole nonlinear least-squares log-spiral fit to the digitised outer horn edge of Thompson (1917) Fig. 320; alpha = atan(1/|k|)",
+         "reference_value": THOMPSON_ALPHA_OVIS_AMMON, "reference_source": "Thompson (1917) p. 617: Ovis ammon about 75 deg"},
+        {"name": "fig320 whorl ratio R = exp(2 pi |k|)", "value": round(ls["whorl_ratio"], 3), "unit": "ratio",
+         "method": "E3 from the fitted pitch; baseline R = 1 is the circle null",
+         "reference_value": round(whorl_ratio(THOMPSON_ALPHA_OVIS_AMMON), 3), "reference_source": "E3 with Thompson's alpha = 75 deg, beta = 90 deg"},
+        {"name": "fig320 Pearson r of ln(rho) vs theta", "value": round(ls["pearson_r_lnrho_theta"], 4), "unit": "r",
+         "method": "linearity of ln(rho) in growth angle; 1.0 = exact log spiral", "reference_value": 1.0},
+        {"name": "fig320 log-spiral RMSE", "value": round(ls["rmse_px"], 2), "unit": "px",
+         "method": f"radial RMSE of the fit over {ls['n']} edge points ({ls['sweep_deg']:.0f} deg sweep); relative RMSE {ls['rmse_rel']:.3f}"},
+        {"name": "fig320 delta AIC circle minus log-spiral", "value": round(s["delta_aic_circle_minus_log"], 1), "unit": "AIC",
+         "method": "alternative-model comparison vs the circle null (no gnomonic growth); >= 10 counts as decisive", "reference_value": 10.0},
+        {"name": "fig320 delta AIC Archimedean minus log-spiral", "value": round(s["delta_aic_archimedean_minus_log"], 1), "unit": "AIC",
+         "method": "alternative-model comparison vs an Archimedean (arithmetic) spiral", "reference_value": 10.0},
+    ]
 
 
 # --------------------------------------------------------------------------- figures
@@ -504,10 +527,12 @@ def self_test() -> int:
     ref = load_reference()
     ver = verify_inputs(ref)
     assert all(v["ok"] for v in ver.values()), ver
-    m = measure_morphoeval(ref)
+    m = analyse_all(ref)
     h = m["headline"]
     assert np.isfinite(h["fig320_alpha_deg"]) and 0 < h["fig320_alpha_deg"] < 90
     assert m["specimens"]["fig320_ovis_ammon"]["n_edge_points"] > 200
+    rows = measure_morphoeval(ref)
+    assert len(rows) >= 4 and all("name" in r and "value" in r for r in rows)
     print("self-test OK:", json.dumps({k: round(v, 3) if isinstance(v, float) else v for k, v in h.items()}))
     return 0
 
@@ -520,7 +545,7 @@ def main(argv=None) -> int:
     if args.self_test:
         return self_test()
     ref = load_reference()
-    m = measure_morphoeval(ref)
+    m = analyse_all(ref)
     render_comparison(m, MEDIA / f"{STEM}_comparison.png")
     if not args.no_gif:
         render_growth_gif(MEDIA / f"{STEM}_growth.gif")
