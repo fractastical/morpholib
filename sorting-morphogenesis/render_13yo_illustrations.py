@@ -608,12 +608,12 @@ def render_fig7_final_scoreboard():
     ax.axis("off")
 
     fig.suptitle(
-        "The Final Scoreboard: How Right Is Michael Levin?  77.6%  —  mean of all seven claims",
+        "77.6% on the seven claims in Ingressing Minds  —  not a score of his other work",
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.962
     )
     ax.text(
         50, 103.6,
-        "All seven claims, weighted equally:  (66.7 + 13.5 + 86.5 + 96.1 + 95.0 + 95.0 + 90.1) / 7  =  77.6%",
+        "Ingressing Minds, seven claims, weighted equally:  (66.7 + 13.5 + 86.5 + 96.1 + 95.0 + 95.0 + 90.1) / 7  =  77.6%",
         color="#93c5fd", fontsize=8.2, fontweight="bold", ha="center", va="center"
     )
     ax.text(
