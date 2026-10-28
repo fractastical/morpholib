@@ -134,6 +134,14 @@ theorem tri_junction_mean_is_always_120 (alpha beta gamma : Int)
 
 /-! ## T4. Euler / three-valent bookkeeping of a froth (pp. 310, 319) -/
 
+/-- Total polygon-side count of a cellular network with `E` junctional edges (each edge bounds two cells). -/
+def total_sides (E : Int) : Int :=
+  2 * E
+
+/-- Euler characteristic `V - E + F` of the periodic (toroidal) cellular network. -/
+def euler_characteristic (V E F : Int) : Int :=
+  V - E + F
+
 /-- Theorem 4 (`three_valent_froth_euler_bookkeeping`):
     In a periodic (toroidal) three-valent cellular network with `V` vertices, `E` edges and
     `F` cells (`V - E + F = 0`, `3 V = 2 E`): the total side count `2 E` equals `6 F` (mean
@@ -142,8 +150,10 @@ theorem tri_junction_mean_is_always_120 (alpha beta gamma : Int)
     conserves total coordination (`5 + 7 = 6 + 6`), so three-fold meeting is preserved by
     the only topological move available to a froth. -/
 theorem three_valent_froth_euler_bookkeeping (V E F : Int)
-    (h_euler : V - E + F = 0) (h_trivalent : 3 * V = 2 * E) :
-    2 * E = 6 * F ∧ V = 2 * F ∧ (5 + 7 : Int) = 6 + 6 := by
+    (h_euler : euler_characteristic V E F = 0) (h_trivalent : 3 * V = total_sides E) :
+    total_sides E = 6 * F ∧ V = 2 * F ∧ (5 + 7 : Int) = 6 + 6 := by
+  unfold euler_characteristic at h_euler
+  unfold total_sides at h_trivalent ⊢
   refine ⟨by omega, by omega, by decide⟩
 
 /-! ## T5. Three regular n-gons close a vertex iff n = 6 (pp. 319-321) -/
@@ -179,20 +189,32 @@ def sqrt3_1e4_upper : Int := 17321
 /-- Integer surrogate for `10^4 * sqrt 2` (a lower rational bound). -/
 def sqrt2_1e4_lower : Int := 14142
 
+/-- Total film length of the four-fold "X" partition of a square: `2 * q` where `q ≈ side * sqrt 2`
+    is the diagonal (two full diagonals). -/
+def x_partition_length (q : Int) : Int :=
+  2 * q
+
+/-- Total film length of the two three-fold "Y" (Steiner) partition of a square of side `k`:
+    `k + r` where `r ≈ k * sqrt 3`. -/
+def steiner_partition_length (k r : Int) : Int :=
+  k + r
+
 /-- Theorem 6 (`steiner_two_y_beats_x_partition`):
-    For a unit square, the four-fold "X" partition has total film length `2 sqrt 2`, while the
-    two three-fold "Y" (Steiner) partition has length `1 + sqrt 3`. With certified rational
-    brackets `sqrt 3 ≤ 1.7321` (`17321^2 ≥ 3 * 10^8`) and `sqrt 2 ≥ 1.4142`
-    (`14142^2 ≤ 2 * 10^8`), the Steiner length is strictly shorter:
-    `10^4 + 17321 < 2 * 14142`.  A four-fold film vertex therefore cannot be a minimiser and
-    decays into two 120-degree vertices -- Plateau's second law, which the script checks as
-    the `f3 >= 0.90` three-fold fraction. -/
-theorem steiner_two_y_beats_x_partition :
+    For a square of any side `k > 0` (measured in units of `10^-4 k`), the four-fold "X" partition
+    has total film length `2 sqrt 2 k`, while the two three-fold "Y" (Steiner) partition has
+    length `(1 + sqrt 3) k`. With certified rational brackets `sqrt 3 ≤ 1.7321`
+    (`17321^2 ≥ 3 * 10^8`) and `sqrt 2 ≥ 1.4142` (`14142^2 ≤ 2 * 10^8`), the Steiner length is
+    strictly shorter at every scale: `(10^4 + 17321) k < 2 * 14142 k`.  A four-fold film vertex
+    therefore cannot be a minimiser and decays into two 120-degree vertices -- Plateau's second
+    law, which the script checks as the `f3 >= 0.90` three-fold fraction. -/
+theorem steiner_two_y_beats_x_partition (k : Int) (hk : 0 < k) :
+    steiner_partition_length (10000 * k) (sqrt3_1e4_upper * k) <
+      x_partition_length (sqrt2_1e4_lower * k) ∧
     sqrt3_1e4_upper * sqrt3_1e4_upper ≥ 3 * 100000000 ∧
-    sqrt2_1e4_lower * sqrt2_1e4_lower ≤ 2 * 100000000 ∧
-    10000 + sqrt3_1e4_upper < 2 * sqrt2_1e4_lower := by
-  unfold sqrt3_1e4_upper sqrt2_1e4_lower
-  decide
+    sqrt2_1e4_lower * sqrt2_1e4_lower ≤ 2 * 100000000 := by
+  unfold steiner_partition_length x_partition_length sqrt3_1e4_upper sqrt2_1e4_lower
+  refine ⟨?_, by decide, by decide⟩
+  omega
 
 /-- Supporting lemma (`square_of_sum_expansion`): the algebraic identity behind the
     squared comparison `(1 + sqrt 3)^2 = 4 + 2 sqrt 3 < 8 = (2 sqrt 2)^2`, i.e.

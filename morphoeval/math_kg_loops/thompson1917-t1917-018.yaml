@@ -89,13 +89,15 @@ equations:
 
   - law_name: "Euler / three-valent froth bookkeeping and T1 charge conservation"
     formula: "V - E + F = 0, 3V = 2E  =>  2E = 6F (mean 6 sides), V = 2F;  (5, 7) <- (6, 6) conserves 12"
-    lean_decl: "MathOfBiology.Loop_213.three_valent_froth_euler_bookkeeping"
+    lean_decl: "MathOfBiology.Loop_213.total_sides"
     lean_theorem: "MathOfBiology.Loop_213.three_valent_froth_euler_bookkeeping"
-    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L144-L147"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L138-L157"
     lean_code: |
+      def total_sides (E : Int) : Int := 2 * E
+      def euler_characteristic (V E F : Int) : Int := V - E + F
       theorem three_valent_froth_euler_bookkeeping (V E F : Int)
-          (h_euler : V - E + F = 0) (h_trivalent : 3 * V = 2 * E) :
-          2 * E = 6 * F ∧ V = 2 * F ∧ (5 + 7 : Int) = 6 + 6
+          (h_euler : euler_characteristic V E F = 0) (h_trivalent : 3 * V = total_sides E) :
+          total_sides E = 6 * F ∧ V = 2 * F ∧ (5 + 7 : Int) = 6 + 6
     variables: "V, E, F: vertices, edges, cells of a periodic three-valent network"
     role: "Underwrites the periodic Voronoi-vertex simulation (every seed tessellation is three-valent, mean 6 sides) and the f3 three-fold-fraction statistic"
     source_citation: "Thompson (1917) pp. 310, 319; Gibson et al. (2006) Nature 442:1038"
@@ -105,7 +107,7 @@ equations:
     formula: "3 (n - 2) 180 = 360 n  <=>  n = 6;  interior angle of the hexagon = 120"
     lean_decl: "MathOfBiology.Loop_213.n_times_interior_angle"
     lean_theorem: "MathOfBiology.Loop_213.three_regular_polygons_close_vertex_iff_hexagon"
-    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L152-L172"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L162-L182"
     lean_code: |
       def n_times_interior_angle (n : Int) : Int := (n - 2) * 180
       theorem three_regular_polygons_close_vertex_iff_hexagon (n : Int) :
@@ -118,20 +120,23 @@ equations:
     code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py#L780-L795"
 
   - law_name: "Plateau four-fold vertex instability (Steiner two-Y beats X)"
-    formula: "1 + sqrt 3 = 2.7320 < 2 sqrt 2 = 2.8284 for the unit square; certified at 1e-4: 17321^2 >= 3e8, 14142^2 <= 2e8, 10000 + 17321 < 2 * 14142"
-    lean_decl: "MathOfBiology.Loop_213.sqrt3_1e4_upper"
+    formula: "(1 + sqrt 3) k = 2.7320 k < 2 sqrt 2 k = 2.8284 k for a square of side k; certified at 1e-4: 17321^2 >= 3e8, 14142^2 <= 2e8, (10000 + 17321) k < 2 * 14142 k for every k > 0"
+    lean_decl: "MathOfBiology.Loop_213.steiner_partition_length"
     lean_theorem: "MathOfBiology.Loop_213.steiner_two_y_beats_x_partition"
-    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L177-L207"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L187-L229"
     lean_code: |
       def sqrt3_1e4_upper : Int := 17321
       def sqrt2_1e4_lower : Int := 14142
-      theorem steiner_two_y_beats_x_partition :
+      def x_partition_length (q : Int) : Int := 2 * q
+      def steiner_partition_length (k r : Int) : Int := k + r
+      theorem steiner_two_y_beats_x_partition (k : Int) (hk : 0 < k) :
+          steiner_partition_length (10000 * k) (sqrt3_1e4_upper * k) <
+            x_partition_length (sqrt2_1e4_lower * k) ∧
           sqrt3_1e4_upper * sqrt3_1e4_upper ≥ 3 * 100000000 ∧
-          sqrt2_1e4_lower * sqrt2_1e4_lower ≤ 2 * 100000000 ∧
-          10000 + sqrt3_1e4_upper < 2 * sqrt2_1e4_lower
+          sqrt2_1e4_lower * sqrt2_1e4_lower ≤ 2 * 100000000
       theorem square_of_sum_expansion (k r : Int) :
           (k + r) * (k + r) = k * k + 2 * (k * r) + r * r
-    variables: "unit-square partitions: X (four films from the centre) vs two-Y Steiner tree"
+    variables: "k: square side (scale); q = k sqrt 2: diagonal; r = k sqrt 3; X partition (four films from the centre) vs two-Y Steiner tree"
     role: "Plateau's second law (no four-fold film vertices) that the script tests as the f3 three-fold fraction and the square-lattice ablation control"
     source_citation: "Thompson (1917) pp. 309-310; Lamarle (1864); Taylor (1976) Ann. Math. 103:489-539"
     code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py#L174-L177"
