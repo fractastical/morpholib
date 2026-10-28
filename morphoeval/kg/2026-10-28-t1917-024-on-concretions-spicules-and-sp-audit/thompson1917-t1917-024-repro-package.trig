@@ -1,0 +1,83 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-024> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-024-repro-package> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-024-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) spicule rays as Plateau borders of the secreting cell field vs Grantia SEM ray angles (Pass 1) — Reproducibility package: 66/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Deterministic (no stochastic step in v1; seed set anyway), --self-test passes in < 1 s and the full run in ~3 s, documented invocation, outputs to docs/media and the dataset dir, environment versions recorded in this audit. Deductions: the v1 measure_morphoeval hook returned a dict and crashed measure_outputs.py (fixed in the hotfix, but the interface was not tested), no per-script dependency pin, scikit-image deprecation warnings are emitted, no CLI parameters, and the audit checkpoint is a branch commit not yet on main." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-024-repro-package-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-024-repro-package-2> ;
+        pk:hasScore "0.66"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-024-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py L465–L490" ;
+        dct:description "self_test: model identities, inverse, digest, 8 + 3 detections, angle sums" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/0643f406e28a6ba3f9600caef4642142fc8be064/thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#L465-L490> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-024-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py L493–L518" ;
+        dct:description "main: documented --self-test / --no-gif, writes JSON + CSV + PNG + GIF" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/0643f406e28a6ba3f9600caef4642142fc8be064/thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#L493-L518> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 1; second assessor pending)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1007/BF00221776>,
+            <https://doi.org/10.1016/j.jsb.2016.04.009>,
+            <https://doi.org/10.1038/srep45658>,
+            <https://doi.org/10.1098/rsos.190911>,
+            <https://doi.org/10.11646/zootaxa.4426.1.1> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form (Ch. IX: On Concretions, Spicules, and Spicular Skeletons, pp. 411-487, Figs. 194-235)" .
+    <https://doi.org/10.1007/BF00221776> dct:date "1977"^^xsd:gYear ;
+        dct:title "Spicule formation in the calcareous sponge Sycon ciliatum" .
+    <https://doi.org/10.1016/j.jsb.2016.04.009> dct:date "2016"^^xsd:gYear ;
+        dct:title "Crystallographic orientation and concentric layers in spicules of calcareous sponges" .
+    <https://doi.org/10.1038/srep45658> dct:date "2017"^^xsd:gYear ;
+        dct:title "Spicule formation in calcareous sponges: Coordinated expression of biomineralization genes and spicule-type specific genes" .
+    <https://doi.org/10.1098/rsos.190911> dct:date "2019"^^xsd:gYear ;
+        dct:title "Three-dimensionally preserved soft tissues and calcareous hexactins in a Silurian sponge: implications for early sponge evolution" .
+    <https://doi.org/10.11646/zootaxa.4426.1.1> dct:date "2018"^^xsd:gYear ;
+        dct:title "Calcareous sponges of the Western Indian Ocean and Red Sea" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) spicule rays as Plateau borders of the secreting cell field vs Grantia SEM ray angles (Pass 1) — Reproducibility package 66/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:19:23Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-024-repro-package> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

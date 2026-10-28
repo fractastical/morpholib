@@ -1,0 +1,133 @@
+lean_verification: verified_mechanism_proof
+sim_id: thompson1917-t1917-024
+slot: 219
+claim_id: T1917-024
+organism: "Grantia aff. indica Dendy, 1913 (Porifera: Calcarea: Grantiidae); Grantia sp. population; Haeckel/Thompson Fig. 214 drawings"
+phenomenon_size_m: 1.0e-04
+log10_size_m: -4.0
+size_human: "100 um (calcareous triactine ray length ~50-150 um)"
+scale_tier: 4_cellular_10um
+anatomical_structure: "Calcareous sponge spicules: triactines (3 rays) and tetractines (4 rays) secreted by a sclerocyte group"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+math_family: "Surface-Tension Force Balance at a Plateau Border (Neumann Tension Triangle) & Polyhedral Ray Geometry"
+model_spec:
+  name: "Dreyer-Thompson Plateau-border spicule model"
+  type: geometric-mechanistic
+  source: "Thompson, D.W. (1917) On Growth and Form, Ch. IX, pp. 443-449, Fig. 214 (after Haeckel 1872; mechanism after Dreyer 1892 and Plateau 1873)"
+  state_variables:
+    gamma_i: "specific tension of interface i meeting at the junction (ratios only)"
+    theta_i: "ray angle opposite interface i (angle between rays j, k); sum = 360 deg"
+    rho: "sagittal tension ratio gamma_cc / gamma_cm in (0, 2)"
+  governing_equations:
+    E1: "gamma_1 t_1 + gamma_2 t_2 + gamma_3 t_3 = 0 (force balance)"
+    E3: "cos theta_1 = (gamma_1^2 - gamma_2^2 - gamma_3^2) / (2 gamma_2 gamma_3)"
+    E4: "gamma_1 = gamma_2 = gamma_3 -> theta = 120 deg"
+    E5: "gamma_2 = gamma_3 = m, gamma_1 = c = rho m -> cos theta_pair = -rho/2, theta_unpaired = 2 arccos(rho/2)"
+    E7: "four equal rays in 3D: cos theta = -1/3 (109.47 deg)"
+    E8: "six axial rays: adjacent cos theta = 0 (90 deg)"
+  parameter_regime:
+    rho: [0.0, 2.0]
+    typical_regular: 1.0
+    typical_sagittal: [0.0, 0.8]
+  reference_json: datasets/thompson_1917/t1917-024/t1917_024_on_concretions_spicules_and_sp_reference.json
+  lean_module: morphoeval/lean/loops/Thompson1917_T1917_024.lean
+  lean_namespace: MathOfBiology.Loop_219
+  lean_check: "lean morphoeval/lean/loops/Thompson1917_T1917_024.lean  (Lean 4.35.0, exit 0, 0 sorry, 6 theorems)"
+  script: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py
+external_datasets:
+- name: "Wikimedia Commons: Grantia aff. indica SEM spicule plate (van Soest & de Voogd 2018, Zootaxa 4426 Fig. 53), CC BY 3.0"
+  url: https://commons.wikimedia.org/wiki/File:Grantia_indica_(10.11646-zootaxa.4426.1.1)_Figure_53.jpg
+  doi: 10.11646/zootaxa.4426.1.1
+  sha256: 70194abe78894820ff61347417ba7f2b7fa7c20ed1a42261893c6a46947bad59
+- name: "Wikimedia Commons: Grantia spicules 100x (M. Readey 2020), CC BY-SA 4.0"
+  url: https://commons.wikimedia.org/wiki/File:Grantia_Spicules.jpg
+  sha256: 08641621770534e19f605acd532684124e5b3886c3a69cfb32e4c9657c3a7f30
+- name: "Internet Archive: On Growth and Form (1917) p. 445 Fig. 214, leaf 465"
+  url: https://archive.org/download/ongrowthform1917thom/page/leaf465_w1600.jpg
+  sha256: 019168c1fa4adddc2c3f731369f8f0160115f2f45f4331a55bc3be3d99637988
+- name: "Dryad doi:10.5061/dryad.8mv00jv (Nadhira et al. 2019, Silurian hexactine sponge) — pre-assigned; DATASET_MISMATCH for the triradiate test, metadata pinned only"
+  url: https://doi.org/10.5061/dryad.8mv00jv
+  doi: 10.5061/dryad.8mv00jv
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Porifera (Spongiae)
+  genus: Grantia
+  poion_form: Triradiate & Tetraradiate Spicules
+  poson_law: "Plateau 120 deg junction; Neumann law of sines; tetrahedral 109.47 deg"
+  efficient_cause: "Surface tension of contiguous cells moulding a crystal under restraint (Thompson p. 444)"
+equations:
+- law_name: Plateau Equiangular Junction (Thompson P1, Fig. 214 F)
+  formula: "gamma_1 = gamma_2 = gamma_3 = g  =>  cos theta_i = (g^2 - g^2 - g^2)/(2 g^2) = -1/2  =>  theta_i = 120 deg"
+  lean_decl: MathOfBiology.Loop_219.cosNum
+  lean_theorem: MathOfBiology.Loop_219.plateau_equiangular_junction
+  lean_locus: morphoeval/lean/loops/Thompson1917_T1917_024.lean#L48-L66
+  lean_code: |
+    def cosNum (g1 g2 g3 : Int) : Int := g1 * g1 - g2 * g2 - g3 * g3
+    def cosDen (g2 g3 : Int) : Int := 2 * (g2 * g3)
+    theorem plateau_equiangular_junction (g : Int) (hg : 0 < g) :
+        2 * cosNum g g g + cosDen g g = 0 ∧ 0 < cosDen g g
+  variables: "g: common specific tension of the three cell interfaces; cosNum/cosDen: law-of-cosines numerator/denominator (E3)"
+  role: "Primary geometric prediction: a deposit in the partitions of three equal-tension cells is an equiangular triradiate"
+  source_citation: "Thompson (1917) On Growth and Form p. 445; Plateau (1873)"
+  code_locus: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#neumann_angles
+- law_name: Sagittal Two-Equal-One-Unequal Symmetry (Thompson P2, Fig. 214 A, C)
+  formula: "gamma_cc = c, gamma_cm = m (x2)  =>  cos theta_2 = cos theta_3 = -c/(2m); cos theta_1 = (c^2 - 2m^2)/(2m^2)"
+  lean_decl: MathOfBiology.Loop_219.cosDen
+  lean_theorem: MathOfBiology.Loop_219.sagittal_paired_angles_equal
+  lean_locus: morphoeval/lean/loops/Thompson1917_T1917_024.lean#L74-L80
+  lean_code: |
+    theorem sagittal_paired_angles_equal (c m : Int) :
+        cosNum m c m = cosNum m m c ∧ cosDen c m = cosDen m c
+  variables: "c: cell-cell partition tension; m: cell-medium surface tension"
+  role: "Symmetry constraint tested on the SEM plate: the two angles flanking the cell-cell ray are equal"
+  source_citation: "Thompson (1917) pp. 445-446"
+  code_locus: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#sagittal_angles
+- law_name: Equiangularity Iff Equal Specific Tensions (Thompson E6)
+  formula: "cosNum(c,m,m) cosDen(c,m) - cosNum(m,c,m) cosDen(m,m) = 2 c m (c - m)(c + 2m);  theta_unpaired = theta_pair  <=>  c = m"
+  lean_decl: MathOfBiology.Loop_219.sagittal_cosine_difference_factorisation
+  lean_theorem: MathOfBiology.Loop_219.sagittal_equiangular_iff_equal_tensions
+  lean_locus: morphoeval/lean/loops/Thompson1917_T1917_024.lean#L87-L138
+  lean_code: |
+    theorem sagittal_cosine_difference_factorisation (c m : Int) :
+        cosNum c m m * cosDen c m - cosNum m c m * cosDen m m
+          = 2 * ((c * m) * ((c - m) * (c + 2 * m)))
+    theorem sagittal_equiangular_iff_equal_tensions (c m : Int) (hc : 0 < c) (hm : 0 < m) :
+        cosNum c m m * cosDen c m = cosNum m c m * cosDen m m ↔ c = m
+  variables: "c, m > 0 integer tensions (scale-free)"
+  role: "Thompson's 'modified by any inequality in the specific tensions' made exact and bidirectional"
+  source_citation: "Thompson (1917) p. 445"
+  code_locus: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#tension_ratio_from_angles
+- law_name: Sagittal Ordering, Monotone Closing and the T-Shaped Limit (Thompson E5a, p. 443)
+  formula: "0 < c < m  =>  theta_unpaired > theta_pair;  d cos(theta_unpaired)/dc > 0;  c = 0 -> cos = -1 (180 deg);  c = 2m -> cos = +1"
+  lean_decl: MathOfBiology.Loop_219.cosNum
+  lean_theorem: MathOfBiology.Loop_219.sagittal_unpaired_angle_ordering_and_T_limit
+  lean_locus: morphoeval/lean/loops/Thompson1917_T1917_024.lean#L150-L185
+  lean_code: |
+    theorem sagittal_unpaired_angle_ordering_and_T_limit (c c' m : Int)
+        (hc : 0 < c) (hcm : c < m) (hcc' : c < c') :
+        cosNum c m m * cosDen c m < cosNum m c m * cosDen m m
+        ∧ cosNum c m m < cosNum c' m m
+        ∧ cosNum 0 m m = -(cosDen m m)
+        ∧ cosNum (2 * m) m m = cosDen m m
+  variables: "c < c': two cell-cell tensions; m: cell-medium tension"
+  role: "Falsifiable sign prediction F4 (unpaired angle >= paired angle in sagittal spicules) and the 'two rays nearly in a straight line, at right angles to the third' limit"
+  source_citation: "Thompson (1917) p. 443, pp. 445-446"
+  code_locus: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#sagittal_angles
+- law_name: Tetrahedral and Orthogonal Ray Systems (Thompson P3, Fig. 214 E; hexactine limit)
+  formula: "sum_i t_i = 0 for the 4 cube body diagonals, t_i . t_j = -1 on |t|^2 = 3 (cos = -1/3, 109.47 deg); 6 axial rays: adjacent t_i . t_j = 0 (90 deg)"
+  lean_decl: MathOfBiology.Loop_219.V3.dot
+  lean_theorem: MathOfBiology.Loop_219.tetrahedral_and_orthogonal_ray_systems
+  lean_locus: morphoeval/lean/loops/Thompson1917_T1917_024.lean#L187-L231
+  lean_code: |
+    theorem tetrahedral_and_orthogonal_ray_systems :
+        (tet1.add tet2).add (tet3.add tet4) = V3.zero
+        ∧ tet1.dot tet1 = 3 ∧ tet1.dot tet2 = -1 ∧ ... ∧ tet3.dot tet4 = -1
+        ∧ ((ex.add ey).add ez).add ((nex.add ney).add nez) = V3.zero
+        ∧ ex.dot ey = 0 ∧ ex.dot ez = 0 ∧ ey.dot ez = 0 ∧ ex.dot nex = -1 ∧ ... := by decide
+  variables: "tet1..tet4: integer body-diagonal ray vectors; ex..nez: axial ray vectors"
+  role: "Four-cell (tetractine) and six-ray (hexactine, Carduispongia) limiting cases; P3 is UNTESTABLE on the 2D plate and is carried by proof only"
+  source_citation: "Thompson (1917) p. 446; Nadhira et al. (2019) doi:10.1098/rsos.190911"
+  code_locus: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py#polyhedral_ray_angles
+formalized_on: '2026-10-28'
+formalized_by: "claude-fable-5-1 (cloud loop thompson1917-t1917-024)"

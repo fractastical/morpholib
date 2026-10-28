@@ -1,0 +1,140 @@
+{
+  "claim_id": "T1917-024",
+  "loop_id": "thompson1917-t1917-024",
+  "date_made": "1917",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917). On Growth and Form. Cambridge University Press. Ch. IX, 'On Concretions, Spicules, and Spicular Skeletons', pp. 411-487, Figs. 194-235.",
+    "pages_used": "443-449 (triradiate / tetractinellid spicules of calcareous sponges, Fig. 214)",
+    "internet_archive_item": "ongrowthform1917thom",
+    "page_leaf_rule": "printed page = IA leaf - 20 (p. 445 = leaf 465)",
+    "upstream_theory_credited_by_thompson": [
+      "Dreyer, F. (1892) Die Principien der Gerüstbildung bei Rhizopoden, Spongien und Echinodermen. Jenaische Zeitschrift 26:204-468 — mechanical theory of spicular conformation from cell/vesicle packing under surface tension.",
+      "Plateau, J. (1873) Statique expérimentale et théorique des liquides — 120 deg junction law, 'bourrelet'.",
+      "Haeckel, E. (1872) Die Kalkschwämme — the spicule drawings reproduced as Fig. 214.",
+      "von Ebner, V. (1887) — calcareous spicule is a single calcite crystal whose optic axis is not a ray axis."
+    ]
+  },
+  "claim_text": "Sponge and alcyonarian spicule forms (needles, tri-/tetraradiates and their aggregates) are the forms physical deposition/crystallisation takes within the cell/field that secretes them.",
+  "thompson_quotes": {
+    "p443_sagittal_limit": "The spicules of the calcareous sponges are commonly triradiate, and the three radii are usually inclined to one another at equal, or nearly equal angles; in certain cases, two of the three rays are nearly in a straight line, and at right angles to the third.",
+    "p444_crystal_under_restraint": "The spicule is a true crystal ... But its axes are not crystalline axes ... it is, in fact, a crystal under restraint, a crystal growing, as it were, in an artificial mould; and this mould is constituted by the surrounding cells, or structural vesicles of the sponge.",
+    "p445_120deg": "a solidified skeletal deposit which originates or accumulates either between the cells or within the thickness of their mutual partitions, will tend to take the form of triradiate bodies, whose rays (in a typical case) will be set at equal angles of 120 deg (Fig. 214, F).",
+    "p445_tension_modification": "It will be modified by any inequality in the specific tensions of adjacent cells; as a special case, it will be apt to be greatly modified at the surface of the system, where a spicule happens to be formed in a plane perpendicular to the cell-layer, so that one of its three rays lies between two adjacent cells and the other two are associated with the surface of contact between the cells and the surrounding medium; in such a case ... we shall tend to obtain a spicule with two equal angles and one unequal (Fig. 214, A, C).",
+    "p446_tetrahedral": "so does the four-rayed spicule [correspond] to that of a solid aggregate of four cells: these latter tending to meet one another in a tetrahedral system ... the edges being inclined to one another at equal angles of about 109 deg.",
+    "p446_concave": "if the triradiate spicule be developed in the interspace between three juxtaposed cells, it is obvious that its sides will tend to be concave, for the interspace between our three contiguous equal circles is an equilateral, curvilinear triangle",
+    "p449_layered_growth": "the spicule is capable of growing, without marked change of form, by further deposition, or crystallisation, of layer upon layer of calcareous [matter]"
+  },
+  "model": {
+    "name": "Dreyer-Thompson Plateau-border spicule model (Neumann tension triangle)",
+    "family": "geometric-mechanistic",
+    "state_variables": {
+      "gamma_i": "specific tension of interface i (i = 1,2,3) meeting at the junction where the spicule nucleates; units arbitrary (only ratios matter)",
+      "t_i": "unit vector along interface i = axis of spicule ray i",
+      "theta_i": "ray angle OPPOSITE interface i, i.e. the angle between rays j and k (j,k != i); theta_1 + theta_2 + theta_3 = 2 pi",
+      "rho": "sagittal tension ratio gamma_cc / gamma_cm (cell-cell partition over cell-medium surface); rho in (0, 2)",
+      "r": "cell (vesicle) radius; sets the size of the curvilinear interstice",
+      "h": "accreted layer thickness of the spicule (growth coordinate; Thompson p. 449 'layer upon layer')"
+    },
+    "equations": {
+      "E1_force_balance": "gamma_1 t_1 + gamma_2 t_2 + gamma_3 t_3 = 0  (Neumann triangle; equilibrium of three interfaces at a Plateau border)",
+      "E2_law_of_sines": "gamma_1 / sin(theta_1) = gamma_2 / sin(theta_2) = gamma_3 / sin(theta_3)",
+      "E3_law_of_cosines": "cos(theta_1) = (gamma_1^2 - gamma_2^2 - gamma_3^2) / (2 gamma_2 gamma_3)  (and cyclic)",
+      "E4_equiangular": "gamma_1 = gamma_2 = gamma_3  =>  theta_1 = theta_2 = theta_3 = 2 pi / 3 = 120 deg  (Thompson P1, Fig. 214 F)",
+      "E5_sagittal_family": "gamma_2 = gamma_3 = gamma_cm, gamma_1 = gamma_cc = rho gamma_cm  =>  cos(theta_pair) = -rho / 2,  theta_unpaired = 2 pi - 2 theta_pair = 2 arccos(rho / 2)  (Thompson P2: two equal angles, one unequal)",
+      "E5a_T_limit": "rho -> 0  =>  theta_pair -> 90 deg, theta_unpaired -> 180 deg  (Thompson p. 443: 'two rays nearly in a straight line, at right angles to the third'; Fig. 214 A, B)",
+      "E5b_equiangular_point": "rho = 1  =>  theta_pair = theta_unpaired = 120 deg",
+      "E5c_detachment_limit": "rho -> 2  =>  theta_pair -> 180 deg, theta_unpaired -> 0: cell-cell contact vanishes (no spicule)",
+      "E6_equiangular_iff": "theta_unpaired = theta_pair  <=>  rho = 1  (any inequality of specific tensions breaks equiangularity; Thompson p. 445)",
+      "E7_tetrahedral": "four equal interfaces in 3D: cos(theta) = -1/3  =>  theta = 109.47 deg  (Thompson P3, Fig. 214 E, 'about 109 deg')",
+      "E8_hexactine_limit": "six rays along +/- e_x, +/- e_y, +/- e_z: adjacent cos(theta) = 0  =>  90 deg  (orthogonal network; Carduispongia / hexactinellid case, cited only)",
+      "E9_interstice": "interstice between three mutually tangent equal circles of radius r: area A_3 = r^2 (sqrt(3) - pi / 2) ~ 0.1613 r^2; sides concave (Thompson P4)",
+      "E10_layered_growth": "spicule(h) = { x : dist(x, ray axes) <= w(h) } with w monotone in h; ray directions t_i fixed by E1, so growth preserves the angle triplet (Thompson p. 449)"
+    },
+    "boundary_conditions": [
+      "Rays meet at a single junction (the Plateau border / triple point); their axes are straight lines (curvature of rays, Fig. 214 C, is outside the axis model and is treated as a measurement nuisance).",
+      "Angles are measured between ray AXES in the plane of the spicule; projection of a non-planar (trihedral) triradiate onto the image plane distorts angles — stated limitation (Thompson p. 444: 'seldom in a plane').",
+      "Tetractines: the apical (fourth) ray is nearly normal to the plane of the other three in the SEM plate and cannot be angle-measured in projection; P3 is therefore UNTESTABLE from the 2D plate."
+    ],
+    "parameter_regime_table": [
+      {"rho": 0.0, "theta_pair_deg": 90.0, "theta_unpaired_deg": 180.0, "form": "T-shaped sagittal (Fig. 214 A, B; Zootaxa Fig. 53 f)"},
+      {"rho": 0.5, "theta_pair_deg": 104.48, "theta_unpaired_deg": 151.04, "form": "strongly sagittal (Fig. 53 c, d)"},
+      {"rho": 0.8, "theta_pair_deg": 113.58, "theta_unpaired_deg": 132.84, "form": "weakly sagittal"},
+      {"rho": 1.0, "theta_pair_deg": 120.0, "theta_unpaired_deg": 120.0, "form": "regular equiangular (Fig. 214 F)"},
+      {"rho": 1.3, "theta_pair_deg": 130.54, "theta_unpaired_deg": 98.92, "form": "inverted sagittal (unpaired angle < paired)"},
+      {"rho": 1.8, "theta_pair_deg": 154.16, "theta_unpaired_deg": 51.68, "form": "near-detachment (rare)"},
+      {"rho": 2.0, "theta_pair_deg": 180.0, "theta_unpaired_deg": 0.0, "form": "no cell-cell contact: no spicule"}
+    ],
+    "falsifiable_content": [
+      "F1: with three free tensions, E3 reproduces ANY angle triplet summing to 360 deg with each angle < 180 deg; the general model is saturated and is not tested.",
+      "F2: Thompson's restricted (sagittal) model E5 is one-parameter: it predicts the two paired angles are EQUAL. Test: |theta_2 - theta_3| for the closest pair is much smaller than under a random partition of 360 deg (Dirichlet(1,1,1) null, sorted).",
+      "F3: Thompson's typical case E4 predicts a MODE of the angle distribution at 120 deg in a population of free (non-surface) triradiates. Test: mean/median of all angles vs 120 deg, dispersion.",
+      "F4: E5a predicts sagittal forms approach (90, 90, 180), never e.g. (60, 150, 150): the unpaired angle is >= the paired angle when rho < 1. Test: sign of (theta_unpaired - theta_pair) across sagittal spicules."
+    ]
+  },
+  "empirical_biological_claims": [
+    {"id": "P1", "claim": "Regular triradiates: rays at 120 deg (Plateau junction of 3 cells).", "page": 445, "figure": "214 F"},
+    {"id": "P2", "claim": "Sagittal triradiates: two equal angles and one unequal, graded to a T-shape (180, 90, 90) at the sponge surface.", "page": "443, 445-446", "figure": "214 A, B, C"},
+    {"id": "P3", "claim": "Tetractines: rays at the tetrahedral angle ~109 deg (4 cells in solid contact).", "page": 446, "figure": "214 E"},
+    {"id": "P4", "claim": "Ray sides concave near the centre (curvilinear-triangle interstice / Plateau bourrelet).", "page": 446, "figure": "214"},
+    {"id": "P5", "claim": "The spicule is a single calcite crystal whose crystallographic axes are not the ray axes ('a crystal under restraint').", "page": 444, "modern_support": "Rossi et al. 2016 J. Struct. Biol. doi:10.1016/j.jsb.2016.04.009"},
+    {"id": "P6", "claim": "Growth proceeds by layered deposition without change of form.", "page": 449, "modern_support": "Rossi et al. 2016 (concentric layers); Voigt et al. 2017 (thickener sclerocytes)"}
+  ],
+  "modern_counterpoint": "Ledger & Jones (1977) and Voigt et al. (2017) show calcareous triactines are built by a dedicated sextet of sclerocytes (3 founder + 3 thickener cells), not by passive deposition between arbitrary neighbouring cells; the geometric prediction (ray axes set by the force balance of the secreting cell group) survives, the 'any three cells' mechanism does not. The verdict therefore scores the geometric content (P1-P4), labelled as such.",
+  "datasets": {
+    "dryad_preassigned": {
+      "doi": "doi:10.5061/dryad.8mv00jv",
+      "match": false,
+      "status": "DATASET_MISMATCH_FOR_PRIMARY_TEST — see scout_manifest.json; metadata JSON pinned, 5.83 GB payload not fetched",
+      "sha256": {
+        "dryad_8mv00jv_dataset_metadata.json": "8b1273b453ccdb77ae1562f25c263883504c6600483e84a1a96e50c159207c24",
+        "dryad_8mv00jv_files.json": "877e674bc671d93bc05279f92ae4e1b8d4efe8e6ef0df02c83c7f883df7acb0e"
+      }
+    },
+    "primary_specimen": {
+      "file": "specimens/grantia_indica_zootaxa4426_fig53_sem.jpg",
+      "sha256": "70194abe78894820ff61347417ba7f2b7fa7c20ed1a42261893c6a46947bad59",
+      "bytes": 782038,
+      "pixels": [2003, 2720],
+      "organism": "Grantia aff. indica Dendy, 1913 (Porifera: Calcarea: Grantiidae), ZMA Por. 11556b",
+      "modality": "SEM, spicules on dark field",
+      "panels": {"a": "diactines (cortical)", "b": "trichoxea fragment", "c": "cortical triactine", "d": "tubar triactines (3)", "e": "subatrial tetractines (2)", "f": "atrial tetractines (2)"},
+      "scale_bars_um": {"a": 100, "c": 50, "d": 50, "e": 50, "f": 50},
+      "license": "CC BY 3.0",
+      "credit": "van Soest R.W.M. & de Voogd N.J. (2018) Zootaxa 4426(1):1-160, Fig. 53; via Wikimedia Commons",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Grantia_indica_(10.11646-zootaxa.4426.1.1)_Figure_53.jpg",
+      "commons_sha1": "75cef5b61d92f49dc1c2e8e52b5c84f8c9381749"
+    },
+    "secondary_specimen_population": {
+      "file": "specimens/grantia_spicules_readey_100x.jpg",
+      "sha256": "08641621770534e19f605acd532684124e5b3886c3a69cfb32e4c9657c3a7f30",
+      "bytes": 394865,
+      "pixels": [1024, 768],
+      "organism": "Grantia sp. (Porifera: Calcarea)",
+      "modality": "brightfield light micrograph, 100x, spicule spread",
+      "license": "CC BY-SA 4.0",
+      "credit": "M. Readey (2020), own work; via Wikimedia Commons",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Grantia_Spicules.jpg",
+      "commons_sha1": "5b41c6c7e2eda68ed20a29e61b1fe0d0bb9e80fd"
+    },
+    "source_figure": {
+      "file": "specimens/thompson1917_fig214_ia_leaf465_p445.jpg",
+      "sha256": "019168c1fa4adddc2c3f731369f8f0160115f2f45f4331a55bc3be3d99637988",
+      "bytes": 498472,
+      "pixels": [1904, 3128],
+      "content": "On Growth and Form (1917) p. 445, Fig. 214 'Spicules of Grantia and other calcareous sponges (after Haeckel)'",
+      "license": "public domain",
+      "source_url": "https://archive.org/download/ongrowthform1917thom/page/leaf465_w1600.jpg",
+      "figure_bbox_px_in_page": [200, 540, 1000, 1400],
+      "panels": {"A": "T-shaped sagittal", "B": "T-shaped sagittal", "C": "sagittal, curved outer rays", "D": "sagittal", "E": "tetractine", "F": "regular equiangular"}
+    },
+    "ocr_excerpt": {
+      "file": "thompson1917_ch9_pp443-449_ocr_excerpt.txt",
+      "sha256": "52af6bf9d7e46b7dfc999ef3f69a907fc700ab8aeef8498623e6942193efb741"
+    }
+  },
+  "measurement_protocol": {
+    "segmentation": "grayscale -> Otsu threshold (bright-on-dark for the SEM plate; dark-on-bright inverted for the drawing and the micrograph) -> remove scale bars / lettering by size and aspect filters -> connected components -> per-component skeleton (scikit-image) -> junction pixel = skeleton pixel with 3 neighbours (largest component of junction pixels) -> ray direction = principal direction of skeleton pixels within an annulus r in [r_min, r_max] of the junction, one per angular cluster -> angles between consecutive ray directions.",
+    "angle_convention": "three angles theta_1 <= theta_2 <= theta_3 sorted; 'paired' = the two closest angles; 'unpaired' = the remaining one; all in degrees; sum = 360 by construction",
+    "statistics": "mean and SD of all angles; Pearson r and RMSE between measured (theta_pair, theta_unpaired) and the E5 one-parameter curve theta_unpaired = 360 - 2 theta_pair (fit rho per spicule); |theta_2 - theta_3| paired-difference vs Dirichlet(1,1,1) sorted-partition null (KS test, Monte Carlo); CV of angles"
+  }
+}
