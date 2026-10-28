@@ -1,0 +1,119 @@
+# MorphoEval audit — Thompson (1917) T1917-027 logarithmic spiral (Pass 2 remediation)
+
+audit:
+  id: 2026-10-28-t1917-027-the-logarithmic-spiral-audit-v2
+  supersedes: 2026-10-28-t1917-027-the-logarithmic-spiral-audit
+  supersedes_audit_id: 2026-10-28-t1917-027-the-logarithmic-spiral-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: composer-2.5
+    label: "Composer 2.5 (Pass 2 remediation loop thompson1917-t1917-027)"
+    homepage: https://cursor.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32
+    environment:
+      python: "3.12.3"
+      numpy: "2.x"
+      scipy: "1.18.1"
+      matplotlib: "3.x"
+      Pillow: "12.x"
+    note: Pass 2 adds parameter sweep, shuffle ablation, brightness-mask CV segmentation, KS/AICc in compare_models.
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D'Arcy Wentworth"
+    venue: "Cambridge University Press (1917), Ch. XI pp. 493-586"
+    url: https://archive.org/details/ongrowthform1917thom
+  raup1966:
+    title: "Geometric Analysis of Shell Coiling"
+    authors: "Raup, David M."
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    doi: 10.2307/1301992
+  nautilus_commons:
+    title: "Pu - Nautilus pompilius - 10"
+    venue: "Wikimedia Commons (CC BY-SA 4.0)"
+    url: https://commons.wikimedia.org/wiki/File:Pu_-_Nautilus_pompilius_-_10.jpg
+
+simulations:
+  - id: thompson1917-t1917-027
+    name: "Thompson (1917) T1917-027 — logarithmic spiral claim validation (Pass 2)"
+    organism: "Mollusc shell (Nautilus pompilius; Conus textile secondary)"
+    script: thompson/claims/t1917-027_the-logarithmic-spiral.py
+    output: docs/media/t1917_027_the_logarithmic_spiral_comparison.png
+    also:
+      - docs/media/t1917_027_the_logarithmic_spiral_growth.gif
+      - datasets/thompson_1917/t1917-027/result.json
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [thompson1917, raup1966, nautilus_commons]
+    supersedes_audit_id: 2026-10-28-t1917-027-the-logarithmic-spiral-audit
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) Ch. XI: gnomonic shell growth preserves form; spire centreline is an equiangular (logarithmic) spiral r ∝ exp(kθ)"
+      reconstructed_in_script:
+        - "Brightness-mask CV segmentation, log vs Archimedean vs power AICc, shuffle ablation, k-sweep recovery, result.json verdict"
+      transfer_boundary:
+        - "Photographic perspective and short visible whorl arc; W estimate can exceed nautiloid literature when k is fitted on partial arc"
+      does_not_claim:
+        - "Exact Thompson 1917 figure digitisation; full Raup (W,D,T) 3D surface fit"
+    summary: >-
+      Pass 2 adds synthetic k recovery sweep (max error <0.05), shuffle ablation, scipy KS on residuals,
+      and exports mixed/supported verdict on Nautilus (log pearson r≈0.96). Conus remains mixed.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          Thompson log-spiral law, whorl ratio, and log-vs-Archimedean discrimination implemented with
+          ablation and synthetic recovery checks.
+        evidence:
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [177, 195], note: "parameter_sweep k recovery", supports: true}
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [198, 203], note: "ablation_shuffle_control", supports: true}
+      specimen-match:
+        value: 68
+        rationale: >-
+          Improved outer-boundary segmentation on Commons Nautilus; growth GIF shows gnomonic expansion.
+          Still no digitised Thompson 1917 figure overlay.
+        evidence:
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [105, 145], note: "brightness mask polar outer boundary", supports: true}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          Synthetic sweep panel shows monotonic k recovery across 0.08-0.42; GIF animates whorl expansion.
+        evidence:
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [248, 258], note: "sweep panel in comparison figure", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: >-
+          Nautilus log pearson r≈0.96, KS p≈0.19, measure_morphoeval with W and ΔAICc; result.json verdict mixed/supported.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-027/result.json, lines: [1, 25], note: "headline_numbers and verdict", supports: true}
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [318, 373], note: "measure_morphoeval five metrics", supports: true}
+      source-traceability:
+        value: 85
+        rationale: >-
+          Pinned SHA-256, scout manifest, bib, reference JSON, and result.json chain.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-027/t1917_027_the_logarithmic_spiral_reference.json, lines: [40, 55], note: "pinned_assets", supports: true}
+      code-traceability:
+        value: 78
+        rationale: >-
+          Lean Loop_221 theorems linked in math_kg yaml; compare_models documents KS/AICc.
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_027.lean, lines: [1, 45], note: "three non-trivial theorems", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          --self-test covers sweep, ablation, and deterministic measure_morphoeval; outputs regenerate from pinned data.
+        evidence:
+          - {file: thompson/claims/t1917-027_the-logarithmic-spiral.py, lines: [388, 390], note: "Pass 2 self-test ablation and sweep asserts", supports: true}
+    remediation:
+      - "Digitise Thompson 1917 Fig. 237-303 shell outlines from IA scan for direct overlay (future pass)."
+      - "Fit full Raup (W,D,T) mesh alongside 2D log-spiral centreline to address Raup (1966) qualification."

@@ -1,0 +1,37 @@
+sim_id: thompson1917-t1917-027
+math_family: quantitative-geometric
+model_spec:
+  model: "Thompson (1917) Ch. XI logarithmic (equiangular) spiral / gnomonic shell growth"
+  claim_id: T1917-027
+  organism: "Mollusc shell (Nautilus pompilius primary; Conus textile secondary)"
+  inputs:
+    - datasets/thompson_1917/t1917-027/nautilus_pompilius_specimen.jpg
+    - datasets/thompson_1917/t1917-027/t1917_027_the_logarithmic_spiral_reference.json
+equations:
+  - law_name: Logarithmic spiral radius law
+    formula: "r(θ) = r₀ exp(k θ)"
+    lean_decl: MathOfBiology.Loop_221.log_radius
+    lean_theorem: MathOfBiology.Loop_221.log_polar_linearity
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_027.lean
+    variables: "r₀: aperture radius; k: log-spiral constant; θ: azimuth"
+    role: Linear growth of ln r in θ (equiangular spiral)
+    source_citation: "Thompson (1917) On Growth and Form Ch. XI pp. 493-586"
+    code_locus: thompson/claims/t1917-027_the-logarithmic-spiral.py
+  - law_name: Gnomonic whorl expansion invariance
+    formula: "r_{n+1} = W r_n,  W = exp(2π k)"
+    lean_decl: MathOfBiology.Loop_221.radius_after_whorls
+    lean_theorem: MathOfBiology.Loop_221.gnomonic_whorl_scaling
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_027.lean
+    variables: "W: whorl expansion ratio; n: whorl index"
+    role: Form unchanged by multiplicative growth (Thompson whorves enlarge by constant ratio)
+    source_citation: "Thompson (1917) Ch. XI; Raup (1966) coordinate formalism"
+    code_locus: thompson/claims/t1917-027_the-logarithmic-spiral.py
+  - law_name: Log-spiral vs Archimedean discrimination
+    formula: "Archimedean r = a + bθ is not log-linear in θ for b ≠ 0"
+    lean_decl: MathOfBiology.Loop_221.arch_radius
+    lean_theorem: MathOfBiology.Loop_221.archimedean_not_log_linear_witness
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_027.lean
+    variables: "a, b: Archimedean parameters"
+    role: Negative control model class for Pass 2 AICc discrimination
+    source_citation: "Thompson (1917) contrast with non-gnomonic spirals"
+    code_locus: thompson/claims/t1917-027_the-logarithmic-spiral.py
