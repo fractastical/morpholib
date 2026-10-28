@@ -575,11 +575,9 @@ def render_fig6_decisive_comparison_d_vs_dp():
 def render_fig7_final_scoreboard():
     """
     Illustrated Guide 7: 'The Final Scoreboard: How Right Is Michael Levin?'
-    The per-claim points below are unchanged. The headline is no longer the
-    3-pillar equal split. Current reading (errata S16): the unweighted mean of
-    the tests that can fail, Claims 1–4, is 65.7%. Claims 5–7 are demonstrations
-    and are not in that mean. The 3-pillar composite 81.6%, and its structural
-    reading 93.4%, stay drawn on the figure labelled superseded.
+    The per-claim points below are unchanged. Current reading (errata S17): the
+    unweighted mean of all seven claims is 77.6%. S16's 65.7% (Claims 1–4 only)
+    and the equal-pillar 81.6% (structural 93.4%) stay drawn, labelled superseded.
 
     Historical 3-pillar split, kept so the superseded number recomputes:
       - Pillar I   (33.3% weight) — Sorting Morphogenesis (Claims 1–3, 11.1% each):
@@ -610,17 +608,17 @@ def render_fig7_final_scoreboard():
     ax.axis("off")
 
     fig.suptitle(
-        "The Final Scoreboard: How Right Is Michael Levin?  65.7%  —  mean of the tests that can fail",
+        "The Final Scoreboard: How Right Is Michael Levin?  77.6%  —  mean of all seven claims",
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.962
     )
     ax.text(
         50, 103.6,
-        "Claims 1–4, weighted equally:  (66.7 + 13.5 + 86.5 + 96.1) / 4  =  65.7%     ·     Claims 5–7 are demonstrations and are not in the mean",
+        "All seven claims, weighted equally:  (66.7 + 13.5 + 86.5 + 96.1 + 95.0 + 95.0 + 90.1) / 7  =  77.6%",
         color="#93c5fd", fontsize=8.2, fontweight="bold", ha="center", va="center"
     )
     ax.text(
         50, 100.6,
-        "Superseded composite, kept visible:  3 equal pillars  18.5 + 32.0 + 31.1  =  81.6%     ·     its structural reading  81.6 / 87.4  =  93.4%  is superseded with it",
+        "Superseded, kept visible:  equal pillars 81.6% (structural 93.4%)   ·   Claims 1–4 only 65.7% (structural 84.2%, errata S16)",
         color="#facc15", fontsize=7.8, fontweight="bold", ha="center", va="center"
     )
 
@@ -655,9 +653,9 @@ def render_fig7_final_scoreboard():
         ),
         (
             "CLAIMS 5–7 · Bioelectric Attractors",
-            "Demonstration · not in the 65.7% mean",
-            "• Claim 5 Planarian 2H0T Boltzmann memory exp(40/25.85) ≈ 4.70 (+10.6/11.1)\n• Claim 6 Picasso Frogs (+10.6/11.1) & Claim 7 Xenobot Stokes (+10.0/11.1)\n  A model built to reproduce a result cannot fail it (−2.2 reduced-model)",
-            "31.1 / 33.3 pts (93%)\nNOT IN THE MEAN",
+            "Claims 5, 6 and 7 · each counts once",
+            "• Claim 5 Planarian 2H0T  10.55/11.1 = 95.0%\n• Claim 6 Picasso tadpole  10.55/11.1 = 95.0%\n• Claim 7 Xenobot  10.0/11.1 = 90.1%   (−2.2 reduced-model, not dualist)",
+            "95.0 · 95.0 · 90.1\nIN THE MEAN",
             "#38bdf8", "#082f49", "#e0f2fe"
         ),
     ]
@@ -712,12 +710,12 @@ def render_fig7_final_scoreboard():
     # Bottom synthesis bar: 3 boxes (3-Pillar Total 81.6%, Structural Math 93.4%, Dualist Ghosts 0.0%)
     b1 = FancyBboxPatch((1.2, 0.8), 30.5, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", linewidth=2.0, zorder=2)
     ax.add_patch(b1)
-    ax.text(16.45, 4.9, "CURRENT READING: 65.7%\nmean of Claims 1–4, the tests that can fail\n(81.6% equal-pillar composite superseded)",
+    ax.text(16.45, 4.9, "CURRENT READING: 77.6%\nmean of all seven claims, each once\n(81.6% and 65.7% both superseded)",
             color="#fef08a", fontsize=7.4, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
 
     b2 = FancyBboxPatch((33.2, 0.8), 33.0, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#052e16", edgecolor="#22c55e", linewidth=2.0, zorder=2)
     ax.add_patch(b2)
-    ax.text(49.7, 4.9, "✔ Structural, same four tests: 84.2%\n(100 + 40.5 + 100 + 96.1) / 4\nsupersedes 93.4%, which included Claims 5–7",
+    ax.text(49.7, 4.9, "✔ Structural, same seven claims: 88.1%\n(100+40.5+100+96.1+95.0+95.0+90.1) / 7\nsupersedes 84.2% and 93.4%",
             color="#dcfce7", fontsize=7.4, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
 
     b3 = FancyBboxPatch((67.6, 0.8), 31.2, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#450a0a", edgecolor="#ef4444", linewidth=2.0, zorder=2)
