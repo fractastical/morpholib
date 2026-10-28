@@ -654,7 +654,7 @@ def render_fig7_final_scoreboard():
         (
             "CLAIMS 5–7 · Bioelectric Attractors",
             "Claims 5, 6 and 7 · each counts once",
-            "• Claim 5 Planarian 2H0T  10.55/11.1 = 95.0%\n• Claim 6 Picasso tadpole  10.55/11.1 = 95.0%\n• Claim 7 Xenobot  10.0/11.1 = 90.1%   (−2.2 reduced-model, not dualist)",
+            "• Laboratory results valid (Oviedo/Beane, Vandenberg, Kriegman)\n• Claim 5  10.55/11.1 = 95.0%    Claim 6  10.55/11.1 = 95.0%\n• Claim 7  10.0/11.1 = 90.1%    (−2.2 is our reduced equation, not the experiment)",
             "95.0 · 95.0 · 90.1\nIN THE MEAN",
             "#38bdf8", "#082f49", "#e0f2fe"
         ),
