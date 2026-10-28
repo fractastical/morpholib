@@ -254,7 +254,11 @@ With the dualist deductions taken out of each denominator before averaging, stru
 
 ## Rationalism: Short and Sweet
 
-Nathan Sweet (*Sweet Rationalism*) asked for a decisive comparison. A non-physical pattern earns a place only when it predicts, compresses, or intervenes better than the best physical account. The rule has to be frozen first. A failed prediction costs something, and a repair has to buy a new risk.
+Nathan Sweet (*Sweet Rationalism*) asked for a decisive comparison:
+
+> *"Joel Dietz points in the right direction by proposing a predictive morphospace language connecting bioelectric patterns to downstream gene-expression cascades and morphology. A knowledge graph, however, can encode `D` or `D + P`. Platonic ingress begins earning evidence only when at least one `P`-specific relation improves held-out prediction, intervention, compression, or comparative model performance beyond the best `D`-only account.*
+>
+> *The decisive experiment would make `P` itself measurable at the edges: specify its hard core and bridge principle before observation; define a `P`-linked variable, topology, relation, or invariant independently of the residual; identify outcomes that materially separate `D + P` from serious rivals; use negative controls and held-out embodiments; replicate the advantage independently. Most important, freeze the update rule. A failed bridge must cost `P` something. A repair must buy fresh risk."*
 
 That is the test this article runs.
 
