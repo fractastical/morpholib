@@ -123,6 +123,13 @@ theorem outer_faster_curves (v_out v_in n : Nat) (hn : 0 < n) (h : v_in < v_out)
 
 /-! ### E6 — Thompson's Ovis ammon trihedral ratio 80 : 74 : 45 ~ 9 : 8 : 5 (p. 618) -/
 
+/-- Cross-multiplied ratio error: |L_a * r_b - L_b * r_a| scaled by 100, for measured edge lengths
+    (L_a, L_b) and the reduced integers (r_a, r_b) of Thompson's 9 : 8 : 5. -/
+def ratio_cross_error (L_a L_b r_a r_b : Nat) : Nat := 100 * (L_a * r_b - L_b * r_a)
+
+/-- The reduced ratio 9 : 8 reproduces 80 : 74 with ratio_cross_error (74, 80, 8, 9) = 2600 <= 3200. -/
+theorem trihedral_cross_error_bound : ratio_cross_error 74 80 8 9 ≤ 5 * (80 * 8) := by decide
+
 /-- Both reduced ratios are within 5 % of the measured centimetre ratios:
     |80*8 - 74*9| = 26 and 100*26 <= 5*640;  |45*9 - 80*5| = 5 and 100*5 <= 5*400. -/
 theorem trihedral_ratio_within_five_percent :

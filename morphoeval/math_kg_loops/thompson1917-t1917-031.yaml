@@ -89,17 +89,17 @@ equations:
     code_locus: "thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py#L852-L887"
 
   - law_name: "Ovis ammon trihedral edge ratio 80:74:45 ~ 9:8:5 (E6) and data-pinned Pass 2 outcomes"
-    formula: "|80*8 - 74*9| / (80*8) <= 5%,  |45*9 - 80*5| / (80*5) <= 5%;  delta-AIC(circle - log) = 425 (Fig. 320), 666 (Argali);  Argali alpha_proj = 74.7 in [73.6, 75.6] vs 75;  Fig. 320 |k_w| = 0.321 vs |k_out| = 0.131 (not self-similar)"
-    lean_decl: "MathOfBiology.Loop_225.trihedral_ratio_within_five_percent"
-    lean_theorem: "MathOfBiology.Loop_225.log_spiral_beats_nulls"
-    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_031.lean#L128-L153"
+    formula: "ratio_cross_error(L_a, L_b, r_a, r_b) = 100 |L_a r_b - L_b r_a| <= 5 L_b r_b  for (L_a, L_b) = (74, 80), (r_a, r_b) = (8, 9);  delta-AIC(circle - log) = 425 (Fig. 320), 666 (Argali);  Argali alpha_proj 74.7 in [73.6, 75.6] vs 75;  Fig. 320 |k_w| = 0.321 vs |k_out| = 0.131"
+    lean_decl: "MathOfBiology.Loop_225.ratio_cross_error"
+    lean_theorem: "MathOfBiology.Loop_225.trihedral_cross_error_bound"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_031.lean#L128-L162"
     lean_code: |
-      theorem trihedral_ratio_within_five_percent :
-          100 * (74 * 9 - 80 * 8) ≤ 5 * (80 * 8) ∧ 100 * (45 * 9 - 80 * 5) ≤ 5 * (80 * 5)
+      def ratio_cross_error (L_a L_b r_a r_b : Nat) : Nat := 100 * (L_a * r_b - L_b * r_a)
+      theorem trihedral_cross_error_bound : ratio_cross_error 74 80 8 9 ≤ 5 * (80 * 8)
       theorem log_spiral_beats_nulls : (10 : Int) ≤ 425 ∧ (10 : Int) ≤ 21 ∧ (10 : Int) ≤ 666
       theorem argali_alpha_matches_thompson : 7364 ≤ 7500 ∧ 7500 ≤ 7558 ∧ 7500 - 7472 ≤ 500
       theorem fig320_not_self_similar : 25 * 1310 < 100 * (3206 - 1310)
-    variables: "edge lengths in cm (outer, inner, posterior); AIC differences from the script's model comparison"
+    variables: "L_a, L_b: measured edge lengths in cm (inner 74, outer 80); r_a, r_b: reduced integers (8, 9); AIC differences and scaled alpha / pitch values from t1917_031_metrics.json"
     role: "Pins Thompson's own measurement (cardboard-triangle experiment, p. 618) and the script's Pass 2 outcomes (model comparison, Argali alpha match, Fig. 320 self-similarity failure) as decidable integer facts"
     source_citation: "Thompson (1917) Ch. XIII p. 618; this loop's t1917_031_metrics.json"
     code_locus: "thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py#L428-L437"

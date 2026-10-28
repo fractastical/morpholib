@@ -1,0 +1,77 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-031> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-031-specimen-match> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-031-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Ch. XIII — bovid horns as logarithmic spirals wound on a cone (Pass 2) — Morphological realism / specimen match: 58/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "A real Ovis ammon horn is now segmented (HSV sheath mask excludes the bleached skull) and the fitted spiral tracks its outer edge over 215 deg with 2.6 % RMSE; the overlay on Thompson's Fig. 320 tracks the dorsal/posterior edge; the E2 helicoid is rendered with the Fig.-320-implied beta. Deductions: n = 1 real specimen in perspective view, the spiral estimate on it is driven by the tip arc (sensitivity flag), the Capra figure is a halftone whose half-whorl cannot pin alpha, and the visual match of the helicoid to the photograph is qualitative." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-031/t1917_031_metrics.json (generated output, not in repo): argali sensitivity sectors [-90,140], [-60,120] give alpha 87.0 / 85.3 with r 0.77 / 0.94 (sector_sensitive = true) — datasets/thompson_1917/t1917-031/t1917_031_metrics.json: rendered output of thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py at 430ab132, application/json, 24322 B, artifact_sha256 348b7f53a93ee9f8a0b28b75adf3d9aec3e86df3b46793520f5272d25024287f (sha256 348b7f53a93ee9f8a0b28b75adf3d9aec3e86df3b46793520f5272d25024287f), spec_fingerprint 860e7e35af4127f92fad446ceb9389d004fdb7dfa2fe98cf3f8ad3f9657429c2" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-031-specimen-match-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-031-specimen-match-2> ;
+        pk:hasScore "0.58"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-031-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png (generated output)" ;
+        dct:description "Fig. 320 + Argali photo + Capra overlays, ln rho linearity, AIC bars, gnomonic scatter, alpha/beta sweeps, E2 helicoid, controls — docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png: rendered output of thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py at 430ab132, image/png, 971711 B, 2000×1300 px, artifact_sha256 832658753c97c6a0b4a0515850d6da3c331ef1486eba4eb5122a83df35453fd5 (sha256 832658753c97c6a0b4a0515850d6da3c331ef1486eba4eb5122a83df35453fd5), spec_fingerprint 860e7e35af4127f92fad446ceb9389d004fdb7dfa2fe98cf3f8ad3f9657429c2" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-031-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py L207–L219" ;
+        dct:description "segment_photo_hsv: saturation/value/hue mask, opening, largest component, closing, hole fill" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/430ab132/thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py#L207-L219> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending R1)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1007/s002850050081>,
+            <https://doi.org/10.1186/s12915-021-00990-w>,
+            <https://doi.org/10.5061/dryad.qz612jmb4> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form — Ch. XIII, The Shapes of Horns, and of Teeth or Tusks: with a Note on Torsion" .
+    <https://doi.org/10.1007/s002850050081> dct:date "1997"^^xsd:gYear ;
+        dct:title "Kinematics of surface growth" .
+    <https://doi.org/10.1186/s12915-021-00990-w> dct:date "2021"^^xsd:gYear ;
+        dct:title "A universal power law for modelling the growth and form of teeth, claws, horns, thorns, beaks, and shells" .
+    <https://doi.org/10.5061/dryad.qz612jmb4> dct:date "2020"^^xsd:gYear ;
+        dct:title "Data from: Variation in the ontogenetic allometry of horn length in bovids along a body mass continuum" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Ch. XIII — bovid horns as logarithmic spirals wound on a cone (Pass 2) — Morphological realism / specimen match 58/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:34:22Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-031-specimen-match> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
