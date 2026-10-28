@@ -21,7 +21,9 @@ model_spec:
     null_model: "ellipsoid (smooth surface of revolution that is NOT CMC)"
     free_form: "degree-6 polynomial in r^2 (upper bound of attainable fit)"
     negative_control: "polythalamous tests (Globobulimina 64a, Quinqueloculina 66a) from the same plate"
-  decision_rule: "Delaunay-compatible iff best catalogue fit nRMSE <= 0.06 r_max (Pass 1); Pass 2 adds the free-form comparison and bilateral-asymmetry gate"
+    ablation: "sphere + cylinder flask with the unduloid shoulder removed (C0 join)"
+    statistics: "nRMSE, Pearson r, two-sample KS statistic, 2-fold cross-validated nRMSE"
+  decision_rule: "Delaunay-compatible iff best catalogue fit nRMSE <= min(max(0.06, 1.5 x free-form nRMSE), 0.10) and bilateral asymmetry <= 0.12 (Pass 2); Pass 1 used the fixed 0.06 gate"
   seed: deterministic (no RNG)
   inputs:
     - datasets/thompson_1917/t1917-014/thompson_1917_fig84_lagena_after_brady.png
@@ -65,7 +67,7 @@ equations:
     variables: "a: semi-major axis of Delaunay's rolling ellipse (= 1/(2H)); c: focal half-distance; r_max = a + c bulge radius; r_min = a - c neck radius"
     role: "Fixes the two turning radii of every unduloid from (H, C); used by kenmotsu_profile and checked numerically in self_test"
     source_citation: "Thompson (1917) pp. 216-219 (Laplace formula, Delaunay 1841 footnote, Fig. 61); Delaunay (1841) J. Math. Pures Appl. 6:309"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L124-L136
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L170-L182
   - law_name: "Neck-ratio law of the unduloid family"
     formula: "rho = r_min/r_max = (1 - B)/(1 + B) = (a - c)/(a + c); 0 <= rho <= 1, strictly decreasing in c; rho = 1 cylinder, rho = 0 string of spheres"
     lean_decl: MathOfBiology.Loop_211.rMin
@@ -80,7 +82,7 @@ equations:
     variables: "B = c/a: Kenmotsu parameter = eccentricity of the rolling ellipse"
     role: "Single shape parameter of the unduloid up to scale; the fitted B is reported per specimen and swept in the GIF (cylinder -> unduloid -> spheres)"
     source_citation: "Thompson (1917) p. 218: 'the more unequal the two axes are of our ellipse, the more pronounced will be the sinuosity of the described roulette'"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L108-L111
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L154-L157
   - law_name: "Kenmotsu radius envelope (CMC surface of revolution)"
     formula: "(2H r)^2 = 1 + B^2 + 2B sin(2Hs);  (1-B)^2 <= (2Hr)^2 <= (1+B)^2"
     lean_decl: MathOfBiology.Loop_211.kenmotsu_envelope
@@ -93,7 +95,7 @@ equations:
     variables: "S: integer scale of the sine (σ = S sin 2Hs); B in [0, S]"
     role: "Guarantees the meridian stays within [r_min, r_max]; mirrors the envelope assertion in self_test"
     source_citation: "Kenmotsu (1980) Tohoku Math. J. 32:147-153, eq. (2.4); Thompson (1917) p. 223 on the unduloid's curvature sum staying positive and constant"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L124-L146
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L170-L192
   - law_name: "Plateau/Delaunay catalogue trichotomy"
     formula: "B = 0 cylinder; 0 < B < 1 unduloid; B = 1 string of spheres; B > 1 nodoid; H = 0 catenoid"
     lean_decl: MathOfBiology.Loop_211.catalogue
@@ -108,7 +110,7 @@ equations:
     variables: "B scaled by S"
     role: "The 'very few in number' surfaces Thompson lists on p. 218; classify_delaunay in the script"
     source_citation: "Thompson (1917) pp. 218-219, Figs. 61-65; Plateau (1873) Statique des liquides"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L95-L105
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L141-L151
   - law_name: "Unduloid bead aspect-ratio bound (refutation lemma for fusiform Lagena)"
     formula: "L_bead <= pi/H (arc length), W = (1+B)/H >= 1/H  =>  L/W <= pi;  exact value 2E(e)/(1+e)"
     lean_decl: MathOfBiology.Loop_211.bead_aspect_bound
@@ -123,7 +125,7 @@ equations:
     variables: "L: axial bead length; P: meridian arc length over one period (= pi/H); W: bead width 2 r_max; scale 1000 = 1/H"
     role: "Shows a priori that the slender spindles of Fig. 84 (L/W 5-11) cannot be single unduloids; bead_aspect_ratio in the script"
     source_citation: "Consequence of Kenmotsu (1980) dz/ds = cos psi <= 1; Thompson (1917) p. 256 'simply that of an unduloid' tested"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L113-L122
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L159-L168
   - law_name: "Delaunay flask C1 join (sphere + unduloid + cylinder)"
     formula: "r_j^2 = R^2 (1-B^2)/(4 kappa (1-kappa)), kappa = R H;  join on the sphere iff 1-B^2 <= 4 kappa (1-kappa);  equator join at kappa = (1+B)/2"
     lean_decl: MathOfBiology.Loop_211.flask_equator_join
@@ -136,4 +138,4 @@ equations:
     variables: "R: sphere radius; H, B: unduloid; kappa = RH in [(1-B)/2, (1+B)/2]; k = S kappa"
     role: "Makes Thompson's 'unduloid combined with a portion of a sphere' a well-posed 5-parameter model (flask_profile)"
     source_citation: "Thompson (1917) p. 256 (Lagena), p. 257 (Darling's hanging drops 'unduloids with spherical ends'), p. 226 Fig. 67 (cylinder capped by spheres)"
-    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L154-L184
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L199-L235

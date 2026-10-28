@@ -72,11 +72,16 @@ photographs of the same genus.
    least-squares axis → meridional radius profile `r(z)`, bilateral asymmetry index
    `mean|r_L - r_R| / r_max` (tests the surface-of-revolution premise C1).
 4. Fit by bounded least squares: Delaunay flask (E7), Delaunay bead (E8), ellipsoid null (not
-   CMC), free-form degree-6 polynomial in `r^2` (upper bound of attainable fit).
-5. Report normalised RMSE, Pearson r, KS statistic, 2-fold CV RMSE, fitted `B`, neck ratio,
-   L/W, and a per-specimen Delaunay-compatibility decision; aggregate into a verdict.
+   CMC), sphere+cylinder ablation (unduloid shoulder removed), free-form degree-6 polynomial in
+   `r^2` (upper bound of attainable fit).
+5. Report normalised RMSE, Pearson r, two-sample KS statistic, 2-fold CV RMSE, fitted `B`, neck
+   ratio, L/W, scale-bar-calibrated sizes (photographs), and a per-specimen decision:
+   Delaunay-compatible iff `nRMSE <= min(max(0.06, 1.5 x nRMSE_freeform), 0.10)` and bilateral
+   asymmetry `<= 0.12`; aggregate into a verdict (supported >= 75 %, refuted <= 25 %, mixed
+   otherwise; untestable if every polythalamous control passes).
 6. Render `docs/media/t1917_014_the_forms_of_cells_comparison.png` and the hanging-drop →
-   Lagena animation `docs/media/t1917_014_the_forms_of_cells_growth.gif`.
+   Lagena animation `docs/media/t1917_014_the_forms_of_cells_growth.gif`; write
+   `t1917_014_metrics.json` and `result.json`.
 
 Run:
 
@@ -84,3 +89,23 @@ Run:
 python3 thompson/claims/t1917-014_the-forms-of-cells.py --self-test
 python3 thompson/claims/t1917-014_the-forms-of-cells.py
 ```
+
+## Result (Pass 2) — verdict `mixed`
+
+| group | n | Delaunay-compatible | median nRMSE (best Delaunay) | free-form floor | ellipsoid null |
+|-------|---|---------------------|------------------------------|-----------------|----------------|
+| flask / globular unilocular tests (L/W ≤ π): Fig. 84 F00-F02, F07-F08, F10-F12 + photographs 57a, 58a, 61a, 62a, 63 | 13 | 11 | 0.050 | ~0.04 | ~0.10 |
+| slender fusiform Lagena (L/W > π): Fig. 84 F03-F06, F09 | 5 | 0 | 0.209 | 0.03-0.09 | 0.12-0.16 |
+| polythalamous negative controls: Globobulimina 64a, Quinqueloculina 66a | 2 | 1 | 0.042 | 0.013 | 0.05 |
+
+- The unduloid shoulder matters: the Delaunay composite beats the sphere+cylinder ablation on
+  17/18 tests and the ellipsoid null on 13/18 (median null nRMSE 0.116 vs 0.057).
+- The spindle refutation is a priori: a single unduloid bead has `L/W = 2E(e)/(1+e) ≤ π`
+  (Lean `bead_aspect_bound`), while the figured spindles have `L/W` 4.7-10.9.
+- Specificity caveat: one of two polythalamous controls passes the same gate, so a passing
+  flask-like outline is *consistent with* the catalogue rather than a unique demonstration.
+- Photograph sizes from the 100 µm bars: *Lagena* sp. 186 and 276 µm, *Oolina* 224 µm,
+  *Fissurina* 204-227 µm.
+
+Thompson's statement holds for the flask morphotype he describes ("an unduloid combined with a
+portion of a sphere") and fails for the fusiform morphotype he also figures in Fig. 84.
