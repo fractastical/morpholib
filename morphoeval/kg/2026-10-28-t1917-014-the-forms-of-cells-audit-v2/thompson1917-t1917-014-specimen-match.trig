@@ -1,0 +1,82 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-014> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-014-specimen-match> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-014-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) T1917-014 — Lagena and other unilocular tests vs. the Plateau/Delaunay catalogue (Pass 2) — Morphological realism / specimen match: 62/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Real specimens are now compared side by side (panels E-F): 4/5 photographed unilocular tests (Fissurina 57a/58a, Lagena 62a, Oolina 63) are traced by the Delaunay composite to within 0.018-0.051 nRMSE, Lagena 61a fails (0.083 vs free-form 0.018: its neck tapers like a cone rather than an unduloid), and the 13 drawings split flask/spindle as in Pass 1. Deductions: only one plate and five unilocular photographs; the egg-shaped Quinqueloculina control also matches, so the visual match is not specific to single-chambered tests; the drawn spindles are visibly not reproduced (the honest negative)." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-014/t1917_014_metrics.json (generated output, not in repo): bdj_61a best_nrmse 0.083 > gate 0.060 (not compatible); bdj_66a control compatible — datasets/thompson_1917/t1917-014/t1917_014_metrics.json: rendered output of thompson/claims/t1917-014_the-forms-of-cells.py at a1dca587c, application/json, 70771 B, artifact_sha256 b0f3e32ae986527f2d4aaa19ea3cf0ef708eae0da7083dc7e3b8ae83f69f2698 (sha256 b0f3e32ae986527f2d4aaa19ea3cf0ef708eae0da7083dc7e3b8ae83f69f2698), spec_fingerprint 96b8d320bb6057308c24557dd6f3e3dce73bc0bc00dfdf30f45d3f4ca513f1dc" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-014-specimen-match-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-014-specimen-match-2> ;
+        pk:hasScore "0.62"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-014-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/t1917_014_the_forms_of_cells_comparison.png (generated output)" ;
+        dct:description "panel B segmented plate, D 13 drawn profiles, E 7 photograph crops with outlines, F photograph profiles with fits — docs/media/t1917_014_the_forms_of_cells_comparison.png: rendered output of thompson/claims/t1917-014_the-forms-of-cells.py at a1dca587c, image/png, 1300317 B, 2200×2000 px, artifact_sha256 c1a3b83ef9c297102c4678e792cd32ff1bae61b390cdd49ee79afce34a46683e (sha256 c1a3b83ef9c297102c4678e792cd32ff1bae61b390cdd49ee79afce34a46683e), spec_fingerprint 96b8d320bb6057308c24557dd6f3e3dce73bc0bc00dfdf30f45d3f4ca513f1dc" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-014-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-014_the-forms-of-cells.py L309–L352" ;
+        dct:description "find_scale_bars + segment_photo: Otsu, largest component, hole fill, plate-wide 100 um bar assignment" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a1dca587c/thompson/claims/t1917-014_the-forms-of-cells.py#L309-L352> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, Pass 2; cloud loop thompson1917-t1917-014)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <http://www.numdam.org/item/JMPA_1841_1_6__309_0/>,
+            <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.2748/tmj/1178229688>,
+            <https://doi.org/10.3897/BDJ.10.e87457>,
+            <https://doi.org/10.5061/dryad.28816> .
+    <http://www.numdam.org/item/JMPA_1841_1_6__309_0/> dct:date "1841"^^xsd:gYear ;
+        dct:title "Sur la surface de révolution dont la courbure moyenne est constante" .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form (1st ed.), Ch. V The Forms of Cells, pp. 201-276" .
+    <https://doi.org/10.2748/tmj/1178229688> dct:date "1980"^^xsd:gYear ;
+        dct:title "Surfaces of revolution with prescribed mean curvature" .
+    <https://doi.org/10.3897/BDJ.10.e87457> dct:date "2022"^^xsd:gYear ;
+        dct:title "Image dataset of benthic foraminifera in multicorer and gravity corer sediments from north-western Scotland shelf (North Atlantic Ocean)" .
+    <https://doi.org/10.5061/dryad.28816> dct:date "2015"^^xsd:gYear ;
+        dct:title "Data from: Ocean acidification induces biochemical and morphological changes in the calcification process of large benthic foraminifera" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) T1917-014 — Lagena and other unilocular tests vs. the Plateau/Delaunay catalogue (Pass 2) — Morphological realism / specimen match 62/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T03:13:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-014-specimen-match> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/cell-morphology> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/cell-morphology> rdfs:label "cell-morphology" .
+}
