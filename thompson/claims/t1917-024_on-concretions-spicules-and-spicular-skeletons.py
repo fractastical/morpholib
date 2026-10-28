@@ -435,9 +435,8 @@ def _basal_dir(s: dict) -> float:
 # MorphoEval measurement hook
 # ----------------------------------------------------------------------------
 
-def measure_morphoeval(sem: dict | None = None) -> dict:
-    """Quantitative morphometrics for the MorphoEval audit (Pass 1)."""
-    sem = sem or measure_sem_plate()
+def summary_metrics(sem: dict) -> dict:
+    """Headline numbers from the SEM measurement (Pass 1)."""
     fits = [s["fit"] for s in sem["spicules"]]
     all_angles = np.array([f["theta_sorted"] for f in fits])
     pd = np.array([f["paired_difference"] for f in fits])
@@ -457,6 +456,37 @@ def measure_morphoeval(sem: dict | None = None) -> dict:
         "model_constants": polyhedral_ray_angles(),
         "interstice_area_coeff": interstice_area(1.0),
     }
+
+
+def measure_morphoeval(sem: dict | None = None) -> list[dict]:
+    """Measurement records for morphoeval/measure_outputs.py (list of name/value/unit/method dicts)."""
+    sem = sem or measure_sem_plate()
+    m = summary_metrics(sem)
+    thompson_pages = "Thompson (1917) pp. 443-446, Fig. 214"
+    return [
+        {"name": "three-ray spicules measured on the SEM plate", "value": m["n_three_ray_spicules"], "unit": "count",
+         "method": "radial-arc ray extraction after Otsu-free fixed threshold (90/255), closing(2), area >= 1500, fill <= 0.9",
+         "note": f"{m['n_monaxons']} monaxon diactines/trichoxea detected as 2-ray needles", "derived_from": "specimen"},
+        {"name": "closest-pair angle difference, median", "value": round(m["paired_difference_median_deg"], 3), "unit": "deg",
+         "method": "|theta_2 - theta_3| of the two closest sorted ray angles per spicule (near-junction axes), median over spicules",
+         "reference_value": 0.0, "reference_source": f"E5 sagittal family predicts exactly two equal angles; {thompson_pages}",
+         "note": f"mean {m['paired_difference_mean_deg']:.2f} deg", "derived_from": "specimen"},
+        {"name": "unpaired-angle deviation from the paired angle, mean", "value": round(m["unpaired_deviation_mean_deg"], 3), "unit": "deg",
+         "method": "|theta_unpaired - mean(theta_pair)| per spicule, mean over spicules", "derived_from": "specimen",
+         "note": "ratio unpaired deviation / paired difference = %.2f (no null distribution in Pass 1)" % m["ratio_unpaired_dev_to_paired_diff"]},
+        {"name": "all ray angles, SD", "value": round(m["angles_all_sd_deg"], 3), "unit": "deg",
+         "method": "sample std of the 3 n sorted angles (mean is 120 by construction)", "derived_from": "specimen",
+         "note": f"fraction of spicules equiangular within 10 deg = {m['fraction_equiangular_within_10deg']:.3f}"},
+        {"name": "fitted tension ratio rho, range", "value": round(m["rho_fit_range"][1] - m["rho_fit_range"][0], 3), "unit": "ratio span",
+         "method": "rho = -2 cos(theta_pair) per spicule (inverse of E5)", "derived_from": "specimen",
+         "note": f"rho from {m['rho_fit_range'][0]:.2f} (T-shaped atrial tetractine) to {m['rho_fit_range'][1]:.2f} (Y-shaped cortical triactine)"},
+        {"name": "tetrahedral inter-ray angle (E7)", "value": round(m["model_constants"]["tetrahedral_deg"], 4), "unit": "deg",
+         "method": "arccos(-1/3)", "reference_value": 109.0, "reference_source": f"'about 109 deg', {thompson_pages} p. 446",
+         "derived_from": "script"},
+        {"name": "interstice area coefficient (E9)", "value": round(m["interstice_area_coeff"], 6), "unit": "r^2",
+         "method": "sqrt(3) - pi/2 for three mutually tangent equal circles", "reference_value": 0.161254,
+         "reference_source": "analytic; Thompson p. 446 'equilateral, curvilinear triangle'", "derived_from": "script"},
+    ]
 
 # ----------------------------------------------------------------------------
 # Self-test and main
@@ -500,10 +530,11 @@ def main(argv=None) -> int:
         return 0
     np.random.seed(SEED)
     sem = measure_sem_plate()
-    metrics = measure_morphoeval(sem)
+    metrics = summary_metrics(sem)
     out = DATA / "measurements"
     out.mkdir(parents=True, exist_ok=True)
-    (out / "sem_ray_angles.json").write_text(json.dumps({"sem": sem, "metrics": metrics}, indent=1))
+    (out / "sem_ray_angles.json").write_text(json.dumps({"sem": sem, "metrics": metrics,
+                                                         "morphoeval_measurements": measure_morphoeval(sem)}, indent=1))
     with (out / "sem_ray_angles.csv").open("w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["label", "x", "y", "w", "h", "theta1", "theta2", "theta3", "theta_pair", "theta_unpaired", "paired_difference", "rho_fit"])

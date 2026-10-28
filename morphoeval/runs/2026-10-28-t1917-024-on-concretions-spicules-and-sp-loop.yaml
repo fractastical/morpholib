@@ -11,22 +11,22 @@ run:
   isolated: false
   notes: ''
 totals:
-  steps_completed: 1
+  steps_completed: 2
   steps_total: 12
-  wall_time_s: 1561.598
-  wall_time_min: 26.03
+  wall_time_s: 1701.984
+  wall_time_min: 28.37
   tier_a_wall_s: 1561.598
-  tier_b_wall_s: 0.0
-  cpu_user_s: 3.98
-  cpu_sys_s: 0.45
-  input_tokens: 183063
-  output_tokens: 37522
+  tier_b_wall_s: 140.386
+  cpu_user_s: 7.48
+  cpu_sys_s: 0.76
+  input_tokens: 216336
+  output_tokens: 45443
   subagent_tokens: 0
-  total_llm_tokens: 220585
-  artifact_tokens: 31131
+  total_llm_tokens: 261779
+  artifact_tokens: 42823
   tier_a_llm_tokens: 220585
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 141.3
+  tier_b_llm_tokens: 41194
+  effective_tokens_per_s: 153.8
 steps:
 - num: 1
   slug: scout
@@ -250,122 +250,173 @@ steps:
   slug: audit
   tier: B
   title: 7  Dual-agent audit
-  actor: dual-assessors
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: claude-fable-5-1
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:13:43.333Z'
+  ended_at: '2026-10-28T04:16:00.335Z'
+  duration_s: 137.003
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 30000
+    output_tokens: 6000
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 36000
+    artifact_tokens: 4561
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit.yaml
+    bytes: 17833
+    sha256: 0d4a735b6603db857f2a49c52b420050dd4003d7e797b8d2b87881c99f87907f
+    tokens: 4561
   commands: []
-  notes: null
+  notes: 'Pass 1 audit: 7 dims, overall ~54; R1-R8 remediation'
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
-  actor: tool (measure_outputs.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
-  cpu_user_s: 0.0
-  cpu_sys_s: 0.0
-  max_rss_mb: 0.0
-  runs_count: 0
+  actor: claude-fable-5-1
+  model: claude-fable-5-1
+  status: failed
+  started_at: '2026-10-28T04:16:00.437Z'
+  ended_at: '2026-10-28T04:16:01.444Z'
+  duration_s: 0.933
+  cpu_user_s: 1.46
+  cpu_sys_s: 0.12
+  max_rss_mb: 198.5
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 39
+    output_tokens: 118
     subagent_tokens: 0
-    total_llm_tokens: 0
+    total_llm_tokens: 157
     artifact_tokens: 0
-    method: none
+    method: explicit+BPE
   artifacts: []
-  commands: []
+  commands:
+  - command: python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit.yaml
+    exit_code: 1
+    wall_s: 0.933
+    cpu_user_s: 1.46
+    cpu_sys_s: 0.12
+    stdout_tokens: 118
   notes: null
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
-  actor: tool (build_morphoeval_kg.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
-  cpu_user_s: 0.0
-  cpu_sys_s: 0.0
-  max_rss_mb: 0.0
-  runs_count: 0
+  actor: claude-fable-5-1
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-28T04:17:46.076Z'
+  ended_at: '2026-10-28T04:18:40.408Z'
+  duration_s: 1.705
+  cpu_user_s: 1.48
+  cpu_sys_s: 0.12
+  max_rss_mb: 69.4
+  runs_count: 3
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 153
+    output_tokens: 958
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
-  commands: []
-  notes: null
+    total_llm_tokens: 1111
+    artifact_tokens: 3253
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit/REPORT.md
+    bytes: 12254
+    sha256: 6687874262dd743ebd3266d5dab7dd6b4954404d1e1e1ff1d08f7174adce684b
+    tokens: 3253
+  commands:
+  - command: python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit.yaml
+      --conform
+    exit_code: 1
+    wall_s: 0.145
+    cpu_user_s: 0.14
+    cpu_sys_s: 0.0
+    stdout_tokens: 79
+  - command: python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit.yaml
+      --conform
+    exit_code: 3
+    wall_s: 0.735
+    cpu_user_s: 0.59
+    cpu_sys_s: 0.07
+    stdout_tokens: 624
+  - command: python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit.yaml
+      --conform --rubric-from morphoeval/kg/2026-10-26-bos-taurus-turing-wavelength-audit-v7
+    exit_code: 0
+    wall_s: 0.825
+    cpu_user_s: 0.75
+    cpu_sys_s: 0.05
+    stdout_tokens: 255
+  notes: rubric nanopub reused from bos-taurus v7 dir
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
-  actor: tool (sign_morphoeval.py + check_signed.mjs)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
-  cpu_user_s: 0.0
-  cpu_sys_s: 0.0
-  max_rss_mb: 0.0
-  runs_count: 0
+  actor: claude-fable-5-1
+  model: claude-fable-5-1
+  status: failed
+  started_at: '2026-10-28T04:18:48.555Z'
+  ended_at: '2026-10-28T04:18:49.265Z'
+  duration_s: 0.639
+  cpu_user_s: 0.56
+  cpu_sys_s: 0.07
+  max_rss_mb: 51.6
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 81
+    output_tokens: 545
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
-  commands: []
-  notes: null
+    total_llm_tokens: 626
+    artifact_tokens: 625
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit/published.json
+    bytes: 1694
+    sha256: 7d2bc5fa9cc5e629e9004ddf2bdb2c903f0c1bd765488da885e2fdb811ec6021
+    tokens: 625
+  commands:
+  - command: bash -c python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit
+      && node morphoeval/check_signed.mjs morphoeval/kg/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit/signed/*.trig
+    exit_code: 2
+    wall_s: 0.639
+    cpu_user_s: 0.56
+    cpu_sys_s: 0.07
+    stdout_tokens: 545
+  notes: signed locally with loop-ephemeral key (not the project key), unpublished
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
-  actor: tool
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: claude-fable-5-1
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:19:04.243Z'
+  ended_at: '2026-10-28T04:19:04.349Z'
+  duration_s: 0.106
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 3000
+    output_tokens: 300
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3300
+    artifact_tokens: 3253
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit/REPORT.md
+    bytes: 12254
+    sha256: 6687874262dd743ebd3266d5dab7dd6b4954404d1e1e1ff1d08f7174adce684b
+    tokens: 3253
   commands: []
-  notes: null
+  notes: 'REPORT.md verified: overall 54.0; 9 nanopubs signed+verified (ephemeral
+    key)'
 - num: 12
   slug: remed
   tier: B->A
