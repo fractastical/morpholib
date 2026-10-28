@@ -1,0 +1,100 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-019> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-specimen-match> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Ch. VII — tissue cells as hexagons / froth vs. human corneal endothelium (Pass 2: segmented specimen, sweep, controls, statistics) — Morphological realism / specimen match: 72/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Side by side: the segmented corneal endothelium coloured by polygon class, the digitised Fig. 125 A/B, and the best-fit froth. The tissue reads as a mildly disordered hexagonal froth and the best-fit froth matches its polygon spectrum (TV 0.054, chi-square p = 0.42); but the relaxed CVT froth is visibly more uniform in cell size (area CV 0.10 vs 0.285), the joint fit shows no sweep point matches both, and the comparison rests on a single specimen." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-019/result.json (generated output, not in repo): joint_fit_area_cv_diff = -0.10: no froth in the sweep matches the tissue's size dispersion — datasets/thompson_1917/t1917-019/result.json: rendered output of thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py at f1b27eb65, application/json, 3555 B, artifact_sha256 69a794a8aa303dba328cc94b4cee0aa1d6fa3e790abce137a9df9bc02e58e8f7 (sha256 69a794a8aa303dba328cc94b4cee0aa1d6fa3e790abce137a9df9bc02e58e8f7), spec_fingerprint 573eaa78956bb7a95427321ba84764635768abd58c2fd7fd76e7660dc905fc59" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-3> ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/t1917_019_the_forms_of_tissues_or_cell_a_comparison.png (generated output)" ;
+        dct:description "panels (a) segmented specimen with side numbers, (b) Fig. 125 A/B digitised, (c) best-fit froth, (f) (p6, mu2) morphospace — docs/media/t1917_019_the_forms_of_tissues_or_cell_a_comparison.png: rendered output of thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py at f1b27eb65, image/png, 783069 B, 1600×1300 px, artifact_sha256 12cce483342dadf13115a47e56930376f60359a117a1a04c62c1fd0f1105b924 (sha256 12cce483342dadf13115a47e56930376f60359a117a1a04c62c1fd0f1105b924), spec_fingerprint 573eaa78956bb7a95427321ba84764635768abd58c2fd7fd76e7660dc905fc59" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L363–L397" ;
+        dct:description "segment_tissue: nucleus-marker watershed (126 cells; prototype overlay inspected visually: boundaries follow the alizarin outlines)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f1b27eb65/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L363-L397> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L534–L557" ;
+        dct:description "draw_segmentation overlay coloured by polygon class" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f1b27eb65/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L534-L557> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; cross-provider second assessor pending R7)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg>,
+            <https://doi.org/10.1002/ar.1090380305>,
+            <https://doi.org/10.1007/s004540010071>,
+            <https://doi.org/10.1016/0026-0800(70)90038-8>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1038/nature05014>,
+            <https://doi.org/10.1080/00107518408210979>,
+            <https://doi.org/10.1097/ICO.0b013e318033a6da>,
+            <https://doi.org/10.15252/embj.201592374> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form — Ch. VII The Forms of Tissues, or Cell-Aggregates (pp. 293-345, Figs. 120-127)" .
+    <https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg> dct:date "2015"^^xsd:gYear ;
+        dct:title "Morphology of human corneal endothelium in situ (alizarin red) — Wikimedia Commons, CC BY-SA 4.0" .
+    <https://doi.org/10.1002/ar.1090380305> dct:date "1928"^^xsd:gYear ;
+        dct:title "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis" .
+    <https://doi.org/10.1007/s004540010071> dct:date "2001"^^xsd:gYear ;
+        dct:title "The Honeycomb Conjecture" .
+    <https://doi.org/10.1016/0026-0800(70)90038-8> dct:date "1970"^^xsd:gYear ;
+        dct:title "The arrangement of grains in a polycrystal" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The Influence of Cell Mechanics, Cell-Cell Interactions, and Proliferation on Epithelial Packing" .
+    <https://doi.org/10.1038/nature05014> dct:date "2006"^^xsd:gYear ;
+        dct:title "The emergence of geometric order in proliferating metazoan epithelia" .
+    <https://doi.org/10.1080/00107518408210979> dct:date "1984"^^xsd:gYear ;
+        dct:title "Soap, cells and statistics — random patterns in two dimensions" .
+    <https://doi.org/10.1097/ICO.0b013e318033a6da> dct:date "2007"^^xsd:gYear ;
+        dct:title "Factors Affecting Corneal Endothelial Morphology" .
+    <https://doi.org/10.15252/embj.201592374> dct:date "2016"^^xsd:gYear ;
+        dct:title "Fundamental physical cellular constraints drive self-organization of tissues" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Ch. VII — tissue cells as hexagons / froth vs. human corneal endothelium (Pass 2: segmented specimen, sweep, controls, statistics) — Morphological realism / specimen match 72/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T03:19:40Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-specimen-match> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
