@@ -1,0 +1,311 @@
+# MorphoEval audit v2 (Pass 2 remediation) — Thompson (1917) claim T1917-019, 2026-10-28
+#
+# Supersedes 2026-10-28-t1917-019-the-forms-of-tissues-or-cell-a-audit (Pass 1, 54.4).
+# Remediates R1-R6: the human corneal endothelium specimen is now SEGMENTED (nucleus-
+# marker watershed, 126 cells, 85 interior) and every polygon statistic of the claim is
+# measured on tissue; Thompson's own Fig. 125 A/B soap froth is digitised through the
+# same pipeline; a 50-point delta x Lloyd sweep with TV and joint fits; five controls;
+# r / RMSE / TV / KS / chi-square / bootstrap statistics; result.json verdict.
+# Same single builder-assessor limitation as v1 (R7 open).  Overall 54.4 -> 77.5.
+#
+# Headline result: the corneal endothelium is a trivalent froth with <n> = 5.89
+# [5.78, 6.01] (window-corrected 6.08), p6 = 0.66 [0.55, 0.77], mu2 = 0.34, 100 %
+# three-way junctions, area CV 0.285 (clinical norm 0.315) and an excess perimeter of
+# 8.6 % over the Hales honeycomb bound for its own cell areas.  All three readings of
+# Thompson's claim pass on his own exemplar tissue -> verdict SUPPORTED, with the
+# qualification that the strict "approximately hexagons" reading is tissue-state
+# dependent: the specimen differs from the proliferating-epithelium spectrum of Gibson
+# 2006 (chi-square p = 0.005), which has p6 = 0.46 < 0.5.
+
+audit:
+  id: 2026-10-28-t1917-019-the-forms-of-tissues-or-cell-a-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-019-the-forms-of-tissues-or-cell-a-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; cross-provider second assessor pending R7)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1b27eb65
+    note: >-
+      Branch cursor/t1917-019-epithelial-polygon-packing-4281, Pass 2 commit.
+      Environment: Python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2,
+      Pillow 13.0.0, scikit-image 0.26.0; Lean 4.35.0 for the companion module.
+      Full run 24 s, --self-test 2.0 s (includes segmentation sanity checks).
+
+references:
+  thompson1917:
+    title: "On Growth and Form — Ch. VII The Forms of Tissues, or Cell-Aggregates (pp. 293-345, Figs. 120-127)"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917); Internet Archive scan ongrowthform1917thom (public domain)"
+    url: https://archive.org/details/ongrowthform1917thom
+  gibson2006:
+    title: "The emergence of geometric order in proliferating metazoan epithelia"
+    authors: "Gibson MC, Patel AB, Nagpal R, Perrimon N"
+    venue: "Nature 442:1038-1041 (2006)"
+    doi: 10.1038/nature05014
+    role: counter-evidence (division topology, not perimeter minimisation, sets the polygon spectrum of proliferating epithelia)
+  farhadifar2007:
+    title: "The Influence of Cell Mechanics, Cell-Cell Interactions, and Proliferation on Epithelial Packing"
+    authors: "Farhadifar R, Röper J-C, Aigouy B, Eaton S, Jülicher F"
+    venue: "Current Biology 17:2095-2104 (2007)"
+    doi: 10.1016/j.cub.2007.11.049
+  hales2001:
+    title: "The Honeycomb Conjecture"
+    authors: "Hales TC"
+    venue: "Discrete & Computational Geometry 25:1-22 (2001)"
+    doi: 10.1007/s004540010071
+  lewis1928:
+    title: "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis"
+    authors: "Lewis FT"
+    venue: "The Anatomical Record 38:341-376 (1928)"
+    doi: 10.1002/ar.1090380305
+  aboav1970:
+    title: "The arrangement of grains in a polycrystal"
+    authors: "Aboav DA"
+    venue: "Metallography 3:383-390 (1970)"
+    doi: 10.1016/0026-0800(70)90038-8
+  weaire1984:
+    title: "Soap, cells and statistics — random patterns in two dimensions"
+    authors: "Weaire D, Rivier N"
+    venue: "Contemporary Physics 25:59-99 (1984)"
+    doi: 10.1080/00107518408210979
+  sanchezgutierrez2016:
+    title: "Fundamental physical cellular constraints drive self-organization of tissues"
+    authors: "Sánchez-Gutiérrez D, Tozluoglu M, Barry JD, Pascual A, Mao Y, Escudero LM"
+    venue: "The EMBO Journal 35:77-88 (2016)"
+    doi: 10.15252/embj.201592374
+  sheng2007:
+    title: "Factors Affecting Corneal Endothelial Morphology"
+    authors: "Sheng H, Bullimore MA"
+    venue: "Cornea 26:520-525 (2007)"
+    doi: 10.1097/ICO.0b013e318033a6da
+    role: specimen norm (normal adult human corneal endothelium %hexagonal and CV of cell area)
+  he2015:
+    title: "Morphology of human corneal endothelium in situ (alizarin red) — Wikimedia Commons, CC BY-SA 4.0"
+    authors: "He Z"
+    venue: "Wikimedia Commons (2015)"
+    url: https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg
+    role: specimen
+
+simulations:
+  - id: thompson1917-t1917-019
+    name: "Thompson (1917) Ch. VII — tissue cells as hexagons / froth vs. human corneal endothelium (Pass 2: segmented specimen, sweep, controls, statistics)"
+    organism: "Homo sapiens — corneal endothelium in situ (ocular monolayer epithelium); Elodea canadensis leaf epidermis (secondary, visual only)"
+    domain: morphogenesis
+    script: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py
+    also:
+      - morphoeval/lean/loops/Thompson1917_T1917_019.lean
+      - morphoeval/math_kg_loops/thompson1917-t1917-019.yaml
+    output: docs/media/t1917_019_the_forms_of_tissues_or_cell_a_comparison.png
+    extra_outputs:
+      - docs/media/t1917_019_the_forms_of_tissues_or_cell_a_growth.gif
+      - datasets/thompson_1917/t1917-019/t1917_019_the_forms_of_tissues_or_cell_a_metrics.json
+      - datasets/thompson_1917/t1917-019/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-019-the-forms-of-tissues-or-cell-a-audit
+    source_refs: [thompson1917, gibson2006, farhadifar2007, hales2001, lewis1928, aboav1970, weaire1984, sanchezgutierrez2016, sheng2007, he2015]
+    summary: >-
+      Specimen (85 interior cells of 126): <n> = 5.894 [95 % CI 5.78, 6.01], window-bias
+      corrected 6.08; p6 = 0.659 [0.55, 0.77], p5 = 0.224, p7 = 0.118, mu2 = 0.34; 100 %
+      trivalent junctions; median shape index 3.96 (regular hexagon 3.72, square 4.00);
+      area CV 0.285 vs clinical norm 0.315; excess perimeter 7.7 % raw, 8.6 % after the
+      rasterised-froth pipeline correction; Lewis lambda 0.18 (Lewis 1928: 0.25); Aboav
+      a = 0.74 (froths 1.0-1.5), neighbour-shuffle control a = 6.1.  Thompson's Fig. 125:
+      A (compressed) p6 = 0.89, B (relaxed) p6 = 0.97.  Best topology fit: fully relaxed
+      CVT froth (delta = 1.0, Lloyd = 20), TV = 0.054, r = 0.99, chi-square p = 0.42;
+      joint topology+geometry fit (delta = 0.2, Lloyd = 0) cannot match the tissue's area
+      CV (model 0.18) — the froth model class reproduces the tissue's topology but not its
+      size dispersion.  Specimen vs Gibson 2006 proliferating spectrum: r = 0.94, RMSE
+      0.10, chi-square p = 0.005 (significantly more hexagonal).  Verdict: SUPPORTED on
+      Thompson's own exemplar tissue (C1 mean six, C2 least perimeter within 10 %, C3 p6
+      modal and >= 0.5), qualified for proliferating epithelia.
+    claim_boundary:
+      reported_in_source:
+        - "Thompson p. 305: cellular tissue resembles a froth"
+        - "Thompson p. 309/323: partitions meet three at a point at ~120 degrees (Lamarle minimal-area condition)"
+        - "Thompson p. 321: hexagonal pattern illustrated in countless cases but perfectly regular only rarely; eye pigment epithelium as the exemplar"
+        - "Thompson p. 325: cells on the average hexagonal, some with fewer and some with more sides than six"
+        - "Thompson p. 330: closely packed hexagons give the minimal extent of boundary in a plane"
+        - "Thompson Fig. 125 (after Rhumbler): soap froth between plates, compressed (A) and relaxed (B)"
+      reconstructed_in_script:
+        - "Periodic Voronoi froth morphospace with Gaussian positional disorder delta and Lloyd relaxation; Poisson-Voronoi null"
+        - "Nucleus-marker watershed segmentation of the alizarin-red corneal endothelium; distance-peak watershed for line drawings"
+        - "Interior-cell polygon statistics, Crofton perimeters, 2x2-window junction valence, Lewis and Aboav-Weaire fits, bootstrap CIs"
+        - "Mean-field Gibson 2006 division-topology Markov chain with through-centre cleavage (reconstruction; uniform-random cleavage ablation)"
+        - "Rasterised-froth pipeline control: pixel perimeter bias (-0.9 %) and finite-window <n> bias (-0.18) measured on a tessellation with known exact statistics"
+      transfer_boundary:
+        - "Lloyd (centroidal Voronoi) relaxation is a proxy for surface-tension perimeter minimisation, not a Plateau / vertex-model energy descent"
+        - "The honeycomb bound is applied cell-by-cell to the measured area distribution (Hales 2001 proves the equal-area case); the measured excess includes real wall waviness as well as polygon irregularity"
+        - "Clinical norms (Sheng & Bullimore 2007) are specular-microscopy regressions for living corneas; the specimen is an ex vivo alizarin-red flat mount"
+      does_not_claim:
+        - "n = 1 specimen: no population statement about human corneal endothelia"
+        - "No um/px scale, so no cell density or absolute area is reported"
+        - "The proliferating-epithelium qualification rests on Gibson 2006's published spectrum, not on a segmented proliferating specimen"
+        - "The Elodea canadensis image (Thompson Fig. 126 species) is vendored for visual comparison only; chloroplast clutter defeats the automatic pipeline"
+    provenance:
+      input_dataset_sha256:
+        datasets/thompson_1917/t1917-019/human_corneal_endothelium_specimen.jpg: 9daed5fb546e11bfdc60df0c8d9665515a93498b5f222befc8ad4bd9dfa6fb5a
+        datasets/thompson_1917/t1917-019/elodea_canadensis_leaf_specimen.jpg: ffa66c5d5bfa1afbb56f3f6a651473c35ceec4cba238a918523d6a665a07a7b1
+        datasets/thompson_1917/t1917-019/thompson_1917_p322_fig125_126_froth_elodea.jpg: 1a31755fe8c43ca45a2faa5d5bd093714af36fa4b395ef6d23873eea1dc63294
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          The froth laws (E1-E5) are implemented exactly and proved in Lean; the claim is
+          now actually tested — Euler mean six, trivalency, honeycomb bound and hexagon
+          fraction are all measured on tissue and on Thompson's own Fig. 125.  The division
+          chain (E6) reproduces Gibson's spectrum to 0.03 and its ablation shows cleavage
+          geometry matters.  Remaining gap: least perimeter is modelled by Lloyd relaxation
+          (a proxy), and the froth model class cannot match topology and area dispersion
+          simultaneously (joint fit), which the script records rather than hides.
+        evidence:
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [198, 257], note: "polygon_statistics: <n>, mu2, p_n, excess perimeter vs 2*12^(1/4) sqrt(A), Lewis, Aboav-Weaire, sum rule, shuffle control", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [316, 360], note: "tessellation_from_labels: label adjacency with >= 4 px contact, Crofton perimeters, interior mask, 2x2 junction valence", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [486, 514], note: "fit_to_specimen: TV fit and joint topology+geometry fit; gap between them is a recorded finding", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [151, 163], note: "lloyd_step remains a centroidal-Voronoi proxy for surface-tension relaxation", supports: false}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_019.lean, lines: [115, 148], note: "Law 3: P_6^4 = 192 A^2 < 256 A^2 < 432 A^2 and the Hales constant identity, proved", supports: true}
+      specimen-match:
+        value: 72
+        rationale: >-
+          Side by side: the segmented corneal endothelium coloured by polygon class, the
+          digitised Fig. 125 A/B, and the best-fit froth.  The tissue reads as a mildly
+          disordered hexagonal froth and the best-fit froth matches its polygon spectrum
+          (TV 0.054, chi-square p = 0.42); but the relaxed CVT froth is visibly more
+          uniform in cell size (area CV 0.10 vs 0.285), the joint fit shows no sweep point
+          matches both, and the comparison rests on a single specimen.
+        evidence:
+          - {file: docs/media/t1917_019_the_forms_of_tissues_or_cell_a_comparison.png, lines: [0, 0], note: "panels (a) segmented specimen with side numbers, (b) Fig. 125 A/B digitised, (c) best-fit froth, (f) (p6, mu2) morphospace", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [363, 397], note: "segment_tissue: nucleus-marker watershed (126 cells; prototype overlay inspected visually: boundaries follow the alizarin outlines)", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [534, 557], note: "draw_segmentation overlay coloured by polygon class", supports: true}
+          - {file: datasets/thompson_1917/t1917-019/result.json, lines: [0, 0], note: "joint_fit_area_cv_diff = -0.10: no froth in the sweep matches the tissue's size dispersion", supports: false}
+      parameter-expressivity:
+        value: 80
+        rationale: >-
+          50-point delta x Lloyd sweep rendered (p6 and excess perimeter vs delta for
+          four Lloyd depths; (p6, mu2) morphospace with tissue, plate, Gibson, Poisson
+          and honeycomb points); monotonicity asserted in --self-test; --delta, --lloyd,
+          --nx exposed on the CLI; the GIF traces p6 and excess perimeter during
+          relaxation against the specimen's p6.  Lattice size and cleavage probability
+          p_cut are not swept.
+        evidence:
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [473, 483], note: "parameter_sweep over deltas x lloyds", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [1069, 1077], note: "CLI: --delta, --lloyd, --nx", supports: true}
+          - {file: docs/media/t1917_019_the_forms_of_tissues_or_cell_a_growth.gif, lines: [0, 0], note: "25-frame Lloyd relaxation with p6 / excess-perimeter trace vs specimen p6", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [266, 270], note: "p_cut fixed at 1/3; not swept", supports: false}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          16 measurements, 14 measured on the specimen or the 1917 plate, each with a
+          literature reference: p6 0.659 vs clinical norm 0.616 (within 0.55-0.70), area
+          CV 0.285 vs 0.315, <n> 5.89 vs 6, trivalent 1.00 vs 1, Lewis lambda 0.18 vs 0.25,
+          Aboav a 0.74 vs 1.2, excess perimeter 8.6 % vs the Hales bound 0; bootstrap 95 %
+          CIs; r / RMSE / TV / KS and chi-square against Gibson, best froth, honeycomb and
+          Poisson null; pipeline control quantifies pixel-perimeter and finite-window bias.
+          Limits: n = 1, no um scale, and the measured excess perimeter conflates polygon
+          irregularity with wall waviness.
+        evidence:
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [933, 1007], note: "measure_morphoeval: 16 measurements with reference values and dispersion terms", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [438, 470], note: "distribution_distance (r, RMSE, TV, KS D), chi_square_vs (tails merged), bootstrap_ci", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [746, 764], note: "pipeline_control: rasterised froth with exact statistics -> p6 error +0.013, <n> bias -0.18, perimeter bias -0.9 %", supports: true}
+          - {file: datasets/thompson_1917/t1917-019/result.json, lines: [0, 0], note: "headline_numbers incl. CIs, chi-square p-values, control values", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [721, 731], note: "analyse_specimen: single image, pixel units only", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Unchanged provenance (IA scan + page rule, 7 page-pinned quotes, 12
+          Crossref-verified DOIs, Commons specimens with author/licence/sha1/SHA-256) plus
+          result.json now pins the dataset digest and states the dataset-match rationale;
+          Fig. 125 crop boxes documented from the ink-density rule positions.  Specimen
+          scale still unknown.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-019/result.json, lines: [0, 0], note: "dataset block: name, url, sha256, match statement", supports: true}
+          - {file: datasets/thompson_1917/t1917-019/t1917_019_the_forms_of_tissues_or_cell_a_reference.json, lines: [1, 40], note: "source, page rule, primary quotes", supports: true}
+          - {file: datasets/thompson_1917/t1917-019/paper_citations.bib, lines: [1, 30], note: "Crossref-resolved DOIs", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Module docstring maps C1-C3 and steps 1-7 to Thompson pages and equations
+          E1-E6; every function docstring names its law; math_kg code_locus/lean_locus
+          pass the integrity and formula-alignment gates; Fig. 125 crop boxes carry their
+          derivation comment.  Segmentation hyper-parameters (blueness 40, min contact 4 px,
+          min_distance) are documented but not derived from the image.
+        evidence:
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [1, 50], note: "docstring: claim decomposition, steps 1-7, equation ids", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-019.yaml, lines: [1, 40], note: "six equations with lean_locus and code_locus into v2 line ranges", supports: true}
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [92, 97], note: "FIG125 crop boxes with ink-density derivation comment", supports: true}
+      repro-package:
+        value: 80
+        rationale: >-
+          Deterministic (seed asserted; identical metrics on repeated runs), --self-test
+          2.0 s covering laws, controls and segmentation sanity, full run 24 s, pinned
+          dependencies (requirements.txt / .lock), CLI documented, dataset README with
+          invocation.  The comparison PNG is force-added past the repo's *.png ignore rule.
+        evidence:
+          - {file: thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py, lines: [1010, 1066], note: "self_test incl. raster control and specimen/Fig. 125 sanity", supports: true}
+          - {file: datasets/thompson_1917/t1917-019/README.md, lines: [1, 60], note: "documented invocation", supports: true}
+    remediation:
+      - id: R7
+        item: "Independent cross-provider second assessor — still builder-scored"
+      - id: R8
+        item: "More specimens: >= 5 corneal endothelia and at least one segmented proliferating epithelium (e.g. Drosophila wing disc) to test the Gibson regime directly rather than from the published spectrum"
+      - id: R9
+        item: "Attach a um/px scale (specular-microscopy field or scale-bar specimen) to report cell density and absolute areas"
+      - id: R10
+        item: "Replace Lloyd relaxation by a Plateau / vertex-model energy descent (Farhadifar 2007) so that least perimeter is minimised, not proxied"
+      - id: R11
+        item: "Separate wall waviness from polygon irregularity in the excess perimeter (vertex-to-vertex polygonal perimeter vs Crofton perimeter)"
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Polygon-class overlay of the segmented corneal endothelium next to the model froth at the best-fit delta"
+        status: resolved
+        claimed_by: claude-fable-5-1
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "p6, <n>, mu2, CV of area and excess perimeter measured on tissue, with reference norms"
+        status: resolved
+        claimed_by: claude-fable-5-1
+        novelty_n: 1
+        contradiction_c: 1
+        depth_d: 2
+        age_days_a: 0
+      - id: N3
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "delta x Lloyd sweep with p6 / mu2 / excess perimeter curves"
+        status: resolved
+        claimed_by: claude-fable-5-1
+        novelty_n: 0
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N4
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Cross-provider second assessor"
+        status: open
+        novelty_n: 0
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N5
+        need_type: specimen_comparison
+        target_dimension: morphometric-validation
+        description: "Segmented proliferating epithelium to test the Gibson 2006 regime on data rather than from the literature spectrum"
+        status: open
+        novelty_n: 1
+        contradiction_c: 1
+        depth_d: 2
+        age_days_a: 0
