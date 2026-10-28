@@ -16,49 +16,217 @@
   "thompson_1917_leaf790_p771_figs406_407.jpg": true,
   "thompson_1917_leaf792_p773_fig408.jpg": true
  },
- "measure_morphoeval": {
-  "script_version": "v1",
-  "explained_fraction_chimp_full": 0.35062325781246206,
-  "explained_fraction_chimp_affine_only": -0.12222517037491443,
-  "d_human404_chimp": 0.38345672481519066,
-  "d_T_human404_chimp": 0.24900787873039174,
-  "direction_cosine_thompson_vs_real": 0.7280282554278105,
-  "net_bending_energy": 2.1008431293596606,
-  "net_det_affine": 0.5376254373552205,
-  "log_area_r2": 0.9502958750673374,
-  "log_area_beta_i": 0.40295099659848505,
-  "log_area_beta_j": -0.6120164553331351,
-  "area_ratio_front_over_back": 5.716280187279811,
-  "area_ratio_bottom_over_top": 7.399293788627039,
-  "d_human_chimp": 0.315047674481977,
-  "d_human_baboon": 0.505468974970963,
-  "d_human_dog": 0.6032585104012861,
-  "cosine_chimp_baboon": 0.7770093768160737,
-  "cosine_chimp_dog": 0.7822850594702878,
-  "k_baboon_over_chimp": 1.2466498408148585,
-  "facial_index": {
-   "human": 0.4747349497254391,
-   "chimpanzee": 0.6605832206537893,
-   "baboon": 1.269238492512975,
-   "dog": 0.6083582127112519
+ "measure_morphoeval": [
+  {
+   "name": "Explained fraction of the human->chimpanzee Procrustes distance removed by Thompson's Fig. 405 net applied to the Fig. 404 human landmarks (E6)",
+   "value": 0.3506,
+   "unit": "fraction (dimensionless)",
+   "method": "TPS through the 30 digitised Fig. 405 nodes applied to 11 human landmarks of Fig. 404; full Procrustes distance to the real Pan troglodytes specimen (MWNH 230) before and after",
+   "derived_from": "script",
+   "reference_value": 0.0,
+   "reference_source": "null: no transformation (E = 0); Thompson (1917) p. 771 claims the deformed net 'constitutes a simple projection of our human skull' onto the chimpanzee",
+   "note": "d(H,C)=0.383 -> d(T(H),C)=0.249; affine box-stretch part alone: E=-0.122"
   },
-  "facial_angle_deg": {
-   "human": 88.59500152509378,
-   "chimpanzee": 68.10141861470046,
-   "baboon": 55.998844922077986,
-   "dog": 44.63904191063925
+  {
+   "name": "Explained fraction by the affine (box-stretch) part of the net only (E2 null)",
+   "value": -0.1222,
+   "unit": "fraction (dimensionless)",
+   "method": "affine component A of the TPS applied to the Fig. 404 landmarks; Procrustes distance to the real chimpanzee",
+   "derived_from": "script",
+   "reference_value": 0.0,
+   "reference_source": "repo box-vs-warping protocol (thompson/run_box_vs_warping_audit.py): a rectangular box stretch is the trivial alternative to Thompson's curvilinear warp"
   },
-  "affine_fraction_real": {
-   "chimpanzee": 0.29769479076969557,
-   "baboon": 0.34471387433852446,
-   "dog": 0.5897434980806338
+  {
+   "name": "Direction cosine between Thompson's drawn displacement field and the real human->chimpanzee displacement field at the 11 landmarks",
+   "value": 0.728,
+   "unit": "cosine (dimensionless)",
+   "method": "both fields expressed in the Fig. 404 human frame after Procrustes superimposition of the real chimpanzee onto the drawn human",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "perfect agreement of direction; 0 = unrelated"
   },
-  "bending_energy_real": {
-   "chimpanzee": 1.6170217870841244,
-   "baboon": 6.550590952057462,
-   "dog": 2.373610093781255
+  {
+   "name": "Log-linear fit R^2 of the chimpanzee-net cell areas, log lambda = alpha + beta_i i + beta_j j (E4)",
+   "value": 0.9503,
+   "unit": "R^2 (dimensionless)",
+   "method": "shoelace areas of the 20 digitised cells of Fig. 405 normalised to their mean, OLS on cell-centre indices",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "Thompson (1917) p. 771: areas increase 'in a gradual and approximately logarithmic order'",
+   "note": "beta_i=+0.403 (behind->forwards), beta_j=-0.612 (upwards); Lean law 2 requires beta_i>0, beta_j<0"
+  },
+  {
+   "name": "Cell-area ratio front column / back column of the chimpanzee net",
+   "value": 5.7163,
+   "unit": "ratio (dimensionless)",
+   "method": "mean normalised area of column i=4 over column i=0 (Fig. 405)",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "affine null (Lean law 1: flat area field)"
+  },
+  {
+   "name": "Cell-area ratio bottom row / top row of the chimpanzee net",
+   "value": 7.3993,
+   "unit": "ratio (dimensionless)",
+   "method": "mean normalised area of row j=0 over row j=3 (Fig. 405)",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "affine null (Lean law 1: flat area field)"
+  },
+  {
+   "name": "Bending energy of the reconstructed Fig. 405 net (E3)",
+   "value": 2.1008,
+   "unit": "grid-unit^2 (dimensionless)",
+   "method": "tr(W^T K W) of the TPS in human grid units after similarity alignment of the net",
+   "derived_from": "script",
+   "reference_value": 0.0,
+   "reference_source": "affine null (zero bending)"
+  },
+  {
+   "name": "Procrustes distance human specimen -> chimpanzee specimen",
+   "value": 0.315,
+   "unit": "full Procrustes distance (dimensionless)",
+   "method": "11 landmarks on the Commons specimens",
+   "derived_from": "script"
+  },
+  {
+   "name": "Procrustes distance human specimen -> baboon specimen",
+   "value": 0.5055,
+   "unit": "full Procrustes distance (dimensionless)",
+   "method": "11 landmarks on the Commons specimens",
+   "derived_from": "script",
+   "note": "Thompson p. 772: chimpanzee 'much nearer to the human type than is the baboon'"
+  },
+  {
+   "name": "Procrustes distance human specimen -> dog specimen",
+   "value": 0.6033,
+   "unit": "full Procrustes distance (dimensionless)",
+   "method": "11 landmarks on the Commons specimens",
+   "derived_from": "script",
+   "note": "Thompson p. 773: the dog bridges 'a wider gulf'"
+  },
+  {
+   "name": "Cosine between the human->chimpanzee and human->baboon displacement fields (C2)",
+   "value": 0.777,
+   "unit": "cosine (dimensionless)",
+   "method": "Procrustes superimposition of each specimen on the human specimen",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "Thompson p. 771: baboon transformation 'of precisely the same order'"
+  },
+  {
+   "name": "Intensity ratio k_baboon / k_chimpanzee (projection of the baboon field on the chimpanzee field)",
+   "value": 1.2466,
+   "unit": "ratio (dimensionless)",
+   "method": "<u_B,u_C>/<u_C,u_C>",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "Thompson p. 771: baboon differs 'only in an increased intensity' (k > 1)"
+  },
+  {
+   "name": "Cosine between the human->chimpanzee and human->dog displacement fields (C5)",
+   "value": 0.7823,
+   "unit": "cosine (dimensionless)",
+   "method": "Procrustes superimposition of each specimen on the human specimen",
+   "derived_from": "script",
+   "note": "Thompson p. 773: dog deformation 'on different lines'"
+  },
+  {
+   "name": "Facial angle (human specimen): PRO->NAS vs Frankfort ORBI->POR, anterior side (E7)",
+   "value": 88.595,
+   "unit": "degrees",
+   "method": "angle between Camper's facial line and the Frankfort horizontal on the digitised landmarks",
+   "derived_from": "script",
+   "reference_value": "80-90",
+   "reference_source": "textbook Camper facial-angle bands (Camper 1791; Thompson p. 770: 'nearly a right angle in man')"
+  },
+  {
+   "name": "Facial index F = |NAS-PRO| / |NAS-OPC| (human specimen)",
+   "value": 0.4747,
+   "unit": "ratio (dimensionless)",
+   "method": "distances between digitised landmarks",
+   "derived_from": "script",
+   "note": "Thompson p. 770: relative 'diminution or enfeeblement' of the jaws in man"
+  },
+  {
+   "name": "Facial angle (chimpanzee specimen): PRO->NAS vs Frankfort ORBI->POR, anterior side (E7)",
+   "value": 68.1014,
+   "unit": "degrees",
+   "method": "angle between Camper's facial line and the Frankfort horizontal on the digitised landmarks",
+   "derived_from": "script",
+   "reference_value": "50-70",
+   "reference_source": "textbook Camper facial-angle bands (Camper 1791; Thompson p. 770: 'nearly a right angle in man')"
+  },
+  {
+   "name": "Facial index F = |NAS-PRO| / |NAS-OPC| (chimpanzee specimen)",
+   "value": 0.6606,
+   "unit": "ratio (dimensionless)",
+   "method": "distances between digitised landmarks",
+   "derived_from": "script",
+   "note": "Thompson p. 770: relative 'diminution or enfeeblement' of the jaws in man"
+  },
+  {
+   "name": "Facial angle (baboon specimen): PRO->NAS vs Frankfort ORBI->POR, anterior side (E7)",
+   "value": 55.9988,
+   "unit": "degrees",
+   "method": "angle between Camper's facial line and the Frankfort horizontal on the digitised landmarks",
+   "derived_from": "script",
+   "reference_value": "35-60",
+   "reference_source": "textbook Camper facial-angle bands (Camper 1791; Thompson p. 770: 'nearly a right angle in man')"
+  },
+  {
+   "name": "Facial index F = |NAS-PRO| / |NAS-OPC| (baboon specimen)",
+   "value": 1.2692,
+   "unit": "ratio (dimensionless)",
+   "method": "distances between digitised landmarks",
+   "derived_from": "script",
+   "note": "Thompson p. 770: relative 'diminution or enfeeblement' of the jaws in man"
+  },
+  {
+   "name": "Facial angle (dog specimen): PRO->NAS vs Frankfort ORBI->POR, anterior side (E7)",
+   "value": 44.639,
+   "unit": "degrees",
+   "method": "angle between Camper's facial line and the Frankfort horizontal on the digitised landmarks",
+   "derived_from": "script",
+   "reference_value": "30-50",
+   "reference_source": "textbook Camper facial-angle bands (Camper 1791; Thompson p. 770: 'nearly a right angle in man')"
+  },
+  {
+   "name": "Facial index F = |NAS-PRO| / |NAS-OPC| (dog specimen)",
+   "value": 0.6084,
+   "unit": "ratio (dimensionless)",
+   "method": "distances between digitised landmarks",
+   "derived_from": "script",
+   "note": "Thompson p. 770: relative 'diminution or enfeeblement' of the jaws in man"
+  },
+  {
+   "name": "Affine fraction of the human->chimpanzee landmark displacement (E2/E3 decomposition)",
+   "value": 0.2977,
+   "unit": "fraction of displacement sum of squares",
+   "method": "least-squares affine fit of the Procrustes-superimposed specimen to the human specimen; remainder is non-affine (bending)",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "box-stretch null: all change affine"
+  },
+  {
+   "name": "Affine fraction of the human->baboon landmark displacement (E2/E3 decomposition)",
+   "value": 0.3447,
+   "unit": "fraction of displacement sum of squares",
+   "method": "least-squares affine fit of the Procrustes-superimposed specimen to the human specimen; remainder is non-affine (bending)",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "box-stretch null: all change affine"
+  },
+  {
+   "name": "Affine fraction of the human->dog landmark displacement (E2/E3 decomposition)",
+   "value": 0.5897,
+   "unit": "fraction of displacement sum of squares",
+   "method": "least-squares affine fit of the Procrustes-superimposed specimen to the human specimen; remainder is non-affine (bending)",
+   "derived_from": "script",
+   "reference_value": 1.0,
+   "reference_source": "box-stretch null: all change affine"
   }
- },
+ ],
  "verdict": {
   "verdict": "supported",
   "checks": {

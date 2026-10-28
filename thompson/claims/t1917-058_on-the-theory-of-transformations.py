@@ -479,37 +479,81 @@ def verdict_from(res: dict) -> dict:
     return {"verdict": verdict, "checks": checks, "n_checks_passed": int(n_pass), "n_checks": len(checks)}
 
 
-def measure_morphoeval(res: dict | None = None) -> dict:
-    """Quantitative morphometric summary consumed by morphoeval/measure_outputs.py."""
+def _m(name, value, unit, method, reference=None, source=None, note=None, derived_from="script"):
+    m = {"name": name, "value": None if value is None else float(round(float(value), 4)), "unit": unit,
+         "method": method, "derived_from": derived_from}
+    if reference is not None:
+        m["reference_value"] = reference
+    if source:
+        m["reference_source"] = source
+    if note:
+        m["note"] = note
+    return m
+
+
+def measure_morphoeval(res: dict | None = None) -> list[dict]:
+    """Reference-anchored morphometric measurements for morphoeval/measure_outputs.py."""
     if res is None:
         res = analyse(load_reference())
     c1 = res["C1_whole_diagram_test"]
     chimp = c1["targets"]["chimpanzee"]
     lf = res["transformation"]["log_area_fit"]
     props = res["C6_facial_proportions"]
-    return {
-        "script_version": SCRIPT_VERSION,
-        "explained_fraction_chimp_full": chimp["explained_fraction_full"],
-        "explained_fraction_chimp_affine_only": chimp["explained_fraction_affine_only"],
-        "d_human404_chimp": chimp["d_human404_to_target"],
-        "d_T_human404_chimp": chimp["d_T_human404_to_target"],
-        "direction_cosine_thompson_vs_real": c1["direction_cosine_thompson_vs_real_human_to_chimp"],
-        "net_bending_energy": res["transformation"]["bending_energy_grid_units"],
-        "net_det_affine": res["transformation"]["det_affine"],
-        "log_area_r2": lf["r2"], "log_area_beta_i": lf["beta_i"], "log_area_beta_j": lf["beta_j"],
-        "area_ratio_front_over_back": lf["area_ratio_front_over_back"],
-        "area_ratio_bottom_over_top": lf["area_ratio_bottom_over_top"],
-        "d_human_chimp": res["C4_distances_from_human_specimen"]["chimpanzee"],
-        "d_human_baboon": res["C4_distances_from_human_specimen"]["baboon"],
-        "d_human_dog": res["C4_distances_from_human_specimen"]["dog"],
-        "cosine_chimp_baboon": res["C2_C5_displacement_fields"]["cosine_chimp_baboon"],
-        "cosine_chimp_dog": res["C2_C5_displacement_fields"]["cosine_chimp_dog"],
-        "k_baboon_over_chimp": res["C2_C5_displacement_fields"]["intensity_k_baboon_over_chimp"],
-        "facial_index": {sp: props[sp]["facial_index_F"] for sp in ("human", "chimpanzee", "baboon", "dog")},
-        "facial_angle_deg": {sp: props[sp]["facial_angle_deg"] for sp in ("human", "chimpanzee", "baboon", "dog")},
-        "affine_fraction_real": {sp: res["tps_decomposition_real"][sp]["affine_fraction_of_displacement_ss"] for sp in ("chimpanzee", "baboon", "dog")},
-        "bending_energy_real": {sp: res["tps_decomposition_real"][sp]["bending_energy"] for sp in ("chimpanzee", "baboon", "dog")},
-    }
+    dist = res["C4_distances_from_human_specimen"]
+    fld = res["C2_C5_displacement_fields"]
+    dec = res["tps_decomposition_real"]
+    out = [
+        _m("Explained fraction of the human->chimpanzee Procrustes distance removed by Thompson's Fig. 405 net applied to the Fig. 404 human landmarks (E6)",
+           chimp["explained_fraction_full"], "fraction (dimensionless)",
+           "TPS through the 30 digitised Fig. 405 nodes applied to 11 human landmarks of Fig. 404; full Procrustes distance to the real Pan troglodytes specimen (MWNH 230) before and after",
+           reference=0.0, source="null: no transformation (E = 0); Thompson (1917) p. 771 claims the deformed net 'constitutes a simple projection of our human skull' onto the chimpanzee",
+           note=f"d(H,C)={chimp['d_human404_to_target']:.3f} -> d(T(H),C)={chimp['d_T_human404_to_target']:.3f}; affine box-stretch part alone: E={chimp['explained_fraction_affine_only']:+.3f}"),
+        _m("Explained fraction by the affine (box-stretch) part of the net only (E2 null)",
+           chimp["explained_fraction_affine_only"], "fraction (dimensionless)",
+           "affine component A of the TPS applied to the Fig. 404 landmarks; Procrustes distance to the real chimpanzee",
+           reference=0.0, source="repo box-vs-warping protocol (thompson/run_box_vs_warping_audit.py): a rectangular box stretch is the trivial alternative to Thompson's curvilinear warp"),
+        _m("Direction cosine between Thompson's drawn displacement field and the real human->chimpanzee displacement field at the 11 landmarks",
+           c1["direction_cosine_thompson_vs_real_human_to_chimp"], "cosine (dimensionless)",
+           "both fields expressed in the Fig. 404 human frame after Procrustes superimposition of the real chimpanzee onto the drawn human",
+           reference=1.0, source="perfect agreement of direction; 0 = unrelated"),
+        _m("Log-linear fit R^2 of the chimpanzee-net cell areas, log lambda = alpha + beta_i i + beta_j j (E4)",
+           lf["r2"], "R^2 (dimensionless)",
+           "shoelace areas of the 20 digitised cells of Fig. 405 normalised to their mean, OLS on cell-centre indices",
+           reference=1.0, source="Thompson (1917) p. 771: areas increase 'in a gradual and approximately logarithmic order'",
+           note=f"beta_i={lf['beta_i']:+.3f} (behind->forwards), beta_j={lf['beta_j']:+.3f} (upwards); Lean law 2 requires beta_i>0, beta_j<0"),
+        _m("Cell-area ratio front column / back column of the chimpanzee net", lf["area_ratio_front_over_back"], "ratio (dimensionless)",
+           "mean normalised area of column i=4 over column i=0 (Fig. 405)", reference=1.0, source="affine null (Lean law 1: flat area field)"),
+        _m("Cell-area ratio bottom row / top row of the chimpanzee net", lf["area_ratio_bottom_over_top"], "ratio (dimensionless)",
+           "mean normalised area of row j=0 over row j=3 (Fig. 405)", reference=1.0, source="affine null (Lean law 1: flat area field)"),
+        _m("Bending energy of the reconstructed Fig. 405 net (E3)", res["transformation"]["bending_energy_grid_units"], "grid-unit^2 (dimensionless)",
+           "tr(W^T K W) of the TPS in human grid units after similarity alignment of the net", reference=0.0, source="affine null (zero bending)"),
+        _m("Procrustes distance human specimen -> chimpanzee specimen", dist["chimpanzee"], "full Procrustes distance (dimensionless)",
+           "11 landmarks on the Commons specimens", reference=None, source=None),
+        _m("Procrustes distance human specimen -> baboon specimen", dist["baboon"], "full Procrustes distance (dimensionless)",
+           "11 landmarks on the Commons specimens", note="Thompson p. 772: chimpanzee 'much nearer to the human type than is the baboon'"),
+        _m("Procrustes distance human specimen -> dog specimen", dist["dog"], "full Procrustes distance (dimensionless)",
+           "11 landmarks on the Commons specimens", note="Thompson p. 773: the dog bridges 'a wider gulf'"),
+        _m("Cosine between the human->chimpanzee and human->baboon displacement fields (C2)", fld["cosine_chimp_baboon"], "cosine (dimensionless)",
+           "Procrustes superimposition of each specimen on the human specimen", reference=1.0, source="Thompson p. 771: baboon transformation 'of precisely the same order'"),
+        _m("Intensity ratio k_baboon / k_chimpanzee (projection of the baboon field on the chimpanzee field)", fld["intensity_k_baboon_over_chimp"], "ratio (dimensionless)",
+           "<u_B,u_C>/<u_C,u_C>", reference=1.0, source="Thompson p. 771: baboon differs 'only in an increased intensity' (k > 1)"),
+        _m("Cosine between the human->chimpanzee and human->dog displacement fields (C5)", fld["cosine_chimp_dog"], "cosine (dimensionless)",
+           "Procrustes superimposition of each specimen on the human specimen", note="Thompson p. 773: dog deformation 'on different lines'"),
+    ]
+    camper = {"human": (80, 90), "chimpanzee": (50, 70), "baboon": (35, 60), "dog": (30, 50)}
+    for sp in ("human", "chimpanzee", "baboon", "dog"):
+        out.append(_m(f"Facial angle ({sp} specimen): PRO->NAS vs Frankfort ORBI->POR, anterior side (E7)",
+                      props[sp]["facial_angle_deg"], "degrees",
+                      "angle between Camper's facial line and the Frankfort horizontal on the digitised landmarks",
+                      reference=f"{camper[sp][0]}-{camper[sp][1]}", source="textbook Camper facial-angle bands (Camper 1791; Thompson p. 770: 'nearly a right angle in man')"))
+        out.append(_m(f"Facial index F = |NAS-PRO| / |NAS-OPC| ({sp} specimen)", props[sp]["facial_index_F"], "ratio (dimensionless)",
+                      "distances between digitised landmarks", note="Thompson p. 770: relative 'diminution or enfeeblement' of the jaws in man"))
+    for sp in ("chimpanzee", "baboon", "dog"):
+        out.append(_m(f"Affine fraction of the human->{sp} landmark displacement (E2/E3 decomposition)",
+                      dec[sp]["affine_fraction_of_displacement_ss"], "fraction of displacement sum of squares",
+                      "least-squares affine fit of the Procrustes-superimposed specimen to the human specimen; remainder is non-affine (bending)",
+                      reference=1.0, source="box-stretch null: all change affine"))
+    return out
 
 
 # --------------------------------------------------------------------------- figures
@@ -770,10 +814,10 @@ def self_test() -> int:
     lf = res["transformation"]["log_area_fit"]
     assert np.isfinite(lf["r2"]) and -1 <= res["C1_whole_diagram_test"]["targets"]["chimpanzee"]["explained_fraction_full"] <= 1
     mm = measure_morphoeval(res)
-    assert set(mm["facial_index"]) == {"human", "chimpanzee", "baboon", "dog"}
+    assert len(mm) >= 20 and all({"name", "value", "unit", "method"} <= set(m) for m in mm)
     print(f"[self-test] OK in {time.time() - t0:.1f}s  (pinned files {sum(pins.values())}/{len(pins)}, "
-          f"net bending {T['bending_energy']:.3f}, E_chimp {mm['explained_fraction_chimp_full']:+.3f}, "
-          f"log-area R² {lf['r2']:.2f})")
+          f"net bending {T['bending_energy']:.3f}, E_chimp {mm[0]['value']:+.3f}, "
+          f"log-area R² {lf['r2']:.2f}, {len(mm)} measurements)")
     return 0
 
 
