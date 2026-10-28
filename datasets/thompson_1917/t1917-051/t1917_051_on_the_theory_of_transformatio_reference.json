@@ -1,0 +1,35 @@
+{
+  "claim_id": "T1917-051",
+  "citation": "Thompson, D.W. (1917). On Growth and Form, Ch. XVII, pp. 752-753, Fig. 383",
+  "claim_text": "The skulls of crocodiles (C. porosus, C. americanus, Notosuchus terrestris) are mutually transformable by coordinate deformation.",
+  "math_family": "geometric morphometrics / Thompson grid deformation",
+  "state_variables": {
+    "landmarks": "78 homologous 3D cranial landmarks per specimen (Watanabe & Slice 2014)",
+    "projection": "Lateral view uses anteroposterior (x) and dorsoventral (z) coordinates after per-specimen GPA centering and scaling"
+  },
+  "governing_transforms": [
+    {"name": "similarity", "formula": "x' = s R x + t", "role": "Thompson uniform grid stretch + rotation"},
+    {"name": "affine", "formula": "x' = A x + t", "role": "rectilinear shear family"},
+    {"name": "Moebius coaxial", "formula": "z' = z / (1 - c z) in complex lateral plane", "role": "Thompson coaxial-circle grids (fish/croc panels)"},
+    {"name": "thin_plate_spline", "formula": "Bookstein (1989) interpolating TPS", "role": "exact landmark matching reference"}
+  ],
+  "boundary_conditions": "Species-mean shapes after GPA; extant adult/juvenile mix in ontogeny dataset; Notosuchus not represented",
+  "parameter_regime": [
+    {"parameter": "Moebius c", "range": [0.02, 0.28], "note": "Pass 2 sweep on cropor→allmis pair"},
+    {"parameter": "TPS bending", "range": "0 (exact fit at landmarks)", "note": "used as upper envelope of flexible deformation"}
+  ],
+  "empirical_claims": [
+    "Cross-species warp RMSE should not exceed within-species (C. porosus) leave-one-out noise floor if mutual transformability holds",
+    "Notosuchus terrestris requires fossil landmarks not present in Dryad 14fn1"
+  ],
+  "pinned_assets": {
+    "dryad_zip": {"doi": "10.5061/dryad.14fn1", "sha256": "6904735b26df3326d674828dddca11dd4587932e7f9b170d95d6b3d64ab20417"},
+    "WatanabeSlice_JEB_PreGPA.nts": {"sha256": "4ebb3bf100ef27fe5373476b6cc814197abfbc300ca1d87a7de1f7e28a4e4c3e"},
+    "thompson_1917_fig383_page.jp2": {"leaf": 772, "sha256": "e62426c10e91226b86d65f063b30191bc3c5a87c1e24273c6e421a89e4f07368"},
+    "alligator_mississippiensis_skull.jpg": {
+      "commons": "https://commons.wikimedia.org/wiki/File:Alligator_mississippiensis_skull_(American_alligator)_(15725673191).jpg",
+      "license": "CC BY 2.0",
+      "sha256": "a34e266340f92c419e8d05ffbabcb08965c25eb8d94dfba8dc460e5df3e92634"
+    }
+  }
+}

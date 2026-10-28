@@ -1,0 +1,66 @@
+macro =;
+/*** COMPTREE SPR v1.00 ***/
+/*** AKI WATANABE ***/
+/*** AMERICAN MUSEUM OF NATURAL HISTORY ***/
+/*** JAN 21 2014 ***/
+
+quote ----------------------------------
+****** CompTREE (SPR) v1.00 ******
+Aki Watanabe  <awatanabe@amnh.org>
+American Museum of Natural History
+----------------------------------
+NB: First tree is one compared to random topologies;
+
+if (argnumber < 4)
+   quote ERROR!
+   Too few arguments! Please rerun with matrix filename,
+   tree 1 fn, tree 2 fn, and number of iterations.
+   e.g. >comptreeSPR matrix.tnt tree1.tre tree2.tre 9999;
+   proc/;
+   end
+if (argnumber > 4)
+   quote ERROR!
+   Too many arguments! Please rerun with matrix filename,
+   tree 1 fn, tree 2 fn, and number of iterations.
+   e.g. >comptreeSPR matrix.tnt tree1.tre tree2.tre 9999;
+   proc/;
+   end
+
+sil =all;
+
+proc %1;
+proc %2;
+proc %3;
+taxname =;
+
+/*** DECLARE VARIABLES ***/
+var: nuseed obsdist[1] nrandtree tmpdist[1] hits pvalue[1] nums;
+rseed 0;
+set obsdist sprdiff [ 0 1 100 ]; /* 3rd value is number of replications for SPR heuristically calculating dist */
+set hits 1;
+set nrandtree 2;
+set nums %4+1;
+
+/*** ANALYSIS ***/
+randtrees %4;
+loop 1 %4
+   set tmpdist sprdiff [ 0 'nrandtree' 100 ];
+   set nrandtree 'nrandtree'+1;
+   /* quote 'nrandtree'; */
+   /* tp 'nrandtree' */ /* uncomment to see random trees */
+   /* quote 'tmpdist'; */
+   if ('tmpdist' <= 'obsdist')
+      set hits 'hits'+1;
+      end
+   stop   
+keep 0; /* this clears all trees from memory */
+set pvalue 'hits'/'nums';
+sil -all;
+quote ---- RESULTS ----
+Observed SPR dist: 'obsdist'
+%4 iterations:
+P = 'pvalue'
+-----------------;
+
+macro -;
+proc /;

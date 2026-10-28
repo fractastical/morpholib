@@ -1,0 +1,74 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-051> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-051-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-051-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Fig. 383 crocodylian skull coordinate transformations — MorphoEval overall 60.6/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Pass 1 baseline: parses Watanabe & Slice (2014) NTS landmarks, GPA, species-mean lateral shapes for cropor/croacu/allmis; fits similarity, affine, Moebius, and TPS between pairs; headline cross-species RMSE / within-species LOO ratio ≈ 1.40 → mixed verdict; Notosuchus not testable on Dryad set. Overall 60.6/100 (faithfulness 55.9, reproducibility 71.6); rubric morphoeval 0.1.0; checkpoint commit f1d96f32ba3f00517c53e9cd007634306cc8d4f4; environment: python 3.12, numpy 2.x, scipy 1.x, matplotlib 3.x. Dimension assessments: Model fidelity to source 72, Morphological realism / specimen match 44, Parameter expressivity 50, Morphometric validation 58, Source and data traceability 82, Code-to-model traceability 70, Reproducibility package 64. Output judged: docs/media/t1917_051_on_the_theory_of_transformatio_comparison.png: rendered output of thompson/claims/t1917-051_on-the-theory-of-transformations.py at f1d96f32ba3f00517c53e9cd007634306cc8d4f4, image/png, 105148 B, 1800×1200 px, artifact_sha256 99352022cff55fe59095aa3e48fc6ff0526387a6f1762a031362c49e903bcee3 (sha256 99352022cff55fe59095aa3e48fc6ff0526387a6f1762a031362c49e903bcee3), spec_fingerprint d83a1ab5f05d94feaf3f0f8e42e08bf2eef326fe6ea9418c9c49f97ae7d3bf89. Dual provenance: spec_fingerprint: d83a1ab5f05d94feaf3f0f8e42e08bf2eef326fe6ea9418c9c49f97ae7d3bf89; artifact_sha256: 99352022cff55fe59095aa3e48fc6ff0526387a6f1762a031362c49e903bcee3; input_dataset_sha256: {datasets/thompson_1917/t1917-051/WatanabeSlice_JEB_PreGPA.nts=4ebb3bf100ef27fe..., datasets/thompson_1917/t1917-051/scout_manifest.json=7bdead2ffdf7d38c...}." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Enable full_validation by default (remove --pass1 gate) with Moebius c grid sweep, shuffled-landmark TPS ablation, and KS comparison of within- vs between-species distance distributions.",
+            "remediation needed: Expand measure_morphoeval() to export sweep, ablation, KS, and segmentation metrics; add self_test assertions for shuffled > homologous TPS RMSE.",
+            "remediation needed: Overlay Thompson IA Fig. 383 crop or specimen inset on comparison figure.",
+            "remediation needed: Segment alligator_mississippiensis_skull.jpg (Otsu + largest component) and report landmark-in-mask fraction against allmis mean shape." ;
+        pk:hasScore "0.606"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval loop thompson1917-t1917-051 Pass 1)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/jeb.12382>,
+            <https://doi.org/10.5061/dryad.14fn1> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form, Ch. XVII, pp. 752-753, Fig. 383" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://doi.org/10.1111/jeb.12382> dct:date "2014"^^xsd:gYear ;
+        dct:title "The utility of cranial ontogeny for phylogenetic inference: a case study in crocodylians using geometric morphometrics" .
+    <https://doi.org/10.5061/dryad.14fn1> dct:date "2014"^^xsd:gYear ;
+        dct:title "Data from: crocodylian cranial ontogeny geometric morphometrics" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Fig. 383 crocodylian skull coordinate transformations — MorphoEval overall 60.6/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T02:14:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-051-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-051> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
