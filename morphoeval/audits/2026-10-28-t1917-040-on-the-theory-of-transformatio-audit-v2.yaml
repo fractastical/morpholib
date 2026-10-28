@@ -1,0 +1,216 @@
+# MorphoEval audit v2 (Pass 2 remediation) — Thompson (1917) T1917-040, Dürer/Camper facial grids, 2026-10-28
+#
+# Supersedes the Pass-1 audit (overall 53.5).  Remediated R2-R8: the ill-conditioned 6-dof affine is
+# replaced by Thompson's own Dürer sub-family (vertical scale d, horizontal stretch c = a/d, shear
+# k = b/d) fitted in the Camper frame (photograph horizontal after the declared deskew — the proxy for
+# Camper's horizontal, which a horizontal shear leaves invariant) against a scale+translation null;
+# dense semilandmarks (30 per profile) are added; LOO-CV, a landmark re-detection noise floor,
+# positive / negative / ablation controls, +/-5 deg pose sensitivity, the E5 shear-vs-facial-angle
+# regression, a KS test, an omega/c parameter sweep and a Hough digitisation of Thompson's Fig. 366
+# nets (omega = 81 / 99 deg, |k| ~ 0.15) are reported.  NOT remediated: the gradient-background
+# specimen (Keller) and the hair-covered foreheads still fail/lose landmarks (4/9 specimens accepted).
+# Same single builder-assessor limitation as v1 (R1 open).
+#
+# Headline result: on 12 ordered pairs of real profiles the Dürer grid absorbs a median 45 % of the
+# non-scale profile difference (range 1-73 %), leaves a residual 24x the re-detection noise floor,
+# and its LOO-CV residual (0.092) is no better than the null's (0.091); the fitted shear tracks the
+# measured E-line inclination change with r = 0.62 (p = 0.03) but slope 0.48, not 1.  Verdict
+# "mixed": the strong form (whole-grid = whole story) is not supported, the bounded form (a Dürer
+# stretch+shear is a real component and the facial angle is partly its index) is.
+
+audit:
+  id: 2026-10-28-t1917-040-on-the-theory-of-transformatio-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-040-on-the-theory-of-transformatio-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending R1)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 22ee087d
+    note: >-
+      Branch cursor/t1917-040-durer-facial-grids-d049, commit 22ee087d (Pass 2 script v2.0 and
+      re-rendered outputs).  Environment: Python 3.12.3, numpy 1.26.4, scipy, scikit-image,
+      Pillow, matplotlib (Agg); lean 4.35.0 via elan.
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917); Ch. XVII pp. 719-777; Figs. 353-358 pp. 729-731; Dürer heads Figs. 364 (p. 740) & 366 (p. 742)"
+    url: https://archive.org/details/ongrowthform1917thom
+  durer1528:
+    title: "Vier Bücher von menschlicher Proportion"
+    authors: "Dürer A"
+    venue: "Nürnberg (1528); Book III proportional / oblique grids — source of Thompson Figs. 364, 366"
+    url: https://archive.org/details/hierinnsindbegri00dure
+  legan1980:
+    title: "Soft tissue cephalometric analysis for orthognathic surgery"
+    authors: "Legan HL, Burstone CJ"
+    venue: "J Oral Surg 38(10):744-751 (1980)"
+    pmid: "6932485"
+    url: https://pubmed.ncbi.nlm.nih.gov/6932485/
+  ricketts1968:
+    title: "Esthetics, environment, and the law of lip relation"
+    authors: "Ricketts RM"
+    venue: "Am J Orthod 54(4):272-289 (1968)"
+    doi: 10.1016/S0002-9416(68)90278-9
+    role: E-line (Prn-Pg) used as the facial line for the E5 statistics
+  dejong2014:
+    title: "Facial landmark localization by curvature maps and profile analysis"
+    venue: "Head & Face Medicine 10:54 (2014)"
+    doi: 10.1186/1746-160X-10-54
+    role: method family (profile-curve extremum landmarks)
+  dryad_mismatch:
+    title: "Effect of the histone deacetylase inhibitor Trichostatin A on facial development in cichlid fishes"
+    venue: "Dryad (CC0, 2023)"
+    doi: 10.5061/dryad.0zpc86746
+    role: pre-scouted pointer, DATASET_MISMATCH (fish), recorded and unused
+
+simulations:
+  - id: thompson1917-t1917-040
+    name: "Thompson (1917) Dürer/Camper facial grids — whole-grid deformation test on human profile landmarks (Pass 2)"
+    organism: "Homo sapiens (soft-tissue mid-sagittal facial profile, 9 Wikimedia Commons photographs, 4 accepted)"
+    script: thompson/claims/t1917-040_on-the-theory-of-transformations.py
+    output: docs/media/t1917_040_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_040_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-040/t1917_040_metrics.json
+      - datasets/thompson_1917/t1917-040/t1917_040_pairwise_fits.csv
+      - datasets/thompson_1917/t1917-040/t1917_040_landmarks.csv
+      - datasets/thompson_1917/t1917-040/result.json
+    status: evaluated
+    source_refs: [thompson1917, durer1528, legan1980, ricketts1968, dejong2014, dryad_mismatch]
+    claim_boundary:
+      reported_in_source:
+        - "Dürer heads redrawn in rectangular (Fig. 364) and oblique (Fig. 366) nets; Hough digitisation of the pinned scan gives omega = 81 / 99 deg, i.e. |k| ~ 0.15"
+        - "Camper's facial angle 'is the index to a general deformation' (p. 742 footnote); no measurements in the source"
+      reconstructed_in_script:
+        - "E1 stretch, E3 shear with k = -cot(omega), E4 affine, E5 tan(phi') = tan(phi) + k; Dürer sub-family fit (5 dof) in the Camper frame vs scale+shift null and affine bound"
+        - "12 ordered pairs of 4 accepted photographs, landmark-only and dense (30 semilandmarks) configurations, LOO-CV, noise floor, controls"
+      transfer_boundary:
+        - "2-D soft-tissue silhouettes from photographs, not skulls or 3-D form; Commons photographs are an analogue of Camper's drawn series and are labelled as such"
+        - "the Camper horizontal is approximated by the photograph horizontal after a declared deskew; +/-5 deg pose perturbation moves median R_Dürer 0.45 -> 0.37-0.40"
+      does_not_claim:
+        - "anything about populations or 'types'"
+        - "growth or developmental mechanism"
+    summary: >-
+      Dense Camper-frame fits on 12 ordered pairs: median RMSE null 0.083 -> Dürer 0.069 (LOO 0.092
+      vs null LOO 0.091) -> affine 0.052; median R_Dürer 0.45 (range 0.01-0.73); noise floor 0.003
+      so the Dürer residual is 24x noise; fitted c 0.07-1.57, k -0.68..+0.57 against Dürer's own
+      |k| ~ 0.15.  E5: r(k, dtan E-line) = 0.62, p = 0.033, slope 0.48.  KS null vs Dürer p = 0.10.
+      Controls: exact Dürer grid recovered to 1.8e-15; scrambled correspondences 0.160 (> real 0.069);
+      nose-only ablation on an exact grid leaves 0.015 (> 0).  omega sweep: E-line inclination
+      strictly monotone in omega (Lean camper_facial_angle_index); convexity 8.5 deg (n = 2, norm
+      12 +/- 4), nasolabial 93 +/- 39 deg (n = 4, columella still misdetected on two faces).
+      Verdict: mixed — strong form not supported, bounded form supported.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          The fitted family is now exactly Thompson's: a vertical scale, his horizontal stretch
+          x' = c x (p. 730) and his oblique-net shear, in a frame fixed by a Camper horizontal, with
+          the identifiability argument (shear vs rotation on collinear points) stated and tested
+          by the pose-sensitivity check; the unconstrained affine is only an upper bound.  The
+          positive control recovers an exact grid to machine precision and the Lean theorems are
+          mirrored one-to-one.  Deductions: E2 logarithmic stretch still not implemented; the
+          Camper horizontal is a photographic proxy, not porion-subnasale.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [248, 306], note: "fit_durer (U = [[a,b],[0,d]], c = a/d, k = b/d), fit_pair_v2 with scale+shift null and affine bound", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [187, 198], note: "fit_scale_translation: Camper-frame null, docstring states the shear/rotation identifiability argument", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_metrics.json, lines: [0, 0], note: "controls.positive_rmse_max = 1.8e-15, positive_c_err/k_err ~ 0", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_040.lean, lines: [49, 135], note: "6 theorems incl. camper_facial_angle_index (monotone tan law) and affine_whole_grid_closure", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [119, 147], note: "E2 (y -> eps^y) absent", supports: false}
+      specimen-match:
+        value: 45
+        rationale: >-
+          The accepted silhouettes trace the real profiles and the best-pair Dürer-grid panel reads
+          like Fig. 366; the GIF now uses a specimen with a visible forehead.  Still only 4 of 9
+          specimens pass QC (Keller's wall-shadow gradient, halftone, faded print, texture and
+          lettering all defeat the single Lab background model), the Romy Schneider nasion sits on
+          the hair fringe, lower-lip landmarks are missing on 3 of 4 faces, and the
+          similarity-aligned panel shows visible landmark scatter.  Partial credit for honest
+          display of every rejection reason.
+        evidence:
+          - {file: docs/media/t1917_040_on_the_theory_of_transformatio_comparison.png, lines: [0, 0], note: "panels b-e: two specimens with landmarks, dense superimposition, best/worst Dürer-grid pairs", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_landmarks.csv, lines: [0, 0], note: "5/9 rejected with reasons; accepted rows missing g / sto / li", supports: false}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [485, 515], note: "segment_profile: one global Lab background model; no edge-assisted rescue (R8 partly open)", supports: false}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          omega (50-130 deg) and c (0.67-1.5) sweeps on a real specimen show the E-line inclination
+          strictly monotone in omega and convexity/nasolabial angles moving smoothly with c; the
+          fitted (c, k) per pair are now interpretable and compared with Dürer's own digitised
+          |k| ~ 0.15; the GIF animates the omega sweep.  Deductions: fitted c spans 0.07-1.57,
+          i.e. the horizontal stretch is still weakly determined on near-vertical point sets; no
+          CLI exposure of the sweep ranges.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [365, 401], note: "parameter_sweep (monotone flag) and digitise_fig366_obliquity (Hough)", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_metrics.json, lines: [0, 0], note: "parameter_sweep.inclination_monotone_in_omega = true; fig366_obliquity 81.25 / 98.75 deg", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/result.json, lines: [0, 0], note: "durer_c_range [0.07, 1.57]: horizontal stretch weakly identified", supports: false}
+      morphometric-validation:
+        value: 68
+        rationale: >-
+          Residuals for null / similarity / Dürer / affine on landmark-only and dense
+          configurations, LOO-CV for each family, a re-detection noise floor, KS test, CV of R,
+          pose sensitivity, E5 regression (r, slope, p, RMSE) and three controls are all computed on
+          real specimens and the verdict rule is written down before being applied.  Deductions:
+          n = 4 faces / 12 non-independent ordered pairs; the noise floor is a re-detection
+          repeatability (lower bound of true landmark uncertainty); nasolabial SD 39 deg and
+          convexity n = 2 mean the norm comparison is weak; LOO-CV shows the Dürer family does not
+          generalise better than the null on this sample.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [739, 848], note: "analyse(): dense configs, pairwise fits, R6 statistics, pose sensitivity, controls, noise floor, sweep, Hough", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [327, 363], note: "controls(): positive, negative (scrambled), ablation (exact grid + nose shift)", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/result.json, lines: [0, 0], note: "headline_numbers: R_Dürer 0.45, residual/noise 23.6, LOO Dürer 0.092 vs null 0.091, E5 r 0.62 slope 0.48", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [403, 447], note: "noise_floor(): only rescale/blur re-detection, a lower bound", supports: false}
+      source-traceability:
+        value: 82
+        rationale: >-
+          Unchanged pinned provenance (IA leaves, 9 Commons files with licence/author/SHA-256
+          verified at runtime, PMID/DOI norms, Dryad mismatch recorded) plus Ricketts 1968 DOI for
+          the E-line and the Fig. 366 obliquity now measured on the pinned scan itself.  Deductions:
+          Dürer 1528 / Camper 1794 have archive URLs but no DOI; Commons derivatives, not originals,
+          are pinned.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json, lines: [0, 0], note: "specimens[*].sha256, pages[*].sha256, verbatim quotes, test_statistics incl. verdict_rule", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/paper_citations.bib, lines: [1, 90], note: "Thompson 1917, Dürer 1528, Camper 1794, Legan & Burstone 1980, Ricketts 1968, de Jong 2014, Dryad mismatch", supports: true}
+      code-traceability:
+        value: 76
+        rationale: >-
+          Module docstring maps R2-R8 to functions; every transformation function cites its
+          equation id and Thompson page; fit_durer's docstring derives c and k from U and states
+          the Camper-frame rationale; the KG yaml links law -> Lean theorem -> code lines.
+          Deductions: landmark-detection thresholds remain heuristic; the KG code loci point at
+          Pass-1 line ranges that shifted in Pass 2.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [1, 84], note: "docstring: E1-E5 with pages, R2-R8 remediation map, claim boundary, outputs", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-040.yaml, lines: [0, 0], note: "6 laws with lean_theorem, lean_locus, code_locus", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [528, 611], note: "detect_landmarks heuristics (2 % / 0.3 % prominence, 2x li rule)", supports: false}
+      repro-package:
+        value: 70
+        rationale: >-
+          Deterministic (seed 1917 for the scrambled control and Hough), --self-test covers the
+          algebra, exact-grid recovery, LOO, semilandmarks, landmark sequence and all 14 digests
+          (<1 s); full run ~6 s; every output path fixed; result.json carries the verdict rule and
+          limitations.  Deductions: per-specimen annotations (ROI, deskew, k_sigma) are
+          builder-tuned; dependency versions not pinned in the script; no CLI for thresholds.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [1192, 1275], note: "self_test + main (--self-test / --no-gif)", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/result.json, lines: [0, 0], note: "verdict_rule and limitations fields", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json, lines: [0, 0], note: "specimens[*].roi / deskew_deg / bg_sample_box / k_sigma builder-tuned", supports: false}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — still builder-scored"
+      - id: R8b
+        item: "Edge-assisted or learned segmentation to rescue gradient / halftone / textured backgrounds (Keller, Walden, Sills, Gümüşay) and reach n >= 10 faces; manual-landmark cross-check to turn the re-detection floor into a true landmark-uncertainty floor"
+      - id: R9
+        item: "Fix the Camper horizontal anatomically (tragus/porion detection) instead of the photograph horizontal, so the shear/rotation split does not depend on the declared deskew"
+      - id: R10
+        item: "Implement E2 (logarithmic stretch) and compare the three Thompson families on the same pairs"
+      - id: R11
+        item: "Update the KG yaml code loci to the Pass-2 line ranges and add fit_durer / controls as explicit loci"

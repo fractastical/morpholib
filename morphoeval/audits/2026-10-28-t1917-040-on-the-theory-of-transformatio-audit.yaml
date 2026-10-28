@@ -1,0 +1,202 @@
+# MorphoEval audit — Thompson (1917) T1917-040, Dürer/Camper facial grids, 2026-10-28 (Pass 1)
+#
+# Single-assessor Pass 1 for `thompson/claims/t1917-040_on-the-theory-of-transformations.py` v1.0.
+# LIMITATION: builder and assessor are the same cloud agent (claude-fable-5-1); no independent
+# second assessor has scored this script.  Do not quote as dual-agent consensus (R1).
+#
+# Headline: the script implements Thompson's transformation types exactly (E1 stretch, E3 shear /
+# oblique net, E4 affine closure, E5 Camper facial-angle law; 6 Lean theorems, lean 4.35.0 exits 0)
+# and runs a real landmark test on CC/PD photographs — but only 4 of 9 vendored specimens survive the
+# segmentation/landmark QC gate, the 6-dof affine fitted to ~8 nearly collinear profile landmarks is
+# badly conditioned (fitted anisotropy 0.11-6.8, rotations up to 69 deg, k up to 8.4), there is no
+# noise floor, no cross-validation and no control, so the Pass-1 "mixed" verdict (median R_affine
+# 0.58) is provisional.  Those gaps are the remediation list that Pass 2 must close.
+
+audit:
+  id: 2026-10-28-t1917-040-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 1; second assessor pending)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 7d216d80
+    note: >-
+      Branch cursor/t1917-040-durer-facial-grids-d049, commit 7d216d80 (Pass 1 script, dataset,
+      Lean module, KG yaml).  Environment: Python 3.12.3, numpy 1.26.4, scipy, scikit-image,
+      Pillow, matplotlib (Agg); lean 4.35.0 via elan.
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917); Ch. XVII pp. 719-777; Figs. 353-358 pp. 729-731; Dürer heads Figs. 364 (p. 740) & 366 (p. 742)"
+    url: https://archive.org/details/ongrowthform1917thom
+  durer1528:
+    title: "Vier Bücher von menschlicher Proportion"
+    authors: "Dürer A"
+    venue: "Nürnberg (1528); Book III proportional / oblique grids — source of Thompson Figs. 364, 366"
+    url: https://archive.org/details/hierinnsindbegri00dure
+  legan1980:
+    title: "Soft tissue cephalometric analysis for orthognathic surgery"
+    authors: "Legan HL, Burstone CJ"
+    venue: "J Oral Surg 38(10):744-751 (1980)"
+    pmid: "6932485"
+    url: https://pubmed.ncbi.nlm.nih.gov/6932485/
+  dejong2014:
+    title: "Facial landmark localization by curvature maps and profile analysis"
+    venue: "Head & Face Medicine 10:54 (2014)"
+    doi: 10.1186/1746-160X-10-54
+    role: method family (profile-curve extremum landmarks)
+  dryad_mismatch:
+    title: "Effect of the histone deacetylase inhibitor Trichostatin A on facial development in cichlid fishes"
+    venue: "Dryad (CC0, 2023)"
+    doi: 10.5061/dryad.0zpc86746
+    role: pre-scouted pointer, DATASET_MISMATCH (fish), recorded and unused
+
+simulations:
+  - id: thompson1917-t1917-040
+    name: "Thompson (1917) Dürer/Camper facial grids — whole-grid deformation test on human profile landmarks (Pass 1)"
+    organism: "Homo sapiens (soft-tissue mid-sagittal facial profile, 9 Wikimedia Commons photographs)"
+    script: thompson/claims/t1917-040_on-the-theory-of-transformations.py
+    output: docs/media/t1917_040_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_040_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-040/t1917_040_metrics.json
+      - datasets/thompson_1917/t1917-040/t1917_040_pairwise_fits.csv
+      - datasets/thompson_1917/t1917-040/t1917_040_landmarks.csv
+      - datasets/thompson_1917/t1917-040/result.json
+    status: evaluated
+    source_refs: [thompson1917, durer1528, legan1980, dejong2014, dryad_mismatch]
+    claim_boundary:
+      reported_in_source:
+        - "Dürer heads redrawn in rectangular (Fig. 364) and oblique (Fig. 366) nets"
+        - "Camper's facial angle 'is the index to a general deformation' (p. 742 footnote); no measurements in the source"
+      reconstructed_in_script:
+        - "E1 stretch, E3 shear with k = -cot(omega), E4 affine, E5 tan(phi') = tan(phi) + k"
+        - "similarity-vs-affine landmark fits on 4 accepted photographs (12 ordered pairs)"
+      transfer_boundary:
+        - "2-D soft-tissue silhouettes from photographs, not skulls or 3-D form"
+        - "forehead often hidden by hair (g/n missing)"
+      does_not_claim:
+        - "anything about populations or 'types'"
+        - "growth or developmental mechanism"
+    summary: >-
+      Thompson's types (1) stretch, (3) shear and their affine closure are implemented exactly and
+      mirrored by 6 Lean theorems.  Nine CC/PD profile photographs (SHA-256 pinned) are segmented by
+      a Lab background model and landmarked by the extremum sequence; 4 pass QC (Romy Schneider,
+      Roberts, Odúnóku, Margaret of Hesse), 5 fail (gradient wall shadow, halftone/low contrast,
+      faded lower face, textured background, lettering).  On 12 ordered pairs the median landmark
+      RMSE falls from 0.189 (similarity) to 0.103 (affine), median R_affine 0.58 (range 0.04-0.81).
+      Convexity 8.5 deg (n=2, norm 12+/-4), nasolabial 93 deg (n=4, SD 39 — columella misdetected
+      on at least two faces).  Provisional verdict "mixed"; no noise floor, no CV, no controls.
+    scores:
+      model-fidelity:
+        value: 66
+        rationale: >-
+          E1/E3/E4/E5 are coded exactly as Thompson states them (x1, c*y1; x = xi - eta cot w,
+          y = eta cosec w; affine X' = AX + t; tan additivity) and the Lean module proves the
+          group law, whole-grid property, facial-angle monotonicity, circle->ellipse, affine
+          closure and invertibility with no placeholder.  Deductions: the full 6-dof affine fitted
+          to 8-9 nearly collinear landmarks is not Thompson's 2-parameter Dürer grid (stretch c +
+          shear k) and is ill-conditioned — fitted anisotropy ranges 0.11-6.8 and rotation up to
+          69 deg, which no Dürer head exhibits; type (2) logarithmic stretch (E2) is not
+          implemented.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [98, 126], note: "shear(), stretch(), oblique_to_shear(), affine_apply(), facial_line_tan() = E3, E1, p.730 transposition, E4, E5", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_040.lean, lines: [49, 135], note: "6 theorems, lean exits 0, no sorry", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_pairwise_fits.csv, lines: [0, 0], note: "affine_anisotropy 0.11-6.8, affine_rotation_deg up to 69.4, affine_k up to 8.4: ill-conditioned fits", supports: false}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [166, 184], note: "fit_affine is unconstrained 6-dof; no Dürer (c, k) sub-family fit", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          Side by side, the accepted silhouettes follow the real profiles (nose, lips, chin) and
+          the Dürer-grid panel reads like Thompson's Fig. 366.  But 5 of 9 specimens fail
+          segmentation or landmarking, the Romy Schneider "n" sits on the hair fringe rather than
+          the nasion, lower-lip landmarks are missing on 3 of 4 accepted faces, and the GIF
+          specimen's dense curve includes the hair line.  The rendered result does not yet look
+          like a clean anatomical landmark set.
+        evidence:
+          - {file: docs/media/t1917_040_on_the_theory_of_transformatio_comparison.png, lines: [0, 0], note: "panels b,c: silhouette + landmarks on two accepted specimens", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_landmarks.csv, lines: [0, 0], note: "5/9 rejected; accepted rows missing g, sto, li", supports: false}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [253, 283], note: "single global Lab background model cannot handle the Keller wall-shadow gradient or halftone prints", supports: false}
+      parameter-expressivity:
+        value: 40
+        rationale: >-
+          The animation sweeps Thompson's omega 60->120 deg and shows the facial line tilting
+          monotonically with k (E5), and the self-test proves the affine recovers an exact Dürer
+          grid.  But the analysis itself has no parameter sweep (c, k, eps), the fitted affine
+          parameters are not interpretable because of the conditioning problem, and nothing
+          demonstrates what range of (c, k) real faces occupy.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [632, 684], note: "make_growth_gif: omega sweep with k and facial-line read-out", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [772, 819], note: "self_test: affine_k and anisotropy recovered to 1e-9 on a synthetic Dürer grid", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [499, 536], note: "analyse(): no sweep over c/k/eps on real data", supports: false}
+      morphometric-validation:
+        value: 42
+        rationale: >-
+          Landmark RMSE in centroid-size units for similarity vs affine on every ordered pair,
+          R_affine as the claim statistic, and convexity / nasolabial angles compared with Legan &
+          Burstone norms are computed.  Deductions: n = 4 specimens / 12 pairs; no landmark noise
+          floor, so a residual of 0.10 cannot be judged; no leave-one-out CV for a 6-dof fit on 8
+          points; no negative or positive control on real data; nasolabial SD of 39 deg signals a
+          columella misdetection; convexity computed on only 2 faces.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [196, 214], note: "fit_pair: rmse_similarity, rmse_affine, R_affine per pair", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_metrics.json, lines: [0, 0], note: "summary: rmse 0.189 -> 0.103, R_affine median 0.58, convexity 8.5 (n=2), nasolabial 93 +/- 39", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [711, 720], note: "verdict_from thresholds on R_affine alone, without noise floor or CV", supports: false}
+      source-traceability:
+        value: 80
+        rationale: >-
+          IA scan identifier, leaf numbers and SHA-256 of 5 page images; 9 Commons files with
+          title, page URL, licence, author and SHA-256 re-verified at runtime; PMID/DOI for the
+          norms; the mismatching Dryad pointer is recorded with reason; page/figure correction of
+          the claim inventory documented.  Deductions: Dürer 1528 and Camper 1794 have no
+          resolvable identifier; Commons derivatives (<= 960 px) are pinned, not the originals.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json, lines: [0, 0], note: "specimens[*].sha256, thompson_1917_pages[*].sha256, verbatim_support quotes", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [225, 231], note: "load_specimen_image raises on SHA-256 mismatch", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/scout_manifest.json, lines: [0, 0], note: "Dryad pointer verdict DATASET_MISMATCH, OpenAlex hits, rejected candidates with reasons", supports: true}
+      code-traceability:
+        value: 70
+        rationale: >-
+          Every transformation function names its equation id and Thompson page; the Lean
+          theorems cite the Python functions they mirror; the KG yaml links law -> theorem ->
+          code locus.  Deductions: landmark-detection heuristics (prominence 2 % / 0.3 %, 2x rule
+          for li) are not traceable to a published protocol beyond a method-family citation.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [1, 60], note: "module docstring: equations E1-E5 with page refs, claim boundary, outputs", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-040.yaml, lines: [0, 0], note: "6 laws with lean_theorem, lean_locus, code_locus, source_citation", supports: true}
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [296, 378], note: "detect_landmarks thresholds are heuristic", supports: false}
+      repro-package:
+        value: 64
+        rationale: >-
+          Deterministic (seed 1917, no stochastic step), --self-test (<1 s) and full run (~4 s)
+          documented in the docstring, outputs written to fixed paths, every input digest
+          verified.  Deductions: per-specimen processing annotations (ROI, deskew, k_sigma)
+          live in the reference JSON and were tuned by the builder; dependency versions are not
+          pinned in the script; no CLI switch to vary thresholds.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [772, 834], note: "self_test + main with --self-test / --no-gif", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json, lines: [0, 0], note: "specimens[*].roi / deskew_deg / bg_sample_box / k_sigma are builder-tuned annotations", supports: false}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — this round is builder-scored"
+      - id: R2
+        item: "Replace the unconstrained 6-dof affine by Thompson's Dürer sub-family (uniform scale + stretch c + shear k, 5 dof, fitted in the Procrustes frame) so the parameters are interpretable and the fit is conditioned on nearly collinear profile landmarks; keep the affine as an upper bound"
+      - id: R3
+        item: "Add dense arc-length semilandmarks of the profile curve between the top landmark and menton so the fit is not driven by 8 points"
+      - id: R4
+        item: "Noise floor: re-detect landmarks under image perturbation (rescale 0.85/1.15, blur 1 px) and report RMSE; LOO-CV residual for every pair"
+      - id: R5
+        item: "Controls on real data: positive (exact Dürer grid applied to a specimen is recovered), negative (scrambled correspondences), ablation (local nose-only displacement is NOT absorbed by the grid)"
+      - id: R6
+        item: "Statistical goodness of fit: Pearson r and RMSE of fitted k vs measured facial-line tan change (E5), KS test similarity vs affine residuals, CV of R across pairs"
+      - id: R7
+        item: "Parameter-regime sweep over omega (50-130 deg) and c (0.67-1.5) applied to a real specimen with angle read-outs; digitise the obliquity of Thompson's Fig. 366 nets from the pinned scan (Hough transform)"
+      - id: R8
+        item: "Segmentation: rescue the gradient-background specimen (edge-assisted refinement) and fix the columella / nasion detection that produce a 39 deg nasolabial SD and a nasion on the hair fringe; pick the GIF specimen with a visible forehead"
