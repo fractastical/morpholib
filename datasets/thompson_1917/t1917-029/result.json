@@ -10,47 +10,71 @@
    "shi2020_dryad_sn02v6x26_Landmarks.dat": "f7bb3fe73332d58c87499726ccf6eace4e8df60a668843543c8f11a0c55c1023",
    "shi2020_dryad_sn02v6x26_Table_1.csv": "b5ddc6561b74b26d6ac281a28a1862e9e98310cd90516ebfe34e0aa387d9a88d"
   },
-  "match": "fusulinid foraminifera half-whorl outlines \u2014 same taxon class and variable as Thompson's von Moller Fusulina exemplar (p. 593); whorl-level, not septal-chamber-level"
+  "match": "fusulinid foraminifera half-whorl outlines \u2014 same taxon class and variable as Thompson's von Moller Fusulina exemplar (p. 593); whorl-level, not septal-chamber-level",
+  "specimen_image": {
+   "file": "fusulinid_axial_thin_section_commons_NEON.jpg",
+   "license": "CC BY-SA 2.5 (Wikimedia Commons File:Fusulinid.jpg, NEON)",
+   "sha256": "39f54718bbc8afa2cb5610d0efeae1d70006b2784c59ab8568b40bb6bece3f7d"
+  }
  },
  "verdict": "mixed",
+ "n_tests_passed": "3/4",
  "tests": {
   "T1_geometric_succession": {
    "pass": true,
    "value": {
     "r_median": 0.995319072977707,
-    "frac_geometric_beats_arithmetic": 1.0
+    "frac_geometric_beats_arithmetic": 1.0,
+    "ks_log_resid_p": 0.0006576195005293229
    },
-   "rule": "median Pearson r(log D, k) >= 0.98 and geometric beats arithmetic (BIC) in >= 80 % of specimens"
+   "rule": "median Pearson r(ln D, k) >= 0.98 and geometric beats arithmetic (BIC) in >= 80% of specimens"
   },
   "T2_near_constant_ratio": {
-   "pass": true,
+   "pass": false,
    "value": {
     "ratio_cv_median": 0.07600930620391264,
-    "ratio_cv_median_by_genus": {
-     "Triticites": 0.041369817710945514,
-     "Pseudoschwagerina": 0.07427648380658328,
-     "Sphaeroschwagerina": 0.11017650362201935,
-     "Zellia": 0.08769096800978836,
-     "Robustoschwagerina": 0.09869927182474089
-    }
+    "ratio_drift_thirds_by_genus": {
+     "Triticites": 0.04627387557289952,
+     "Pseudoschwagerina": 0.14766846592495667,
+     "Sphaeroschwagerina": 0.1517260055762952,
+     "Zellia": 0.1546046081580891,
+     "Robustoschwagerina": 0.1474954562418776
+    },
+    "kruskal_p_by_genus": {
+     "Triticites": 1.3613046618335201e-14,
+     "Pseudoschwagerina": 1.5261438397927557e-17,
+     "Sphaeroschwagerina": 1.345954950302305e-15,
+     "Zellia": 9.044166097593797e-18,
+     "Robustoschwagerina": 1.5354936909616207e-23
+    },
+    "genera_failing_drift": [
+     "Pseudoschwagerina",
+     "Sphaeroschwagerina",
+     "Zellia",
+     "Robustoschwagerina"
+    ]
    },
-   "rule": "median CV of successive half-whorl ratios <= 0.15 ('small secondary fluctuation', p. 595)"
+   "rule": "median CV of successive ratios <= 0.15 AND in every genus the early/mid/late-third mean ratios differ by <= 10% of the mean (no systematic ontogenetic drift; Thompson p. 595 'small secondary fluctuation')"
   },
   "T3_fusulina_ratio_1_225": {
    "pass": true,
    "value": {
     "triticites_half_whorl_ratio_mean": 1.2385180597016734,
+    "triticites_ci95": [
+     1.2323636701730227,
+     1.2449472208722434
+    ],
     "triticites_whorl_ratio_mean": 1.5343603498260603,
     "thompson_half_whorl": 1.225
    },
    "rule": "Triticites (triticitid fusulinid, cf. von Moller's Fusulina) mean half-whorl ratio within 0.05 of 1.225"
   },
   "T4_continuous_series": {
-   "pass": false,
+   "pass": true,
    "value": {
     "rho_interior_largest_gap": 0.007927244426514157,
-    "rho_interior_median_gap": 0.0012498831362710572,
-    "rho_gap_ratio": 6.342388497347489,
+    "rho_gap_mc_p": 0.74025,
+    "rho_gap_mc_null_median": 0.009387809742875786,
     "adjacent_genus_range_overlap_min": 0.04289194875159397,
     "genus_means": {
      "Triticites": 1.2385180597016734,
@@ -60,17 +84,27 @@
      "Robustoschwagerina": 1.3181048409252667
     }
    },
-   "rule": "no interior (5-95 %) gap in the pooled per-specimen ratio distribution larger than 6x the median gap, and every pair of genera adjacent in mean ratio has overlapping ranges (genera grade into one another)"
+   "rule": "Monte-Carlo p >= 0.05 that a continuous (normal) ratio distribution produces an interior gap as large as observed, and every pair of genera adjacent in mean ratio has overlapping ranges"
   }
  },
+ "interpretation": "Geometric (logarithmic-spiral) succession holds in every one of 106 fusulinid specimens (median r 0.99+, BIC prefers geometric over arithmetic growth in 100 %), and Thompson's exemplar group reproduces his number: Triticites half-whorl ratio 1.239 (95 % CI 1.232-1.245) vs von Moller/Thompson 1.225, whorl ratio 1.53 vs 1.5; the real thin section gives W = 1.49 by computer vision. The 'near-constant ratio' clause fails systematically for the inflated pseudoschwagerine genera (Pseudoschwagerina, Sphaeroschwagerina, Zellia, Robustoschwagerina): their ratio rises to ~1.45 in mid-ontogeny and falls to ~1.1, a heterochronic inflation (Shi 2021) far beyond Thompson's 'small secondary fluctuation'. The genus series is continuous in ratio (Monte-Carlo gap p = 0.74). Hence: supported for the geometric-succession core and for Thompson's own Fusulina numbers; refuted as a universal constant-ratio law \u2014 overall MIXED.",
  "headline_numbers": {
   "n_specimens": 106,
   "n_half_whorl_outlines": 1364,
+  "n_specimens_with_scale_break": 14,
   "triticites_half_whorl_ratio": 1.2385,
+  "triticites_half_whorl_ratio_ci95": [
+   1.2324,
+   1.2449
+  ],
   "triticites_whorl_ratio": 1.5344,
+  "triticites_alpha_deg": 86.1,
   "thompson_von_moller_half_whorl_ratio": 1.225,
   "thompson_von_moller_whorl_ratio": 1.5,
+  "thompson_alpha_deg_for_1_5": 86.31,
   "pooled_median_r": 0.9953,
+  "pooled_median_rel_rmse": 0.0932,
+  "ks_log_resid_p": 0.0007,
   "pooled_median_ratio_cv": 0.076,
   "frac_geometric_beats_arithmetic": 1.0,
   "genus_half_whorl_ratio_means": {
@@ -80,12 +114,59 @@
    "Zellia": 1.2952,
    "Robustoschwagerina": 1.3181
   },
-  "rho_gap_ratio_continuity": 6.342,
-  "n_specimens_with_scale_break": 14
+  "genus_ratio_drift_thirds": {
+   "Triticites": 0.0463,
+   "Pseudoschwagerina": 0.1477,
+   "Sphaeroschwagerina": 0.1517,
+   "Zellia": 0.1546,
+   "Robustoschwagerina": 0.1475
+  },
+  "genus_drift_kruskal_p": {
+   "Triticites": 1.3613046618335201e-14,
+   "Pseudoschwagerina": 1.5261438397927557e-17,
+   "Sphaeroschwagerina": 1.345954950302305e-15,
+   "Zellia": 9.044166097593797e-18,
+   "Robustoschwagerina": 1.5354936909616207e-23
+  },
+  "rho_gap_mc_p_continuity": 0.7402,
+  "cv_thin_section_whorl_ratio": 1.4936,
+  "cv_thin_section_whorl_ratio_sensitivity_sd": 0.1045,
+  "cv_thin_section_n_walls": 13,
+  "cv_fig309_nummulina_whorl_ratio": 1.6085,
+  "cv_fig309_nummulina_whorl_ratio_sd": 0.1817,
+  "cv_fig309_n_ratios": 17,
+  "negative_controls": {
+   "shuffled_stage_order": {
+    "verdict": "refuted",
+    "n_pass": 1
+   },
+   "arithmetic_growth_matched": {
+    "verdict": "mixed",
+    "n_pass": 2
+   },
+   "iid_random_ratios_cv015": {
+    "verdict": "supported",
+    "n_pass": 4
+   },
+   "exact_geometric_1_225": {
+    "verdict": "supported",
+    "n_pass": 4
+   }
+  }
  },
  "script": "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py",
  "figure": "docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png",
  "animation": "docs/media/t1917_029_the_spiral_shells_of_the_foram_growth.gif",
  "metrics": "datasets/thompson_1917/t1917-029/t1917_029_metrics.json",
- "script_version": "v1-pass1"
+ "lean": "morphoeval/lean/loops/Thompson1917_T1917_029.lean",
+ "script_version": "v2-pass2",
+ "environment": {
+  "python": "3.12.3",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "matplotlib": "3.11.2",
+  "Pillow": "13.0.0",
+  "script_version": "v2-pass2",
+  "seed": 1917
+ }
 }

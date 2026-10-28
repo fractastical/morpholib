@@ -45,11 +45,28 @@ whorl-level, not septal-chamber-level; pixel units (scale-free tests only).
 | `thompson1917_fig309_nummulina_antiquior_vonmoller_p591.jpg` | public domain (1917) | Thompson's own Fig. 309 (sectioned *Nummulina*, after von Möller) |
 | `thompson1917_p591_…`, `…p593_…`, `…p596_…`, `…p597_…` | public domain (1917) | page scans with the tables and Figs. 309-313 |
 
+## Verdict (Pass 2, pre-registered tests T1–T4): **MIXED** (3/4)
+
+| Test | Result | Numbers |
+|---|---|---|
+| T1 geometric (log-spiral) succession | pass | median r(ln D, k) = 0.995; BIC geometric > arithmetic in 100 % of 106 specimens |
+| T2 near-constant ratio (CV ≤ 0.15 and ≤ 10 % early/mid/late drift in every genus) | **fail** | *Triticites* drift 4.6 %; all four pseudoschwagerine genera 15 % (ratio 1.25 → 1.45 → 1.1 through ontogeny) |
+| T3 Thompson/von Möller *Fusulina* ratio 1.225 | pass | *Triticites* 1.239 (95 % CI 1.232–1.245), whorl ratio 1.53 vs 1.5; thin-section CV W = 1.49 ± 0.10 |
+| T4 continuous series of genera | pass | Monte-Carlo gap p = 0.74; adjacent genus ranges overlap |
+
+Reading: the logarithmic-spiral / constant-ratio law holds to ~5 % for Thompson's own exemplar group
+(triticitid fusulinids) and his printed numbers are reproduced; it fails as a *universal*
+constant-ratio law because the inflated pseudoschwagerines (Shi 2021's heterochronic novelty)
+change their ratio systematically through ontogeny. Thompson's Fig. 309 *Nummulina* gives
+W ≈ 1.61 ± 0.18 by the same CV method — a different constant angle, as his "genera differ in
+numerical coefficients" requires.
+
 ## Reproduction
 
 ```bash
 python3 thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py --self-test
-python3 thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+python3 thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py            # ~6 s
+python3 thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py --fast --no-gif
 ```
 
 Outputs: `docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png`,

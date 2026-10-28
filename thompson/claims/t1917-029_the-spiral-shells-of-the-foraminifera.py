@@ -10,28 +10,36 @@ pp. 587-611, Figs. 308-317):
      with (near-)constant growth ratios, and the genera form a continuous geometric series
      transformable into one another."
 
-What this script does
----------------------
+What this script does (Pass 2, v2)
+----------------------------------
 1. Implements Thompson's generative chamber model (pp. 595-598, 602-605): similar chambers
    in continued proportion, L_n = L_1 * rho**n (E3), each subtending a constant vectorial
    angle d (E5), i.e. chamber centres on the logarithmic spiral r = r_0 exp(theta cot alpha)
    (E1) with whorl ratio W = exp(2 pi cot alpha) (E2); plus his mass-proportional volume
-   derivation V_{n+1} = q (V_0 + ... + V_n) => V_{n+1}/V_n = 1 + q (E4).
+   derivation V_{n+1} = q (V_0 + ... + V_n) => V_{n+1}/V_n = 1 + q (E4).  A (W, d, T) sweep
+   with morphometric read-outs shows which parameter controls which feature of form (R2).
 2. Re-fits the series Thompson himself printed (p. 593 von Moller Fusulina whorls and
    half-whorls; p. 595 van Iterson Triloculina chambers) and checks his 1.5 / 1.225 / 1.323.
 3. Tests the claim on the only public whorl-by-whorl foraminiferal dataset found for this
    slot: Shi (2021, Paleobiology 47:115-133) Dryad doi:10.5061/dryad.sn02v6x26 — 1396
    axial-section outlines at successive HALF-whorl stages for 106 fusulinid specimens
    (Triticites + four pseudoschwagerine genera).  Thompson's own exemplar is von Moller's
-   Fusulina (a fusulinid), measured as "opposite whorls, 180 degrees apart" — the same
-   variable.  For every specimen: log D_k vs half-whorl index k (geometric succession),
-   successive ratios D_{k+1}/D_k (constancy), comparison with Thompson's 1.225, and the
-   continuity of the per-specimen ratio distribution across the five genera.
-4. Renders docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png and
+   Fusulina (a fusulinid) measured as "opposite whorls, 180 degrees apart" — the same
+   variable.  Per specimen: log D_k vs half-whorl index k (geometric succession, BIC vs
+   arithmetic growth), successive ratios (constancy: CV, and a stage-thirds drift test with
+   Kruskal-Wallis p, R4), comparison with Thompson's 1.225 (bootstrap CI, R6), KS test of
+   log residuals (R6), and a Monte-Carlo-calibrated gap test for the continuity of the
+   genus series (R5).
+4. Segments the real fusulinid axial thin section (Wikimedia Commons, CC BY-SA 2.5):
+   proloculus centre refinement, sector-median radial intensity profiles along the minor
+   axis, dark whorl-wall detection, ln r_j vs j fit -> an independent whorl ratio (R1).
+5. Negative / ablation controls through the same verdict rules: shuffled stage order,
+   synthetic arithmetic growth with matched noise, i.i.d. random ratios (R3).
+6. Renders docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png and
    docs/media/t1917_029_the_spiral_shells_of_the_foram_growth.gif, writes
    datasets/thompson_1917/t1917-029/t1917_029_metrics.json and result.json (verdict).
 
-Pass 1 (v1) baseline.  Exposes measure_morphoeval() for morphoeval/measure_outputs.py.
+Exposes measure_morphoeval() for morphoeval/measure_outputs.py.
 
 Usage
 -----
@@ -46,12 +54,14 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import platform
 import re
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
+from scipy import ndimage, signal, stats
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "datasets" / "thompson_1917" / "t1917-029"
@@ -59,10 +69,13 @@ MEDIA_DIR = ROOT / "docs" / "media"
 SLUG = "t1917_029_the_spiral_shells_of_the_foram"
 LANDMARKS = DATA_DIR / "shi2020_dryad_sn02v6x26_Landmarks.dat"
 TABLE1 = DATA_DIR / "shi2020_dryad_sn02v6x26_Table_1.csv"
+SPECIMEN_IMG = DATA_DIR / "fusulinid_axial_thin_section_commons_NEON.jpg"
+FIG309_IMG = DATA_DIR / "thompson1917_fig309_nummulina_antiquior_vonmoller_p591.jpg"
 REFERENCE_JSON = DATA_DIR / f"{SLUG}_reference.json"
 METRICS_JSON = DATA_DIR / "t1917_029_metrics.json"
 RESULT_JSON = DATA_DIR / "result.json"
 SEED = 1917
+SCRIPT_VERSION = "v2-pass2"
 
 GENUS = {"T": "Triticites", "P": "Pseudoschwagerina", "S": "Sphaeroschwagerina",
          "Z": "Zellia", "R": "Robustoschwagerina"}
@@ -81,6 +94,12 @@ THOMPSON_FUSULINA_WHORL_RATIO = 1.5          # p. 593
 THOMPSON_FUSULINA_HALF_WHORL_RATIO = 1.225   # p. 593 (mean log10 difference 0.088)
 THOMPSON_TRILOCULINA_RATIO = 1.323           # p. 595
 THOMPSON_PULVINULINA_RATIO = 1.187           # p. 595 (Rhumbler)
+
+# Pre-registered verdict thresholds (scout_manifest.json planned_tests T1-T6; R4/R5 recalibration)
+T1_R_MIN, T1_BIC_FRAC_MIN = 0.98, 0.80
+T2_CV_MAX, T2_DRIFT_MAX = 0.15, 0.10       # drift = (max - min)/mean of early/mid/late-third ratio means
+T3_TOL = 0.05
+T4_P_MIN = 0.05                            # Monte-Carlo p of the largest interior gap under a continuous null
 
 
 # --------------------------------------------------------------------------------------
@@ -111,8 +130,9 @@ def chamber_series(n: int, W: float, dtheta_deg: float, r0: float = 1.0, a0: flo
     """E6: similar chambers in continued proportion on an equiangular spiral.
 
     chamber k: centre at radius r0 * rho**k and angle k * dtheta, radius a0 * rho**k,
-    optional screw translation `translation * rho**k` per chamber (Textularia, p. 605).
+    optional screw translation (Textularia, p. 605) along z of `translation * a_k` per chamber.
     rho = W**(dtheta/360) so that one whorl multiplies every length by W.
+    dtheta = 0 is the Nodosarian limit (chambers in a straight line, touching).
     """
     k = np.arange(n, dtype=float)
     rho = chamber_ratio_from_whorl_ratio(W, dtheta_deg) if dtheta_deg > 0 else W
@@ -120,11 +140,12 @@ def chamber_series(n: int, W: float, dtheta_deg: float, r0: float = 1.0, a0: flo
     theta = np.radians(dtheta_deg) * k
     if dtheta_deg > 0:
         cx, cy = r0 * scale * np.cos(theta), r0 * scale * np.sin(theta)
-    else:  # Nodosarian limit: chambers in a straight line, touching
+    else:
         step = a0 * scale * (1 + rho)
         cx, cy = np.concatenate([[0.0], np.cumsum(step[:-1])]), np.zeros(n)
-    cz = translation * np.cumsum(scale)
-    return {"k": k, "rho": np.full(n, rho), "x": cx, "y": cy, "z": cz, "a": a0 * scale, "theta": theta}
+    a = a0 * scale
+    cz = translation * np.concatenate([[0.0], np.cumsum(a[:-1])])
+    return {"k": k, "rho": np.full(n, rho), "x": cx, "y": cy, "z": cz, "a": a, "theta": theta}
 
 
 def thompson_volume_series(V0: float, q: float, n: int) -> np.ndarray:
@@ -137,41 +158,90 @@ def thompson_volume_series(V0: float, q: float, n: int) -> np.ndarray:
     return np.asarray(V)
 
 
+def model_morphometrics(series: dict) -> dict:
+    """Read-outs of form for the parameter sweep (R2)."""
+    x, y, z, a = series["x"], series["y"], series["z"], series["a"]
+    d_centres = np.hypot(np.diff(x), np.diff(y))
+    overlap = 1.0 - d_centres / (a[1:] + a[:-1])          # 1 = concentric, 0 = tangent, <0 = apart
+    width = np.ptp(x) + 2 * a.max() if len(x) > 1 else 2 * a[0]
+    height_z = np.ptp(z) + 2 * a.max()
+    r_c = np.hypot(x, y)
+    return {
+        "chambers_per_whorl": (360.0 / math.degrees(series["theta"][1] - series["theta"][0])) if len(x) > 1 and series["theta"][1] > 0 else float("inf"),
+        "mean_overlap_fraction": float(np.clip(overlap, -1, 1).mean()),
+        "coiling_tightness_r_last_over_r_first": float(r_c[-1] / r_c[0]) if r_c[0] > 0 else float("nan"),
+        "last_over_first_chamber": float(a[-1] / a[0]),
+        "helicoid_aspect_height_over_width": float(height_z / width),
+    }
+
+
+def parameter_sweep() -> dict:
+    """(W, d) grid + translation T line, 24 chambers each (R2)."""
+    Ws = [1.2, 1.5, 2.0, 3.0, 5.0]
+    ds = [10.0, 20.0, 45.0, 90.0, 120.0, 180.0]
+    grid = []
+    for W in Ws:
+        for d in ds:
+            m = model_morphometrics(chamber_series(24, W, d, r0=1.0, a0=0.45))
+            grid.append({"W": W, "d_deg": d, **m})
+    Ts = [0.0, 0.25, 0.5, 1.0, 2.0]
+    tline = [{"T": T, **model_morphometrics(chamber_series(24, 1.5, 180.0, r0=1.0, a0=0.6, translation=T))} for T in Ts]
+
+    def monotone(vals, increasing=True):
+        dv = np.diff(vals)
+        return bool(np.all(dv >= -1e-12) if increasing else np.all(dv <= 1e-12))
+
+    # monotonic-control checks across the grid
+    checks = {
+        "overlap_decreases_with_d_for_every_W": all(
+            monotone([g["mean_overlap_fraction"] for g in grid if g["W"] == W], increasing=False) for W in Ws),
+        "chambers_per_whorl_decreases_with_d": monotone([360.0 / d for d in ds], increasing=False),
+        "tightness_increases_with_W_for_every_d": all(
+            monotone([g["coiling_tightness_r_last_over_r_first"] for g in grid if g["d_deg"] == d]) for d in ds),
+        "helicoid_aspect_increases_with_T": monotone([t["helicoid_aspect_height_over_width"] for t in tline]),
+    }
+    return {"Ws": Ws, "ds": ds, "grid": grid, "translation_line": tline, "monotonic_checks": checks}
+
+
 # --------------------------------------------------------------------------------------
 # 2. Fitting geometric succession to a size series
 # --------------------------------------------------------------------------------------
 def fit_geometric(sizes, index=None) -> dict:
     """Fit log L_k = a + k log rho (E3).  Returns rho, Pearson r, RMSE (log10 and relative),
-    successive ratios and their CV, plus the arithmetic (linear-growth) alternative."""
+    standardized log residuals, successive ratios, their CV, a stage-thirds drift statistic,
+    and the arithmetic (linear-growth) alternative compared by BIC in the same (log) space."""
     L = np.asarray(sizes, dtype=float)
     k = np.arange(len(L), dtype=float) if index is None else np.asarray(index, dtype=float)
     y = np.log(L)
     b, a = np.polyfit(k, y, 1)
     yhat = a + b * k
+    resid = y - yhat
     r = float(np.corrcoef(k, y)[0, 1]) if len(L) > 2 else 1.0
-    rmse_log10 = float(np.sqrt(np.mean((y - yhat) ** 2)) / math.log(10))
+    rmse_log10 = float(np.sqrt(np.mean(resid ** 2)) / math.log(10))
     rel_rmse = float(np.sqrt(np.mean(((L - np.exp(yhat)) / L) ** 2)))
     ratios = L[1:] / L[:-1]
-    # arithmetic alternative L = c + d k, residuals compared in log space (same space as geometric)
     d, c = np.polyfit(k, L, 1)
     lin_pred = np.clip(c + d * k, 1e-9, None)
-    sse_geo = float(np.sum((y - yhat) ** 2))
+    sse_geo = float(np.sum(resid ** 2))
     sse_lin = float(np.sum((y - np.log(lin_pred)) ** 2))
     n = len(L)
     bic_geo = n * math.log(max(sse_geo, 1e-300) / n) + 2 * math.log(n)
     bic_lin = n * math.log(max(sse_lin, 1e-300) / n) + 2 * math.log(n)
-    # drift of the ratio with stage (Thompson p. 595 "small secondary fluctuation" vs trend)
-    if len(ratios) > 2:
-        trend = float(np.polyfit(k[1:], ratios, 1)[0])
-    else:
-        trend = 0.0
+    trend = float(np.polyfit(k[1:], ratios, 1)[0]) if len(ratios) > 2 else 0.0
+    # stage-thirds drift (R4): early / middle / late mean ratio
+    thirds = np.array_split(ratios, 3) if len(ratios) >= 3 else [ratios]
+    third_means = [float(t.mean()) for t in thirds if len(t)]
+    drift = float((max(third_means) - min(third_means)) / np.mean(ratios)) if len(third_means) == 3 else 0.0
     return {
         "n": int(n), "rho": float(math.exp(b)), "log10_slope": float(b / math.log(10)),
         "intercept": float(a), "r": r, "r2": r * r, "rmse_log10": rmse_log10,
         "rel_rmse": rel_rmse, "ratios": ratios.tolist(), "ratio_mean": float(ratios.mean()),
         "ratio_cv": float(ratios.std(ddof=1) / ratios.mean()) if len(ratios) > 1 else 0.0,
-        "ratio_trend_per_stage": trend, "bic_geometric": bic_geo, "bic_arithmetic": bic_lin,
+        "ratio_trend_per_stage": trend, "third_means": third_means, "drift_thirds": drift,
+        "stage_of_max_ratio": int(np.argmax(ratios) + 1) if len(ratios) else 0,
+        "bic_geometric": bic_geo, "bic_arithmetic": bic_lin,
         "delta_bic_arith_minus_geo": bic_lin - bic_geo,
+        "std_log_resid": (resid / resid.std(ddof=2)).tolist() if n > 3 and resid.std(ddof=2) > 0 else [],
     }
 
 
@@ -240,8 +310,20 @@ def specimen_axis_dims(stages: dict[int, np.ndarray]) -> dict:
             "n_stages_dropped": int(len(D) - (s1 - s0))}
 
 
-def analyse_dryad(spec: dict[str, dict[int, np.ndarray]], min_stages: int = 5) -> dict:
-    """Per-specimen geometric-succession fits and per-genus summaries."""
+def _largest_interior_gap(vals: np.ndarray) -> tuple[float, float]:
+    v = np.sort(vals)
+    lo, hi = np.percentile(v, [5, 95])
+    inner = v[(v >= lo) & (v <= hi)]
+    gaps = np.diff(inner)
+    return float(gaps.max()), float(np.median(gaps))
+
+
+def analyse_dryad(spec: dict[str, dict[int, np.ndarray]], min_stages: int = 5, n_boot: int = 2000,
+                  n_mc: int = 4000, rng: np.random.Generator | None = None) -> dict:
+    """Per-specimen geometric-succession fits and per-genus / pooled summaries with
+    bootstrap CIs (R6), stage-thirds drift + Kruskal-Wallis (R4), KS of log residuals (R6)
+    and a Monte-Carlo gap test for the continuity of the genus series (R5)."""
+    rng = rng or np.random.default_rng(SEED)
     per = {}
     for code, stages in spec.items():
         if len(stages) < min_stages:
@@ -249,23 +331,33 @@ def analyse_dryad(spec: dict[str, dict[int, np.ndarray]], min_stages: int = 5) -
         dims = specimen_axis_dims(stages)
         fitD = fit_geometric(dims["D"], dims["stages"])
         fitL = fit_geometric(dims["L"], dims["stages"])
-        # allometry of axial length on diameter (fusiform elongation vs inflation)
         slope_LD = float(np.polyfit(np.log(dims["D"]), np.log(dims["L"]), 1)[0])
         per[code] = {"genus": genus_of(code), "n_stages": int(len(dims["stages"])),
                      "D": dims["D"].tolist(), "L": dims["L"].tolist(),
                      "stages": dims["stages"].tolist(), "fit_D": fitD, "fit_L": fitL,
                      "allometry_L_on_D": slope_LD, "scale_break": dims["scale_break"],
-                     "n_stages_dropped": dims["n_stages_dropped"]}
+                     "n_stages_dropped": dims["n_stages_dropped"],
+                     "adult_L_over_D": float(dims["L"][-1] / dims["D"][-1])}
     by_genus = {}
     for g in GENUS_ORDER:
         rows = [v for v in per.values() if v["genus"] == g]
         if not rows:
             continue
         rho = np.array([v["fit_D"]["rho"] for v in rows])
+        boot = np.array([rng.choice(rho, len(rho), replace=True).mean() for _ in range(n_boot)])
+        # pooled ratios by ontogenetic third across specimens of the genus (R4)
+        thirds = [[], [], []]
+        for v in rows:
+            parts = np.array_split(np.asarray(v["fit_D"]["ratios"]), 3)
+            for i, p in enumerate(parts):
+                thirds[i].extend(p.tolist())
+        third_means = [float(np.mean(t)) for t in thirds]
+        kw = stats.kruskal(*thirds)
         by_genus[g] = {
             "n_specimens": len(rows),
             "n_outlines": int(sum(v["n_stages"] for v in rows)),
             "half_whorl_ratio_mean": float(rho.mean()), "half_whorl_ratio_sd": float(rho.std(ddof=1)),
+            "half_whorl_ratio_ci95": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
             "whorl_ratio_mean": float((rho ** 2).mean()),
             "alpha_deg_mean": float(alpha_from_whorl_ratio(float((rho ** 2).mean()))),
             "r_median": float(np.median([v["fit_D"]["r"] for v in rows])),
@@ -273,30 +365,41 @@ def analyse_dryad(spec: dict[str, dict[int, np.ndarray]], min_stages: int = 5) -
             "rel_rmse_median": float(np.median([v["fit_D"]["rel_rmse"] for v in rows])),
             "ratio_cv_median": float(np.median([v["fit_D"]["ratio_cv"] for v in rows])),
             "ratio_trend_mean": float(np.mean([v["fit_D"]["ratio_trend_per_stage"] for v in rows])),
+            "ratio_third_means_early_mid_late": third_means,
+            "ratio_drift_thirds": float((max(third_means) - min(third_means)) / np.mean(third_means)),
+            "ratio_drift_kruskal_H": float(kw.statistic), "ratio_drift_kruskal_p": float(kw.pvalue),
+            "stage_of_max_ratio_median": float(np.median([v["fit_D"]["stage_of_max_ratio"] for v in rows])),
             "frac_geometric_beats_arithmetic": float(np.mean([v["fit_D"]["delta_bic_arith_minus_geo"] > 0 for v in rows])),
             "allometry_L_on_D_mean": float(np.mean([v["allometry_L_on_D"] for v in rows])),
+            "adult_L_over_D_mean": float(np.mean([v["adult_L_over_D"] for v in rows])),
         }
-    rho_all = np.sort(np.array([v["fit_D"]["rho"] for v in per.values()]))
-    # continuity of the series (claim part 2): gaps in the interior (5th-95th percentile) of the
-    # pooled per-specimen ratio distribution, and range overlap of genera adjacent in mean ratio
-    lo, hi = np.percentile(rho_all, [5, 95])
-    interior = rho_all[(rho_all >= lo) & (rho_all <= hi)]
-    gaps = np.diff(interior)
+    rho_all = np.array([v["fit_D"]["rho"] for v in per.values()])
+    # continuity of the series (R5): largest interior gap vs Monte-Carlo null from a normal fit
+    gap_obs, gap_med = _largest_interior_gap(rho_all)
+    mu, sd = rho_all.mean(), rho_all.std(ddof=1)
+    null_gaps = np.array([_largest_interior_gap(rng.normal(mu, sd, len(rho_all)))[0] for _ in range(n_mc)])
+    p_gap = float(np.mean(null_gaps >= gap_obs))
     order = sorted(by_genus, key=lambda g: by_genus[g]["half_whorl_ratio_mean"])
     ranges = {g: (min(v["fit_D"]["rho"] for v in per.values() if v["genus"] == g),
                   max(v["fit_D"]["rho"] for v in per.values() if v["genus"] == g)) for g in order}
     overlaps = [min(ranges[a][1], ranges[b][1]) - max(ranges[a][0], ranges[b][0]) for a, b in zip(order[:-1], order[1:])]
+    # goodness of fit of the log-linear law (R6): pooled standardized residuals vs N(0,1)
+    z = np.concatenate([v["fit_D"]["std_log_resid"] for v in per.values() if v["fit_D"]["std_log_resid"]])
+    ks = stats.kstest(z, "norm")
     pooled = {
         "n_specimens": len(per), "n_outlines": int(sum(v["n_stages"] for v in per.values())),
         "n_specimens_with_scale_break": int(sum(v["scale_break"] for v in per.values())),
-        "half_whorl_ratio_mean": float(rho_all.mean()), "half_whorl_ratio_sd": float(rho_all.std(ddof=1)),
+        "half_whorl_ratio_mean": float(mu), "half_whorl_ratio_sd": float(sd),
         "half_whorl_ratio_min": float(rho_all.min()), "half_whorl_ratio_max": float(rho_all.max()),
         "r_median": float(np.median([v["fit_D"]["r"] for v in per.values()])),
         "frac_r_above_0_98": float(np.mean([v["fit_D"]["r"] > 0.98 for v in per.values()])),
         "frac_geometric_beats_arithmetic": float(np.mean([v["fit_D"]["delta_bic_arith_minus_geo"] > 0 for v in per.values()])),
         "ratio_cv_median": float(np.median([v["fit_D"]["ratio_cv"] for v in per.values()])),
-        "rho_interior_largest_gap": float(gaps.max()), "rho_interior_median_gap": float(np.median(gaps)),
-        "rho_gap_ratio": float(gaps.max() / max(np.median(gaps), 1e-12)),
+        "rel_rmse_median": float(np.median([v["fit_D"]["rel_rmse"] for v in per.values()])),
+        "ks_log_resid_D": float(ks.statistic), "ks_log_resid_p": float(ks.pvalue), "ks_n_resid": int(len(z)),
+        "rho_interior_largest_gap": gap_obs, "rho_interior_median_gap": gap_med,
+        "rho_gap_ratio": float(gap_obs / max(gap_med, 1e-12)),
+        "rho_gap_mc_p": p_gap, "rho_gap_mc_null_median": float(np.median(null_gaps)), "rho_gap_mc_n": int(n_mc),
         "genus_order_by_mean_ratio": order,
         "adjacent_genus_range_overlap_min": float(min(overlaps)),
     }
@@ -304,55 +407,287 @@ def analyse_dryad(spec: dict[str, dict[int, np.ndarray]], min_stages: int = 5) -
 
 
 # --------------------------------------------------------------------------------------
-# 4. Verdict rules (pre-registered in the scout manifest: T1-T4)
+# 4. Computer-vision whorl-wall extraction from the real thin section (R1)
 # --------------------------------------------------------------------------------------
-def verdict_from_metrics(m: dict) -> dict:
-    pooled, bg = m["dryad"]["pooled"], m["dryad"]["by_genus"]
-    trit = bg["Triticites"]
+def cv_whorl_radii(img_path: Path = SPECIMEN_IMG, center_xy: tuple[int, int] = (318, 243),
+                   sector_half_deg: float = 20.0, rmax: int = 235, refine: int = 6) -> dict:
+    """Detect dark whorl walls (spirotheca) along the minor axis of a fusulinid axial section.
+
+    1. Refine the pinned proloculus centre within +/- `refine` px by minimising the mean
+       intensity on rings of radius 5-7 px (the proloculus wall is a small dark ring).
+    2. For the two minor-axis directions (90 deg up, 270 deg down) take the median over 41 rays
+       spanning +/- sector_half_deg of the smoothed radial intensity profile.
+    3. Whorl walls = local minima with prominence >= 0.06 and intensity <= 0.33; minima closer
+       than 8 % in radius are merged (thick walls).
+    4. Fit ln r_j = a + j ln W per direction and jointly with a half-whorl offset between the
+       two directions (opposite sides are half a whorl apart, as in von Moller's series).
+    """
+    from PIL import Image
+    im = np.asarray(Image.open(img_path).convert("L"), dtype=float) / 255.0
+    H, W_img = im.shape
+    sm = ndimage.gaussian_filter(im, 1.2)
+
+    def ring_mean(cx, cy, r, n=72):
+        ang = np.linspace(0, 2 * np.pi, n, endpoint=False)
+        return float(ndimage.map_coordinates(sm, [cy - r * np.sin(ang), cx + r * np.cos(ang)], order=1).mean())
+
+    best = None
+    for dx in range(-refine, refine + 1):
+        for dy in range(-refine, refine + 1):
+            v = np.mean([ring_mean(center_xy[0] + dx, center_xy[1] + dy, r) for r in (5, 6, 7)])
+            if best is None or v < best[0]:
+                best = (v, center_xy[0] + dx, center_xy[1] + dy)
+    cx, cy = best[1], best[2]
+    rs = np.arange(2, rmax, 0.5)
+
+    def sector_profile(theta_deg):
+        prof = []
+        for ang in np.deg2rad(np.linspace(theta_deg - sector_half_deg, theta_deg + sector_half_deg, 41)):
+            x, y = cx + rs * np.cos(ang), cy - rs * np.sin(ang)
+            ok = (x >= 0) & (x < W_img - 1) & (y >= 0) & (y < H - 1)
+            v = np.full(rs.shape, np.nan)
+            v[ok] = ndimage.map_coordinates(sm, [y[ok], x[ok]], order=1)
+            prof.append(v)
+        return np.nanmedian(np.array(prof), 0)
+
+    out = {"center_xy": [int(cx), int(cy)], "center_pinned_xy": list(center_xy), "sector_half_deg": sector_half_deg,
+           "directions": {}}
+    for th in (90, 270):
+        p = sector_profile(th)
+        mins, props = signal.find_peaks(-p, prominence=0.06, distance=8)
+        cand = [float(rs[i]) for i in mins if p[i] <= 0.33]
+        merged = []
+        for r in cand:
+            if merged and (r - merged[-1]) / merged[-1] < 0.08:
+                merged[-1] = (merged[-1] + r) / 2
+            else:
+                merged.append(r)
+        r = np.array(merged)
+        f = fit_geometric(r) if len(r) >= 3 else None
+        out["directions"][str(th)] = {"radii_px": r.tolist(), "profile": p.tolist(),
+                                      "whorl_ratio_fit": f["rho"] if f else None, "r": f["r"] if f else None,
+                                      "rel_rmse": f["rel_rmse"] if f else None,
+                                      "successive_ratios": (r[1:] / r[:-1]).tolist() if len(r) > 1 else []}
+    out["radii_axis"] = rs.tolist()
+    # joint fit: ln r = a + ln W * (j + 0.5 * side), side = 0 (up) / 1 (down) -> half-whorl offset
+    J, Y = [], []
+    for side, th in enumerate((90, 270)):
+        r = np.array(out["directions"][str(th)]["radii_px"])
+        J.extend((np.arange(len(r)) + 0.5 * side).tolist())
+        Y.extend(np.log(r).tolist())
+    J, Y = np.array(J), np.array(Y)
+    b, a = np.polyfit(J, Y, 1)
+    pred = a + b * J
+    out["joint"] = {"whorl_ratio": float(math.exp(b)), "half_whorl_ratio": float(math.exp(b / 2)),
+                    "r": float(np.corrcoef(J, Y)[0, 1]), "rel_rmse": float(np.sqrt(np.mean(((np.exp(Y) - np.exp(pred)) / np.exp(Y)) ** 2))),
+                    "n_walls": int(len(J)), "alpha_deg": float(alpha_from_whorl_ratio(math.exp(b)))}
+    # sensitivity to the sector half-width (R6-style uncertainty)
+    return out
+
+
+def cv_fig309_whorls(img_path: Path = FIG309_IMG, center_xy: tuple[int, int] = (546, 295),
+                     directions=(0, 45, 90, 135, 180, 225, 270, 315), sector_half_deg: float = 15.0,
+                     r_min: float = 90.0, rmax: int = 520) -> dict:
+    """Bright whorl walls of Thompson's Fig. 309 (Nummulina antiquior engraving) along 8 radial
+    sectors: sector-median profile, peaks with prominence >= 0.12 and intensity > 0.55, radii below
+    r_min (the proloculus wall, ~65 px) excluded.  Per-direction consecutive-wall ratios give the
+    whorl ratio W; direction-wise fits avoid the unknown spiral phase.  The engraving is an oblique,
+    shaded drawing, so this is a coarse estimate — reported with its spread across directions."""
+    from PIL import Image
+    im = np.asarray(Image.open(img_path).convert("L"), dtype=float) / 255.0
+    H, W_img = im.shape
+    sm = ndimage.gaussian_filter(im, 1.5)
+    cx, cy = center_xy
+    rs = np.arange(5, rmax, 0.5)
+    out = {"center_xy": list(center_xy), "directions": {}}
+    ratios_all, logfit_W = [], []
+    for th in directions:
+        prof = []
+        for ang in np.deg2rad(np.linspace(th - sector_half_deg, th + sector_half_deg, 31)):
+            x, y = cx + rs * np.cos(ang), cy - rs * np.sin(ang)
+            ok = (x >= 0) & (x < W_img - 1) & (y >= 0) & (y < H - 1)
+            v = np.full(rs.shape, np.nan)
+            v[ok] = ndimage.map_coordinates(sm, [y[ok], x[ok]], order=1)
+            prof.append(v)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            p = np.nanmedian(np.array(prof), 0)
+        p_f = np.where(np.isnan(p), 0.0, p)
+        pk, props = signal.find_peaks(p_f, prominence=0.12, distance=20)
+        r = np.array([float(rs[i]) for i in pk if p_f[i] > 0.55 and rs[i] >= r_min])
+        rat = (r[1:] / r[:-1]).tolist() if len(r) > 1 else []
+        ratios_all.extend(rat)
+        if len(r) >= 2:
+            logfit_W.append(float(math.exp(np.polyfit(np.arange(len(r)), np.log(r), 1)[0])))
+        out["directions"][str(th)] = {"radii_px": r.tolist(), "successive_ratios": rat}
+    ratios_all = np.array(ratios_all)
+    out["whorl_ratio_geomean"] = float(np.exp(np.mean(np.log(ratios_all)))) if len(ratios_all) else None
+    out["whorl_ratio_sd_across_ratios"] = float(ratios_all.std(ddof=1)) if len(ratios_all) > 1 else None
+    out["whorl_ratio_direction_fits_mean"] = float(np.mean(logfit_W)) if logfit_W else None
+    out["whorl_ratio_direction_fits_sd"] = float(np.std(logfit_W, ddof=1)) if len(logfit_W) > 1 else None
+    out["n_ratios"] = int(len(ratios_all))
+    out["n_directions_with_fit"] = int(len(logfit_W))
+    out["alpha_deg"] = float(alpha_from_whorl_ratio(out["whorl_ratio_geomean"])) if out["whorl_ratio_geomean"] else None
+    return out
+
+
+def cv_sensitivity(img_path: Path = SPECIMEN_IMG, halves=(10.0, 15.0, 20.0, 25.0, 30.0)) -> dict:
+    Ws = []
+    for h in halves:
+        try:
+            Ws.append(cv_whorl_radii(img_path, sector_half_deg=h)["joint"]["whorl_ratio"])
+        except Exception:
+            Ws.append(float("nan"))
+    Ws = np.array(Ws)
+    return {"sector_half_deg": list(halves), "whorl_ratios": Ws.tolist(),
+            "whorl_ratio_mean": float(np.nanmean(Ws)), "whorl_ratio_sd": float(np.nanstd(Ws, ddof=1))}
+
+
+# --------------------------------------------------------------------------------------
+# 5. Verdict rules and negative controls (R3, R4, R5)
+# --------------------------------------------------------------------------------------
+def verdict_tests(pooled: dict, by_genus: dict) -> dict:
+    trit = by_genus.get("Triticites")
     tests = {
         "T1_geometric_succession": {
-            "pass": pooled["r_median"] >= 0.98 and pooled["frac_geometric_beats_arithmetic"] >= 0.80,
-            "value": {"r_median": pooled["r_median"], "frac_geometric_beats_arithmetic": pooled["frac_geometric_beats_arithmetic"]},
-            "rule": "median Pearson r(log D, k) >= 0.98 and geometric beats arithmetic (BIC) in >= 80 % of specimens"},
+            "pass": pooled["r_median"] >= T1_R_MIN and pooled["frac_geometric_beats_arithmetic"] >= T1_BIC_FRAC_MIN,
+            "value": {"r_median": pooled["r_median"], "frac_geometric_beats_arithmetic": pooled["frac_geometric_beats_arithmetic"],
+                      "ks_log_resid_p": pooled.get("ks_log_resid_p")},
+            "rule": f"median Pearson r(ln D, k) >= {T1_R_MIN} and geometric beats arithmetic (BIC) in >= {T1_BIC_FRAC_MIN:.0%} of specimens"},
         "T2_near_constant_ratio": {
-            "pass": pooled["ratio_cv_median"] <= 0.15,
+            "pass": pooled["ratio_cv_median"] <= T2_CV_MAX and all(b["ratio_drift_thirds"] <= T2_DRIFT_MAX for b in by_genus.values()),
             "value": {"ratio_cv_median": pooled["ratio_cv_median"],
-                      "ratio_cv_median_by_genus": {g: bg[g]["ratio_cv_median"] for g in bg}},
-            "rule": "median CV of successive half-whorl ratios <= 0.15 ('small secondary fluctuation', p. 595)"},
+                      "ratio_drift_thirds_by_genus": {g: b["ratio_drift_thirds"] for g, b in by_genus.items()},
+                      "kruskal_p_by_genus": {g: b["ratio_drift_kruskal_p"] for g, b in by_genus.items()},
+                      "genera_failing_drift": [g for g, b in by_genus.items() if b["ratio_drift_thirds"] > T2_DRIFT_MAX]},
+            "rule": f"median CV of successive ratios <= {T2_CV_MAX} AND in every genus the early/mid/late-third mean ratios differ by <= {T2_DRIFT_MAX:.0%} of the mean (no systematic ontogenetic drift; Thompson p. 595 'small secondary fluctuation')"},
         "T3_fusulina_ratio_1_225": {
-            "pass": abs(trit["half_whorl_ratio_mean"] - THOMPSON_FUSULINA_HALF_WHORL_RATIO) <= 0.05,
-            "value": {"triticites_half_whorl_ratio_mean": trit["half_whorl_ratio_mean"],
-                      "triticites_whorl_ratio_mean": trit["whorl_ratio_mean"],
+            "pass": trit is not None and abs(trit["half_whorl_ratio_mean"] - THOMPSON_FUSULINA_HALF_WHORL_RATIO) <= T3_TOL,
+            "value": {"triticites_half_whorl_ratio_mean": trit["half_whorl_ratio_mean"] if trit else None,
+                      "triticites_ci95": trit["half_whorl_ratio_ci95"] if trit else None,
+                      "triticites_whorl_ratio_mean": trit["whorl_ratio_mean"] if trit else None,
                       "thompson_half_whorl": THOMPSON_FUSULINA_HALF_WHORL_RATIO},
-            "rule": "Triticites (triticitid fusulinid, cf. von Moller's Fusulina) mean half-whorl ratio within 0.05 of 1.225"},
+            "rule": f"Triticites (triticitid fusulinid, cf. von Moller's Fusulina) mean half-whorl ratio within {T3_TOL} of 1.225"},
         "T4_continuous_series": {
-            "pass": pooled["rho_gap_ratio"] <= 6.0 and pooled["adjacent_genus_range_overlap_min"] > 0,
+            "pass": pooled["rho_gap_mc_p"] >= T4_P_MIN and pooled["adjacent_genus_range_overlap_min"] > 0,
             "value": {"rho_interior_largest_gap": pooled["rho_interior_largest_gap"],
-                      "rho_interior_median_gap": pooled["rho_interior_median_gap"],
-                      "rho_gap_ratio": pooled["rho_gap_ratio"],
+                      "rho_gap_mc_p": pooled["rho_gap_mc_p"], "rho_gap_mc_null_median": pooled["rho_gap_mc_null_median"],
                       "adjacent_genus_range_overlap_min": pooled["adjacent_genus_range_overlap_min"],
-                      "genus_means": {g: bg[g]["half_whorl_ratio_mean"] for g in bg}},
-            "rule": "no interior (5-95 %) gap in the pooled per-specimen ratio distribution larger than 6x the median gap, and every pair of genera adjacent in mean ratio has overlapping ranges (genera grade into one another)"},
+                      "genus_means": {g: b["half_whorl_ratio_mean"] for g, b in by_genus.items()}},
+            "rule": f"Monte-Carlo p >= {T4_P_MIN} that a continuous (normal) ratio distribution produces an interior gap as large as observed, and every pair of genera adjacent in mean ratio has overlapping ranges"},
     }
     n_pass = sum(t["pass"] for t in tests.values())
-    verdict = "supported" if n_pass == 4 else ("mixed" if n_pass >= 2 else "refuted")
-    return {"verdict": verdict, "n_pass": n_pass, "tests": tests}
+    return {"verdict": "supported" if n_pass == 4 else ("mixed" if n_pass >= 2 else "refuted"), "n_pass": n_pass, "tests": tests}
+
+
+def verdict_from_metrics(m: dict) -> dict:
+    return verdict_tests(m["dryad"]["pooled"], m["dryad"]["by_genus"])
+
+
+def negative_controls(spec: dict, per: dict, rng: np.random.Generator | None = None) -> dict:
+    """R3: run the verdict rules on data that should NOT satisfy Thompson's law."""
+    rng = rng or np.random.default_rng(SEED + 7)
+    results = {}
+
+    def run(name, series_by_code, note):
+        fake = {}
+        for code, D in series_by_code.items():
+            D = np.asarray(D, dtype=float)
+            fake[code] = {stage: None for stage in range(len(D))}
+        # reuse the analysis machinery via a thin adapter: build fit dicts directly
+        per_c = {}
+        for code, D in series_by_code.items():
+            f = fit_geometric(D)
+            per_c[code] = {"genus": per[code]["genus"], "n_stages": len(D), "fit_D": f, "scale_break": False,
+                           "allometry_L_on_D": 1.0, "adult_L_over_D": 1.0}
+        by_g = {}
+        for g in GENUS_ORDER:
+            rows = [v for v in per_c.values() if v["genus"] == g]
+            if not rows:
+                continue
+            rho = np.array([v["fit_D"]["rho"] for v in rows])
+            thirds = [[], [], []]
+            for v in rows:
+                for i, p in enumerate(np.array_split(np.asarray(v["fit_D"]["ratios"]), 3)):
+                    thirds[i].extend(p.tolist())
+            tm = [float(np.mean(t)) for t in thirds]
+            by_g[g] = {"half_whorl_ratio_mean": float(rho.mean()), "half_whorl_ratio_ci95": [float(rho.min()), float(rho.max())],
+                       "whorl_ratio_mean": float((rho ** 2).mean()),
+                       "ratio_drift_thirds": float((max(tm) - min(tm)) / np.mean(tm)),
+                       "ratio_drift_kruskal_p": float(stats.kruskal(*thirds).pvalue)}
+        rho_all = np.array([v["fit_D"]["rho"] for v in per_c.values()])
+        gap_obs, gap_med = _largest_interior_gap(rho_all)
+        null = np.array([_largest_interior_gap(rng.normal(rho_all.mean(), rho_all.std(ddof=1), len(rho_all)))[0] for _ in range(500)])
+        order = sorted(by_g, key=lambda g: by_g[g]["half_whorl_ratio_mean"])
+        rngs = {g: (min(v["fit_D"]["rho"] for v in per_c.values() if v["genus"] == g),
+                    max(v["fit_D"]["rho"] for v in per_c.values() if v["genus"] == g)) for g in order}
+        ov = [min(rngs[a][1], rngs[b][1]) - max(rngs[a][0], rngs[b][0]) for a, b in zip(order[:-1], order[1:])]
+        pooled_c = {"r_median": float(np.median([v["fit_D"]["r"] for v in per_c.values()])),
+                    "frac_geometric_beats_arithmetic": float(np.mean([v["fit_D"]["delta_bic_arith_minus_geo"] > 0 for v in per_c.values()])),
+                    "ratio_cv_median": float(np.median([v["fit_D"]["ratio_cv"] for v in per_c.values()])),
+                    "rho_interior_largest_gap": gap_obs, "rho_gap_mc_p": float(np.mean(null >= gap_obs)),
+                    "rho_gap_mc_null_median": float(np.median(null)), "adjacent_genus_range_overlap_min": float(min(ov)),
+                    "ks_log_resid_p": None}
+        vt = verdict_tests(pooled_c, by_g)
+        results[name] = {"note": note, "verdict": vt["verdict"], "n_pass": vt["n_pass"],
+                         "tests_pass": {k: v["pass"] for k, v in vt["tests"].items()},
+                         "r_median": pooled_c["r_median"], "frac_geometric_beats_arithmetic": pooled_c["frac_geometric_beats_arithmetic"],
+                         "ratio_cv_median": pooled_c["ratio_cv_median"],
+                         "triticites_half_whorl_ratio_mean": by_g.get("Triticites", {}).get("half_whorl_ratio_mean")}
+
+    real = {code: np.asarray(v["D"]) for code, v in per.items()}
+    # (a) shuffled stage order within each specimen
+    run("shuffled_stage_order", {c: rng.permutation(D) for c, D in real.items()},
+        "destroys the ordering: r should collapse and T1 fail")
+    # (b) arithmetic growth with matched start/end and 5 % multiplicative noise
+    arith = {}
+    for c, D in real.items():
+        k = np.arange(len(D))
+        A = D[0] + (D[-1] - D[0]) * k / (len(D) - 1)
+        arith[c] = A * np.exp(rng.normal(0, 0.05, len(D)))
+    run("arithmetic_growth_matched", arith, "linear-in-k growth with matched endpoints: BIC should prefer arithmetic (T1 fail) although r stays high")
+    # (c) i.i.d. random ratios with the Triticites mean but sd 0.18 (CV ~ 0.15)
+    iid = {}
+    for c, D in real.items():
+        ratios = rng.normal(1.2385, 0.18, len(D) - 1).clip(0.8, 1.8)
+        iid[c] = D[0] * np.concatenate([[1.0], np.cumprod(ratios)])
+    run("iid_random_ratios_cv015", iid, "boundary control: i.i.d. fluctuation about a constant mean satisfies Thompson's hypothesis "
+        "(no systematic drift), so it is expected to pass; it shows the suite tolerates fluctuation up to CV ~0.15")
+    # (d) positive control: exact geometric series with Thompson's 1.225
+    run("exact_geometric_1_225", {c: D[0] * 1.225 ** np.arange(len(D)) for c, D in real.items()},
+        "positive control: all four tests must pass")
+    return results
 
 
 # --------------------------------------------------------------------------------------
-# 5. Figures
+# 6. Figures
 # --------------------------------------------------------------------------------------
-def _draw_shell(ax, series: dict, color: str, title: str, overlap_alpha: float = 0.9):
+def _draw_shell(ax, series: dict, color: str, title: str, alpha: float = 0.9, lw: float = 0.6, lim=None):
     from matplotlib.patches import Circle
     for x, y, a in zip(series["x"], series["y"], series["a"]):
-        ax.add_patch(Circle((x, y), a, facecolor=color, edgecolor="k", lw=0.6, alpha=overlap_alpha))
-    lim = max(np.max(np.abs(series["x"]) + series["a"]), np.max(np.abs(series["y"]) + series["a"])) * 1.05
-    ax.set_xlim(-lim, lim) if np.min(series["x"]) < 0 else ax.set_xlim(-series["a"][0] * 1.2, lim)
+        ax.add_patch(Circle((x, y), a, facecolor=color, edgecolor="k", lw=lw, alpha=alpha))
+    if lim is None:
+        lim = max(np.max(np.abs(series["x"]) + series["a"]), np.max(np.abs(series["y"]) + series["a"])) * 1.05
+    if np.min(series["x"]) < 0:
+        ax.set_xlim(-lim, lim)
+    else:
+        ax.set_xlim(-series["a"][0] * 1.2, lim)
     ax.set_ylim(-lim, lim)
     ax.set_aspect("equal")
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title(title, fontsize=8)
+    if title:
+        ax.set_title(title, fontsize=7.5)
+
+
+def fig309_model_params(metrics: dict) -> dict:
+    """R7: model parameters chosen from data — W from the CV whorl walls of Fig. 309 itself (fallback:
+    the Triticites fit), d from the ~16 septa per whorl visible in Fig. 309 (Nummulina), a0 = (W-1)/2
+    so the chamber fills the whorl height."""
+    W = (metrics.get("cv_fig309") or {}).get("whorl_ratio_geomean") or metrics["dryad"]["by_genus"]["Triticites"]["whorl_ratio_mean"]
+    return {"W": float(W), "d_deg": 22.5, "a0": (W - 1) / 2 * 1.0, "r0": 1.0, "n": 40,
+            "W_source": "cv_fig309" if (metrics.get("cv_fig309") or {}).get("whorl_ratio_geomean") else "triticites_fit"}
 
 
 def render_comparison(metrics: dict, spec: dict, out_png: Path) -> None:
@@ -361,94 +696,130 @@ def render_comparison(metrics: dict, spec: dict, out_png: Path) -> None:
     import matplotlib.pyplot as plt
     from PIL import Image
 
-    an = metrics["dryad"]
-    fig = plt.figure(figsize=(16, 10), dpi=110)
-    gs = fig.add_gridspec(3, 4, hspace=0.42, wspace=0.3)
+    an, sweep, cv = metrics["dryad"], metrics["parameter_sweep"], metrics["cv_specimen"]
+    fig = plt.figure(figsize=(18, 13), dpi=100)
+    gs = fig.add_gridspec(3, 4, hspace=0.45, wspace=0.28, left=0.04, right=0.98, top=0.93, bottom=0.07)
 
-    # Row 0: Thompson's continuous series of genera from one generative model (pp. 602-605)
-    morphs = [("Globigerina-like\nW=2.4, d=100°, small overlap", 2.4, 100, 0.55, 0.9),
-              ("Cyclammina (Fig. 313)\nW=1.8, d=20°", 1.8, 20, 0.75, 0.9),
-              ("Triloculina (Fig. 311)\nW=1.323³=2.32, d=120°", THOMPSON_TRILOCULINA_RATIO ** 3, 120, 0.9, 0.85),
-              ("Orbitolitid limit\nW→1 (α=90°)", 1.02, 20, 0.45, 0.9)]
-    for j, (title, W, d, a0, al) in enumerate(morphs):
-        ax = fig.add_subplot(gs[0, j])
-        s = chamber_series(26 if d < 90 else 9, W, d, r0=1.0, a0=a0)
-        _draw_shell(ax, s, "#c9b89a", title, al)
-    fig.text(0.5, 0.955, "A  Thompson's generative model: similar chambers, constant ratio ρ per chamber, constant angle d "
-             "(r = r₀e^{θ cot α}); the genera differ only in (W, d, overlap)", ha="center", fontsize=10)
+    # A: (W, d) sweep as small multiples
+    axA = fig.add_subplot(gs[0, 0:2])
+    axA.set_xticks([])
+    axA.set_yticks([])
+    axA.set_title("A  Parameter sweep of Thompson's chamber model: columns d = chamber angle, rows W = whorl ratio (24 chambers)", fontsize=9)
+    Ws, ds = sweep["Ws"], sweep["ds"]
+    axA.set_xlim(0, len(ds))
+    axA.set_ylim(0, len(Ws))
+    for i, W in enumerate(Ws):
+        for j, d in enumerate(ds):
+            s = chamber_series(24, W, d, r0=1.0, a0=0.45)
+            lim = max(np.max(np.abs(s["x"]) + s["a"]), np.max(np.abs(s["y"]) + s["a"]))
+            xs = j + 0.5 + 0.45 * s["x"] / lim
+            ys = len(Ws) - i - 0.5 + 0.45 * s["y"] / lim
+            for x, y, a in zip(xs, ys, s["a"]):
+                axA.add_patch(plt.Circle((x, y), 0.45 * a / lim, facecolor="#c9b89a", edgecolor="k", lw=0.3, alpha=0.9))
+    for j, d in enumerate(ds):
+        axA.text(j + 0.5, -0.12, f"d={d:g}°\n{360 / d:g}/whorl", ha="center", va="top", fontsize=7)
+    for i, W in enumerate(Ws):
+        axA.text(-0.05, len(Ws) - i - 0.5, f"W={W:g}\nα={alpha_from_whorl_ratio(W):.0f}°", ha="right", va="center", fontsize=7)
+    axA.set_xlim(-0.6, len(ds))
+    axA.set_ylim(-0.5, len(Ws))
+    axA.set_aspect("equal")
 
-    # Row 1 left: Thompson's own tables refitted
-    ax = fig.add_subplot(gs[1, 0])
-    for label, ser, mk in [("von Möller F. cylindrica half-whorls (p.593)", VON_MOLLER_F_CYLINDRICA_HALF_WHORLS_MM, "o"),
-                           ("von Möller F. cylindrica whorls", VON_MOLLER_F_CYLINDRICA_WHORLS_MM, "s"),
-                           ("von Möller F. böcki whorls", VON_MOLLER_F_BOECKI_WHORLS_MM, "^")]:
-        f = fit_geometric(ser)
-        kk = np.arange(len(ser))
-        ax.semilogy(kk + 1, ser, mk, label=f"{label}: ρ={f['rho']:.3f}, r={f['r']:.4f}")
-        ax.semilogy(kk + 1, np.exp(f["intercept"] + np.log(f["rho"]) * kk), "-", color="gray", lw=0.8)
-    ax.set_xlabel("whorl / half-whorl number")
-    ax.set_ylabel("breadth (mm)")
-    ax.set_title("B  Thompson's p. 593 Fusulina tables (von Möller 1878)", fontsize=9)
-    ax.legend(fontsize=6, loc="upper left")
+    # B: read-outs vs parameters (monotonic control) — three stacked insets
+    axB = fig.add_subplot(gs[0, 2])
+    axB.axis("off")
+    mc = sweep["monotonic_checks"]
+    axB.set_title("B  Which parameter controls which feature (24-chamber shells)\n"
+                  f"monotone checks: overlap↓d {mc['overlap_decreases_with_d_for_every_W']}, tightness↑W {mc['tightness_increases_with_W_for_every_d']}, helicoid↑T {mc['helicoid_aspect_increases_with_T']}", fontsize=7.5)
+    b1 = axB.inset_axes([0.14, 0.70, 0.84, 0.27])
+    ov = [g["mean_overlap_fraction"] for g in sweep["grid"] if g["W"] == 1.5]
+    b1.plot(ds, ov, "o-", ms=3, color="#8c564b")
+    b1.set_xscale("log")
+    b1.set_ylabel("overlap", fontsize=7)
+    b1.set_xlabel("chamber angle d (°)  [independent of W]", fontsize=7)
+    b1.tick_params(labelsize=6)
+    b2 = axB.inset_axes([0.14, 0.36, 0.84, 0.24])
+    for d, col in ((20.0, "#1f77b4"), (90.0, "#2ca02c"), (180.0, "#d62728")):
+        tg = [g["coiling_tightness_r_last_over_r_first"] for g in sweep["grid"] if g["d_deg"] == d]
+        b2.plot(Ws, tg, "s-", ms=3, color=col, label=f"d={d:g}°")
+    b2.set_yscale("log")
+    b2.set_ylabel("r_last/r_first", fontsize=7)
+    b2.set_xlabel("whorl ratio W", fontsize=7)
+    b2.legend(fontsize=5.5, ncol=3)
+    b2.tick_params(labelsize=6)
+    b3 = axB.inset_axes([0.14, 0.02, 0.84, 0.24])
+    tl = sweep["translation_line"]
+    b3.plot([t["T"] for t in tl], [t["helicoid_aspect_height_over_width"] for t in tl], "^-", ms=3, color="#9467bd")
+    b3.set_ylabel("height/width", fontsize=7)
+    b3.set_xlabel("screw translation T per chamber (Textularia, p. 605)", fontsize=7)
+    b3.tick_params(labelsize=6)
 
-    # Row 1 middle-right: Dryad log D vs stage, all specimens
-    ax = fig.add_subplot(gs[1, 1:3])
+    # C: Fig. 309 Nummulina vs data-fitted model
+    axC = fig.add_subplot(gs[0, 3])
+    p = fig309_model_params(metrics)
+    # Fig. 309 proloculus pinned at (355, 178) px of the 1260 x 750 crop (reference JSON cv_pins)
+    c309 = metrics["cv_fig309"]
+    pin309 = c309["center_xy"]
+    if FIG309_IMG.exists():
+        im = Image.open(FIG309_IMG).convert("L")
+        axC.imshow(im, cmap="gray", extent=[0, im.width, im.height, 0])
+        W309, H309 = im.width, im.height
+    else:
+        W309, H309 = 1260, 750
+    # anchor the model's first whorl at the median first detected wall radius of Fig. 309
+    first_walls = [d["radii_px"][0] for d in c309["directions"].values() if d["radii_px"]]
+    r0_px = (float(np.median(first_walls)) if first_walls else 110.0) / p["W"]
+    s = chamber_series(44, p["W"], p["d_deg"], r0=r0_px, a0=r0_px * p["a0"])
+    for x, y, a in zip(s["x"], s["y"], s["a"]):
+        axC.add_patch(plt.Circle((pin309[0] + x, pin309[1] - y), a, facecolor="none", edgecolor="#ffcc00", lw=0.7, alpha=0.9))
+    for th, d in c309["directions"].items():
+        ang = math.radians(float(th))
+        for r in d["radii_px"]:
+            axC.plot(pin309[0] + r * math.cos(ang), pin309[1] - r * math.sin(ang), "+", color="#00e5ff", ms=6, mew=1.2)
+    axC.set_xlim(0, W309)
+    axC.set_ylim(H309, 0)
+    axC.set_xticks([])
+    axC.set_yticks([])
+    axC.set_title(f"C  Thompson Fig. 309 Nummulina (after von Möller, PD): CV whorl walls (+) in 8 sectors\n"
+                  f"W={c309['whorl_ratio_geomean']:.2f}±{c309['whorl_ratio_sd_across_ratios']:.2f} (n={c309['n_ratios']} ratios, α={c309['alpha_deg']:.1f}°) vs fusulinid 1.5 — genera differ in W (p. 601); model overlay d={p['d_deg']}°", fontsize=7.5)
+
+    # D: Dryad log D vs stage, all specimens
+    axD = fig.add_subplot(gs[1, 0:2])
     for code, v in an["per_specimen"].items():
-        ax.semilogy(v["stages"], np.asarray(v["D"]) / v["D"][0], "-", color=GENUS_COLOR[v["genus"]], lw=0.6, alpha=0.5)
+        axD.semilogy(v["stages"], np.asarray(v["D"]) / v["D"][0], "-", color=GENUS_COLOR[v["genus"]], lw=0.6, alpha=0.5)
     kk = np.arange(0, 18)
-    ax.semilogy(kk + 1, THOMPSON_FUSULINA_HALF_WHORL_RATIO ** kk, "k--", lw=1.8,
-                label="Thompson/von Möller 1.225 per half-whorl (1.5 per whorl)")
+    axD.semilogy(kk + 1, THOMPSON_FUSULINA_HALF_WHORL_RATIO ** kk, "k--", lw=1.8, label="Thompson/von Möller 1.225 per half-whorl (1.5 per whorl)")
     for g in GENUS_ORDER:
         if g in an["by_genus"]:
             b = an["by_genus"][g]
-            ax.plot([], [], color=GENUS_COLOR[g], label=f"{g} (n={b['n_specimens']}): ρ½={b['half_whorl_ratio_mean']:.3f}±{b['half_whorl_ratio_sd']:.3f}, r̃={b['r_median']:.3f}")
-    ax.set_xlabel("half-whorl stage k")
-    ax.set_ylabel("test diameter D_k / D_1 (log scale)")
-    ax.set_title(f"C  Shi (2021) Dryad fusulinids: {an['pooled']['n_specimens']} specimens, {an['pooled']['n_outlines']} half-whorl outlines — geometric succession", fontsize=9)
-    ax.legend(fontsize=6.5, loc="upper left")
+            axD.plot([], [], color=GENUS_COLOR[g],
+                     label=f"{g} (n={b['n_specimens']}): ρ½={b['half_whorl_ratio_mean']:.3f} [{b['half_whorl_ratio_ci95'][0]:.3f},{b['half_whorl_ratio_ci95'][1]:.3f}], r̃={b['r_median']:.3f}")
+    axD.set_xlabel("half-whorl stage k")
+    axD.set_ylabel("test diameter D_k / D_1 (log)")
+    po = an["pooled"]
+    axD.set_title(f"D  Shi (2021) Dryad fusulinids, {po['n_specimens']} specimens / {po['n_outlines']} half-whorl outlines: geometric succession\n"
+                  f"median r={po['r_median']:.3f}; BIC geometric > arithmetic in {po['frac_geometric_beats_arithmetic']:.0%}; median rel. RMSE {po['rel_rmse_median']:.1%}; KS(ln-resid) p={po['ks_log_resid_p']:.1e}", fontsize=8.5)
+    axD.legend(fontsize=6.5, loc="upper left")
 
-    # Row 1 right: per-specimen ratio distribution by genus
-    ax = fig.add_subplot(gs[1, 3])
+    # E: per-specimen ratio by genus with bootstrap CI + MC gap test
+    axE = fig.add_subplot(gs[1, 2])
     for i, g in enumerate(GENUS_ORDER):
         rows = [v["fit_D"]["rho"] for v in an["per_specimen"].values() if v["genus"] == g]
         if not rows:
             continue
-        rng = np.random.default_rng(SEED + i)
-        ax.scatter(i + rng.uniform(-0.18, 0.18, len(rows)), rows, s=12, color=GENUS_COLOR[g], alpha=0.75)
-        ax.plot([i - 0.3, i + 0.3], [np.mean(rows)] * 2, color="k", lw=1.5)
-    ax.axhline(THOMPSON_FUSULINA_HALF_WHORL_RATIO, color="k", ls="--", lw=1, label="Thompson 1.225 (Fusulina)")
-    ax.axhline(math.sqrt(THOMPSON_TRILOCULINA_RATIO), color="gray", ls=":", lw=1, label="√1.323 (Triloculina per chamber → half-whorl equiv.)")
-    ax.set_xticks(range(len(GENUS_ORDER)))
-    ax.set_xticklabels([g[:6] + "." for g in GENUS_ORDER], fontsize=7)
-    ax.set_ylabel("fitted half-whorl ratio ρ½")
-    ax.set_title("D  Per-specimen ratio by genus\n(continuity of the series)", fontsize=9)
-    ax.legend(fontsize=6)
+        jit = np.random.default_rng(SEED + i).uniform(-0.18, 0.18, len(rows))
+        axE.scatter(i + jit, rows, s=12, color=GENUS_COLOR[g], alpha=0.75)
+        ci = an["by_genus"][g]["half_whorl_ratio_ci95"]
+        axE.plot([i, i], ci, color="k", lw=2.5)
+        axE.plot([i - 0.3, i + 0.3], [np.mean(rows)] * 2, color="k", lw=1.5)
+    axE.axhline(THOMPSON_FUSULINA_HALF_WHORL_RATIO, color="k", ls="--", lw=1, label="Thompson 1.225 (Fusulina)")
+    axE.set_xticks(range(len(GENUS_ORDER)))
+    axE.set_xticklabels([g[:6] + "." for g in GENUS_ORDER], fontsize=7)
+    axE.set_ylabel("fitted half-whorl ratio ρ½ (bars: bootstrap 95 % CI of mean)")
+    axE.set_title(f"E  Continuity of the genus series\nMC gap test p={po['rho_gap_mc_p']:.2f} (gap {po['rho_interior_largest_gap']:.4f} vs null median {po['rho_gap_mc_null_median']:.4f})", fontsize=8)
+    axE.legend(fontsize=6)
 
-    # Row 2 left: specimen image + model overlay
-    ax = fig.add_subplot(gs[2, 0])
-    img_path = DATA_DIR / "fusulinid_axial_thin_section_commons_NEON.jpg"
-    if img_path.exists():
-        im = Image.open(img_path).convert("L")
-        ax.imshow(im, cmap="gray")
-        ax.set_title("E  Real fusulinid axial section\n(Commons File:Fusulinid.jpg, CC BY-SA 2.5, NEON)", fontsize=8)
-    ax.set_xticks([])
-    ax.set_yticks([])
-
-    # Row 2 middle: a Dryad specimen's stage outlines (Triticites) vs model whorls
-    ax = fig.add_subplot(gs[2, 1])
-    code = "TNO" if "TNO" in spec else sorted(c for c in spec if c.startswith("T"))[0]
-    for k in sorted(spec[code]):
-        P = spec[code][k]
-        P = np.vstack([P, P[:1]])
-        ax.plot(P[:, 0], -P[:, 1], "-", color=GENUS_COLOR["Triticites"], lw=0.8, alpha=0.4 + 0.6 * k / max(spec[code]))
-    ax.set_aspect("equal")
-    ax.set_xticks([])
-    ax.set_yticks([])
-    v = an["per_specimen"][code]
-    ax.set_title(f"F  Dryad specimen {code} ({v['genus']}): {v['n_stages']} half-whorl outlines\nρ½={v['fit_D']['rho']:.3f}, r={v['fit_D']['r']:.4f}, ratio CV={v['fit_D']['ratio_cv']:.3f}", fontsize=8)
-
-    # Row 2 right: successive ratios vs stage by genus (constancy test)
-    ax = fig.add_subplot(gs[2, 2:4])
+    # F: ratio vs stage by genus (drift test)
+    axF = fig.add_subplot(gs[1, 3])
     for g in GENUS_ORDER:
         rows = [v for v in an["per_specimen"].values() if v["genus"] == g]
         if not rows:
@@ -457,28 +828,95 @@ def render_comparison(metrics: dict, spec: dict, out_png: Path) -> None:
         mat = np.full((len(rows), maxk), np.nan)
         for i, v in enumerate(rows):
             mat[i, :len(v["fit_D"]["ratios"])] = v["fit_D"]["ratios"]
-        mean = np.nanmean(mat, 0)
-        cnt = np.sum(~np.isnan(mat), 0)
+        mean, cnt = np.nanmean(mat, 0), np.sum(~np.isnan(mat), 0)
         ok = cnt >= 3
-        ax.plot(np.arange(1, maxk + 1)[ok], mean[ok], "o-", color=GENUS_COLOR[g], ms=3, lw=1.2, label=g)
-    ax.axhline(THOMPSON_FUSULINA_HALF_WHORL_RATIO, color="k", ls="--", lw=1)
-    ax.set_xlabel("half-whorl step k → k+1")
-    ax.set_ylabel("mean ratio D_{k+1}/D_k")
-    ax.set_title("G  Is the ratio constant through ontogeny?  (genus means; dashed = Thompson 1.225)", fontsize=9)
-    ax.legend(fontsize=7, ncol=5)
+        b = an["by_genus"][g]
+        axF.plot(np.arange(1, maxk + 1)[ok], mean[ok], "o-", color=GENUS_COLOR[g], ms=3, lw=1.2,
+                 label=f"{g[:7]}. drift {b['ratio_drift_thirds']:.0%}, KW p={b['ratio_drift_kruskal_p']:.1e}")
+    axF.axhline(THOMPSON_FUSULINA_HALF_WHORL_RATIO, color="k", ls="--", lw=1)
+    axF.axhspan(THOMPSON_FUSULINA_HALF_WHORL_RATIO * 0.95, THOMPSON_FUSULINA_HALF_WHORL_RATIO * 1.05, color="k", alpha=0.06)
+    axF.set_xlabel("half-whorl step k → k+1")
+    axF.set_ylabel("mean ratio D_{k+1}/D_k")
+    axF.set_title("F  Constancy through ontogeny (genus means)\nearly/mid/late-third drift (T2 limit 10 %)", fontsize=8)
+    axF.legend(fontsize=6)
 
+    # G: CV on the fusulinid thin section
+    axG = fig.add_subplot(gs[2, 0])
+    im = Image.open(SPECIMEN_IMG).convert("L")
+    axG.imshow(im, cmap="gray")
+    cx, cy = cv["center_xy"]
+    for th, col in (("90", "#ff3030"), ("270", "#30a0ff")):
+        for r in cv["directions"][th]["radii_px"]:
+            yy = cy - r if th == "90" else cy + r
+            axG.plot([cx - 14, cx + 14], [yy, yy], color=col, lw=1.6)
+    axG.plot([cx], [cy], "o", color="#30ff30", ms=4)
+    axG.set_xticks([])
+    axG.set_yticks([])
+    axG.set_title(f"G  Real fusulinid axial section (Commons, CC BY-SA 2.5, NEON)\nCV whorl walls: {cv['joint']['n_walls']} detected along minor axis", fontsize=8)
+
+    # H: CV radial profiles + log fit
+    axH = fig.add_subplot(gs[2, 1])
+    rs = np.array(cv["radii_axis"])
+    for th, col, off in (("90", "#ff3030", 0.0), ("270", "#30a0ff", 0.5)):
+        d = cv["directions"][th]
+        axH.plot(rs, np.array(d["profile"]) + off, color=col, lw=0.8, label=f"{'up' if th == '90' else 'down'}: W={d['whorl_ratio_fit']:.2f}" if d["whorl_ratio_fit"] else th)
+        for r in d["radii_px"]:
+            axH.axvline(r, color=col, lw=0.5, alpha=0.5)
+    axH.set_xlabel("radius from proloculus (px)")
+    axH.set_ylabel("sector-median intensity (down offset +0.5)")
+    j = cv["joint"]
+    axH.set_title(f"H  Whorl-wall radii: joint fit W={j['whorl_ratio']:.2f} (ρ½={j['half_whorl_ratio']:.3f}, α={j['alpha_deg']:.1f}°, r={j['r']:.3f})\n"
+                  f"sector sensitivity W={metrics['cv_sensitivity']['whorl_ratio_mean']:.2f}±{metrics['cv_sensitivity']['whorl_ratio_sd']:.2f}; Thompson 1.5; Dryad Triticites {an['by_genus']['Triticites']['whorl_ratio_mean']:.2f}", fontsize=7.5)
+    axH.legend(fontsize=6, loc="upper right")
+
+    # I: Thompson's own tables + CV radii on one log plot
+    axI = fig.add_subplot(gs[2, 2])
+    for label, ser, mk in [("von Möller F. cylindrica half-whorls (p.593)", VON_MOLLER_F_CYLINDRICA_HALF_WHORLS_MM, "o"),
+                           ("von Möller F. böcki whorls (p.593)", VON_MOLLER_F_BOECKI_WHORLS_MM, "^"),
+                           ("van Iterson Triloculina chambers (p.595)", np.array(VAN_ITERSON_TRILOCULINA_CHAMBERS_UM) / 1000.0, "s")]:
+        f = fit_geometric(ser)
+        kk = np.arange(len(ser))
+        axI.semilogy(kk + 1, np.asarray(ser) / ser[0], mk, ms=4, label=f"{label}: ρ={f['rho']:.3f}, r={f['r']:.4f}")
+        axI.semilogy(kk + 1, f["rho"] ** kk, "-", color="gray", lw=0.7)
+    rr = np.array(cv["directions"]["90"]["radii_px"])
+    axI.semilogy(np.arange(1, len(rr) + 1), rr / rr[0], "x", color="#ff3030", ms=6, label=f"CV walls (thin section, up): W={cv['directions']['90']['whorl_ratio_fit']:.2f}")
+    axI.set_xlabel("whorl / half-whorl / chamber number")
+    axI.set_ylabel("size / first (log)")
+    axI.set_title("I  Thompson's printed series refitted + CV whorls", fontsize=8.5)
+    axI.legend(fontsize=6, loc="upper left")
+
+    # J: negative controls + GOF table
+    axJ = fig.add_subplot(gs[2, 3])
+    axJ.axis("off")
+    nc = metrics["negative_controls"]
+    lines = ["J  Controls through the same verdict rules (R3)", ""]
+    lines.append(f"{'control':<28}{'r̃':>6}{'BIC%':>6}{'CV':>6}  T1 T2 T3 T4  verdict")
+    for name, rres in nc.items():
+        tp = rres["tests_pass"]
+        lines.append(f"{name[:27]:<28}{rres['r_median']:>6.3f}{rres['frac_geometric_beats_arithmetic']:>6.2f}{rres['ratio_cv_median']:>6.3f}  "
+                     + " ".join("✓ " if tp[k] else "✗ " for k in ("T1_geometric_succession", "T2_near_constant_ratio", "T3_fusulina_ratio_1_225", "T4_continuous_series"))
+                     + f" {rres['verdict']}")
     vd = metrics["verdict"]
-    fig.text(0.5, 0.02, f"Verdict (pre-registered rules T1-T4): {vd['verdict'].upper()} — {vd['n_pass']}/4 tests pass.  "
-             f"Thompson (1917) T1917-029 vs Shi (2021) Dryad doi:10.5061/dryad.sn02v6x26", ha="center", fontsize=10,
-             bbox=dict(facecolor="#f4f1ea", edgecolor="k"))
+    tp = {k: v["pass"] for k, v in vd["tests"].items()}
+    lines.append(f"{'REAL Dryad data':<28}{po['r_median']:>6.3f}{po['frac_geometric_beats_arithmetic']:>6.2f}{po['ratio_cv_median']:>6.3f}  "
+                 + " ".join("✓ " if tp[k] else "✗ " for k in ("T1_geometric_succession", "T2_near_constant_ratio", "T3_fusulina_ratio_1_225", "T4_continuous_series"))
+                 + f" {vd['verdict'].upper()}")
+    lines += ["", f"GOF: KS of standardized ln-residuals vs N(0,1): D={po['ks_log_resid_D']:.3f}, p={po['ks_log_resid_p']:.2g} (n={po['ks_n_resid']})",
+              f"median relative RMSE of the geometric fit: {po['rel_rmse_median']:.1%}",
+              f"T2 genera with >10 % ontogenetic drift: {', '.join(vd['tests']['T2_near_constant_ratio']['value']['genera_failing_drift']) or 'none'}"]
+    axJ.text(-0.08, 1.0, "\n".join(lines), family="monospace", fontsize=6.0, va="top", ha="left", transform=axJ.transAxes)
+
+    fig.suptitle("Thompson (1917) T1917-029 — logarithmic-spiral chamber succession with constant ratio, and the continuous series of genera  |  "
+                 f"VERDICT: {vd['verdict'].upper()} ({vd['n_pass']}/4 pre-registered tests)", fontsize=11, y=0.985)
     out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_png, dpi=110)
+    fig.savefig(out_png, dpi=100)
     plt.close(fig)
 
 
-def render_growth_gif(spec: dict, metrics: dict, out_gif: Path, n_frames: int = 16) -> None:
-    """Left: Thompson's chamber model growing (planispiral, Nummulina-like). Right: the Dryad
-    Triticites specimen's half-whorl outlines appearing in order with the geometric fit."""
+def render_growth_gif(spec: dict, metrics: dict, out_gif: Path, n_frames: int = 20) -> None:
+    """Left: Thompson's chamber model with data-fitted parameters growing next to Fig. 309.
+    Right: the Dryad Triticites specimen's half-whorl outlines appearing in order with the
+    running ratio and Thompson's 1.225 reference."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -487,46 +925,59 @@ def render_growth_gif(spec: dict, metrics: dict, out_gif: Path, n_frames: int = 
     code = "TNO" if "TNO" in spec else sorted(c for c in spec if c.startswith("T"))[0]
     v = metrics["dryad"]["per_specimen"][code]
     ks = sorted(spec[code])
-    W = v["fit_D"]["rho"] ** 2
-    full = chamber_series(30, W, 24.0, r0=1.0, a0=0.5)
+    p = fig309_model_params(metrics)
+    full = chamber_series(p["n"], p["W"], p["d_deg"], r0=1.0, a0=p["a0"])
+    lim = max(np.max(np.abs(full["x"]) + full["a"]), np.max(np.abs(full["y"]) + full["a"])) * 1.05
+    fig309 = Image.open(FIG309_IMG).convert("L") if FIG309_IMG.exists() else None
     frames = []
     for f in range(n_frames):
         n_ch = max(2, int(round(2 + (len(full["k"]) - 2) * f / (n_frames - 1))))
         n_st = max(1, int(round(1 + (len(ks) - 1) * f / (n_frames - 1))))
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=100)
+        fig, axes = plt.subplots(1, 3, figsize=(13, 4.8), dpi=100, gridspec_kw={"width_ratios": [1, 1.2, 1.2]})
         sub = {key: val[:n_ch] for key, val in full.items()}
-        _draw_shell(axes[0], sub, "#c9b89a", f"Thompson model: chamber {n_ch}/30, d=24°, W={W:.2f} per whorl (ρ={sub['rho'][0]:.3f}/chamber)")
-        lim = max(np.max(np.abs(full["x"]) + full["a"]), np.max(np.abs(full["y"]) + full["a"])) * 1.05
-        axes[0].set_xlim(-lim, lim)
-        axes[0].set_ylim(-lim, lim)
+        _draw_shell(axes[0], sub, "#c9b89a", f"Thompson model: chamber {n_ch}/{p['n']}\nd={p['d_deg']}°, W={p['W']:.2f}/whorl (ρ={sub['rho'][0]:.3f}/chamber)", lim=lim)
+        if fig309 is not None:
+            axes[1].imshow(fig309, cmap="gray")
+            axes[1].set_title("Thompson (1917) Fig. 309: Nummulina antiquior section\n(after von Möller; public domain)", fontsize=9)
+        axes[1].set_xticks([])
+        axes[1].set_yticks([])
         for k in ks[:n_st]:
             P = spec[code][k]
             P = np.vstack([P, P[:1]])
-            axes[1].plot(P[:, 0], -P[:, 1], "-", color=GENUS_COLOR["Triticites"], lw=1.0, alpha=0.5 + 0.5 * k / ks[-1])
+            axes[2].plot(P[:, 0], -P[:, 1], "-", color=GENUS_COLOR["Triticites"], lw=1.0, alpha=0.5 + 0.5 * k / ks[-1])
         allP = np.vstack([spec[code][k] for k in ks])
-        axes[1].set_xlim(allP[:, 0].min() - 20, allP[:, 0].max() + 20)
-        axes[1].set_ylim(-allP[:, 1].max() - 20, -allP[:, 1].min() + 20)
-        axes[1].set_aspect("equal")
-        axes[1].set_xticks([])
-        axes[1].set_yticks([])
+        axes[2].set_xlim(allP[:, 0].min() - 10, allP[:, 0].max() + 10)
+        axes[2].set_ylim(-allP[:, 1].max() - 10, -allP[:, 1].min() + 10)
+        axes[2].set_aspect("equal")
+        axes[2].set_xticks([])
+        axes[2].set_yticks([])
         D = np.asarray(v["D"])[:n_st]
-        axes[1].set_title(f"Dryad {code} (Triticites): half-whorl stage {n_st}/{len(ks)}  D={D[-1]:.0f}px"
-                          + (f"  D_k/D_(k-1)={D[-1] / D[-2]:.3f}" if n_st > 1 else ""), fontsize=9)
+        axes[2].set_title(f"Dryad {code} (Triticites): half-whorl stage {n_st}/{len(ks)}  D={D[-1]:.0f}px"
+                          + (f"\nD_k/D_(k−1)={D[-1] / D[-2]:.3f}  (Thompson 1.225; fit ρ½={v['fit_D']['rho']:.3f})" if n_st > 1 else ""), fontsize=9)
         fig.suptitle("T1917-029 — chambers in logarithmic-spiral succession with constant ratio (Thompson 1917 Ch. XII)", fontsize=10)
         fig.tight_layout()
         fig.canvas.draw()
         frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[:, :, :3]).convert("P", palette=Image.ADAPTIVE))
         plt.close(fig)
     out_gif.parent.mkdir(parents=True, exist_ok=True)
-    frames[0].save(out_gif, save_all=True, append_images=frames[1:], duration=350, loop=0)
+    frames[0].save(out_gif, save_all=True, append_images=frames[1:], duration=300, loop=0)
 
 
 # --------------------------------------------------------------------------------------
-# 6. Metrics assembly, MorphoEval measurements, self-test
+# 7. Metrics assembly, MorphoEval measurements, self-test
 # --------------------------------------------------------------------------------------
-def compute_metrics() -> tuple[dict, dict]:
+def environment_stamp() -> dict:
+    import matplotlib
+    import PIL
+    import scipy
+    return {"python": platform.python_version(), "numpy": np.__version__, "scipy": scipy.__version__,
+            "matplotlib": matplotlib.__version__, "Pillow": PIL.__version__, "script_version": SCRIPT_VERSION, "seed": SEED}
+
+
+def compute_metrics(fast: bool = False) -> tuple[dict, dict]:
+    rng = np.random.default_rng(SEED)
     spec = load_dryad_outlines()
-    an = analyse_dryad(spec)
+    an = analyse_dryad(spec, n_boot=300 if fast else 2000, n_mc=500 if fast else 4000, rng=rng)
     thompson_tables = {
         "von_moller_F_cylindrica_whorls": fit_geometric(VON_MOLLER_F_CYLINDRICA_WHORLS_MM),
         "von_moller_F_boecki_whorls": fit_geometric(VON_MOLLER_F_BOECKI_WHORLS_MM),
@@ -534,7 +985,8 @@ def compute_metrics() -> tuple[dict, dict]:
         "van_iterson_Triloculina_chambers": fit_geometric(VAN_ITERSON_TRILOCULINA_CHAMBERS_UM),
     }
     for key in thompson_tables:
-        thompson_tables[key].pop("ratios", None)
+        for drop in ("ratios", "std_log_resid"):
+            thompson_tables[key].pop(drop, None)
     V = thompson_volume_series(1.0, 0.5, 8)
     model_checks = {
         "alpha_deg_for_W_1_5": alpha_from_whorl_ratio(1.5),
@@ -542,12 +994,24 @@ def compute_metrics() -> tuple[dict, dict]:
         "volume_ratio_constant_q_0_5": float(np.std(V[2:] / V[1:-1])),
         "volume_ratio_value_q_0_5": float(np.mean(V[2:] / V[1:-1])),
     }
-    slim = {code: {k: val for k, val in v.items() if k != "L"} for code, v in an["per_specimen"].items()}
+    ref = json.loads(REFERENCE_JSON.read_text()) if REFERENCE_JSON.exists() else {}
+    pin = ref.get("specimen_images", {}).get(SPECIMEN_IMG.name, {}).get("cv_pins", {}).get("proloculus_center_xy", [318, 243])
+    cv = cv_whorl_radii(SPECIMEN_IMG, center_xy=tuple(pin))
+    cv_sens = cv_sensitivity(SPECIMEN_IMG)
+    pin309 = ref.get("specimen_images", {}).get(FIG309_IMG.name, {}).get("cv_pins", {}).get("proloculus_center_xy", [546, 295])
+    cv309 = cv_fig309_whorls(FIG309_IMG, center_xy=tuple(pin309))
+    slim = {code: {k: val for k, val in v.items() if k not in ("L",)} for code, v in an["per_specimen"].items()}
+    for v in slim.values():
+        v["fit_D"] = {k: val for k, val in v["fit_D"].items() if k != "std_log_resid"}
+        v["fit_L"] = {k: val for k, val in v["fit_L"].items() if k not in ("std_log_resid", "ratios")}
     metrics = {
-        "claim_id": "T1917-029", "script_version": "v1-pass1", "seed": SEED,
+        "claim_id": "T1917-029", "script_version": SCRIPT_VERSION, "seed": SEED, "environment": environment_stamp(),
         "thompson_tables": thompson_tables, "model_checks": model_checks,
+        "parameter_sweep": parameter_sweep(),
         "dryad": {"per_specimen": slim, "by_genus": an["by_genus"], "pooled": an["pooled"]},
+        "cv_specimen": cv, "cv_sensitivity": cv_sens, "cv_fig309": cv309,
     }
+    metrics["negative_controls"] = negative_controls(spec, an["per_specimen"], rng=np.random.default_rng(SEED + 7))
     metrics["verdict"] = verdict_from_metrics(metrics)
     return metrics, spec
 
@@ -557,8 +1021,9 @@ def measure_morphoeval() -> list[dict]:
     if METRICS_JSON.exists():
         m = json.loads(METRICS_JSON.read_text())
     else:
-        m, _ = compute_metrics()
-    bg, pooled, tt = m["dryad"]["by_genus"], m["dryad"]["pooled"], m["thompson_tables"]
+        m, _ = compute_metrics(fast=True)
+    bg, pooled, tt, cv = m["dryad"]["by_genus"], m["dryad"]["pooled"], m["thompson_tables"], m["cv_specimen"]
+    nc = m["negative_controls"]
 
     def M(name, value, unit, method, reference=None, source=None, note=None):
         d = {"name": name, "value": float(round(value, 4)), "unit": unit, "method": method, "derived_from": "script"}
@@ -570,32 +1035,50 @@ def measure_morphoeval() -> list[dict]:
             d["note"] = note
         return d
 
+    t = bg["Triticites"]
     out = [
-        M("Triticites half-whorl growth ratio (mean of per-specimen log-linear fits)", bg["Triticites"]["half_whorl_ratio_mean"], "ratio",
-          "slope of ln D_k on half-whorl index k per specimen, exp(slope), mean over Triticites specimens (Dryad doi:10.5061/dryad.sn02v6x26)",
+        M("Triticites half-whorl growth ratio (mean of per-specimen log-linear fits)", t["half_whorl_ratio_mean"], "ratio",
+          "slope of ln D_k on half-whorl index k per specimen, exp(slope), mean over 40 Triticites specimens (Dryad doi:10.5061/dryad.sn02v6x26); bootstrap 95 % CI",
           reference=THOMPSON_FUSULINA_HALF_WHORL_RATIO, source="Thompson 1917 p. 593 (von Moller 1878 Fusulina, 0.088 log10 per half-whorl)",
-          note=f"sd {bg['Triticites']['half_whorl_ratio_sd']:.3f}; whorl ratio {bg['Triticites']['whorl_ratio_mean']:.3f} vs Thompson 1.5"),
+          note=f"sd {t['half_whorl_ratio_sd']:.3f}; 95 % CI [{t['half_whorl_ratio_ci95'][0]:.3f}, {t['half_whorl_ratio_ci95'][1]:.3f}]; whorl ratio {t['whorl_ratio_mean']:.3f} vs Thompson 1.5"),
         M("Pooled median Pearson r of ln D_k vs k (geometric succession)", pooled["r_median"], "r",
           "per-specimen Pearson correlation of ln(test diameter) with half-whorl stage, median over 106 specimens",
           reference=1.0, source="Thompson 1917 p. 593: 'successive whorls very nearly in the ratio 1:1.5' (exact log-linearity)"),
+        M("KS p-value of standardized ln-residuals vs N(0,1)", pooled["ks_log_resid_p"], "p-value",
+          f"two-sided Kolmogorov-Smirnov test on {pooled['ks_n_resid']} pooled standardized residuals of the log-linear fits (D = {pooled['ks_log_resid_D']:.3f})"),
+        M("Pooled median relative RMSE of the geometric fit", pooled["rel_rmse_median"], "fraction",
+          "sqrt(mean(((D - D_hat)/D)^2)) per specimen, median"),
         M("Pooled median CV of successive half-whorl ratios", pooled["ratio_cv_median"], "CV",
           "std/mean of D_{k+1}/D_k within specimen, median over specimens — dispersion of the 'constant' ratio",
           note="Thompson p. 595: ratio 'not strictly constant ... small secondary fluctuation'"),
+        M("Triticites ontogenetic ratio drift (early/mid/late thirds)", t["ratio_drift_thirds"], "fraction",
+          f"(max - min)/mean of the three stage-third mean ratios pooled over the genus; Kruskal-Wallis p = {t['ratio_drift_kruskal_p']:.2g}",
+          reference=0.10, source="pre-registered T2 limit (Thompson's 'small secondary fluctuation')"),
         M("Fraction of specimens where geometric beats arithmetic growth (BIC)", pooled["frac_geometric_beats_arithmetic"], "fraction",
-          "BIC of log-linear vs linear-in-k model on ln D residuals; alternative-model control"),
-        M("Pooled half-whorl ratio range across 5 genera", pooled["half_whorl_ratio_max"] - pooled["half_whorl_ratio_min"], "ratio",
-          f"max-min of per-specimen rho; largest gap/median gap = {pooled['rho_gap_ratio']:.2f} (continuity of the series vs gaps)"),
+          "BIC of log-linear vs linear-in-k model on ln D residuals; alternative-model control (arithmetic-growth negative control: "
+          f"{nc['arithmetic_growth_matched']['frac_geometric_beats_arithmetic']:.2f})"),
+        M("Monte-Carlo p of the largest interior gap in the pooled ratio distribution", pooled["rho_gap_mc_p"], "p-value",
+          f"{pooled['rho_gap_mc_n']} normal-null simulations of n=106 ratios; observed gap {pooled['rho_interior_largest_gap']:.4f} vs null median {pooled['rho_gap_mc_null_median']:.4f} (continuity of the genus series)"),
+        M("CV whorl ratio from the fusulinid thin section (joint up/down fit)", cv["joint"]["whorl_ratio"], "ratio",
+          f"dark whorl walls detected on sector-median radial profiles ({cv['joint']['n_walls']} walls), ln r vs whorl index with half-whorl offset; "
+          f"sector-width sensitivity sd {m['cv_sensitivity']['whorl_ratio_sd']:.3f}",
+          reference=THOMPSON_FUSULINA_WHORL_RATIO, source="Thompson 1917 p. 593 (von Moller Fusulina whorl ratio 1.5)",
+          note=f"r = {cv['joint']['r']:.3f}; Dryad Triticites whorl ratio {t['whorl_ratio_mean']:.3f}"),
+        M("CV whorl ratio of Thompson's Fig. 309 Nummulina antiquior (engraving)", m["cv_fig309"]["whorl_ratio_geomean"], "ratio",
+          f"geometric mean of {m['cv_fig309']['n_ratios']} consecutive bright-wall radius ratios in 8 radial sectors (sd {m['cv_fig309']['whorl_ratio_sd_across_ratios']:.3f}); coarse: oblique shaded engraving",
+          note=f"alpha = {m['cv_fig309']['alpha_deg']:.1f} deg; differs from the fusulinid 1.5 as Thompson's 'genera differ in constant angle' (p. 601) requires"),
         M("von Moller F. cylindrica half-whorl ratio refit", tt["von_moller_F_cylindrica_half_whorls"]["rho"], "ratio",
-          "log-linear refit of the 8 breadths Thompson prints on p. 593",
-          reference=THOMPSON_FUSULINA_HALF_WHORL_RATIO, source="Thompson 1917 p. 593"),
+          "log-linear refit of the 8 breadths Thompson prints on p. 593", reference=THOMPSON_FUSULINA_HALF_WHORL_RATIO, source="Thompson 1917 p. 593"),
         M("van Iterson Triloculina chamber ratio refit", tt["van_iterson_Triloculina_chambers"]["rho"], "ratio",
-          "log-linear refit of chambers 2-10 breadths Thompson prints on p. 595",
-          reference=THOMPSON_TRILOCULINA_RATIO, source="Thompson 1917 p. 595"),
+          "log-linear refit of chambers 2-10 breadths Thompson prints on p. 595", reference=THOMPSON_TRILOCULINA_RATIO, source="Thompson 1917 p. 595"),
+        M("Shuffled-stage negative control: median r", nc["shuffled_stage_order"]["r_median"], "r",
+          "verdict rules re-run on within-specimen shuffled stage order (null control; T1 must fail)"),
     ]
     for g in GENUS_ORDER:
         if g in bg and g != "Triticites":
             out.append(M(f"{g} half-whorl growth ratio (mean)", bg[g]["half_whorl_ratio_mean"], "ratio",
-                         "as above, per genus", note=f"sd {bg[g]['half_whorl_ratio_sd']:.3f}; ratio-vs-stage trend {bg[g]['ratio_trend_mean']:+.4f}/stage"))
+                         "as above, per genus; bootstrap 95 % CI",
+                         note=f"CI [{bg[g]['half_whorl_ratio_ci95'][0]:.3f}, {bg[g]['half_whorl_ratio_ci95'][1]:.3f}]; drift {bg[g]['ratio_drift_thirds']:.1%} (KW p={bg[g]['ratio_drift_kruskal_p']:.1e})"))
     return out
 
 
@@ -608,7 +1091,7 @@ def self_test() -> int:
     Lk = s["a"]
     assert np.allclose(Lk[2:], s["rho"][0] ** 2 * Lk[:-2])
     assert np.allclose(Lk[1:] * Lk[3], Lk[:-1] * Lk[4])
-    # E5: 12 chambers of 30 deg make one whorl of ratio W
+    # Lean Theorem 4: 12 chambers of 30 deg make one whorl of ratio W
     assert abs(Lk[12 - 1] / Lk[0] * s["rho"][0] - 1.5) < 1e-9
     # Lean Theorem 2 numerically: V_{n+1}/V_n = 1 + q for n >= 1
     V = thompson_volume_series(2.0, 0.3, 10)
@@ -617,18 +1100,21 @@ def self_test() -> int:
     f = fit_geometric(VON_MOLLER_F_CYLINDRICA_HALF_WHORLS_MM)
     assert abs(f["log10_slope"] - 0.088) < 0.002, f["log10_slope"]
     assert abs(f["rho"] - 1.225) < 0.01 and abs(f["rho"] ** 2 - 1.5) < 0.03
-    # Thompson's stated ratios reproduce
     assert abs(fit_geometric(VON_MOLLER_F_CYLINDRICA_WHORLS_MM)["rho"] - 1.5) < 0.02
     assert abs(fit_geometric(VON_MOLLER_F_BOECKI_WHORLS_MM)["rho"] - 1.5) < 0.02
     assert abs((319 / 34) ** (1 / 8) - THOMPSON_TRILOCULINA_RATIO) < 0.001
-    # exact geometric series recovered exactly; arithmetic alternative loses
     g = fit_geometric(3.0 * 1.3 ** np.arange(9))
-    assert abs(g["rho"] - 1.3) < 1e-9 and g["ratio_cv"] < 1e-9 and g["delta_bic_arith_minus_geo"] > 0
-    # Nodosarian limit: straight line; Orbitolitid limit: constant size
+    assert abs(g["rho"] - 1.3) < 1e-9 and g["ratio_cv"] < 1e-9 and g["delta_bic_arith_minus_geo"] > 0 and g["drift_thirds"] < 1e-9
+    # Lean Theorem 5 limits: Nodosarian straight line; Orbitolitid constant size; monotone in W
     nod = chamber_series(6, 1.3, 0.0)
     assert np.allclose(nod["y"], 0) and np.all(np.diff(nod["x"]) > 0)
     orb = chamber_series(6, 1.0, 20.0)
     assert np.allclose(orb["a"], orb["a"][0])
+    assert np.all(chamber_series(8, 1.6, 30.0)["a"] >= chamber_series(8, 1.4, 30.0)["a"])
+    # R2: sweep monotonic controls
+    sw = parameter_sweep()
+    assert all(sw["monotonic_checks"].values()), sw["monotonic_checks"]
+    assert sw["translation_line"][-1]["helicoid_aspect_height_over_width"] > sw["translation_line"][0]["helicoid_aspect_height_over_width"]
     # Dryad loader
     spec = load_dryad_outlines()
     assert len(spec) == 106, len(spec)
@@ -637,7 +1123,25 @@ def self_test() -> int:
     assert {genus_of(c) for c in spec} == set(GENUS_ORDER)
     dims = specimen_axis_dims(spec["TNO"])
     assert np.all(np.diff(dims["D"]) > 0), "diameter must increase monotonically for TNO"
-    print("self-test OK: model identities (Lean Thm 1-5), Thompson p.593/595 refits, Dryad loader (106 specimens / 1396 outlines)")
+    assert specimen_axis_dims(spec["TPJ"])["scale_break"] and specimen_axis_dims(spec["TPJ"])["n_stages_dropped"] == 5
+    # R8: headline regression (fast settings)
+    an = analyse_dryad(spec, n_boot=200, n_mc=300, rng=np.random.default_rng(SEED))
+    assert an["pooled"]["n_specimens"] == 106 and an["pooled"]["n_specimens_with_scale_break"] == 14
+    assert 1.22 <= an["by_genus"]["Triticites"]["half_whorl_ratio_mean"] <= 1.26, an["by_genus"]["Triticites"]["half_whorl_ratio_mean"]
+    assert an["pooled"]["r_median"] > 0.99 and an["pooled"]["frac_geometric_beats_arithmetic"] == 1.0
+    # R1: CV on the thin section finds >= 5 walls per side and a whorl ratio in the fusulinid range
+    cv = cv_whorl_radii(SPECIMEN_IMG)
+    assert all(len(cv["directions"][k]["radii_px"]) >= 5 for k in ("90", "270")), cv["directions"]
+    assert 1.2 < cv["joint"]["whorl_ratio"] < 2.0, cv["joint"]
+    c309 = cv_fig309_whorls(FIG309_IMG)
+    assert c309["n_ratios"] >= 8 and 1.3 < c309["whorl_ratio_geomean"] < 2.2, c309
+    # R3: controls behave as designed (fast)
+    nc = negative_controls(spec, an["per_specimen"], rng=np.random.default_rng(SEED + 7))
+    assert not nc["shuffled_stage_order"]["tests_pass"]["T1_geometric_succession"]
+    assert not nc["arithmetic_growth_matched"]["tests_pass"]["T1_geometric_succession"]
+    assert nc["exact_geometric_1_225"]["n_pass"] == 4, nc["exact_geometric_1_225"]
+    print("self-test OK: model identities (Lean Thm 1-5), sweep monotonicity, Thompson p.593/595 refits, Dryad loader "
+          "(106 specimens / 1396 outlines, 14 scale breaks), headline regression, CV wall detection, controls")
     return 0
 
 
@@ -645,10 +1149,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--no-gif", action="store_true")
+    ap.add_argument("--fast", action="store_true", help="fewer bootstrap / Monte-Carlo draws")
     args = ap.parse_args(argv)
     if args.self_test:
         return self_test()
-    metrics, spec = compute_metrics()
+    metrics, spec = compute_metrics(fast=args.fast)
     METRICS_JSON.write_text(json.dumps(metrics, indent=1))
     render_comparison(metrics, spec, MEDIA_DIR / f"{SLUG}_comparison.png")
     if not args.no_gif:
@@ -656,35 +1161,67 @@ def main(argv=None) -> int:
     ref = json.loads(REFERENCE_JSON.read_text()) if REFERENCE_JSON.exists() else {}
     ds = ref.get("dataset", {})
     vd = metrics["verdict"]
-    bg, pooled = metrics["dryad"]["by_genus"], metrics["dryad"]["pooled"]
+    bg, pooled, cv = metrics["dryad"]["by_genus"], metrics["dryad"]["pooled"], metrics["cv_specimen"]
+    t = bg["Triticites"]
+    failing = vd["tests"]["T2_near_constant_ratio"]["value"]["genera_failing_drift"]
     result = {
         "claim_id": "T1917-029", "date_made": "1917",
         "claim": "Foraminiferal shells are generated by chambers added in logarithmic-spiral succession with (near-)constant growth ratios, and the genera form a continuous geometric series transformable into one another.",
         "dataset": {"name": ds.get("name"), "doi": ds.get("doi"), "license": ds.get("license"),
                     "sha256": {k: v["sha256"] for k, v in ds.get("files", {}).items()},
-                    "match": "fusulinid foraminifera half-whorl outlines — same taxon class and variable as Thompson's von Moller Fusulina exemplar (p. 593); whorl-level, not septal-chamber-level"},
-        "verdict": vd["verdict"], "tests": vd["tests"],
+                    "match": "fusulinid foraminifera half-whorl outlines — same taxon class and variable as Thompson's von Moller Fusulina exemplar (p. 593); whorl-level, not septal-chamber-level",
+                    "specimen_image": {"file": SPECIMEN_IMG.name, "license": "CC BY-SA 2.5 (Wikimedia Commons File:Fusulinid.jpg, NEON)",
+                                       "sha256": ref.get("specimen_images", {}).get(SPECIMEN_IMG.name, {}).get("sha256")}},
+        "verdict": vd["verdict"], "n_tests_passed": f"{vd['n_pass']}/4", "tests": vd["tests"],
+        "interpretation": (
+            "Geometric (logarithmic-spiral) succession holds in every one of 106 fusulinid specimens (median r 0.99+, BIC prefers "
+            "geometric over arithmetic growth in 100 %), and Thompson's exemplar group reproduces his number: Triticites half-whorl ratio "
+            f"{t['half_whorl_ratio_mean']:.3f} (95 % CI {t['half_whorl_ratio_ci95'][0]:.3f}-{t['half_whorl_ratio_ci95'][1]:.3f}) vs von Moller/Thompson 1.225, "
+            f"whorl ratio {t['whorl_ratio_mean']:.2f} vs 1.5; the real thin section gives W = {cv['joint']['whorl_ratio']:.2f} by computer vision. "
+            "The 'near-constant ratio' clause fails systematically for the inflated pseudoschwagerine genera "
+            f"({', '.join(failing) if failing else 'none'}): their ratio rises to ~1.45 in mid-ontogeny and falls to ~1.1, a heterochronic inflation "
+            "(Shi 2021) far beyond Thompson's 'small secondary fluctuation'. The genus series is continuous in ratio "
+            f"(Monte-Carlo gap p = {pooled['rho_gap_mc_p']:.2f}). Hence: supported for the geometric-succession core and for Thompson's own Fusulina "
+            "numbers; refuted as a universal constant-ratio law — overall MIXED."
+        ) if vd["verdict"] == "mixed" else "All four pre-registered tests pass." if vd["verdict"] == "supported" else "Fewer than two pre-registered tests pass.",
         "headline_numbers": {
             "n_specimens": pooled["n_specimens"], "n_half_whorl_outlines": pooled["n_outlines"],
-            "triticites_half_whorl_ratio": round(bg["Triticites"]["half_whorl_ratio_mean"], 4),
-            "triticites_whorl_ratio": round(bg["Triticites"]["whorl_ratio_mean"], 4),
+            "n_specimens_with_scale_break": pooled["n_specimens_with_scale_break"],
+            "triticites_half_whorl_ratio": round(t["half_whorl_ratio_mean"], 4),
+            "triticites_half_whorl_ratio_ci95": [round(x, 4) for x in t["half_whorl_ratio_ci95"]],
+            "triticites_whorl_ratio": round(t["whorl_ratio_mean"], 4),
+            "triticites_alpha_deg": round(t["alpha_deg_mean"], 2),
             "thompson_von_moller_half_whorl_ratio": THOMPSON_FUSULINA_HALF_WHORL_RATIO,
             "thompson_von_moller_whorl_ratio": THOMPSON_FUSULINA_WHORL_RATIO,
+            "thompson_alpha_deg_for_1_5": round(alpha_from_whorl_ratio(1.5), 2),
             "pooled_median_r": round(pooled["r_median"], 4),
+            "pooled_median_rel_rmse": round(pooled["rel_rmse_median"], 4),
+            "ks_log_resid_p": round(pooled["ks_log_resid_p"], 4),
             "pooled_median_ratio_cv": round(pooled["ratio_cv_median"], 4),
             "frac_geometric_beats_arithmetic": round(pooled["frac_geometric_beats_arithmetic"], 3),
             "genus_half_whorl_ratio_means": {g: round(bg[g]["half_whorl_ratio_mean"], 4) for g in bg},
-            "rho_gap_ratio_continuity": round(pooled["rho_gap_ratio"], 3),
-            "n_specimens_with_scale_break": pooled["n_specimens_with_scale_break"],
+            "genus_ratio_drift_thirds": {g: round(bg[g]["ratio_drift_thirds"], 4) for g in bg},
+            "genus_drift_kruskal_p": {g: bg[g]["ratio_drift_kruskal_p"] for g in bg},
+            "rho_gap_mc_p_continuity": round(pooled["rho_gap_mc_p"], 4),
+            "cv_thin_section_whorl_ratio": round(cv["joint"]["whorl_ratio"], 4),
+            "cv_thin_section_whorl_ratio_sensitivity_sd": round(metrics["cv_sensitivity"]["whorl_ratio_sd"], 4),
+            "cv_thin_section_n_walls": cv["joint"]["n_walls"],
+            "cv_fig309_nummulina_whorl_ratio": round(metrics["cv_fig309"]["whorl_ratio_geomean"], 4),
+            "cv_fig309_nummulina_whorl_ratio_sd": round(metrics["cv_fig309"]["whorl_ratio_sd_across_ratios"], 4),
+            "cv_fig309_n_ratios": metrics["cv_fig309"]["n_ratios"],
+            "negative_controls": {k: {"verdict": v["verdict"], "n_pass": v["n_pass"]} for k, v in metrics["negative_controls"].items()},
         },
         "script": "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py",
         "figure": f"docs/media/{SLUG}_comparison.png",
         "animation": f"docs/media/{SLUG}_growth.gif",
         "metrics": "datasets/thompson_1917/t1917-029/t1917_029_metrics.json",
+        "lean": "morphoeval/lean/loops/Thompson1917_T1917_029.lean",
         "script_version": metrics["script_version"],
+        "environment": metrics["environment"],
     }
     RESULT_JSON.write_text(json.dumps(result, indent=1))
-    print(json.dumps({"verdict": result["verdict"], "headline_numbers": result["headline_numbers"]}, indent=1))
+    print(json.dumps({"verdict": result["verdict"], "n_tests_passed": result["n_tests_passed"],
+                      "headline_numbers": result["headline_numbers"]}, indent=1))
     return 0
 
 
