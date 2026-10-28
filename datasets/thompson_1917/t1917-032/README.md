@@ -45,7 +45,8 @@ All digests are pinned in the reference JSON and re-verified at runtime by
 
 1. Equiangular spiral `r = r0 exp(theta cot psi)`, curvature `kappa = sin(psi) / r`.
 2. Differential accretion `kappa = (v_max - v_min) / (w v_mean) = Delta / w`; with constant width a
-   circle, with gnomonic widening `w = c r` a log spiral with `sin psi = Delta / c`.
+   circle, with gnomonic widening `w = c_r r` (equivalently `w = c_s s` along the arc) a log spiral with
+   `sin psi = Delta / c_r`, i.e. `tan psi = Delta / c_s`.
 3. Screw accretion: bending `kappa` plus twist `tau` per unit arc gives a helix; with gnomonic
    scaling a conical log helico-spiral (Thompson's "curve of double curvature").
 4. St Venant torsion: uniform twist `tau` makes every surface fibre a helix with `tan phi = rho tau`
