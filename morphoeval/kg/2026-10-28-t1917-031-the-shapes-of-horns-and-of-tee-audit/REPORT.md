@@ -12,7 +12,7 @@ Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not 
 
 ### Thompson (1917) Ch. XIII — bovid horns as logarithmic spirals wound on a cone (Pass 1)  —  overall 53.5 (partially faithful)
 
-Fig. 320 outer edge (550 points, 278 deg sweep) fitted by a free-pole logarithmic spiral: alpha_proj = 85.9 deg, whorl ratio 1.57, Pearson r(ln rho, theta) = 0.91, RMSE 16.7 px (4.6 % of mean radius). Log spiral beats circle (delta-AIC 246) and Archimedean spiral (delta-AIC 12). Thompson's alpha = 75 deg (R = 5.4) is NOT reproduced by the projection (alpha_proj - 75 = +10.9 deg). The v1 verdict logic returns "refuted" because both the r >= 0.95 and the |alpha - 75| <= 5 deg criteria fail; that logic ignores the sin(beta) cot(alpha) degeneracy and is itself a Pass-1 defect. Overall 48.9/100.
+Fig. 320 outer edge (550 points, 278 deg sweep) fitted by a free-pole logarithmic spiral: alpha_proj = 85.9 deg, whorl ratio 1.57, Pearson r(ln rho, theta) = 0.91, RMSE 16.7 px (4.6 % of mean radius). Log spiral beats circle (delta-AIC 246) and Archimedean spiral (delta-AIC 12). Thompson's alpha = 75 deg (R = 5.4) is NOT reproduced by the projection (alpha_proj - 75 = +10.9 deg). The v1 verdict logic returns "refuted" because both the r >= 0.95 and the |alpha - 75| <= 5 deg criteria fail; that logic ignores the sin(beta) cot(alpha) degeneracy and is itself a Pass-1 defect. Overall 53.5/100.
 
 - **Model fidelity to source: 62** — E1-E3 are implemented exactly as Thompson states them (k = sin(beta) cot(alpha), R = e^(2 pi sin beta cot alpha), p. 558) and the gnomonic tube (E4) is rendered; the Lean module proves the whorl-ratio invariance, breadth law, projection non-identifiability and growth-velocity lemmas with 0 sorry. Deductions: the fit is done to a 2D projection with beta = 90 deg assumed when converting k to alpha, so the quantity compared to Thompson's 75 deg is alpha_proj, not alpha; E4 (breadth shares k) is formalised but not measured; E5 (velocity ratio) is only a rendering, not a fitted quantity.  
   evidence: `thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py` L70–117; `morphoeval/lean/loops/Thompson1917_T1917_031.lean` L32–101; `thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py` L444–473
@@ -49,7 +49,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 - `datasets/thompson_1917/t1917-031/t1917_031_metrics.json` — artifact_sha256 `0fd36968bffa49b2…`, 5,953 B, 
 - `datasets/thompson_1917/t1917-031/t1917_031_the_shapes_of_horns_and_of_tee_reference.json` — artifact_sha256 `64826ef38cca003b…`, 12,893 B, 
 - `docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png` — artifact_sha256 `32b7ee29bfb996ac…`, 406,769 B, 1760×990 px
-- `morphoeval/math_kg_loops/thompson1917-t1917-031.yaml` — artifact_sha256 `9c695b9a4114bace…`, 7,997 B, 
+- `morphoeval/math_kg_loops/thompson1917-t1917-031.yaml` — artifact_sha256 `e06d2058aaf605d5…`, 7,917 B, 
 
 | measurement | value | reference | method |
 |---|---:|---|---|
