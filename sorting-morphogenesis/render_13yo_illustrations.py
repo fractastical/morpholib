@@ -608,7 +608,7 @@ def render_fig7_final_scoreboard():
     ax.axis("off")
 
     fig.suptitle(
-        "77.6% on the seven claims in Ingressing Minds  —  not a score of his other work",
+        "Why Michael Levin Is 77.6% Right on Platonic Ingress",
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.962
     )
     ax.text(
