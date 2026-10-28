@@ -1,0 +1,114 @@
+# MorphoEval audit — Thompson (1917) T1917-028 (Pass 2 v2, supersedes Pass 1)
+#
+# Full pipeline: center refinement, 3-regime sweep, Archimedean ablation, beta CV, Lean YAML linkage.
+# Consensus ~72/100 — mixed Thompson verdict on specimen (log-spiral preferred over Archimedean; W_emp noisy).
+
+audit:
+  id: 2026-10-28-t1917-028-the-logarithmic-spiral-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-028-the-logarithmic-spiral-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 2)"
+    homepage: https://www.anthropic.com
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    note: "Pass 2: python3 thompson/claims/t1917-028_the-logarithmic-spiral.py (full mode)"
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), Ch. XI, Figs. 304-307"
+    url: https://archive.org/details/ongrowthform1917thom
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    doi: 10.2307/1301992
+
+simulations:
+  - id: thompson1917-t1917-028
+    name: "Thompson (1917) T1917-028 — Nautilus log-spiral & septal wall geometry (remediated)"
+    organism: "Nautilus pompilius (Wikimedia section, CC BY-SA 4.0)"
+    script: thompson/claims/t1917-028_the-logarithmic-spiral.py
+    output: docs/media/t1917_028_the_logarithmic_spiral_comparison.png
+    extra_outputs:
+      - docs/media/t1917_028_the_logarithmic_spiral_growth.gif
+      - datasets/thompson_1917/t1917-028/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-028-the-logarithmic-spiral-audit
+    source_refs: [thompson1917, raup1966]
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) Ch. XI: Nautilus spiral/septa geometric relations (wall meeting, involute/evolute diagrams)"
+      reconstructed_in_script:
+        - "Radial CV segmentation, log-spiral vs Archimedean ablation, 3-regime sweep, septum overlay, result.json verdict"
+      transfer_boundary:
+        - "2D section vs Thompson 3D radiograph schematic; W_median from outer hits is approximate"
+      does_not_claim:
+        - "Definitive refutation/support of all diagrammatic constructions without IA Fig. 304-307 digitization"
+    summary: >-
+      Pass 2 adds center grid search, regime/ablation panel, morphometric CV exports, and
+      datasets/thompson_1917/t1917-028/result.json with mixed verdict (log spiral beats
+      Archimedean on envelope; empirical W from section remains below literature W≈2.85).
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: >-
+          Full Thompson Ch. XI equation set implemented with septum involute overlay and
+          whorl expansion; Lean Loop_222 linked via math_kg_loops YAML.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [45, 95], note: "Core spiral/septum model", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-028.yaml, lines: [1, 35], note: "equations mapped to Lean theorems", supports: true}
+      specimen-match:
+        value: 58
+        rationale: >-
+          Center-refined radial envelope (120 rays) with log-spiral overlay; r_log≈0.38
+          and mixed verdict — visual alignment improved vs Pass 1 but not publication-grade.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [135, 190], note: "refine_center grid search", supports: true}
+          - {file: docs/media/t1917_028_the_logarithmic_spiral_comparison.png, lines: [0, 0], note: "3-panel comparison with specimen overlay", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: >-
+          Three literature regimes plus Archimedean negative control bar chart in full mode.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [320, 350], note: "regime sweep panel when full=True", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: >-
+          measure_morphoeval exports r, RMSE, KS p, W_median, beta CV, Archimedean ablation r;
+          result.json records headline_numbers for T1917-028 claim registry.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [380, 410], note: "measure_morphoeval quantitative dict", supports: true}
+          - {file: datasets/thompson_1917/t1917-028/result.json, lines: [1, 30], note: "verdict mixed with morphometrics", supports: true}
+      source-traceability:
+        value: 85
+        rationale: >-
+          SHA-256 verified specimen, reference JSON, scout manifest, paper_citations.bib.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-028/t1917_028_the_logarithmic_spiral_reference.json, lines: [1, 50], note: "pinned digests and equations", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Docstring equations match reference JSON; math_kg YAML cites Lean loci; inline
+          Lean name comments still sparse in Python functions.
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_028.lean, lines: [8, 52], note: "3+ theorems, zero sorry", supports: true}
+      repro-package:
+        value: 80
+        rationale: >-
+          self_test covers synthetic spiral, determinism; full render writes PNG/GIF/result.json.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [400, 455], note: "self_test and CLI --pass1/--self-test", supports: true}
+    remediation: []

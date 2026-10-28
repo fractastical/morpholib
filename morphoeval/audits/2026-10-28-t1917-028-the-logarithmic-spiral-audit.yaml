@@ -1,0 +1,116 @@
+# MorphoEval audit — Thompson (1917) T1917-028 Nautilus spiral & septa (Pass 1 v1)
+#
+# Pass 1 baseline (`--pass1`: no center grid refinement, single parameter regime panel).
+# Consensus ~54/100 — remediation targets specimen CV, regime sweep, ablation, Lean linkage.
+
+audit:
+  id: 2026-10-28-t1917-028-the-logarithmic-spiral-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 primary)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (Pass 1 second)"
+    homepage: https://www.anthropic.com
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: HEAD
+    note: "Pass 1 rendered with python3 thompson/claims/t1917-028_the-logarithmic-spiral.py --pass1"
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), Ch. XI, Figs. 304-307"
+    url: https://archive.org/details/ongrowthform1917thom
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    doi: 10.2307/1301992
+
+simulations:
+  - id: thompson1917-t1917-028
+    name: "Thompson (1917) T1917-028 — Nautilus log-spiral & septal wall geometry"
+    organism: "Nautilus pompilius (section specimen)"
+    script: thompson/claims/t1917-028_the-logarithmic-spiral.py
+    output: docs/media/t1917_028_the_logarithmic_spiral_comparison.png
+    extra_outputs:
+      - docs/media/t1917_028_the_logarithmic_spiral_growth.gif
+    status: evaluated
+    source_refs: [thompson1917, raup1966]
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) Ch. XI diagrams septa meeting the whorl wall and evolute/involute relations for Nautilus"
+      reconstructed_in_script:
+        - "Equiangular spiral r=r0 exp(kθ), whorl ratio W, septum involute overlay, wall meeting complement β=90°−ψ"
+      transfer_boundary:
+        - "Commons section photo is N. pompilius; Thompson figures are schematic radiograph-style diagrams"
+      does_not_claim:
+        - "Full 3D CT chamber hydrodynamics or Raup (D,T) helicospiral surface mesh"
+    summary: >-
+      Pass 1 baseline validates claim T1917-028 on a CC section image with radial shell
+      sampling and log-spiral OLS; `--pass1` skips center refinement and multi-regime panel.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: >-
+          Implements Thompson Ch. XI equiangular spiral, whorl expansion, curvature proxy,
+          and septum involute overlays with Raup-compatible W; lacks explicit evolute locus
+          sampling against Thompson Fig. 304 construction steps.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [45, 95], note: "log_spiral_xy, whorl_expansion, model_septa", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_028.lean, lines: [1, 55], note: "Lean gnomonic lemmas present but not cited in script docstring cross-refs", supports: false}
+      specimen-match:
+        value: 42
+        rationale: >-
+          Pass 1 `--pass1` mode disables center grid refinement; outer-envelope fit remains
+          weak (r_log ≈ 0.38) on the section photograph despite SHA-256 verification.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [135, 190], note: "segment_specimen_edges with refine_center=False in pass1", supports: false}
+          - {file: docs/media/t1917_028_the_logarithmic_spiral_comparison.png, lines: [0, 0], note: "Overlay spiral misaligned vs outer whorl in pass1 render", supports: false}
+      parameter-expressivity:
+        value: 38
+        rationale: >-
+          `--pass1` evaluates only the first literature regime; no Archimedean ablation bar
+          chart or CLI `--k`/`--W` sweeps exposed.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [248, 260], note: "regimes truncated when full=False", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          Reports r, RMSE, KS p-value and W_median, but Pass 1 lacks coefficient of variation
+          on septum-wall angles and multi-regime goodness-of-fit tables.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [200, 240], note: "evaluate_regime without beta CV export in pass1 headline", supports: false}
+      source-traceability:
+        value: 78
+        rationale: >-
+          SHA-256 pinned specimen and reference JSON; scout manifest documents Commons source.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [38, 43], note: "SPECIMEN_SHA256 checked in load_reference", supports: true}
+          - {file: datasets/thompson_1917/t1917-028/scout_manifest.json, lines: [1, 40], note: "OpenAlex + Commons provenance", supports: true}
+      code-traceability:
+        value: 60
+        rationale: >-
+          Module docstring cites Thompson 1917 equations; functions lack line-level mapping
+          to Lean theorem names in math_kg_loops YAML.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [1, 22], note: "equations in docstring only", supports: false}
+      repro-package:
+        value: 72
+        rationale: >-
+          `--self-test` checks synthetic spiral recovery and measure_morphoeval determinism;
+          does not assert pass1 vs pass2 output parity or result.json verdict schema.
+        evidence:
+          - {file: thompson/claims/t1917-028_the-logarithmic-spiral.py, lines: [400, 430], note: "run_self_test basic checks", supports: true}
+    remediation:
+      - "Enable full Pass 2 mode: center grid refinement, 3-regime sweep panel, Archimedean ablation bars, beta-angle CV, and result.json verdict with W_median vs literature 2.85."
+      - "Cross-reference Lean theorems (Loop_222) in function docstrings and verify with `lean morphoeval/lean/loops/Thompson1917_T1917_028.lean` when toolchain present."
+      - "Expand self_test to verify SHA-256, log-spiral beats Archimedean on specimen envelope, and bitwise measure_morphoeval parity."
