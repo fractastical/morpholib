@@ -1,0 +1,36 @@
+sim_id: thompson1917-t1917-057
+math_family: "geometric — Thompson (1917) coordinate method: human scapulae after Dwight (Fig. 403)"
+claim_id: T1917-057
+model_spec:
+  model: "Thin-plate spline phi from Caucasian baseline A to target B/C; phi_t(x) = (1-t)x + t phi(x); tested on segmented Fig. 403 outlines"
+  forms: ["A Caucasian Cartesian", "B Negro", "C N. American Indian"]
+  landmarks: "centroid + 4 border extrema (superior, acromion, inferior, medial) + arc-length semilandmarks"
+  inputs:
+    - datasets/thompson_1917/t1917-057/ongrowthform1917thom_p769_leaf0788_fig403.jpg
+    - datasets/thompson_1917/t1917-057/t1917_057_on_the_theory_of_transformatio_reference.json
+    - morphoeval/lean/loops/Thompson1917_T1917_057.lean
+equations:
+  - law_name: "Equidistant / linear coordinate interpolation (E2/E6)"
+    formula: "interp4(k,a,b) = (4-k)a + kb = 4 phi_{k/4}(a) when phi(a)=b"
+    lean_theorem: "MathOfBiology.Loop_246.interp_endpoints_and_equidistant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_057.lean"
+    code_locus: "thompson/claims/t1917-057_on-the-theory-of-transformations.py"
+    variables: "a,b: corresponding coordinates on forms A and B; k: stage 0..4"
+    role: "Operational meaning of Thompson's grid interpolation between Dwight scapula forms"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XVII p. 769 Fig. 403"
+  - law_name: "Similarity equivariance of interpolated coordinates"
+    formula: "interp4(k, ca+d, cb+d) = c interp4(k,a,b) + 4d"
+    lean_theorem: "MathOfBiology.Loop_246.interp_similarity_equivariant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_057.lean"
+    code_locus: "thompson/claims/t1917-057_on-the-theory-of-transformations.py"
+    variables: "c: scale; d: translation"
+    role: "Procrustes frame independence of the coordinate construction"
+    source_citation: "Thompson (1917) Ch. XVII; Gower (1975) Procrustes analysis"
+  - law_name: "No-fold along a coordinate line (E1, 1-D)"
+    formula: "a1<a2 and b1<b2 => interp4(k,a1,b1) < interp4(k,a2,b2)"
+    lean_theorem: "MathOfBiology.Loop_246.interp_no_fold"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_057.lean"
+    code_locus: "thompson/claims/t1917-057_on-the-theory-of-transformations.py"
+    variables: "ordered grid coordinates on baseline and target"
+    role: "Non-folded coordinate grids remain order-preserving under interpolation"
+    source_citation: "Thompson (1917) Ch. XVII coordinate diagrams"

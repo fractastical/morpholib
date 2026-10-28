@@ -1,0 +1,62 @@
+# MorphoEval audit — T1917-057 — Pass 2 (supersedes Pass 1)
+audit:
+  id: 2026-10-28-t1917-057-on-the-theory-of-transformatio-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-057-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 remediation)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d5
+    environment:
+      python: "3.12"
+simulations:
+  - id: thompson1917-t1917-057
+    name: "Thompson (1917) Fig. 403 human scapulae — Pass 2"
+    script: thompson/claims/t1917-057_on-the-theory-of-transformations.py
+    output: docs/media/t1917_057_on_the_theory_of_transformatio_comparison.png
+    status: evaluated
+    summary: >-
+      Pass 2 adds KS residual test vs identity control, 15-setting n_semi×lambda sweep,
+      shuffled-landmark null, Commons specimen bone-fraction CV, and explicit mixed verdict
+      (A→B supported on outline IoU; A→C not improved over identity with automatic landmarks).
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "Pass 2 KS + sweep; still no line-by-line grid digitisation."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [218, 235], note: "ks_residual_vs_control", supports: true}
+      specimen-match:
+        value: 72
+        rationale: "specimen_cv on Commons photo; comparison figure with overlay panels."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [285, 292], note: "specimen_cv", supports: true}
+      parameter-expressivity:
+        value: 62
+        rationale: "Sweep over n_semi and lambda reported in result.json and measurements."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [250, 270], note: "parameter_sweep 15 settings", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: "Procrustes, IoU, r, KS, shuffled null, sweep CV."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-057/result.json, lines: [1, 80], note: "headline_numbers + sweep", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "Unchanged pinning from Pass 1."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-057/t1917_057_on_the_theory_of_transformatio_reference.json, lines: [1, 55], note: "inputs_sha256", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "measure_morphoeval exports KS and sweep metrics."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [430, 460], note: "measure_morphoeval", supports: true}
+      repro-package:
+        value: 78
+        rationale: "Self-test + full pipeline re-run; GIF tracked."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [475, 520], note: "self_test + main", supports: true}

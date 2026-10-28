@@ -1,0 +1,75 @@
+# MorphoEval audit — T1917-057 Thompson (1917) Fig. 403 human scapulae — Pass 1
+audit:
+  id: 2026-10-28-t1917-057-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (builder-assessor, Pass 1)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d5
+    environment:
+      python: "3.12"
+simulations:
+  - id: thompson1917-t1917-057
+    name: "Thompson (1917) Fig. 403: Dwight human scapulae coordinate transformation"
+    organism: "Homo sapiens (Caucasian, Negro, N. American Indian scapula outlines after Dwight)"
+    script: thompson/claims/t1917-057_on-the-theory-of-transformations.py
+    output: docs/media/t1917_057_on_the_theory_of_transformatio_comparison.png
+    status: evaluated
+    summary: >-
+      Pass 1.  Three Fig. 403 silhouettes segmented; TPS from A (Caucasian) to B and C.
+      A→B outline Procrustes 0.177 vs identity 0.262, IoU 0.808 vs 0.715.  A→C outline
+      TPS slightly worse than identity (0.300 vs 0.275; IoU 0.612 vs 0.672).  Verdict mixed.
+    claim_boundary:
+      reported_in_source:
+        - "Fig. 403 three human scapulae with coordinate grids (Dwight)"
+      reconstructed_in_script:
+        - "TPS on automatic border extrema + semilandmarks; not Thompson's drawn grid lines"
+      does_not_claim:
+        - "Population-level variation within race (Thompson footnote); Dryad kangaroo-rat dataset"
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "E2/E4 TPS implemented; Lean Loop_246 mirrors interpolation algebra. Grid lines not digitised."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [115, 145], note: "tps_fit/tps_apply", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_057.lean, lines: [1, 90], note: "5 theorems, 0 sorry", supports: true}
+      specimen-match:
+        value: 68
+        rationale: "Compared to Thompson's own Fig. 403; Commons scapula photo vendored but minimal CV."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-057/ongrowthform1917thom_p769_leaf0788_fig403.jpg, lines: [0, 0], note: "primary surface", supports: true}
+      parameter-expressivity:
+        value: 48
+        rationale: "Growth GIF for A→B; sweep code present but limited reporting in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [250, 270], note: "parameter_sweep", supports: false}
+      morphometric-validation:
+        value: 58
+        rationale: "Procrustes, IoU, Pearson r; KS and full sweep added in Pass 2."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [220, 248], note: "pair_metrics", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "SHA-256 pinned inputs; Dryad mismatch recorded; IA + Commons provenance."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-057/scout_manifest.json, lines: [1, 60], note: "verification dossier", supports: true}
+      code-traceability:
+        value: 78
+        rationale: "Module docstring maps equations; KG yaml links Lean."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-057.yaml, lines: [1, 25], note: "law registration", supports: true}
+      repro-package:
+        value: 74
+        rationale: "Self-test 8/8; deterministic; requirements lower bounds only."
+        evidence:
+          - {file: thompson/claims/t1917-057_on-the-theory-of-transformations.py, lines: [475, 495], note: "self_test", supports: true}
+    remediation:
+      - id: R1
+        item: "Add KS test and report parameter sweep CV in measure_morphoeval"
+      - id: R2
+        item: "Expand specimen CV on Commons scapula; document A→C outline failure mode"
