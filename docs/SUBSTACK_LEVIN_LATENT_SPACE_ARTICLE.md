@@ -34,7 +34,7 @@ Although we have briefly discussed these things in person, I do not know, at pre
 
 In both cases, **precise language of what is claimed is what is most important**, and, in a sea of definitions, a place where an internet philosopher who can code might be most useful. It also turns out that despite a bunch of folks who are "pro" and "against" on the internet, **all of the main claims can be validated with tools that everyone has at their fingertips.**
 
-Let’s go through them claim by claim.
+Let’s go through them claim by claim. If you only want the conclusion, skip ahead to **The Scoreboard Room** for the `77.6%`, and from there to **Exit Through the Reading Room**. The seven exhibits are the audit, one claim at a time. **The Curator’s Reply**, which answers Nathan Sweet, can be passed as well.
 
 ---
 
@@ -279,9 +279,11 @@ The methodology used in this article—which we call the **Adversarial Epistemic
 
 ---
 
-## The Curator’s Reply — Answering the "Decisive Comparison (`D` vs. `D + P`)", "Legacy P1 Category" & "Frozen Update Rule" Critique
+## The Curator’s Reply — Nathan Sweet
 
 *Wall label · The Curator’s Reply · Interlocutor: Nathan Sweet,* Sweet Rationalism *· Exhibits re-examined: the 6 local cell rules `[U1]–[U6]`, the 7-mode Thompson bridge, the Vespinae hornet-wing negative control · Plate XX.*
+
+*The conclusion is **Exit Through the Reading Room**. This room is the reply to Nathan Sweet. The last paragraph is the whole answer, if you would rather not take the four points one by one.*
 
 In a thoughtful follow-up to my earlier comments, Nathan Sweet (*Sweet Rationalism*) laid out what he calls the **decisive-comparison requirement** for any predictive morphospace language:
 
