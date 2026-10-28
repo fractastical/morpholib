@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galvani Bioelectricity, Competing Theories &amp; Live Animated Lab (1780–2026)</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #0f172a;
+      --surface-elev: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --green: #4ade80;
+      --amber: #facc15;
+      --orange: #fb923c;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 22px;
+    }
+    .container { max-width: 1380px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; margin: 0 0 6px 0; }
+    h2 {
+      font-size: 1.15rem;
+      margin: 20px 0 10px 0;
+      color: var(--cyan);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    h3 { font-size: 0.96rem; margin: 0 0 8px 0; color: var(--amber); }
+    .subtitle { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+    .era-bar, .btn-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
+    .pill-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pill-btn:hover { border-color: var(--cyan); }
+    .pill-btn.active { background: var(--cyan); color: #0b1120; border-color: var(--cyan); }
+    .pill-btn.primary-action { background: var(--rose); color: #fff; border-color: var(--rose); }
+    .grid-2 { display: grid; grid-template-columns: 1.12fr 1.08fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 980px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .callout {
+      border-left: 4px solid var(--green);
+      background: rgba(74, 222, 128, 0.08);
+      padding: 9px 12px;
+      border-radius: 6px;
+      margin-bottom: 9px;
+      font-size: 0.86rem;
+    }
+    .callout.volta {
+      border-left-color: var(--amber);
+      background: rgba(250, 204, 21, 0.08);
+    }
+    .fact-list { margin: 5px 0 10px 0; padding-left: 18px; font-size: 0.84rem; color: #e2e8f0; }
+    .fact-list li { margin-bottom: 4px; }
+    .slider-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 9px; }
+    input[type="range"] { width: 100%; accent-color: var(--cyan); }
+    select {
+      background: var(--surface-elev);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.84rem;
+    }
+    .banner-bar {
+      background: var(--surface-elev);
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Galvani Bioelectricity, Competing Theories &amp; Live Animated Twitch Lab (1780–2026)</h1>
+    <div class="subtitle">
+      Watch the metallic arc close at <strong>t = 10 ms ("Make")</strong>, fire a glowing action potential (+35 mV) down the sciatic nerve,
+      contract the gastrocnemius muscle (peaking at <strong>t = 25 ms</strong>), and release at <strong>t = 65 ms ("Break", peaking at 80 ms)</strong> —
+      across Frog, Insect (SETi/FETi), and Human Electroacupuncture (0.9–3.0 mA) regimes.
+    </div>
+
+    <div class="banner-bar">
+      <div>
+        <strong id="phaseBanner" style="color:var(--cyan); font-size:0.95rem;">Live Simulation Running...</strong>
+        <span id="timeReadout" style="color:var(--amber); margin-left:12px; font-weight:700;">t = 0.0 ms</span>
+      </div>
+      <div class="btn-bar" style="margin:0;">
+        <button class="pill-btn primary-action" id="replayBtn" type="button">Trigger Shock &amp; Twitch Now</button>
+        <button class="pill-btn active" id="playPauseBtn" type="button">Pause</button>
+        <button class="pill-btn" id="slowMoBtn" type="button">0.35× Slow-Mo</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Live Animated Frog Sciatic–Gastrocnemius &amp; Insect SETi/FETi Twitch Stage</h3>
+        <svg id="kinematicSvg" viewBox="0 0 540 250" width="100%" height="250" style="background:#070d19; border:1px solid var(--border); border-radius:8px;"></svg>
+      </div>
+      <div class="card">
+        <h3>Live Oscilloscope Trace: Muscle Force F(t) Across Make (10 ms) &amp; Break (65 ms)</h3>
+        <svg id="waveformSvg" viewBox="0 0 540 250" width="100%" height="250" style="background:#070d19; border:1px solid var(--border); border-radius:8px;"></svg>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:14px;">
+      <div class="card">
+        <h3>Stimulus Current &amp; Historical Preset (1–9)</h3>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">Historical Experiment Preset:</label>
+          <select id="presetSelect"></select>
+        </div>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">
+            Current <strong id="currentValLbl">62.4 μA</strong> (Log Slider: 0.3 μA – 2,500 μA):
+          </label>
+          <input type="range" id="currentSlider" min="-0.52" max="3.40" step="0.01" value="1.795" />
+        </div>
+        <div style="font-size:0.79rem; color:var(--muted);" id="densityLbl"></div>
+      </div>
+
+      <div class="card">
+        <h3>Pulse Duration (Lapicque) &amp; Frequency (Tetanus)</h3>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">
+            Contact Duration <strong id="durValLbl">2.00 ms</strong> (Rheobase = 1.6 μA, Chronaxie = 0.32 ms):
+          </label>
+          <input type="range" id="durSlider" min="0.08" max="4.00" step="0.04" value="2.00" />
+        </div>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">
+            Stimulus Frequency <strong id="freqValLbl">1 Hz</strong> (40 Hz = 375% Fused Tetanus = 4.50 N):
+          </label>
+          <input type="range" id="freqSlider" min="1" max="50" step="1" value="1" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Electrode Polarity (Pflüger's Law)</h3>
+        <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+          <button class="pill-btn active" id="polCathodeBtn" type="button">Cathode Near Muscle (Descending)</button>
+          <button class="pill-btn" id="polAnodeBtn" type="button">Anode Near Muscle (Ascending Block)</button>
+        </div>
+        <div style="font-size:0.8rem; color:var(--muted);">
+          In Pflüger Stage III (&gt;180–650 μA): <strong>Ascending DC</strong> blocks Make (0%) and fires 100% on Break;
+          <strong>Descending DC</strong> fires 100% on Make and blocks Break (0%)!
+        </div>
+      </div>
+    </div>
+
+    <h2>2. Epistemological Timeline: Knowledge &amp; Competing Theories by Era</h2>
+    <div class="era-bar" id="eraBar"></div>
+    <div class="grid-2">
+      <div class="card">
+        <h3 id="eraTitle"></h3>
+        <div style="font-size:0.81rem; color:var(--muted); margin-bottom:8px;" id="eraProtagonists"></div>
+        <div class="callout" id="eraGalvani"></div>
+        <div class="callout volta" id="eraVolta"></div>
+        <div style="font-size:0.84rem; margin-top:6px;" id="eraCrucial"></div>
+      </div>
+      <div class="card">
+        <h3>What Was Known vs. Hidden Variables at That Point in History</h3>
+        <div style="font-size:0.81rem; font-weight:600; color:var(--green);">Experimentally Known at the Time:</div>
+        <ul class="fact-list" id="eraKnown"></ul>
+        <div style="font-size:0.81rem; font-weight:600; color:var(--orange);">Not Yet Known (Resolved Later):</div>
+        <ul class="fact-list" id="eraMissing"></ul>
+      </div>
+    </div>
+
+    <h2>3. Enter &amp; Export Muscle-Twitch Estimates as Nanopublications (.trig)</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Muscle-Twitch Estimate Nanopublication Form</h3>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">Estimate Slug / ID &amp; Species:</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="npIdInput" value="custom-frog-arc-estimate" style="flex:1; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 9px;" />
+            <input type="text" id="npSpeciesInput" value="Pelophylax esculentus (= Rana esculenta)" style="flex:1.3; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 9px;" />
+          </div>
+        </div>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">Estimated Make Twitch (%), Break Twitch (%), Force (N) &amp; Kick Angle (°):</label>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+            <input type="number" id="npMakeInput" step="0.1" value="100.0" style="background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px;" title="Make Twitch (%)" />
+            <input type="number" id="npBreakInput" step="0.1" value="98.4" style="background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px;" title="Break Twitch (%)" />
+            <input type="number" id="npForceInput" step="0.01" value="1.20" style="background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px;" title="Peak Force (N)" />
+            <input type="number" id="npKickInput" step="0.1" value="65.0" style="background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px;" title="Kick Angle (deg)" />
+          </div>
+        </div>
+        <div class="slider-row">
+          <label style="font-size:0.82rem;">Apparatus &amp; Notes:</label>
+          <input type="text" id="npNotesInput" value="Brass spinal hook + Iron balcony railing (Fe/Cu bimetallic arc)" style="background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 9px;" />
+        </div>
+        <div class="btn-bar" style="margin-top:8px; margin-bottom:0;">
+          <button class="pill-btn" id="loadSimToNpBtn" type="button">Load Active Simulator Readout</button>
+          <button class="pill-btn primary-action" id="downloadTrigBtn" type="button">Download .trig Nanopub</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Live RDF TriG Nanopublication Assertion Preview</h3>
+        <pre id="trigPreviewBox" style="margin:0; padding:10px; background:#070d19; border:1px solid var(--border); border-radius:6px; color:#e2e8f0; font-size:0.74rem; line-height:1.35; overflow-x:auto; white-space:pre-wrap;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ALPHA_NORM = 1.847264; // Exact e^2 / 4 peak normalizer for (dt/tau)^2 * exp(-dt/tau)
+
+    const ERAS = [
+      {
+        id: "1780_spark",
+        label: "1780 · Spark & Lightning (Tab. I–II)",
+        title: "1780–1786: Capacitive Spark Induction (Tab. I) & Atmospheric Lightning Rod (Tab. II)",
+        protagonists: "Protagonists: Luigi Galvani, Lucia Galeazzi Galvani & Camillo Galvani vs. Hallerian Irritability School",
+        galvani: "<strong>Galvani's Hypothesis (1780–1786):</strong> Nerves and muscles contain an internal 'nerveo-electrical fluid'. Distant sparks or lightning discharges unlock this fluid when a conductor touches the crural nerve.",
+        volta: "<strong>Competing View (Haller / Mahon 1779):</strong> Haller's followers attribute muscle contraction to mechanical <em>vis insita</em>; physicists view the scalpel as an electrostatic return-stroke antenna.",
+        crucial: "<strong>Biophysical Mechanism:</strong> Capacitive displacement pulse (I = C dV/dt ≈ 85 μA over 0.25 ms) exceeds the short-pulse Lapicque threshold (~3.6 μA).",
+        known: [
+          "Electrostatic friction machines, Leyden jars (1745), and electric fish shocks (Walsh 1773).",
+          "A frog leg jumps only when a conductive scalpel touches the crural nerve at the instant a distant spark discharges (Tab. I Figs. 1, 2, 4).",
+          "Connecting a rooftop lightning wire (A–B) to frog nerves and grounding in a courtyard well triggers contractions during thunder (Tab. II)."
+        ],
+        missing: [
+          "Electrochemical contact potentials between two different metals (discovered by Volta in 1792).",
+          "Resting K+ membrane potential (-70 mV) and voltage-gated Na+ channels (-50 mV threshold)."
+        ],
+        cur: 85.0, dur: 0.25, freq: 1, pol: "cathode", presetIdx: -1
+      },
+      {
+        id: "1786_arc",
+        label: "1791 · Bimetallic Arc Debate (Tab. III)",
+        title: "1786–1791: Discovery of the Bimetallic Arc ('Arco Conduttore', Tabula III)",
+        protagonists: "Protagonists: Luigi Galvani (Bologna) vs. Alessandro Volta (Pavia)",
+        galvani: "<strong>Galvani's Animal Electricity Theory (Pars Quarta, 1791):</strong> The muscle acts like an organic Leyden jar; the metallic arc merely closes the circuit to discharge intrinsic animal electricity.",
+        volta: "<strong>Volta's Metallic Contact Theory (1792–1800):</strong> Dissimilar metals (Iron + Brass = 0.78 V; Zinc + Silver = 1.56 V) generate an external electromotive force! The frog leg is merely a sensitive moist electroscope.",
+        crucial: "<strong>Biophysical Resolution:</strong> Both were right! Dissimilar metals drive 62.4–124.8 μA (35×–69× threshold), while a homogeneous single metal (0.4 μA) stays subthreshold unless an injury current is present.",
+        known: [
+          "Brass spinal hook + Iron railing (Fe/Cu = 0.78 V, 62.4 μA) triggers violent 100% contractions indoors with no electrostatic machine.",
+          "Replacing the metal arc with glass or resin abolishes the contraction.",
+          "Two different metals work vastly better than a single homogeneous metal."
+        ],
+        missing: [
+          "Neither camp realized TWO distinct batteries existed: Volta's 780 mV bimetallic cell AND Galvani's 42 mV K+ injury potential."
+        ],
+        cur: 62.4, dur: 2.0, freq: 1, pol: "cathode", presetIdx: 6
+      },
+      {
+        id: "1794_metalfree",
+        label: "1794 · Metal-Free Injury Proof vs. Voltaic Pile",
+        title: "1794–1800: Galvani & Aldini's Metal-Free Sciatic Loop vs. Volta's 1800 Battery",
+        protagonists: "Protagonists: Luigi Galvani & Giovanni Aldini vs. Alessandro Volta",
+        galvani: "<strong>Galvani (1794) & Aldini's Proof:</strong> Laying the sciatic nerve across the injured/cut and intact surface of the gastrocnemius muscle with ZERO metals twitches the leg (33.5% force, 0.40 N)! Animal electricity exists without metals.",
+        volta: "<strong>Volta's Counter-Move (1800):</strong> Volta attributes the metal-free twitch to fluid heterogeneity and invents the multi-plate Ag–Zn / Cu–Zn Voltaic Pile, dazzling Europe with continuous electric currents.",
+        crucial: "<strong>Biophysical Mechanism:</strong> The cut muscle/nerve surface exposes intracellular -70 mV K+-rich cytoplasm to the intact exterior, creating a 42 mV demarcation battery that drives 3.4 μA (1.9× threshold).",
+        known: [
+          "Zero-metal nerve-to-muscle contact across an injured surface reproducibly triggers a 33.5% contraction (Galvani 1794; Aldini 1803).",
+          "Volta's stacked Ag/Zn and Cu/Zn piles multiply electrochemical EMF by N plates."
+        ],
+        missing: [
+          "Why the metal-free twitch specifically requires an injured/cut surface (resolved by Matteucci 1842 and Bernstein 1902)."
+        ],
+        cur: 3.4, dur: 2.5, freq: 1, pol: "cathode", presetIdx: 3
+      },
+      {
+        id: "1842_matteucci",
+        label: "1842–1859 · Frog Battery & Pflüger's Anodal Block",
+        title: "1838–1859: Matteucci's Galvanoscopic Frog & Series Battery, and Pflüger's High-Current Law",
+        protagonists: "Protagonists: Carlo Matteucci, Emil du Bois-Reymond, Hermann von Helmholtz & Eduard Pflüger",
+        galvani: "<strong>Matteucci (1838–1842) & Du Bois-Reymond (1848):</strong> Matteucci's Galvanoscopic Frog detects 1.8 μA, and stacking 5 cut frog half-thighs in series sums their injury potentials to 210 mV (9.2 μA, 80.3% twitch)!",
+        volta: "<strong>Pflüger's High-Current Paradox (1859):</strong> Why does a strong ascending DC current (650 μA) produce ZERO twitch when switched ON ('Make'), yet a violent 100% kick when switched OFF ('Break')?",
+        crucial: "<strong>Biophysical Resolution:</strong> Under strong ascending DC (>180 μA), the anode near the muscle hyperpolarizes the nerve below -90 mV, locking Na_v gates closed ('Anodal Block') until release triggers rebound excitation!",
+        known: [
+          "Matteucci's 'induced secondary contraction': laying Nerve B across Muscle A makes Leg B twitch whenever Muscle A contracts.",
+          "Helmholtz (1850) measures frog sciatic conduction velocity at v = 24.6–38.4 m/s (mean ~27 m/s).",
+          "Pflüger's 3 Stages: Weak = Make only; Medium = Make + Break; Strong Ascending DC = Break only (Strong Descending DC = Make only)."
+        ],
+        missing: [
+          "Voltage-gated Na+ activation (m) vs. inactivation (h) gate kinetics (solved by Hodgkin & Huxley 1952)."
+        ],
+        cur: 650.0, dur: 2.5, freq: 1, pol: "anode", presetIdx: 7
+      },
+      {
+        id: "1907_1964_modern",
+        label: "1907–2026 · Lapicque, HH, Insects & Human Needles",
+        title: "1907–2026: Strength–Duration Law, Na+/K+ Channels, Insect SETi/FETi & Human Electroacupuncture",
+        protagonists: "Protagonists: Louis Lapicque, Hodgkin & Huxley, Frankenhaeuser & Huxley, Graham Hoyle & Jisheng Han",
+        galvani: "<strong>Vertebrate Frog & Human Needle Synthesis:</strong> Frog sciatic nerve fires above V_th = -50 mV (rheobase 1.6 μA, chronaxie 0.32 ms; 40 Hz = 4.50 N tetanus). In human electroacupuncture (ST36/LI4), visible De Qi twitching occurs at 0.9–3.0 mA and M-max at 40–100 mA.",
+        volta: "<strong>Insect Neuromuscular Discovery (Hoyle 1955; Burrows 1996):</strong> Locust and cockroach legs use only TWO excitatory glutamate axons — SETi (1.2 μA, graded by frequency) and FETi (3.8 μA, ballistic jump) — plus a GABA common inhibitor!",
+        crucial: "<strong>Biophysical Comparison:</strong> Frogs and humans grade force by recruiting more motor units; insects grade force by firing frequency on SETi (10–80 Hz) or recruiting FETi.",
+        known: [
+          "Lapicque hyperbola I_th(d) = I_rh(1 + c/d) and Frankenhaeuser–Huxley (1964) amphibian node of Ranvier equations.",
+          "Insect glutamatergic NMJ (Jan & Jan 1976), locust SETi/FETi jump control, and Drosophila 218 Hz stretch-activated flight muscle.",
+          "Human percutaneous needle stimulation: 0.3–0.8 mA sensory paresthesia, 0.9–3.0 mA visible De Qi twitch, 40–100 mA M-max."
+        ],
+        missing: [
+          "How non-spiking resting V_mem gradients (-65 mV vs. -20 mV) across gap junctions store anatomical target morphology in regeneration (Levin et al. 2011–2021)."
+        ],
+        cur: 2200.0, dur: 2.0, freq: 40, pol: "cathode", presetIdx: 8
+      }
+    ];
+
+    const PRESETS = [
+      { name: "1. Pure Single Metal Probe (0.4 μA · 1786 Control · 0% Twitch)", cur: 0.4, dur: 2.5, freq: 1, pol: "cathode", era: "1786_arc" },
+      { name: "2. Insect Slow Axon SETi Threshold (1.2 μA · 25 Hz Graded Extension)", cur: 1.2, dur: 2.5, freq: 25, pol: "cathode", era: "1907_1964_modern" },
+      { name: "3. Matteucci Galvanoscopic Frog Detector (1.8 μA · 1838 · 8.8% Twitch)", cur: 1.8, dur: 2.5, freq: 1, pol: "cathode", era: "1842_matteucci" },
+      { name: "4. Galvani 1794 Metal-Free Injury Loop (3.4 μA · 33.5% Twitch)", cur: 3.4, dur: 2.5, freq: 1, pol: "cathode", era: "1794_metalfree" },
+      { name: "5. Insect Fast Axon FETi Jump Threshold (3.8 μA · 100% Ballistic Kick)", cur: 3.8, dur: 2.5, freq: 1, pol: "cathode", era: "1907_1964_modern" },
+      { name: "6. Matteucci 5-Thigh Frog Battery (9.2 μA · 1842 · 80.3% Make + 42.3% Break)", cur: 9.2, dur: 2.5, freq: 1, pol: "cathode", era: "1842_matteucci" },
+      { name: "7. Galvani Brass Hook + Iron Railing Arc (62.4 μA · 1786 · 100% Make + 98.4% Break)", cur: 62.4, dur: 2.0, freq: 1, pol: "cathode", era: "1786_arc" },
+      { name: "8. Pflüger High-Current Anodal Block (650 μA Ascending · 0% Make, 100% Break!)", cur: 650.0, dur: 2.5, freq: 1, pol: "anode", era: "1842_matteucci" },
+      { name: "9. Ure / Helmholtz 40 Hz Tetanic Train (2,200 μA · 375% = 4.50 N!)", cur: 2200.0, dur: 2.0, freq: 40, pol: "cathode", era: "1907_1964_modern" }
+    ];
+
+    let state = { eraId: "1786_arc", cur: 62.4, dur: 2.0, freq: 1, pol: "cathode", tMs: 0.0, playing: true, speed: 1.0, presetIdx: 6 };
+
+    const eraBar = document.getElementById("eraBar");
+    ERAS.forEach((e) => {
+      const b = document.createElement("button");
+      b.className = "pill-btn";
+      b.textContent = e.label;
+      b.onclick = () => {
+        state.eraId = e.id; state.cur = e.cur; state.dur = e.dur; state.freq = e.freq; state.pol = e.pol;
+        state.presetIdx = e.presetIdx; state.tMs = 6.0; state.playing = true;
+        syncControls();
+      };
+      b.dataset.id = e.id;
+      eraBar.appendChild(b);
+    });
+
+    const presetSelect = document.getElementById("presetSelect");
+    const customOpt = document.createElement("option");
+    customOpt.value = "-1";
+    customOpt.textContent = "— Custom Slider Settings —";
+    presetSelect.appendChild(customOpt);
+    PRESETS.forEach((p, idx) => {
+      const opt = document.createElement("option");
+      opt.value = String(idx);
+      opt.textContent = p.name;
+      if (idx === 6) opt.selected = true;
+      presetSelect.appendChild(opt);
+    });
+
+    presetSelect.onchange = (ev) => {
+      const idx = Number(ev.target.value);
+      const p = PRESETS[idx];
+      if (p) {
+        state.eraId = p.era; state.cur = p.cur; state.dur = p.dur; state.freq = p.freq; state.pol = p.pol;
+        state.presetIdx = idx; state.tMs = 6.0; state.playing = true;
+        syncControls();
+      }
+    };
+
+    const currentSlider = document.getElementById("currentSlider");
+    const durSlider = document.getElementById("durSlider");
+    const freqSlider = document.getElementById("freqSlider");
+    const polCathodeBtn = document.getElementById("polCathodeBtn");
+    const polAnodeBtn = document.getElementById("polAnodeBtn");
+    const replayBtn = document.getElementById("replayBtn");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const slowMoBtn = document.getElementById("slowMoBtn");
+
+    currentSlider.oninput = (e) => { state.cur = Math.pow(10, Number(e.target.value)); state.presetIdx = -1; state.tMs = 7.0; syncControls(); };
+    durSlider.oninput = (e) => { state.dur = Number(e.target.value); state.presetIdx = -1; state.tMs = 7.0; syncControls(); };
+    freqSlider.oninput = (e) => { state.freq = Number(e.target.value); state.presetIdx = -1; state.tMs = 7.0; syncControls(); };
+    polCathodeBtn.onclick = () => { state.pol = "cathode"; state.presetIdx = -1; state.tMs = 7.0; syncControls(); };
+    polAnodeBtn.onclick = () => { state.pol = "anode"; state.presetIdx = -1; state.tMs = 7.0; syncControls(); };
+    replayBtn.onclick = () => { state.tMs = 7.0; state.playing = true; syncControls(); };
+    playPauseBtn.onclick = () => { state.playing = !state.playing; syncControls(); };
+    slowMoBtn.onclick = () => { state.speed = state.speed < 0.6 ? 1.0 : 0.35; syncControls(); };
+
+    function syncControls() {
+      currentSlider.value = String(Math.log10(Math.max(0.3, state.cur)));
+      durSlider.value = String(state.dur);
+      freqSlider.value = String(state.freq);
+      presetSelect.value = String(state.presetIdx);
+      polCathodeBtn.classList.toggle("active", state.pol === "cathode");
+      polAnodeBtn.classList.toggle("active", state.pol === "anode");
+      playPauseBtn.textContent = state.playing ? "Pause" : "Play Loop";
+      playPauseBtn.classList.toggle("active", state.playing);
+      slowMoBtn.classList.toggle("active", state.speed < 0.6);
+      Array.from(eraBar.children).forEach((b) => {
+        b.classList.toggle("active", b.dataset.id === state.eraId);
+      });
+
+      const era = ERAS.find((e) => e.id === state.eraId) || ERAS[1];
+      document.getElementById("eraTitle").textContent = era.title;
+      document.getElementById("eraProtagonists").textContent = era.protagonists;
+      document.getElementById("eraGalvani").innerHTML = era.galvani;
+      document.getElementById("eraVolta").innerHTML = era.volta;
+      document.getElementById("eraCrucial").innerHTML = era.crucial;
+      document.getElementById("eraKnown").innerHTML = era.known.map((k) => `<li>${k}</li>`).join("");
+      document.getElementById("eraMissing").innerHTML = era.missing.map((m) => `<li>${m}</li>`).join("");
+    }
+
+    function renderFrame() {
+      const cur = state.cur;
+      const dur = state.dur;
+      const freq = state.freq;
+      const isAnode = state.pol === "anode";
+      const tMs = state.tMs;
+
+      const thUa = 1.6 * (1.0 + 0.32 / Math.max(0.05, dur));
+      const crosses = cur >= thUa;
+      const eff = Math.max(0, cur - 0.75);
+      const baseRec = !crosses ? 0 : Math.min(100, (100.8 * Math.pow(eff, 1.78)) / (Math.pow(3.92, 1.78) + Math.pow(eff, 1.78)));
+      const blockFac = isAnode ? (cur >= 500 ? 0 : 1.0 / (1.0 + Math.pow(cur / 180.0, 4.0))) : 1.0;
+      const makePct = baseRec * blockFac;
+
+      const effBrk = Math.max(0, cur - 5.0);
+      const rawBrk = cur <= 5.0 ? 0 : Math.min(100, (100.8 * Math.pow(effBrk, 1.55)) / (Math.pow(5.18, 1.55) + Math.pow(effBrk, 1.55)));
+      const descBrkBlock = (!isAnode && cur >= 180.0) ? (cur >= 500 ? 0 : 1.0 / (1.0 + Math.pow(cur / 180.0, 4.0))) : 1.0;
+      const breakPct = rawBrk * descBrkBlock;
+
+      const rawFreq = Math.pow(freq - 1, 2) / (100 + Math.pow(freq - 1, 2));
+      const norm40 = (39 * 39) / (100 + 39 * 39);
+      const tetMult = freq <= 1 ? 1.0 : 1.0 + 2.75 * Math.min(1.05, rawFreq / norm40);
+      const peakForceN = ((makePct * tetMult) / 100) * 1.2;
+
+      const arcClosed = tMs >= 10.0 && tMs <= 65.0;
+      let apProg = -1;
+      let apBlocked = false;
+      if (tMs >= 10.0 && tMs <= 16.0 && crosses) {
+        if (isAnode && cur >= 180.0) {
+          apProg = Math.min(0.48, (tMs - 10.0) / 3.0);
+          apBlocked = true;
+        } else if (makePct > 0) {
+          apProg = Math.min(1.0, (tMs - 10.0) / 4.2);
+        }
+      } else if (tMs >= 65.0 && tMs <= 71.0 && breakPct > 0) {
+        apProg = Math.min(1.0, (tMs - 65.0) / 4.2);
+      }
+
+      function frogForceAt(t) {
+        if (freq >= 15 && makePct > 0) {
+          if (t < 12) return 0;
+          if (t <= 65) return peakForceN * (1 - Math.exp(-(t - 12) / 12));
+          return peakForceN * Math.exp(-(t - 65) / 15);
+        }
+        let f = 0;
+        if (t >= 12.0 && makePct > 0) {
+          const dt = t - 12.0;
+          f += (makePct / 100) * 1.2 * Math.pow(dt / 6.5, 2) * Math.exp(-dt / 6.5) * ALPHA_NORM;
+        }
+        if (t >= 67.0 && breakPct > 0) {
+          const dt2 = t - 67.0;
+          f += (breakPct / 100) * 1.2 * Math.pow(dt2 / 6.5, 2) * Math.exp(-dt2 / 6.5) * ALPHA_NORM;
+        }
+        return f;
+      }
+
+      const instFrogN = frogForceAt(tMs);
+      const instFrogPct = (instFrogN / 1.2) * 100;
+      const instFrogAngle = instFrogPct <= 100 ? 0.65 * instFrogPct : Math.min(88, 65 + 23 * ((instFrogPct - 100) / 275));
+
+      const seti = cur >= 1.2;
+      const feti = cur >= 3.8;
+      let insPeakPct = 0;
+      let insMode = "Silent (<1.2 μA)";
+      if (feti) {
+        const fb = freq <= 2 ? 1.0 : 1.0 + 2.6 * (freq / (25 + freq));
+        insPeakPct = Math.min(360, 100 * fb);
+        insMode = freq >= 20 ? "FETi + SETi Tetanus" : "FETi Ballistic Jump (≥3.8 μA)";
+      } else if (seti) {
+        insPeakPct = freq < 5 ? 4 : Math.min(78, 78 * (Math.pow(freq, 1.8) / (Math.pow(22, 1.8) + Math.pow(freq, 1.8))));
+        insMode = `SETi Graded (${freq} Hz)`;
+      }
+
+      function insForceAt(t) {
+        if (t < 11.8 || insPeakPct <= 0) return 0;
+        const dt = t - 11.8;
+        if (freq >= 15) {
+          return t <= 65 ? ((insPeakPct / 100) * 1.2) * (1 - Math.exp(-dt / 10)) : ((insPeakPct / 100) * 1.2) * Math.exp(-(t - 65) / 11);
+        }
+        return ((insPeakPct / 100) * 1.2) * Math.pow(dt / 5.5, 2) * Math.exp(-dt / 5.5) * ALPHA_NORM;
+      }
+
+      const instInsN = insForceAt(tMs);
+      const instInsPct = (instInsN / 1.2) * 100;
+      const instInsAngle = instInsPct <= 100 ? 0.75 * instInsPct : Math.min(85, 75 + 10 * ((instInsPct - 100) / 260));
+
+      document.getElementById("currentValLbl").textContent = `${cur < 10 ? cur.toFixed(2) : cur.toFixed(1)} μA`;
+      document.getElementById("durValLbl").textContent = `${dur.toFixed(2)} ms`;
+      document.getElementById("freqValLbl").textContent = `${freq} Hz`;
+      document.getElementById("densityLbl").textContent =
+        `Density: ${(cur * 10.25).toFixed(1)} μA/cm² · Make: ${makePct.toFixed(1)}% · Break: ${breakPct.toFixed(1)}%`;
+      document.getElementById("timeReadout").textContent = `t = ${tMs.toFixed(1)} ms / 115 ms`;
+
+      let banner = "Resting Baseline (-70 mV) — Arc Open";
+      if (tMs >= 10 && tMs < 15) {
+        banner = (isAnode && cur >= 180.0)
+          ? "CIRCUIT CLOSED ('Make'): Anode Hyperpolarizes Nerve (<-90 mV) -> BLOCKED!"
+          : crosses
+          ? "CIRCUIT CLOSED ('Make'): Action Potential (+35 mV) Racing Down Sciatic Nerve!"
+          : "CIRCUIT CLOSED ('Make'): Subthreshold Electrotonus (No Spike)";
+      } else if (tMs >= 15 && tMs <= 65) {
+        banner = (isAnode && cur >= 180.0)
+          ? "SUSTAINED DC: Anodal Block Holds Leg Still (0% Make Twitch)"
+          : instFrogN > 0.05
+          ? `GASTROCNEMIUS CONTRACTING: Force = ${instFrogN.toFixed(2)} N (Kick = ${instFrogAngle.toFixed(1)}°)`
+          : "Arc Closed — Muscle Relaxed";
+      } else if (tMs > 65 && tMs < 72 && breakPct > 0) {
+        banner = "CIRCUIT OPENED ('Break'): Anodal Rebound Action Potential Fires!";
+      } else if (tMs >= 72 && instFrogN > 0.05) {
+        banner = `BREAK REBOUND TWITCH: Force = ${instFrogN.toFixed(2)} N (Kick = ${instFrogAngle.toFixed(1)}°)`;
+      }
+      document.getElementById("phaseBanner").textContent = banner;
+
+      const radF = (instFrogAngle * Math.PI) / 180;
+      const kx = 120 - 34 * Math.sin(radF * 0.45 + 0.35);
+      const ky = 142 - 22 * Math.sin(radF * 0.55);
+      const ax = kx + 42 * Math.sin(radF - 0.15);
+      const ay = ky + 44 * Math.cos(radF * 0.85) - 24 * Math.sin(radF);
+      const fx = ax - 24 * Math.cos(radF * 0.4);
+      const fy = ay + 14 * Math.cos(radF * 0.5);
+      const probeOff = arcClosed ? 0 : -18;
+      const apX = apProg >= 0 ? 120 * (1 - apProg) + kx * apProg : -50;
+      const apY = apProg >= 0 ? 104 * (1 - apProg) + ky * apProg : -50;
+
+      const bulge = 1.0 + Math.min(0.45, instFrogN * 0.22);
+      const dx1 = kx - 120, dy1 = ky - 104, len1 = Math.max(1, Math.hypot(dx1, dy1));
+      const nx1 = (-dy1 / len1) * 9.5 * bulge, ny1 = (dx1 / len1) * 9.5 * bulge;
+      const m1x = (120 + kx) * 0.5, m1y = (104 + ky) * 0.5;
+      const dx2 = ax - kx, dy2 = ay - ky, len2 = Math.max(1, Math.hypot(dx2, dy2));
+      const nx2 = (-dy2 / len2) * 8.5 * bulge, ny2 = (dx2 / len2) * 8.5 * bulge;
+      const m2x = (kx + ax) * 0.5, m2y = (ky + ay) * 0.5;
+      const fFill = instFrogN > 0.05 ? "#e11d48" : "#334155";
+      const fStrk = instFrogN > 0.05 ? "#fda4af" : "#94a3b8";
+
+      const radI = (instInsAngle * Math.PI) / 180;
+      const tx = 395 + 72 * Math.sin(radI + 0.22);
+      const ty = 104 + 72 * Math.cos(radI + 0.22);
+
+      document.getElementById("kinematicSvg").innerHTML = `
+        <text x="16" y="24" fill="#38bdf8" font-size="12" font-weight="bold">A. Galvani Frog Leg (300+ ACh / Na+ Axons)</text>
+        <text x="16" y="40" fill="#94a3b8" font-size="10">Arc: ${arcClosed ? 'CLOSED (Make)' : 'OPEN'} · Force = ${instFrogN.toFixed(2)} N · Kick = ${instFrogAngle.toFixed(1)}°</text>
+        <line x1="34" y1="56" x2="34" y2="215" stroke="#64748b" stroke-width="5" />
+        <line x1="34" y1="56" x2="120" y2="56" stroke="#64748b" stroke-width="5" />
+        <line x1="90" y1="56" x2="120" y2="82" stroke="#facc15" stroke-width="3" />
+        <rect x="109" y="70" width="22" height="34" rx="4" fill="#e2e8f0" stroke="#475569" />
+        <path d="M 120 104 Q 100 116 ${kx} ${ky}" fill="none" stroke="#fde047" stroke-width="2.8" />
+        <path d="M 120 102 C 134 110, 144 124, 140 142 C 132 140, 124 124, 120 104 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
+        <path d="M 140 142 C 148 156, 146 176, 136 192 C 130 178, 130 158, 136 142 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
+        <path d="M 136 192 L 152 202 M 136 192 L 148 206 M 136 192 L 141 208" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M 120 104 Q ${m1x + nx1} ${m1y + ny1} ${kx} ${ky} Q ${m1x - nx1 * 0.75} ${m1y - ny1 * 0.75} 120 104 Z" fill="${fFill}" stroke="${fStrk}" stroke-width="1.8" />
+        <path d="M ${kx} ${ky} Q ${m2x + nx2} ${m2y + ny2} ${ax} ${ay} Q ${m2x - nx2 * 0.7} ${m2y - ny2 * 0.7} ${kx} ${ky} Z" fill="${fFill}" stroke="${fStrk}" stroke-width="1.8" />
+        <line x1="${ax}" y1="${ay}" x2="${fx}" y2="${fy}" stroke="${fStrk}" stroke-width="3" stroke-linecap="round" />
+        <line x1="${fx}" y1="${fy}" x2="${fx - 14}" y2="${fy + 6}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
+        <line x1="${fx}" y1="${fy}" x2="${fx - 11}" y2="${fy + 13}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
+        <line x1="${fx}" y1="${fy}" x2="${fx - 4}" y2="${fy + 16}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
+        <path d="M 34 155 Q 76 ${185 + probeOff} ${kx + probeOff} ${ky - probeOff * 0.5}" fill="none" stroke="${arcClosed ? '#38bdf8' : '#64748b'}" stroke-width="3" />
+        <circle cx="${kx + probeOff}" cy="${ky - probeOff * 0.5}" r="${arcClosed ? 5.5 : 3.5}" fill="${arcClosed ? '#38bdf8' : '#64748b'}" />
+        ${apProg >= 0 ? `<circle cx="${apX}" cy="${apY}" r="8" fill="${apBlocked ? '#f43f5e' : '#38bdf8'}" /><text x="${apX + 11}" y="${apY + 3}" fill="${apBlocked ? '#f43f5e' : '#38bdf8'}" font-size="9.5" font-weight="bold">${apBlocked ? 'ANODAL BLOCK!' : 'AP +35 mV'}</text>` : ''}
+
+        <line x1="268" y1="14" x2="268" y2="236" stroke="#334155" stroke-width="1" />
+
+        <text x="284" y="24" fill="#fb923c" font-size="12" font-weight="bold">B. Insect Leg (SETi 1.2 μA, FETi 3.8 μA + CI)</text>
+        <text x="284" y="40" fill="#94a3b8" font-size="10">${insMode} · Live Kick = ${instInsAngle.toFixed(1)}°</text>
+        <rect x="295" y="84" width="28" height="28" rx="4" fill="#334155" stroke="#94a3b8" />
+        <path d="M 323 95 Q 358 80 395 104 Q 358 112 323 102 Z" fill="${instInsN > 0.05 ? (feti ? '#fb923c' : '#0284c7') : '#334155'}" stroke="${instInsN > 0.05 ? '#fde047' : '#94a3b8'}" stroke-width="1.8" />
+        <line x1="395" y1="104" x2="410" y2="178" stroke="#334155" stroke-width="3.5" stroke-dasharray="4 4" />
+        <line x1="395" y1="104" x2="${tx}" y2="${ty}" stroke="${instInsN > 0.05 ? (feti ? '#facc15' : '#4ade80') : '#64748b'}" stroke-width="5" stroke-linecap="round" />
+        <line x1="${tx}" y1="${ty}" x2="${tx + 15}" y2="${ty + 4}" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round" />
+      `;
+
+      let pathFrog = "";
+      let pathIns = "";
+      for (let i = 0; i <= 115; i += 1.5) {
+        const fVal = frogForceAt(i);
+        const iVal = insForceAt(i);
+        const px = 48 + (i / 115) * 465;
+        const pyF = 212 - (fVal / 4.8) * 175;
+        const pyI = 212 - (iVal / 4.8) * 175;
+        pathFrog += (i === 0 ? "M " : " L ") + `${px.toFixed(1)} ${pyF.toFixed(1)}`;
+        pathIns += (i === 0 ? "M " : " L ") + `${px.toFixed(1)} ${pyI.toFixed(1)}`;
+      }
+      const y1p2 = 212 - (1.2 / 4.8) * 175;
+      const xMake = 48 + (10 / 115) * 465;
+      const xBreak = 48 + (65 / 115) * 465;
+      const xCur = 48 + (tMs / 115) * 465;
+      const yCur = 212 - (instFrogN / 4.8) * 175;
+
+      document.getElementById("waveformSvg").innerHTML = `
+        <line x1="48" y1="${y1p2}" x2="513" y2="${y1p2}" stroke="#475569" stroke-dasharray="4 4" />
+        <text x="54" y="${y1p2 - 5}" fill="#94a3b8" font-size="9">100% Max Single Twitch = 1.20 N</text>
+        <line x1="${xMake}" y1="25" x2="${xMake}" y2="212" stroke="#38bdf8" stroke-dasharray="2 3" />
+        <text x="${xMake + 4}" y="36" fill="#38bdf8" font-size="9">Make (10 ms)</text>
+        <line x1="${xBreak}" y1="25" x2="${xBreak}" y2="212" stroke="#4ade80" stroke-dasharray="2 3" />
+        <text x="${xBreak + 4}" y="36" fill="#4ade80" font-size="9">Break (65 ms)</text>
+        <line x1="48" y1="212" x2="513" y2="212" stroke="#64748b" />
+        <line x1="48" y1="25" x2="48" y2="212" stroke="#64748b" />
+        <path d="${pathFrog}" fill="none" stroke="#38bdf8" stroke-width="3" />
+        <path d="${pathIns}" fill="none" stroke="#fb923c" stroke-width="2.2" stroke-dasharray="5 3" />
+        <line x1="${xCur}" y1="25" x2="${xCur}" y2="212" stroke="#facc15" stroke-width="1.5" />
+        <circle cx="${xCur}" cy="${yCur}" r="6" fill="#facc15" stroke="#0b1120" stroke-width="2" />
+        <text x="355" y="24" fill="#38bdf8" font-size="10" font-weight="bold">— Frog Force (N)</text>
+        <text x="445" y="24" fill="#fb923c" font-size="10" font-weight="bold">-- Insect Force</text>
+      `;
+
+      state.latestMakePct = makePct * tetMult;
+      state.latestBreakPct = breakPct;
+      state.latestForceN = peakForceN;
+      state.latestKickDeg = Math.max(makePct * tetMult, breakPct) <= 100
+        ? 0.65 * Math.max(makePct * tetMult, breakPct)
+        : Math.min(88, 65 + 23 * ((Math.max(makePct * tetMult, breakPct) - 100) / 275));
+      updateTrigPreview();
+    }
+
+    const npIdInput = document.getElementById("npIdInput");
+    const npSpeciesInput = document.getElementById("npSpeciesInput");
+    const npMakeInput = document.getElementById("npMakeInput");
+    const npBreakInput = document.getElementById("npBreakInput");
+    const npForceInput = document.getElementById("npForceInput");
+    const npKickInput = document.getElementById("npKickInput");
+    const npNotesInput = document.getElementById("npNotesInput");
+    const trigPreviewBox = document.getElementById("trigPreviewBox");
+
+    function buildTrigString() {
+      const slug = (npIdInput.value || "custom-estimate").replace(/[^A-Za-z0-9_-]+/g, "-").toLowerCase();
+      const polStr = state.pol === "anode" ? "anodal_ascending" : "cathodal_descending";
+      return [
+        `@prefix dcterms: <http://purl.org/dc/terms/> .`,
+        `@prefix mlg: <https://w3id.org/morpholib/galvani/> .`,
+        `@prefix np: <http://www.nanopub.org/nschema#> .`,
+        `@prefix npx: <http://purl.org/nanopub/x/> .`,
+        `@prefix pk: <https://w3id.org/probknow/ontology/> .`,
+        `@prefix prov: <http://www.w3.org/ns/prov#> .`,
+        `@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .`,
+        `@prefix schema: <https://schema.org/> .`,
+        `@prefix sub: <http://purl.org/nanopub/temp/galvani-twitch-${slug}/> .`,
+        `@prefix this: <http://purl.org/nanopub/temp/galvani-twitch-${slug}> .`,
+        `@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .`,
+        ``,
+        `sub:Head {`,
+        `  this: a np:Nanopublication ;`,
+        `    np:hasAssertion sub:assertion ;`,
+        `    np:hasProvenance sub:provenance ;`,
+        `    np:hasPublicationInfo sub:pubinfo .`,
+        `}`,
+        ``,
+        `sub:assertion {`,
+        `  mlg:claim/galvani-twitch-${slug} a pk:Claim, mlg:NeuromuscularTwitchEstimate ;`,
+        `    rdfs:label "Muscle-twitch estimate (${slug}): ${state.cur.toFixed(1)} uA in ${npSpeciesInput.value} -> ${npMakeInput.value}% Make, ${npBreakInput.value}% Break, ${npForceInput.value} N, ${npKickInput.value} deg" ;`,
+        `    mlg:organism "${npSpeciesInput.value}" ;`,
+        `    mlg:apparatus "${npNotesInput.value}" ;`,
+        `    mlg:electrodePolarity "${polStr}" ;`,
+        `    mlg:stimulus_current_uA "${state.cur.toFixed(2)}"^^xsd:double ;`,
+        `    mlg:pulse_duration_ms "${state.dur.toFixed(2)}"^^xsd:double ;`,
+        `    mlg:stimulus_frequency_Hz "${state.freq}"^^xsd:double ;`,
+        `    mlg:make_twitch_pct "${Number(npMakeInput.value || 0).toFixed(1)}"^^xsd:double ;`,
+        `    mlg:break_twitch_pct "${Number(npBreakInput.value || 0).toFixed(1)}"^^xsd:double ;`,
+        `    mlg:peak_twitch_force_N "${Number(npForceInput.value || 0).toFixed(2)}"^^xsd:double ;`,
+        `    mlg:limb_kick_angle_deg "${Number(npKickInput.value || 0).toFixed(1)}"^^xsd:double .`,
+        `}`
+      ].join("\n");
+    }
+
+    function updateTrigPreview() {
+      if (trigPreviewBox) trigPreviewBox.textContent = buildTrigString();
+    }
+
+    [npIdInput, npSpeciesInput, npMakeInput, npBreakInput, npForceInput, npKickInput, npNotesInput].forEach((el) => {
+      if (el) el.oninput = updateTrigPreview;
+    });
+
+    document.getElementById("loadSimToNpBtn").onclick = () => {
+      npMakeInput.value = (state.latestMakePct || 0).toFixed(1);
+      npBreakInput.value = (state.latestBreakPct || 0).toFixed(1);
+      npForceInput.value = (state.latestForceN || 0).toFixed(2);
+      npKickInput.value = (state.latestKickDeg || 0).toFixed(1);
+      updateTrigPreview();
+    };
+
+    document.getElementById("downloadTrigBtn").onclick = () => {
+      const slug = (npIdInput.value || "custom-estimate").replace(/[^A-Za-z0-9_-]+/g, "-").toLowerCase();
+      const blob = new Blob([buildTrigString() + "\n"], { type: "application/trig" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `galvani-twitch-${slug}.trig`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    setInterval(() => {
+      if (state.playing) {
+        state.tMs += 1.2 * state.speed;
+        if (state.tMs > 115.0) state.tMs = 0.0;
+      }
+      renderFrame();
+    }, 45);
+
+    syncControls();
+    renderFrame();
+  </script>
+</body>
+</html>
