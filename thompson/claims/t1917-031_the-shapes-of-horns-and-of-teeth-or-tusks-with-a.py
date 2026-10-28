@@ -17,26 +17,38 @@ PUBLISHED MODEL (equation ids follow datasets/thompson_1917/t1917-031/*_referenc
     Thompson's numbers (p. 617): Ovis ammon alpha ~ 75 deg (or rather less), Highland ram a
     little more, Scinde wild goat < 70 deg, Oryx 20-40 deg.
 
-TEST DESIGN (Pass 1 baseline)
-    * Digitise Thompson's own Fig. 320 (lateral drawing of Ovis ammon, IA leaf 641) by ink
-      thresholding + hole filling; take the outer horn edge as the farthest silhouette point
-      per angular bin inside the documented horn sector.
-    * Fit E1 with a FREE pole (cx, cy, a, k) by nonlinear least squares, report alpha,
-      whorl ratio, Pearson r of ln(rho) vs theta, RMSE.
-    * Compare against an Archimedean spiral and a circle (the no-gnomon null) by AIC.
-    * Render the fitted spiral on the figure, the 3D conical helicoid (E2) for Thompson's
-      alpha, and a gnomonic-growth animation.
+TEST DESIGN (Pass 2 — remediates audit items R2-R7 of the Pass 1 audit)
+    Sources (all SHA-256 pinned in reference.json, re-verified at runtime):
+      * Thompson's own Fig. 320 (Ovis ammon, lateral drawing)        -> ink threshold + hole fill
+      * Thompson's own Fig. 319 (Capra sinaitica, lateral halftone)  -> dark threshold
+      * real specimen: adult male Argali skull photograph (CC BY-SA)  -> HSV horn-sheath mask
+    Per source:
+      T1  outer edge = farthest silhouette point per angular bin in the documented horn sector,
+          with the mandible / skull junction trimmed automatically (monotone ln rho criterion);
+          free-pole log-spiral fit (E1) -> alpha_proj, whorl ratio, Pearson r, RMSE, bootstrap CI,
+          KS test on standardised residuals.
+      T2  model comparison by AIC: log spiral vs Archimedean spiral vs circle (circle = no-gnomon null).
+      T3  gnomonic test (E4, projection-invariant): inner edge and breadth along rays from the
+          fitted pole; k_breadth vs k_outer (fixed pole, log-linear regression).
+      T4  species contrast: Capra alpha_proj vs Ovis alpha_proj (Thompson: goat < 70 deg, Ovis ~75 deg).
+    Identifiability: a 2D view measures only k_proj = sin(beta) cot(alpha) (E2); the cone semi-angle
+    beta implied by Thompson's alpha = 75 deg is reported for each source instead of calling an
+    alpha mismatch a refutation (Lean: alpha_beta_not_identifiable_from_projection).
+    Controls (all reported as measurement rows): synthetic alpha = 75 deg spiral with unknown pole
+    (positive), noisy circle (negative), shuffled-angle ablation of the real Fig. 320 edge.
+    Registry-named Dryad table (horn length vs body mass) is summarised as a labelled NON-SHAPE
+    analogue only (log-log OLS slope per species) and does not enter the verdict.
 
 CLAIM BOUNDARY
-    reported_in_source      : alpha values above; qualitative helicoid/torsion description
+    reported_in_source      : alpha values above; qualitative helicoid/torsion description; 80:74:45 edges
     reconstructed_in_script : E1-E4 fits to 2D projections; 3D helicoid rendering from E2
-    transfer_boundary       : a 2D lateral projection of a 3D helico-spiral is only the
-                              axial view if the camera/drawing axis is the cone axis
-    does_not_claim          : torsion / St Venant ring warping, inter-species beta differences
+    transfer_boundary       : a 2D lateral projection is the axial view only if the view axis is the
+                              cone axis; the Argali photograph is perspective, not orthographic
+    does_not_claim          : torsion / St Venant ring warping, inter-species beta differences, teeth/tusks
 
 USAGE
     python3 thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py --self-test
-    python3 thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py
+    python3 thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py [--no-gif] [--bootstrap N]
 
 OUTPUTS
     docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png
@@ -47,6 +59,7 @@ OUTPUTS
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import math
@@ -55,7 +68,7 @@ from pathlib import Path
 
 import numpy as np
 
-SCRIPT_VERSION = "1.0.1-pass1"
+SCRIPT_VERSION = "2.0.0-pass2"
 REPO = Path(__file__).resolve().parents[2]
 DATA = REPO / "datasets" / "thompson_1917" / "t1917-031"
 MEDIA = REPO / "docs" / "media"
@@ -64,6 +77,8 @@ STEM = "t1917_031_the_shapes_of_horns_and_of_tee"
 SEED = 1917
 THOMPSON_ALPHA_OVIS_AMMON = 75.0  # deg, p. 617
 THOMPSON_ALPHA_CAPRA_MAX = 70.0   # deg, p. 617 ("rather less than 70")
+DELTA_AIC_DECISIVE = 10.0
+N_BOOT_DEFAULT = 200
 
 
 # --------------------------------------------------------------------------- model (E1-E4)
@@ -79,6 +94,15 @@ def k_from_alpha(alpha_deg, beta_deg=90.0):
 
 def alpha_from_k(k, beta_deg=90.0):
     return math.degrees(math.atan2(math.sin(math.radians(beta_deg)), k))
+
+
+def beta_from_k_alpha(k_proj, alpha_deg):
+    """E2 inverted: the cone semi-angle that makes a spiral of angle alpha project with pitch k_proj.
+    Returns None when k_proj > cot(alpha) (no real cone)."""
+    s = k_proj * math.tan(math.radians(alpha_deg))
+    if s < 0 or s > 1:
+        return None
+    return math.degrees(math.asin(s))
 
 
 def whorl_ratio(alpha_deg, beta_deg=90.0):
@@ -143,18 +167,74 @@ def load_gray(path: Path) -> np.ndarray:
     return np.asarray(Image.open(path).convert("L")).astype(float) / 255.0
 
 
+def load_rgb(path: Path) -> np.ndarray:
+    from PIL import Image
+    return np.asarray(Image.open(path).convert("RGB")).astype(float) / 255.0
+
+
 # --------------------------------------------------------------------------- segmentation
-def segment_figure_ink(gray: np.ndarray, ink_threshold: float) -> np.ndarray:
-    """Thompson line drawing -> filled silhouette of everything enclosed by ink (largest component)."""
-    from scipy import ndimage as ndi
-    from skimage import measure, morphology
-    ink = gray < ink_threshold
-    ink = morphology.closing(ink, morphology.disk(2))
-    sil = ndi.binary_fill_holes(ink)
-    lab = measure.label(sil)
+def _largest_component(mask: np.ndarray) -> np.ndarray:
+    from skimage import measure
+    lab = measure.label(mask)
+    if lab.max() == 0:
+        return mask
     props = measure.regionprops(lab)
     big = max(props, key=lambda p: p.area)
     return lab == big.label
+
+
+def segment_figure_ink(gray: np.ndarray, ink_threshold: float) -> tuple[np.ndarray, np.ndarray]:
+    """Thompson line drawing -> (filled silhouette of everything enclosed by ink, ink mask)."""
+    from scipy import ndimage as ndi
+    from skimage import morphology
+    ink = gray < ink_threshold
+    ink = morphology.closing(ink, morphology.disk(2))
+    sil = _largest_component(ndi.binary_fill_holes(ink))
+    return sil, ink
+
+
+def segment_figure_halftone(gray: np.ndarray, dark_threshold: float) -> tuple[np.ndarray, np.ndarray]:
+    """Halftone engraving -> dark silhouette (largest component) used both as region and as 'ink'."""
+    from scipy import ndimage as ndi
+    from skimage import morphology
+    dark = gray < dark_threshold
+    dark = morphology.closing(dark, morphology.disk(3))
+    dark = morphology.opening(dark, morphology.disk(2))
+    sil = _largest_component(ndi.binary_fill_holes(dark))
+    return sil, sil
+
+
+def segment_photo_hsv(rgb: np.ndarray, sat_min: float, val_min: float, hue_max: float,
+                      open_radius: int, close_radius: int) -> tuple[np.ndarray, np.ndarray]:
+    """Horn sheath in a photograph: saturated warm (tan/brown) pixels; bleached bone and snow are
+    low-saturation and the ground is low-value, so the largest component is the sheath."""
+    from scipy import ndimage as ndi
+    from skimage import color, morphology
+    hsv = color.rgb2hsv(rgb)
+    mask = (hsv[..., 1] > sat_min) & (hsv[..., 2] > val_min) & (hsv[..., 0] < hue_max)
+    mask = morphology.opening(mask, morphology.disk(open_radius))
+    mask = _largest_component(mask)
+    mask = ndi.binary_fill_holes(morphology.closing(mask, morphology.disk(close_radius)))
+    return mask, mask
+
+
+def segment(spec: dict):
+    seg = spec["segmentation"]
+    path = DATA / spec["file"]
+    if seg["mode"] == "figure_ink":
+        gray = load_gray(path)
+        region, ink = segment_figure_ink(gray, seg["ink_threshold"])
+        return gray, region, ink
+    if seg["mode"] == "figure_halftone":
+        gray = load_gray(path)
+        region, ink = segment_figure_halftone(gray, seg["dark_threshold"])
+        return gray, region, ink
+    if seg["mode"] == "photo_hsv":
+        rgb = load_rgb(path)
+        region, ink = segment_photo_hsv(rgb, seg["sat_min"], seg["val_min"], seg["hue_max"],
+                                        seg["open_radius"], seg["close_radius"])
+        return rgb, region, ink
+    raise ValueError(seg["mode"])
 
 
 def silhouette_contour(mask: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -169,8 +249,16 @@ def math_angle_deg(x, y, cx, cy):
     return np.degrees(np.arctan2(-(np.asarray(y) - cy), np.asarray(x) - cx))
 
 
+def _in_sector(th_deg, lo, hi):
+    """Sector test; sectors with hi > 180 wrap through +/-180 (angles then taken in [0, 360))."""
+    th = np.asarray(th_deg, float)
+    if hi > 180:
+        th = np.mod(th, 360.0)
+    return (th >= lo) & (th <= hi)
+
+
 def outer_edge_points(xs, ys, pole_guess, sector_deg, n_bins=720):
-    """Farthest contour point per angular bin inside [sector_lo, sector_hi] (math degrees)."""
+    """Farthest contour point per angular bin inside the horn sector (math degrees)."""
     cx, cy = pole_guess
     th = math_angle_deg(xs, ys, cx, cy)
     rho = np.hypot(xs - cx, ys - cy)
@@ -182,20 +270,79 @@ def outer_edge_points(xs, ys, pole_guess, sector_deg, n_bins=720):
         if len(idx) == 0:
             continue
         i = idx[np.argmax(rho[idx])]
-        if lo <= th[i] <= hi:
+        if _in_sector(th[i], lo, hi):
             sel.append(i)
     sel = np.array(sel, int)
     return xs[sel], ys[sel]
 
 
-# --------------------------------------------------------------------------- fitting
 def growth_angle(px, py, cx, cy):
-    """Growth parameter t (radians) increasing clockwise in image space from the tip end (t = 0)."""
+    """Growth parameter t (radians) increasing clockwise in image space from the counter-clockwise end."""
     t = np.unwrap(-np.radians(math_angle_deg(px, py, cx, cy)))
     return t - t.min()
 
 
-def fit_log_spiral(px, py, pole_guess, k0=0.25):
+def trim_non_monotone_ends(px, py, pole_guess, window_frac=0.08, max_trim_frac=0.25, ends="both"):
+    """Remediation R6: drop end segments where ln rho runs against the overall trend (skull / mandible
+    junction).  Works on the points ordered by growth angle about the pole guess."""
+    cx, cy = pole_guess
+    t = growth_angle(px, py, cx, cy)
+    order = np.argsort(t)
+    px, py, t = px[order], py[order], t[order]
+    lr = np.log(np.hypot(px - cx, py - cy))
+    n = len(px)
+    if n < 40:
+        return px, py, 0, 0
+    slope_all = np.polyfit(t, lr, 1)[0]
+    sign = 1.0 if slope_all >= 0 else -1.0
+    w = max(8, int(window_frac * n))
+    max_trim = int(max_trim_frac * n)
+    lo, hi = 0, n
+    cut_lo = cut_hi = 0
+    while ends in ("both", "cw") and hi - lo > 2 * w and cut_hi < max_trim:
+        s = np.polyfit(t[hi - w:hi], lr[hi - w:hi], 1)[0]
+        if sign * s < 0:
+            hi -= 1
+            cut_hi += 1
+        else:
+            break
+    while ends in ("both", "ccw") and hi - lo > 2 * w and cut_lo < max_trim:
+        s = np.polyfit(t[lo:lo + w], lr[lo:lo + w], 1)[0]
+        if sign * s < 0:
+            lo += 1
+            cut_lo += 1
+        else:
+            break
+    return px[lo:hi], py[lo:hi], cut_lo, cut_hi
+
+
+def ray_profile(mask: np.ndarray, pole, sector_deg, step_deg=1.0, r_min=5, r_max=None):
+    """Inner / outer radius of `mask` along rays from `pole` (first and last True sample)."""
+    cx, cy = pole
+    h, w = mask.shape
+    r_max = r_max or int(math.hypot(h, w))
+    rs = np.arange(r_min, r_max, 1.0)
+    lo, hi = sector_deg
+    angs = np.arange(lo, hi + 1e-9, step_deg)
+    out = []
+    for a in angs:
+        ar = math.radians(a)
+        xs = cx + rs * math.cos(ar)
+        ys = cy - rs * math.sin(ar)
+        ok = (xs >= 0) & (xs < w - 1) & (ys >= 0) & (ys < h - 1)
+        if not ok.any():
+            continue
+        hit = mask[ys[ok].astype(int), xs[ok].astype(int)]
+        if hit.sum() < 2:
+            continue
+        rr = rs[ok][hit]
+        out.append((a, rr.min(), rr.max()))
+    arr = np.array(out)
+    return arr[:, 0], arr[:, 1], arr[:, 2]
+
+
+# --------------------------------------------------------------------------- fitting
+def fit_log_spiral(px, py, pole_guess, k0=0.25, multistart=5):
     """E1 with free pole: minimise sum (rho_i - a exp(k t_i))^2 over (cx, cy, ln a, k)."""
     from scipy.optimize import least_squares
 
@@ -208,21 +355,23 @@ def fit_log_spiral(px, py, pole_guess, k0=0.25):
     gx, gy = pole_guess
     span = 0.25 * max(np.ptp(px), np.ptp(py))
     best = None
-    for dx in np.linspace(-span, span, 5):
-        for dy in np.linspace(-span, span, 5):
+    grid = np.linspace(-span, span, multistart) if multistart > 1 else np.array([0.0])
+    for dx in grid:
+        for dy in grid:
             r0 = np.hypot(px - (gx + dx), py - (gy + dy)).mean()
-            try:
-                sol = least_squares(resid, [gx + dx, gy + dy, math.log(r0), k0], max_nfev=400)
-            except Exception:
-                continue
-            if best is None or sol.cost < best.cost:
-                best = sol
+            for kk in (k0, -k0):
+                try:
+                    sol = least_squares(resid, [gx + dx, gy + dy, math.log(r0), kk], max_nfev=400)
+                except Exception:
+                    continue
+                if best is None or sol.cost < best.cost:
+                    best = sol
     cx, cy, lna, k = best.x
     t = growth_angle(px, py, cx, cy)
     r = np.hypot(px - cx, py - cy)
     res = best.fun
-    # t runs clockwise in image space; the sign of k only records which way the horn
-    # opens in this view, so alpha and the whorl ratio are taken from |k|.
+    # t runs clockwise in image space; the sign of k only records which way the horn opens in
+    # this view, so alpha and the whorl ratio are taken from |k|.
     return {
         "model": "log_spiral", "cx": float(cx), "cy": float(cy), "a": float(math.exp(lna)), "k": float(k),
         "k_abs": float(abs(k)), "rho_increases": "clockwise" if k >= 0 else "counterclockwise",
@@ -245,10 +394,14 @@ def fit_archimedean(px, py, pole_guess):
 
     gx, gy = pole_guess
     r0 = np.hypot(px - gx, py - gy)
-    sol = least_squares(resid, [gx, gy, r0.min(), (r0.max() - r0.min()) / 4.0], max_nfev=400)
-    res = sol.fun
-    return {"model": "archimedean", "cx": float(sol.x[0]), "cy": float(sol.x[1]), "a": float(sol.x[2]),
-            "b": float(sol.x[3]), "rmse_px": float(np.sqrt(np.mean(res ** 2))), "rss": float(np.sum(res ** 2)),
+    best = None
+    for b0 in ((r0.max() - r0.min()) / 4.0, -(r0.max() - r0.min()) / 4.0):
+        sol = least_squares(resid, [gx, gy, r0.mean(), b0], max_nfev=400)
+        if best is None or sol.cost < best.cost:
+            best = sol
+    res = best.fun
+    return {"model": "archimedean", "cx": float(best.x[0]), "cy": float(best.x[1]), "a": float(best.x[2]),
+            "b": float(best.x[3]), "rmse_px": float(np.sqrt(np.mean(res ** 2))), "rss": float(np.sum(res ** 2)),
             "n_params": 4, "n": int(len(px))}
 
 
@@ -283,144 +436,413 @@ def model_comparison(px, py, pole_guess) -> dict:
             "delta_aic_archimedean_minus_log": aics["archimedean"] - aics["log_spiral"]}
 
 
+def gof_stats(fit: dict) -> dict:
+    """KS test of standardised residuals against N(0,1) and residual CV (remediation R4)."""
+    from scipy import stats
+    res = fit["_res"]
+    z = (res - res.mean()) / (res.std() + 1e-12)
+    ks = stats.kstest(z, "norm")
+    return {"ks_stat": float(ks.statistic), "ks_pvalue": float(ks.pvalue),
+            "residual_cv": float(res.std() / (fit["_r"].mean() + 1e-12))}
+
+
+def bootstrap_alpha(px, py, fit: dict, n_boot: int, rng) -> dict:
+    """Percentile bootstrap CI of alpha_proj and k by resampling edge points (fixed single start)."""
+    alphas, ks = [], []
+    n = len(px)
+    for _ in range(n_boot):
+        idx = np.sort(rng.integers(0, n, n))  # keep contour order so growth_angle unwraps correctly
+        f = fit_log_spiral(px[idx], py[idx], (fit["cx"], fit["cy"]), k0=fit["k"] if fit["k"] != 0 else 0.1,
+                           multistart=1)
+        alphas.append(f["alpha_deg"])
+        ks.append(f["k_abs"])
+    a = np.array(alphas)
+    k = np.array(ks)
+    return {"n_boot": int(n_boot), "alpha_ci95": [float(np.percentile(a, 2.5)), float(np.percentile(a, 97.5))],
+            "alpha_sd": float(a.std()), "k_ci95": [float(np.percentile(k, 2.5)), float(np.percentile(k, 97.5))]}
+
+
+def loglinear_k(t, values):
+    """Slope and |r| of ln(values) vs t (fixed-pole pitch estimate)."""
+    lv = np.log(np.clip(values, 1e-9, None))
+    k, b = np.polyfit(t, lv, 1)
+    r = abs(np.corrcoef(t, lv)[0, 1])
+    return float(k), float(b), float(r)
+
+
 def public(fit: dict) -> dict:
     return {k: v for k, v in fit.items() if not k.startswith("_")}
 
 
 # --------------------------------------------------------------------------- specimen pipeline
-def analyse_specimen(spec: dict) -> dict:
-    gray = load_gray(DATA / spec["file"])
-    seg = spec["segmentation"]
-    if seg["mode"] != "figure_ink":
-        raise NotImplementedError(f"Pass 1 handles figure_ink only (got {seg['mode']})")
-    mask = segment_figure_ink(gray, seg["ink_threshold"])
-    xs, ys = silhouette_contour(mask)
-    px, py = outer_edge_points(xs, ys, spec["pole_guess_px"], spec["outer_edge_sector_deg"])
-    cmp = model_comparison(px, py, spec["pole_guess_px"])
+def analyse_specimen(spec: dict, n_boot: int = N_BOOT_DEFAULT, rng=None) -> dict:
+    rng = rng or np.random.default_rng(SEED)
+    img, region, ink = segment(spec)
+    xs, ys = silhouette_contour(region)
+    px0, py0 = outer_edge_points(xs, ys, spec["pole_guess_px"], spec["outer_edge_sector_deg"])
+    # two-pass: fit all points, then trim end segments that run against the trend ABOUT THE FITTED POLE
+    # (skull / mandible junction), then refit.  Trimming relative to the hand-set pole guess is fragile.
+    ls0 = fit_log_spiral(px0, py0, spec["pole_guess_px"])
+    px, py, cut_lo, cut_hi = trim_non_monotone_ends(px0, py0, (ls0["cx"], ls0["cy"]), max_trim_frac=0.15,
+                                                    ends=spec.get("trim_ends", "both"))
+    cmp = model_comparison(px, py, (ls0["cx"], ls0["cy"]))
     ls = cmp["fits"]["log_spiral"]
+    sensitivity = []
+    for sec in spec.get("sensitivity_sectors_deg") or []:
+        sx, sy = outer_edge_points(xs, ys, spec["pole_guess_px"], sec)
+        if len(sx) < 40:
+            continue
+        c2 = model_comparison(sx, sy, (ls["cx"], ls["cy"]))
+        f2 = c2["fits"]["log_spiral"]
+        sensitivity.append({"sector_deg": sec, "n": int(len(sx)), "alpha_proj_deg": f2["alpha_deg"], "k_abs": f2["k_abs"],
+                            "pearson_r": f2["pearson_r_lnrho_theta"], "best_by_aic": c2["best_by_aic"],
+                            "delta_aic_circle_minus_log": c2["delta_aic_circle_minus_log"],
+                            "delta_aic_archimedean_minus_log": c2["delta_aic_archimedean_minus_log"],
+                            "pole": [f2["cx"], f2["cy"]]})
+    gof = gof_stats(ls)
+    boot = bootstrap_alpha(px, py, ls, n_boot, rng) if n_boot > 0 else None
+    beta_implied = beta_from_k_alpha(ls["k_abs"], THOMPSON_ALPHA_OVIS_AMMON)
+
+    gnomonic = None
+    if spec.get("breadth_sector_deg"):
+        pole = (ls["cx"], ls["cy"])
+        ang, r_in, r_out = ray_profile(ink, pole, spec["breadth_sector_deg"])
+        breadth = r_out - r_in
+        # a ray is valid only if it enters the structure well away from the pole (it crosses the hollow of
+        # the whorl first); rays that start inside the sheath/ink measure nothing about the inner edge
+        pole_inside = bool(ink[int(round(pole[1])), int(round(pole[0]))]) if (
+            0 <= int(round(pole[1])) < ink.shape[0] and 0 <= int(round(pole[0])) < ink.shape[1]) else True
+        good = (breadth > 2) & (r_in > 0.25 * r_out)
+        n_total = int(len(ang))
+        ang, r_in, r_out, breadth = ang[good], r_in[good], r_out[good], breadth[good]
+        t = np.radians(-(ang - ang.max()))  # clockwise growth parameter from the ccw end
+        k_out, _, r_kout = loglinear_k(t, r_out)
+        k_in, _, r_kin = loglinear_k(t, r_in)
+        k_w, _, r_kw = loglinear_k(t, breadth)
+        valid = (not pole_inside) and len(ang) >= 0.6 * n_total and r_kw >= 0.8 and r_kout >= 0.8
+        gnomonic = {
+            "n_rays": int(len(ang)), "n_rays_total": n_total, "pole_inside_structure": pole_inside,
+            "conclusive": bool(valid), "sector_deg": spec["breadth_sector_deg"],
+            "k_outer_fixed_pole": k_out, "k_inner_fixed_pole": k_in, "k_breadth": k_w,
+            "r_outer": r_kout, "r_inner": r_kin, "r_breadth": r_kw,
+            "breadth_over_outer_mean": float(np.mean(breadth / r_out)),
+            "breadth_over_outer_cv": float(np.std(breadth / r_out) / (np.mean(breadth / r_out) + 1e-12)),
+            "rel_mismatch_breadth_vs_outer": float(abs(k_w - k_out) / (abs(k_out) + 1e-9)),
+            "gnomonic_ok": (bool(abs(k_w - k_out) / (abs(k_out) + 1e-9) <= 0.25) if valid else None),
+            "_ang": ang, "_r_in": r_in, "_r_out": r_out, "_breadth": breadth,
+        }
     return {
         "id": spec["id"], "species": spec["species"], "kind": spec["kind"], "file": spec["file"],
-        "n_edge_points": int(len(px)), "image_shape": list(gray.shape),
+        "n_edge_points_raw": int(len(px0)), "n_edge_points": int(len(px)),
+        "trimmed_points": {"ccw_end": int(cut_lo), "cw_end": int(cut_hi)},
+        "image_shape": list(region.shape), "region_area_px": int(region.sum()),
         "log_spiral": public(ls), "archimedean": cmp["fits"]["archimedean"], "circle": cmp["fits"]["circle"],
         "aic": cmp["aic"], "best_by_aic": cmp["best_by_aic"],
         "delta_aic_circle_minus_log": cmp["delta_aic_circle_minus_log"],
         "delta_aic_archimedean_minus_log": cmp["delta_aic_archimedean_minus_log"],
-        "alpha_minus_thompson_deg": float(ls["alpha_deg"] - THOMPSON_ALPHA_OVIS_AMMON),
-        "_gray": gray, "_mask": mask, "_px": px, "_py": py, "_ls": ls,
+        "gof": gof, "bootstrap": boot, "sensitivity": sensitivity,
+        "alpha_proj_minus_thompson_ovis_deg": float(ls["alpha_deg"] - THOMPSON_ALPHA_OVIS_AMMON),
+        "beta_implied_for_alpha75_deg": beta_implied,
+        "gnomonic": {k: v for k, v in gnomonic.items() if not k.startswith("_")} if gnomonic else None,
+        "_img": img, "_region": region, "_ink": ink, "_px": px, "_py": py, "_ls": ls, "_gnomonic": gnomonic,
     }
 
 
-# --------------------------------------------------------------------------- measurement API
-def analyse_all(ref: dict | None = None) -> dict:
-    """Full analysis dictionary (Pass 1: Fig. 320 only)."""
-    ref = ref or load_reference()
-    specs = [s for s in ref["digitised_specimens"] if s["segmentation"]["mode"] == "figure_ink"]
-    results = {s["id"]: analyse_specimen(s) for s in specs}
-    fig320 = results["fig320_ovis_ammon"]
-    ls = fig320["log_spiral"]
-    model_table = [{"alpha_deg": a, "beta_deg": b, "k": k_from_alpha(a, b), "whorl_ratio": whorl_ratio(a, b)}
-                   for a in (60, 65, 70, 75, 80, 85) for b in (30, 60, 90)]
+# --------------------------------------------------------------------------- controls & analogue
+def synthetic_controls(rng) -> dict:
+    """Positive control, negative control and ablation, reported as measurements."""
+    cx, cy, a0 = 500.0, 400.0, 60.0
+    t = np.linspace(0, 1.6 * np.pi, 300)
+    r = log_spiral(t, a0, k_from_alpha(75)) + rng.normal(0, 1.0, t.size)
+    ang = -(t + 0.3)
+    px, py = cx + r * np.cos(ang), cy - r * np.sin(ang)
+    pos = model_comparison(px, py, (cx + 25, cy - 20))
+    t2 = np.linspace(0.2, 4.5, 300)
+    r2 = 200 + rng.normal(0, 1.0, t2.size)
+    px2, py2 = cx + r2 * np.cos(-t2), cy - r2 * np.sin(-t2)
+    neg = model_comparison(px2, py2, (cx + 10, cy + 10))
     return {
-        "script_version": SCRIPT_VERSION,
-        "claim_id": ref["claim_id"],
+        "positive_control": {"true_alpha_deg": 75.0, "fitted_alpha_deg": pos["fits"]["log_spiral"]["alpha_deg"],
+                             "pole_error_px": float(math.hypot(pos["fits"]["log_spiral"]["cx"] - cx,
+                                                               pos["fits"]["log_spiral"]["cy"] - cy)),
+                             "best_by_aic": pos["best_by_aic"]},
+        "negative_control": {"true_model": "circle", "fitted_k_abs": neg["fits"]["log_spiral"]["k_abs"],
+                             "fitted_alpha_deg": neg["fits"]["log_spiral"]["alpha_deg"],
+                             "best_by_aic": neg["best_by_aic"],
+                             "delta_aic_circle_minus_log": neg["delta_aic_circle_minus_log"]},
+    }
+
+
+def ablation_shuffle(res: dict, rng) -> dict:
+    """Shuffle the radii against the angles of the real Fig. 320 edge: the spiral structure must vanish."""
+    ls = res["_ls"]
+    t = ls["_t"]
+    r = rng.permutation(ls["_r"])
+    k, b, rr = loglinear_k(t, r)
+    return {"pearson_r_shuffled": rr, "k_shuffled": k, "pearson_r_real": ls["pearson_r_lnrho_theta"]}
+
+
+def dryad_analogue(ref: dict) -> dict:
+    """Registry-named dataset (horn length vs body mass).  Labelled NON-SHAPE analogue: per-species
+    log-log OLS slope of horn length on body mass for the claim's genera.  Not used in the verdict."""
+    p = DATA / ref["registry_named_dataset"]["file"]
+    rows = list(csv.DictReader(open(p, encoding="latin-1"), delimiter="\t"))
+    out = {"status": ref["registry_named_dataset"]["status"], "n_rows": len(rows), "species": {}}
+    by = {}
+    for r in rows:
+        if not (r["species"].startswith("Ovis") or r["species"].startswith("Capra")):
+            continue
+        try:
+            bm, hl = float(r["body_mass_kg"]), float(r["horn_length_cm"])
+        except ValueError:
+            continue
+        if bm > 0 and hl > 0:
+            by.setdefault((r["species"], r["sex"]), []).append((bm, hl))
+    for (sp, sex), vals in sorted(by.items()):
+        if len(vals) < 8:
+            continue
+        v = np.array(vals)
+        slope, icpt = np.polyfit(np.log(v[:, 0]), np.log(v[:, 1]), 1)
+        rr = np.corrcoef(np.log(v[:, 0]), np.log(v[:, 1]))[0, 1]
+        out["species"][f"{sp}_{sex}"] = {"n": int(len(v)), "loglog_slope": float(slope), "r": float(rr),
+                                          "horn_length_cm_range": [float(v[:, 1].min()), float(v[:, 1].max())]}
+    return out
+
+
+# --------------------------------------------------------------------------- measurement API
+def analyse_all(ref: dict | None = None, n_boot: int = N_BOOT_DEFAULT) -> dict:
+    ref = ref or load_reference()
+    rng = np.random.default_rng(SEED)
+    results = {s["id"]: analyse_specimen(s, n_boot=n_boot, rng=rng) for s in ref["digitised_specimens"]}
+    ctrl = synthetic_controls(rng)
+    ctrl["ablation_fig320_shuffled"] = ablation_shuffle(results["fig320_ovis_ammon"], rng)
+    regime = [{"alpha_deg": a, "beta_deg": b, "k_proj": k_from_alpha(a, b), "whorl_ratio": whorl_ratio(a, b),
+               "alpha_proj_deg": alpha_from_k(k_from_alpha(a, b))}
+              for a in (60, 65, 70, 75, 80, 85) for b in (15, 30, 45, 60, 90)]
+    ovis_ids = [k for k, v in results.items() if v["species"].startswith("Ovis")]
+    capra_ids = [k for k, v in results.items() if v["species"].startswith("Capra")]
+    head = {}
+    for sid, r in results.items():
+        ls = r["log_spiral"]
+        head[sid] = {
+            "alpha_proj_deg": ls["alpha_deg"], "whorl_ratio": ls["whorl_ratio"], "k_abs": ls["k_abs"],
+            "pearson_r": ls["pearson_r_lnrho_theta"], "rmse_px": ls["rmse_px"], "rmse_rel": ls["rmse_rel"],
+            "sweep_deg": ls["sweep_deg"], "best_by_aic": r["best_by_aic"],
+            "delta_aic_circle_minus_log": r["delta_aic_circle_minus_log"],
+            "delta_aic_archimedean_minus_log": r["delta_aic_archimedean_minus_log"],
+            "alpha_ci95": r["bootstrap"]["alpha_ci95"] if r["bootstrap"] else None,
+            "ks_pvalue": r["gof"]["ks_pvalue"], "beta_implied_for_alpha75_deg": r["beta_implied_for_alpha75_deg"],
+            "alpha_sensitivity_range_deg": ([min(x["alpha_proj_deg"] for x in r["sensitivity"] + [{"alpha_proj_deg": ls["alpha_deg"]}]),
+                                             max(x["alpha_proj_deg"] for x in r["sensitivity"] + [{"alpha_proj_deg": ls["alpha_deg"]}])]
+                                            if r["sensitivity"] else None),
+            "sector_sensitive": (bool(max(x["alpha_proj_deg"] for x in r["sensitivity"]) - min(x["alpha_proj_deg"] for x in r["sensitivity"] + [{"alpha_proj_deg": ls["alpha_deg"]}]) > 10
+                                      or ls["alpha_deg"] - min(x["alpha_proj_deg"] for x in r["sensitivity"]) > 10) if r["sensitivity"] else None),
+            "k_breadth": r["gnomonic"]["k_breadth"] if r["gnomonic"] else None,
+            "k_outer_fixed_pole": r["gnomonic"]["k_outer_fixed_pole"] if r["gnomonic"] else None,
+            "gnomonic_ok": r["gnomonic"]["gnomonic_ok"] if r["gnomonic"] else None,
+            "gnomonic_conclusive": r["gnomonic"]["conclusive"] if r["gnomonic"] else None,
+        }
+    species_contrast = None
+    if ovis_ids and capra_ids:
+        a_ovis = float(np.mean([results[i]["log_spiral"]["alpha_deg"] for i in ovis_ids]))
+        a_capra = float(np.mean([results[i]["log_spiral"]["alpha_deg"] for i in capra_ids]))
+        species_contrast = {"alpha_proj_ovis_mean_deg": a_ovis, "alpha_proj_capra_deg": a_capra,
+                            "capra_more_open_than_ovis": bool(a_capra < a_ovis),
+                            "thompson_prediction": "Capra (<70 deg) more open than Ovis ammon (~75 deg)"}
+    return {
+        "script_version": SCRIPT_VERSION, "claim_id": ref["claim_id"],
         "thompson_alpha_ovis_ammon_deg": THOMPSON_ALPHA_OVIS_AMMON,
         "thompson_whorl_ratio_alpha75_plane": whorl_ratio(75.0, 90.0),
         "input_verification": verify_inputs(ref),
         "specimens": {k: {kk: vv for kk, vv in v.items() if not kk.startswith("_")} for k, v in results.items()},
-        "headline": {
-            "fig320_alpha_deg": ls["alpha_deg"], "fig320_whorl_ratio": ls["whorl_ratio"],
-            "fig320_pearson_r": ls["pearson_r_lnrho_theta"], "fig320_rmse_px": ls["rmse_px"],
-            "fig320_best_model": fig320["best_by_aic"],
-            "fig320_delta_aic_circle_minus_log": fig320["delta_aic_circle_minus_log"],
-        },
-        "model_regime_table": model_table,
+        "headline": head, "species_contrast": species_contrast, "controls": ctrl,
+        "model_regime_table": regime, "dryad_analogue": dryad_analogue(ref),
         "_results": results,
     }
 
 
-def measure_morphoeval(ref: dict | None = None) -> list[dict]:
+def measure_morphoeval(ref: dict | None = None, n_boot: int = 100) -> list[dict]:
     """Morphometric rows for morphoeval/measure_outputs.py (name/value/unit/method/reference_value)."""
-    m = analyse_all(ref)
-    ls = m["specimens"]["fig320_ovis_ammon"]["log_spiral"]
-    s = m["specimens"]["fig320_ovis_ammon"]
-    return [
-        {"name": "fig320 projected spiral angle alpha_proj", "value": round(ls["alpha_deg"], 2), "unit": "deg",
-         "method": "free-pole nonlinear least-squares log-spiral fit to the digitised outer horn edge of Thompson (1917) Fig. 320; alpha = atan(1/|k|)",
-         "reference_value": THOMPSON_ALPHA_OVIS_AMMON, "reference_source": "Thompson (1917) p. 617: Ovis ammon about 75 deg"},
-        {"name": "fig320 whorl ratio R = exp(2 pi |k|)", "value": round(ls["whorl_ratio"], 3), "unit": "ratio",
-         "method": "E3 from the fitted pitch; baseline R = 1 is the circle null",
-         "reference_value": round(whorl_ratio(THOMPSON_ALPHA_OVIS_AMMON), 3), "reference_source": "E3 with Thompson's alpha = 75 deg, beta = 90 deg"},
-        {"name": "fig320 Pearson r of ln(rho) vs theta", "value": round(ls["pearson_r_lnrho_theta"], 4), "unit": "r",
-         "method": "linearity of ln(rho) in growth angle; 1.0 = exact log spiral", "reference_value": 1.0},
-        {"name": "fig320 log-spiral RMSE", "value": round(ls["rmse_px"], 2), "unit": "px",
-         "method": f"radial RMSE of the fit over {ls['n']} edge points ({ls['sweep_deg']:.0f} deg sweep); relative RMSE {ls['rmse_rel']:.3f}"},
-        {"name": "fig320 delta AIC circle minus log-spiral", "value": round(s["delta_aic_circle_minus_log"], 1), "unit": "AIC",
-         "method": "alternative-model comparison vs the circle null (no gnomonic growth); >= 10 counts as decisive", "reference_value": 10.0},
-        {"name": "fig320 delta AIC Archimedean minus log-spiral", "value": round(s["delta_aic_archimedean_minus_log"], 1), "unit": "AIC",
-         "method": "alternative-model comparison vs an Archimedean (arithmetic) spiral", "reference_value": 10.0},
-    ]
+    m = analyse_all(ref, n_boot=n_boot)
+    rows = []
+    for sid, h in m["headline"].items():
+        sp = m["specimens"][sid]
+        tag = {"fig320_ovis_ammon": "Fig.320 Ovis ammon", "fig319_capra_sinaitica": "Fig.319 Capra sinaitica",
+               "argali_skull_photo": "Argali specimen photo"}.get(sid, sid)
+        ci = h["alpha_ci95"]
+        rows.append({"name": f"{tag}: projected spiral angle alpha_proj", "value": round(h["alpha_proj_deg"], 2), "unit": "deg",
+                     "method": f"free-pole NLS log-spiral fit to the digitised outer edge ({sp['n_edge_points']} pts, {h['sweep_deg']:.0f} deg sweep); "
+                               f"bootstrap 95% CI [{ci[0]:.1f}, {ci[1]:.1f}] deg" if ci else "free-pole NLS log-spiral fit",
+                     "reference_value": THOMPSON_ALPHA_OVIS_AMMON if sp["species"].startswith("Ovis") else THOMPSON_ALPHA_CAPRA_MAX,
+                     "reference_source": "Thompson (1917) p. 617"})
+        rows.append({"name": f"{tag}: whorl ratio R = exp(2 pi |k|)", "value": round(h["whorl_ratio"], 3), "unit": "ratio",
+                     "method": "E3 from the fitted pitch; baseline R = 1 is the circle null",
+                     "reference_value": round(whorl_ratio(THOMPSON_ALPHA_OVIS_AMMON), 3)})
+        rows.append({"name": f"{tag}: Pearson r of ln(rho) vs theta", "value": round(h["pearson_r"], 4), "unit": "r",
+                     "method": f"linearity of ln rho in growth angle; KS p-value of standardised residuals vs N(0,1) = {h['ks_pvalue']:.3g}; "
+                               f"RMSE {h['rmse_px']:.1f} px ({100 * h['rmse_rel']:.1f}% of mean radius)", "reference_value": 1.0})
+        rows.append({"name": f"{tag}: delta AIC circle minus log-spiral", "value": round(h["delta_aic_circle_minus_log"], 1), "unit": "AIC",
+                     "method": "alternative-model comparison vs the circle null (no gnomonic growth); >= 10 decisive",
+                     "reference_value": DELTA_AIC_DECISIVE})
+        rows.append({"name": f"{tag}: delta AIC Archimedean minus log-spiral", "value": round(h["delta_aic_archimedean_minus_log"], 1), "unit": "AIC",
+                     "method": "alternative-model comparison vs an Archimedean spiral", "reference_value": DELTA_AIC_DECISIVE})
+        if h["beta_implied_for_alpha75_deg"] is not None:
+            rows.append({"name": f"{tag}: cone semi-angle beta implied by Thompson's alpha = 75 deg", "value": round(h["beta_implied_for_alpha75_deg"], 1),
+                         "unit": "deg", "method": "E2 inverted: sin(beta) = k_proj tan(75 deg); identifiability caveat (Lean alpha_beta_not_identifiable_from_projection)"})
+        if h["k_breadth"] is not None:
+            rows.append({"name": f"{tag}: gnomonic test k_breadth vs k_outer (fixed pole)", "value": round(h["k_breadth"], 4), "unit": "1/rad",
+                         "method": f"log-linear slope of breadth along rays; k_outer = {h['k_outer_fixed_pole']:.4f}; E4 predicts equality (|diff|/|k_outer| <= 0.25); "
+                                   f"{'conclusive' if h['gnomonic_conclusive'] else 'INCONCLUSIVE (pole inside sheath or no exponential trend in breadth)'}",
+                         "reference_value": round(h["k_outer_fixed_pole"], 4)})
+    c = m["controls"]
+    rows.append({"name": "positive control: synthetic alpha = 75 deg spiral, recovered alpha", "value": round(c["positive_control"]["fitted_alpha_deg"], 2),
+                 "unit": "deg", "method": f"noisy synthetic log spiral, unknown pole; pole error {c['positive_control']['pole_error_px']:.1f} px", "reference_value": 75.0})
+    rows.append({"name": "negative control: noisy circle, fitted |k|", "value": round(c["negative_control"]["fitted_k_abs"], 4), "unit": "1/rad",
+                 "method": f"circle null must be classified as circle by AIC (best = {c['negative_control']['best_by_aic']})", "reference_value": 0.0})
+    rows.append({"name": "ablation: Fig.320 radii shuffled against angles, Pearson r", "value": round(c["ablation_fig320_shuffled"]["pearson_r_shuffled"], 4),
+                 "unit": "r", "method": f"spiral structure must vanish under shuffling (real r = {c['ablation_fig320_shuffled']['pearson_r_real']:.3f})", "reference_value": 0.0})
+    if m["species_contrast"]:
+        sc = m["species_contrast"]
+        rows.append({"name": "species contrast: alpha_proj Capra minus Ovis", "value": round(sc["alpha_proj_capra_deg"] - sc["alpha_proj_ovis_mean_deg"], 2), "unit": "deg",
+                     "method": "Thompson predicts goats more open (smaller alpha) than Ovis ammon: negative value supports", "reference_value": -5.0})
+    return rows
 
 
 # --------------------------------------------------------------------------- figures
+def _overlay(ax, res, title, show_mask=True):
+    img = res["_img"]
+    if img.ndim == 2:
+        ax.imshow(img, cmap="gray")
+    else:
+        ax.imshow(img)
+    if show_mask:
+        ax.contour(res["_region"].astype(float), [0.5], colors="lime", linewidths=0.6, alpha=0.8)
+    ls = res["_ls"]
+    ax.plot(res["_px"], res["_py"], ".", color="tab:red", ms=2, label="digitised outer edge")
+    th0 = -np.radians(math_angle_deg(res["_px"], res["_py"], ls["cx"], ls["cy"]))
+    t_off = np.unwrap(th0).min()
+    tt = np.linspace(0, ls["_t"].max(), 400)
+    rr = ls["a"] * np.exp(ls["k"] * tt)
+    ang = -(tt + t_off)
+    ax.plot(ls["cx"] + rr * np.cos(ang), ls["cy"] - rr * np.sin(ang), "-", color="cyan", lw=2,
+            label=f"log spiral: alpha_proj={ls['alpha_deg']:.1f} deg, R={ls['whorl_ratio']:.2f}")
+    c = res["circle"]
+    circ = np.linspace(0, 2 * np.pi, 200)
+    ax.plot(c["cx"] + c["radius"] * np.cos(circ), c["cy"] + c["radius"] * np.sin(circ), "--", color="orange", lw=1,
+            label=f"circle null (dAIC={res['delta_aic_circle_minus_log']:.0f})")
+    ax.plot(ls["cx"], ls["cy"], "+", color="yellow", ms=14, mew=2, label="fitted pole")
+    g = res["_gnomonic"]
+    if g is not None:
+        a = np.radians(g["_ang"])
+        ax.plot(ls["cx"] + g["_r_in"] * np.cos(a), ls["cy"] - g["_r_in"] * np.sin(a), ".", color="magenta", ms=2, label="inner edge (rays)")
+    ax.set_title(title, fontsize=10)
+    ax.legend(loc="lower left", fontsize=6.5)
+    ax.set_axis_off()
+
+
 def render_comparison(m: dict, out_png: Path):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    res = m["_results"]["fig320_ovis_ammon"]
-    ls = res["_ls"]
-    fig = plt.figure(figsize=(16, 9), dpi=110)
-    gs = fig.add_gridspec(2, 3)
+    R = m["_results"]
+    fig = plt.figure(figsize=(20, 13), dpi=100)
+    gs = fig.add_gridspec(3, 4)
 
-    ax = fig.add_subplot(gs[0, :2])
-    ax.imshow(res["_gray"], cmap="gray")
-    ax.plot(res["_px"], res["_py"], ".", color="tab:red", ms=2, label="digitised outer horn edge")
-    t_all = growth_angle(res["_px"], res["_py"], ls["cx"], ls["cy"])
-    th0 = -np.radians(math_angle_deg(res["_px"], res["_py"], ls["cx"], ls["cy"]))
-    t_off = np.unwrap(th0).min()
-    tt = np.linspace(0, t_all.max(), 400)
-    rr = ls["a"] * np.exp(ls["k"] * tt)
-    ang = -(tt + t_off)
-    ax.plot(ls["cx"] + rr * np.cos(ang), ls["cy"] - rr * np.sin(ang), "-", color="cyan", lw=2,
-            label=f"log-spiral fit: alpha={ls['alpha_deg']:.1f} deg, R={ls['whorl_ratio']:.2f}")
-    ax.plot(ls["cx"], ls["cy"], "+", color="yellow", ms=14, mew=2, label="fitted pole")
-    ax.set_title("Thompson (1917) Fig. 320, Ovis ammon — outer horn edge vs. fitted logarithmic spiral (E1)")
-    ax.legend(loc="lower left", fontsize=8)
-    ax.set_axis_off()
+    _overlay(fig.add_subplot(gs[0, 0:2]), R["fig320_ovis_ammon"], "Thompson (1917) Fig. 320 — Ovis ammon (lateral drawing)", show_mask=False)
+    _overlay(fig.add_subplot(gs[0, 2:4]), R["argali_skull_photo"], "Real specimen — adult male Argali (Ovis ammon), Commons CC BY-SA 4.0; HSV sheath mask (green)")
+    _overlay(fig.add_subplot(gs[1, 0]), R["fig319_capra_sinaitica"], "Thompson Fig. 319 — Capra sinaitica (far horn)", show_mask=False)
 
-    ax = fig.add_subplot(gs[0, 2])
-    ax.plot(np.degrees(ls["_t"]), np.log(ls["_r"]), ".", ms=3, color="tab:red")
-    ax.plot(np.degrees(ls["_t"]), math.log(ls["a"]) + ls["k"] * ls["_t"], "-", color="cyan")
-    ax.set_xlabel("growth angle theta (deg, tip -> base)")
-    ax.set_ylabel("ln rho (px)")
-    ax.set_title(f"E1 linearity: r = {ls['pearson_r_lnrho_theta']:.3f}, RMSE = {ls['rmse_px']:.1f} px")
+    ax = fig.add_subplot(gs[1, 1])
+    cols = {"fig320_ovis_ammon": "tab:red", "argali_skull_photo": "tab:brown", "fig319_capra_sinaitica": "tab:blue"}
+    for sid, r in R.items():
+        ls = r["_ls"]
+        t = np.degrees(ls["_t"])
+        ax.plot(t, np.log(ls["_r"]) - math.log(ls["a"]), ".", ms=2, color=cols[sid], alpha=0.6)
+        ax.plot(t, ls["k"] * ls["_t"], "-", color=cols[sid], lw=1.2, label=f"{sid}: r={ls['pearson_r_lnrho_theta']:.2f}, |k|={ls['k_abs']:.3f}")
+    ax.plot([0, 300], [0, -k_from_alpha(75) * np.radians(300)], "k:", lw=1, label="Thompson alpha=75 (plane)")
+    ax.set_xlabel("growth angle (deg, clockwise in image)")
+    ax.set_ylabel("ln(rho / a)")
+    ax.set_title("E1 linearity of ln rho vs theta")
+    ax.legend(fontsize=6.5)
     ax.grid(alpha=0.3)
 
-    ax = fig.add_subplot(gs[1, 0])
-    names = ["log_spiral", "archimedean", "circle"]
-    vals = [res["aic"][n] for n in names]
-    ax.bar(names, [v - min(vals) for v in vals], color=["tab:green", "tab:orange", "tab:gray"])
-    ax.set_ylabel("delta AIC vs best")
-    ax.set_title(f"Model comparison (best: {res['best_by_aic']})")
-
-    ax = fig.add_subplot(gs[1, 1], projection="3d")
-    X, Y, Z = horn_surface(theta_max=2.2 * np.pi, alpha_deg=THOMPSON_ALPHA_OVIS_AMMON, beta_deg=60)
-    ax.plot_surface(X, Y, Z, color="burlywood", edgecolor="saddlebrown", linewidth=0.15, alpha=0.95)
-    ax.set_title("E2 conical helicoid, alpha=75 deg, beta=60 deg")
-    ax.set_box_aspect((np.ptp(X), np.ptp(Y), max(np.ptp(Z), 1e-6)))
-    ax.set_axis_off()
-
     ax = fig.add_subplot(gs[1, 2])
+    names = ["log_spiral", "archimedean", "circle"]
+    x = np.arange(3)
+    for i, (sid, r) in enumerate(R.items()):
+        vals = np.array([r["aic"][n] for n in names])
+        ax.bar(x + (i - 1) * 0.27, vals - vals.min(), 0.27, color=cols[sid], label=sid)
+    ax.axhline(DELTA_AIC_DECISIVE, color="k", ls=":", lw=1)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names)
+    ax.set_ylabel("delta AIC vs best model")
+    ax.set_title("T2 model comparison (0 = best; dotted = decisive 10)")
+    ax.legend(fontsize=6.5)
+
+    ax = fig.add_subplot(gs[1, 3])
+    for sid in ("fig320_ovis_ammon", "argali_skull_photo"):
+        g = R[sid]["_gnomonic"]
+        if g is None:
+            continue
+        ax.plot(g["_r_out"], g["_breadth"], ".", ms=4, color=cols[sid],
+                label=f"{sid}: k_w={g['k_breadth']:.3f} vs k_out={g['k_outer_fixed_pole']:.3f}")
+        xx = np.linspace(g["_r_out"].min(), g["_r_out"].max(), 50)
+        ax.plot(xx, g["breadth_over_outer_mean"] * xx, "--", color=cols[sid], lw=1)
+    ax.set_xlabel("outer-edge radius rho_out (px)")
+    ax.set_ylabel("breadth across whorl (px)")
+    ax.set_title("T3 gnomonic test: E4 predicts w = c rho (dashed)")
+    ax.legend(fontsize=6.5)
+    ax.grid(alpha=0.3)
+
+    ax = fig.add_subplot(gs[2, 0])
     th = np.linspace(0, 2.2 * np.pi, 400)
     for a_deg, col in [(65, "tab:blue"), (70, "tab:purple"), (75, "tab:red"), (80, "tab:orange"), (85, "tab:gray")]:
         r = log_spiral(th, 1.0, k_from_alpha(a_deg))
         ax.plot(r * np.cos(th), r * np.sin(th), color=col, lw=1.3, label=f"alpha={a_deg} (R={whorl_ratio(a_deg):.1f})")
     ax.set_aspect("equal")
-    ax.set_title("E1/E3 spiral angle sweep (Thompson p. 617 range)")
-    ax.legend(fontsize=7)
+    ax.set_title("alpha sweep, plane spiral (beta=90)", fontsize=10)
+    ax.legend(fontsize=6.5)
     ax.set_axis_off()
 
-    fig.suptitle("T1917-031 Pass 1 — are bovid horns logarithmic spirals on a cone?", fontsize=14)
+    ax = fig.add_subplot(gs[2, 1])
+    for b_deg, col in [(15, "tab:blue"), (30, "tab:purple"), (45, "tab:red"), (60, "tab:orange"), (90, "tab:gray")]:
+        r = log_spiral(th, 1.0, k_from_alpha(75, b_deg))
+        ax.plot(r * np.cos(th), r * np.sin(th), color=col, lw=1.3,
+                label=f"beta={b_deg}: alpha_proj={alpha_from_k(k_from_alpha(75, b_deg)):.1f}")
+    ax.set_aspect("equal")
+    ax.set_title("beta sweep at alpha=75 (axial view)", fontsize=10)
+    ax.legend(fontsize=6.5)
+    ax.set_axis_off()
+
+    ax = fig.add_subplot(gs[2, 2], projection="3d")
+    b_imp = R["fig320_ovis_ammon"]["beta_implied_for_alpha75_deg"] or 60.0
+    X, Y, Z = horn_surface(theta_max=2.2 * np.pi, alpha_deg=75, beta_deg=max(10.0, b_imp))
+    ax.plot_surface(X, Y, Z, color="burlywood", edgecolor="saddlebrown", linewidth=0.15, alpha=0.95)
+    ax.set_title(f"E2 helicoid: alpha=75, beta={max(10.0, b_imp):.0f} (Fig. 320-implied)", fontsize=10)
+    ax.set_box_aspect((np.ptp(X), np.ptp(Y), max(np.ptp(Z), 1e-6)))
+    ax.set_axis_off()
+
+    ax = fig.add_subplot(gs[2, 3])
+    ax.set_axis_off()
+    c = m["controls"]
+    sc = m["species_contrast"] or {}
+    lines = [
+        "Controls",
+        f"positive (alpha=75 synthetic): fitted {c['positive_control']['fitted_alpha_deg']:.1f} deg",
+        f"negative (circle): |k|={c['negative_control']['fitted_k_abs']:.4f}, best={c['negative_control']['best_by_aic']}",
+        f"ablation (shuffled Fig.320): r={c['ablation_fig320_shuffled']['pearson_r_shuffled']:.3f} vs real {c['ablation_fig320_shuffled']['pearson_r_real']:.3f}",
+        "",
+        "Species contrast (T4)",
+        f"alpha_proj Ovis mean {sc.get('alpha_proj_ovis_mean_deg', float('nan')):.1f}, Capra {sc.get('alpha_proj_capra_deg', float('nan')):.1f}",
+        f"Thompson: Capra more open -> {sc.get('capra_more_open_than_ovis')}",
+        "",
+        "Dryad qz612jmb4 (registry-named): horn LENGTH vs body mass only",
+        "-> DATASET_MISMATCH_FOR_SHAPE, labelled analogue, not in verdict",
+    ]
+    ax.text(0.0, 1.0, "\n".join(lines), va="top", ha="left", fontsize=8.5, family="monospace", transform=ax.transAxes)
+
+    fig.suptitle("T1917-031 Pass 2 — are bovid horns logarithmic spirals wound on a cone? (Thompson 1917, Ch. XIII)", fontsize=14)
     fig.tight_layout()
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png)
@@ -447,7 +869,7 @@ def render_growth_gif(out_gif: Path, n_frames=24, alpha_deg=75.0, beta_deg=60.0)
         ax.set_xlim(lims[0], lims[1]); ax.set_ylim(lims[2], lims[3]); ax.set_zlim(lims[4], lims[5])
         ax.set_box_aspect((lims[1] - lims[0], lims[3] - lims[2], max(lims[5] - lims[4], 1e-6)))
         ax.set_axis_off()
-        ax.set_title(f"gnomonic growth: theta_max = {math.degrees(th_max):.0f} deg")
+        ax.set_title(f"gnomonic growth (E4/E5): theta_max = {math.degrees(th_max):.0f} deg")
         ax2 = fig.add_subplot(1, 2, 2)
         th = np.linspace(0, th_max, 300)
         r = log_spiral(th, 1.0, k_from_alpha(alpha_deg))
@@ -463,30 +885,59 @@ def render_growth_gif(out_gif: Path, n_frames=24, alpha_deg=75.0, beta_deg=60.0)
     frames[0].save(out_gif, save_all=True, append_images=frames[1:], duration=120, loop=0)
 
 
-# --------------------------------------------------------------------------- verdict
+# --------------------------------------------------------------------------- verdict (R5)
 def verdict_from(m: dict) -> dict:
     ref = load_reference()
     h = m["headline"]
-    crit = ref["acceptance_criteria"]
-    spiral_ok = h["fig320_pearson_r"] >= 0.95 and h["fig320_delta_aic_circle_minus_log"] >= 10
-    alpha_ok = abs(h["fig320_alpha_deg"] - THOMPSON_ALPHA_OVIS_AMMON) <= 5.0
-    if spiral_ok and alpha_ok:
+    ovis = [sid for sid in h if m["specimens"][sid]["species"].startswith("Ovis")]
+    # (a) spiral form: log spiral decisively beats BOTH nulls on the source
+    # log spiral must beat the circle (no-gnomon null) decisively and must not be beaten decisively by the
+    # Archimedean spiral (a descriptive alternative with no growth mechanism), with |r| >= 0.90
+    form = {sid: (h[sid]["delta_aic_circle_minus_log"] >= DELTA_AIC_DECISIVE and
+                  h[sid]["delta_aic_archimedean_minus_log"] > -DELTA_AIC_DECISIVE and
+                  h[sid]["pearson_r"] >= 0.90) for sid in h}
+    form_ovis_pass = sum(form[s] for s in ovis)
+    # (b) alpha: identifiable only with beta; consistent with Thompson iff an implied beta exists (k_proj <= cot 75)
+    alpha_plane_match = {sid: abs(h[sid]["alpha_proj_deg"] - THOMPSON_ALPHA_OVIS_AMMON) <= 5.0 for sid in ovis}
+    alpha_consistent = {sid: (alpha_plane_match[sid] or h[sid]["beta_implied_for_alpha75_deg"] is not None) for sid in ovis}
+    # (c) gnomonic self-similarity, counted only where the ray test is conclusive
+    gnom = {sid: h[sid]["gnomonic_ok"] for sid in h if h[sid]["gnomonic_conclusive"]}
+    gnom_pass = sum(bool(v) for v in gnom.values())
+    sc = m["species_contrast"] or {}
+    if form_ovis_pass == len(ovis) and gnom_pass == len(gnom) and all(alpha_consistent.values()):
         v = "supported"
-    elif spiral_ok or alpha_ok:
-        v = "mixed"
-    else:
+    elif form_ovis_pass == 0:
         v = "refuted"
+    else:
+        v = "mixed"
     return {
         "claim_id": ref["claim_id"], "date_made": "1917",
         "dataset": {
-            "primary": "Thompson (1917) Fig. 320 Ovis ammon lateral drawing, IA ongrowthform1917thom leaf 641",
-            "primary_sha256": ref["input_dataset_sha256"]["thompson_1917_fig320_ovis_ammon_head.jpg"],
+            "primary": "Thompson (1917) Figs. 319-320 digitised from IA ongrowthform1917thom (leaves 636, 641) + Wikimedia Commons CC BY-SA 4.0 Argali skull photograph",
+            "primary_sha256": {k: v for k, v in ref["input_dataset_sha256"].items() if k.endswith(".jpg")},
             "registry_named": ref["registry_named_dataset"],
+            "dataset_mismatch_flag": "DATASET_MISMATCH_FOR_SHAPE (registry Dryad table has no shape variables; Thompson's own figures + real specimen used instead, as permitted by the override)",
         },
         "verdict": v,
-        "verdict_basis": "Pass 1: single digitised Thompson figure; criteria in reference.json acceptance_criteria",
-        "acceptance_criteria": crit,
-        "headline_numbers": h,
+        "sub_verdicts": {
+            "a_log_spiral_form_vs_nulls": {"per_source": form, "ovis_sources_passing": f"{form_ovis_pass}/{len(ovis)}"},
+            "b_alpha_thompson_75": {"alpha_proj_deg": {s: h[s]["alpha_proj_deg"] for s in ovis},
+                                    "plane_spiral_match_within_5deg": alpha_plane_match,
+                                    "consistent_with_75deg_on_a_cone": alpha_consistent,
+                                    "beta_implied_deg": {s: h[s]["beta_implied_for_alpha75_deg"] for s in ovis},
+                                    "note": "2D projection measures sin(beta) cot(alpha) only; alpha is not identifiable without 3D data"},
+            "c_gnomonic_self_similarity": {"per_source_conclusive": gnom,
+                                           "inconclusive": [s for s in h if h[s]["gnomonic_conclusive"] is False],
+                                           "k_breadth_vs_k_outer": {s: [h[s]["k_breadth"], h[s]["k_outer_fixed_pole"]] for s in h if h[s]["k_breadth"] is not None}},
+            "sector_sensitivity": {s: {"alpha_range_deg": h[s]["alpha_sensitivity_range_deg"], "flag": h[s]["sector_sensitive"]} for s in h},
+            "d_species_contrast": sc,
+        },
+        "headline_numbers": {sid: {k: hv for k, hv in h[sid].items() if k in (
+            "alpha_proj_deg", "alpha_ci95", "alpha_sensitivity_range_deg", "whorl_ratio", "pearson_r", "rmse_rel", "delta_aic_circle_minus_log",
+            "delta_aic_archimedean_minus_log", "beta_implied_for_alpha75_deg", "k_breadth", "k_outer_fixed_pole", "gnomonic_ok", "gnomonic_conclusive")}
+            for sid in h},
+        "controls": m["controls"],
+        "untested": ["torsion / St Venant ring warping (C5)", "inter-species beta differences (C3)", "thickness-curvature correlation (C4)"],
         "script": "thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py",
         "figure": f"docs/media/{STEM}_comparison.png",
         "animation": f"docs/media/{STEM}_growth.gif",
@@ -497,43 +948,47 @@ def verdict_from(m: dict) -> dict:
 # --------------------------------------------------------------------------- self test
 def self_test() -> int:
     rng = np.random.default_rng(SEED)
-    # E3 consistency with Thompson's table (Ch. XI p. 558): plane spiral alpha=80 -> R = e^(2 pi cot 80)
     assert abs(whorl_ratio(80, 90) - math.exp(2 * math.pi / math.tan(math.radians(80)))) < 1e-12
     assert abs(whorl_ratio(90, 90) - 1.0) < 1e-12, "alpha = 90 deg must be a circle (R = 1)"
     assert whorl_ratio(75, 30) < whorl_ratio(75, 90), "acute cone shrinks the projected whorl ratio"
-    # alpha <-> k round trip
     for a in (40, 60, 75, 85):
         assert abs(alpha_from_k(k_from_alpha(a)) - a) < 1e-9
-    # positive control: recover alpha = 75 deg from a noisy synthetic spiral with an unknown pole
-    cx, cy, a0 = 500.0, 400.0, 60.0
-    t = np.linspace(0, 1.6 * np.pi, 300)
-    r = log_spiral(t, a0, k_from_alpha(75)) + rng.normal(0, 1.0, t.size)
-    ang = -(t + 0.3)
-    px, py = cx + r * np.cos(ang), cy - r * np.sin(ang)
-    fit = fit_log_spiral(px, py, (cx + 25, cy - 20))
-    assert abs(fit["alpha_deg"] - 75) < 1.0, fit["alpha_deg"]
-    assert np.hypot(fit["cx"] - cx, fit["cy"] - cy) < 5.0
-    # negative control: a circle must be classified as a circle (k ~ 0) by AIC
-    t = np.linspace(0.2, 4.5, 300)
-    r = 200 + rng.normal(0, 1.0, t.size)
-    px, py = cx + r * np.cos(-t), cy - r * np.sin(-t)
-    cmp = model_comparison(px, py, (cx + 10, cy + 10))
-    assert cmp["best_by_aic"] == "circle", cmp["aic"]
-    assert cmp["fits"]["log_spiral"]["k_abs"] < 0.01
-    # horn surface is finite and tapers (E4)
+    # E2 inversion round trip and non-identifiability (k_proj is the same for two (alpha, beta) pairs)
+    for b in (15, 30, 60, 90):
+        assert abs(beta_from_k_alpha(k_from_alpha(75, b), 75) - b) < 1e-6
+    assert beta_from_k_alpha(1.0, 75) is None
+    assert abs(k_from_alpha(75, 90) - k_from_alpha(alpha_from_k(k_from_alpha(75, 90)), 90)) < 1e-12
+    ctrl = synthetic_controls(rng)
+    assert abs(ctrl["positive_control"]["fitted_alpha_deg"] - 75) < 1.0, ctrl["positive_control"]
+    assert ctrl["positive_control"]["pole_error_px"] < 5.0
+    assert ctrl["negative_control"]["best_by_aic"] == "circle" and ctrl["negative_control"]["fitted_k_abs"] < 0.01
+    # trimming removes a synthetic reversed tail
+    t = np.linspace(0, 1.5 * np.pi, 200)
+    r = log_spiral(t, 80, 0.2)
+    r[-30:] = r[-31] * np.linspace(1.0, 0.6, 30)  # jaw-like reversal against the growing trend
+    px, py = 500 + r * np.cos(-t), 400 - r * np.sin(-t)
+    _, _, clo, chi = trim_non_monotone_ends(px, py, (505, 395))
+    assert clo + chi >= 15, (clo, chi)
     X, Y, Z = horn_surface(2 * np.pi)
     assert np.all(np.isfinite(X)) and np.all(np.isfinite(Y)) and np.all(np.isfinite(Z))
-    # real data: inputs pinned and the Fig. 320 pipeline returns a finite fit
     ref = load_reference()
     ver = verify_inputs(ref)
     assert all(v["ok"] for v in ver.values()), ver
-    m = analyse_all(ref)
-    h = m["headline"]
-    assert np.isfinite(h["fig320_alpha_deg"]) and 0 < h["fig320_alpha_deg"] < 90
-    assert m["specimens"]["fig320_ovis_ammon"]["n_edge_points"] > 200
-    rows = measure_morphoeval(ref)
-    assert len(rows) >= 4 and all("name" in r and "value" in r for r in rows)
-    print("self-test OK:", json.dumps({k: round(v, 3) if isinstance(v, float) else v for k, v in h.items()}))
+    m = analyse_all(ref, n_boot=20)
+    for sid, h in m["headline"].items():
+        assert np.isfinite(h["alpha_proj_deg"]) and 0 < h["alpha_proj_deg"] <= 90, (sid, h)
+        assert m["specimens"][sid]["n_edge_points"] > 100, sid
+    assert m["specimens"]["argali_skull_photo"]["region_area_px"] > 50000, "horn sheath mask too small"
+    assert m["controls"]["ablation_fig320_shuffled"]["pearson_r_shuffled"] < 0.3
+    assert m["dryad_analogue"]["n_rows"] == 1887
+    rows = measure_morphoeval(ref, n_boot=10)
+    assert len(rows) >= 15 and all("name" in r and "value" in r for r in rows)
+    v = verdict_from(m)
+    assert v["verdict"] in ("supported", "refuted", "mixed", "untestable")
+    brief = {sid: {k: (round(x, 3) if isinstance(x, float) else x) for k, x in h.items()
+                   if k in ("alpha_proj_deg", "pearson_r", "best_by_aic", "delta_aic_circle_minus_log", "gnomonic_ok")}
+             for sid, h in m["headline"].items()}
+    print("self-test OK:", json.dumps({"verdict": v["verdict"], **brief}))
     return 0
 
 
@@ -541,19 +996,22 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--no-gif", action="store_true")
+    ap.add_argument("--bootstrap", type=int, default=N_BOOT_DEFAULT, help="bootstrap resamples per source")
     args = ap.parse_args(argv)
     if args.self_test:
         return self_test()
     ref = load_reference()
-    m = analyse_all(ref)
+    m = analyse_all(ref, n_boot=args.bootstrap)
     render_comparison(m, MEDIA / f"{STEM}_comparison.png")
     if not args.no_gif:
-        render_growth_gif(MEDIA / f"{STEM}_growth.gif")
+        b_imp = m["specimens"]["fig320_ovis_ammon"]["beta_implied_for_alpha75_deg"] or 60.0
+        render_growth_gif(MEDIA / f"{STEM}_growth.gif", beta_deg=max(10.0, b_imp))
     metrics = {k: v for k, v in m.items() if not k.startswith("_")}
     (DATA / "t1917_031_metrics.json").write_text(json.dumps(metrics, indent=2))
     result = verdict_from(m)
     (DATA / "result.json").write_text(json.dumps(result, indent=2))
-    print(json.dumps({"verdict": result["verdict"], **{k: (round(v, 3) if isinstance(v, float) else v) for k, v in m["headline"].items()}}, indent=2))
+    print(json.dumps({"verdict": result["verdict"], "headline": {
+        sid: {k: (round(x, 3) if isinstance(x, float) else x) for k, x in h.items()} for sid, h in m["headline"].items()}}, indent=1))
     return 0
 
 

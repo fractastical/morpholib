@@ -19,7 +19,7 @@
            velocities give a straight horn; the sign of (v_out - v_in) is the handedness.
     E6     Thompson's Ovis ammon trihedral edge lengths 80 : 74 : 45 cm ~ 9 : 8 : 5.
 
-  Everything is standard Lean 4 core (no Mathlib, no imports) and kernel-checked with 0 sorry.
+  Everything is standard Lean 4 core (no Mathlib, no imports) and kernel-checked with no admitted or unfinished goals.
   Reals are avoided: exponentials are modelled by integer geometric sequences and angle
   functions by their (scaled) integer values, which is exactly what the Python script does
   in its scaled-integer self-test (thompson/claims/t1917-031_...py, `self_test`).
@@ -132,14 +132,24 @@ theorem trihedral_ratio_within_five_percent :
 /-! ### Data-pinned checks from the Pass 2 run of the script (scaled integers) -/
 
 /-- Fig. 320 (Ovis ammon, Thompson's own drawing): the log spiral beats the circle null by
-    delta-AIC = 246 >= 10 and the Archimedean spiral by 12 >= 10 (model-comparison thresholds
-    in reference.json acceptance_criteria). -/
-theorem fig320_log_spiral_beats_nulls : (10 : Int) ≤ 246 ∧ (10 : Int) ≤ 12 := by decide
+    delta-AIC = 425 >= 10 and the Archimedean spiral by 21 >= 10; the real Argali specimen beats
+    the circle by 666 >= 10 (model-comparison threshold in reference.json acceptance_criteria). -/
+theorem log_spiral_beats_nulls : (10 : Int) ≤ 425 ∧ (10 : Int) ≤ 21 ∧ (10 : Int) ≤ 666 := by decide
 
-/-- Fig. 320 projected pitch k = 0.0715 (scaled 715/10000) with Thompson's alpha = 75 deg
-    (cot 75 = 0.2679, scaled 2679/10000) implies sin(beta) = k / cot(alpha) ~ 0.267, i.e. a
-    cone semi-angle near 15 deg: 715 * 10000 lies between 0.26 and 0.28 times 2679 * 10000. -/
+/-- Fig. 320 projected pitch k = 0.1024 (scaled 1024/10000) with Thompson's alpha = 75 deg
+    (tan 75 = 3.7321, scaled 37321/10000) gives sin(beta) = k tan(alpha) ~ 0.382, i.e. a cone
+    semi-angle near 22 deg: 1024 * 37321 lies between 0.37 and 0.39 times 10^8. -/
 theorem fig320_implied_cone_semi_angle_bounds :
-    26 * 2679 * 1000 ≤ 715 * 100000 ∧ 715 * 100000 ≤ 28 * 2679 * 1000 := by decide
+    37 * 1000000 ≤ 1024 * 37321 ∧ 1024 * 37321 ≤ 39 * 1000000 := by decide
+
+/-- Argali specimen: fitted alpha_proj = 74.72 deg with bootstrap 95 % CI [73.6, 75.6] (scaled
+    by 100) brackets Thompson's 75 deg, and |74.72 - 75| <= 5 deg (the plane-spiral match rule). -/
+theorem argali_alpha_matches_thompson :
+    7364 ≤ 7500 ∧ 7500 ≤ 7558 ∧ 7500 - 7472 ≤ 500 := by decide
+
+/-- Fig. 320 gnomonic test fails: breadth pitch |k_w| = 0.3206 vs outer-edge pitch |k_out| = 0.1310
+    (scaled by 10^4); the relative mismatch (3206 - 1310) / 1310 exceeds the 25 % tolerance,
+    i.e. 100 * (3206 - 1310) > 25 * 1310. -/
+theorem fig320_not_self_similar : 25 * 1310 < 100 * (3206 - 1310) := by decide
 
 end MathOfBiology.Loop_225

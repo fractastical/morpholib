@@ -58,6 +58,31 @@ figures from the pinned IA scan `ongrowthform1917thom` (printed page = leaf − 
    on standardised residuals, synthetic positive/negative controls and an ablation, an α-β regime
    sweep, and the Dryad analogue summary.
 
+## Pass 2 results (script v2.0.0-pass2; `result.json`, `t1917_031_metrics.json`)
+
+| source | sweep | α_proj (95 % CI) | R | r(ln ρ, θ) | RMSE | ΔAIC circle−log | ΔAIC Arch−log | β implied by α = 75° | sensitivity α range |
+|---|---|---|---|---|---|---|---|---|---|
+| Fig. 320 *Ovis ammon* (drawing) | 269° | 84.2° (83.7–84.6) | 1.90 | 0.968 | 3.7 % | **+425** | +22 | 22° | 77.6–84.2° |
+| Argali skull photo (real) | 215° | **74.7° (73.6–75.6)** | 5.57 | 0.995 | 2.6 % | **+666** | +2 | plane match (|Δ| < 5°) | 74.7–87.0° (flag) |
+| Fig. 319 *Capra sinaitica* (far horn) | ~half whorl | 86° primary; 53–86° across sectors | — | 0.89 | 4.7 % | +104 | −3 | — | not identifiable |
+
+- **(a) Log-spiral form:** on both *Ovis ammon* sources the logarithmic spiral beats the circle null
+  decisively and is not beaten by the Archimedean spiral → supported.
+- **(b) Thompson's α ≈ 75°:** the real specimen reproduces it (74.7°, CI brackets 75°); Thompson's own
+  drawing projects at 84°, consistent with 75° only on a cone of semi-angle ≈ 22° (α, β not separable in 2D).
+- **(c) Gnomonic self-similarity (E4):** fails on Fig. 320 — breadth decays with |k| = 0.32 while the outer
+  edge has |k| = 0.13 (the horn tapers 2.5× faster than its spiral tightens); inconclusive on the photo
+  (fitted pole lies inside the sheath, so ray breadths are invalid).
+- **(d) Species contrast:** the ibex half-whorl does not pin α (53–86° depending on sector); Thompson's
+  "goat < 70°" cannot be confirmed or refuted from Fig. 319.
+- Controls: synthetic α = 75° recovered to 75.0° (pole error 0.1 px); noisy circle classified as circle
+  (|k| = 0.0007); shuffling Fig. 320 radii against angles collapses r from 0.97 to 0.01.
+- Dryad analogue (non-shape): *Capra ibex* ♂ horn-length ∝ mass^1.23 (r = 0.96), ♀ ∝ mass^1.00 (r = 0.93) — reported only.
+
+**Verdict: `mixed`** — the spiral *form* is supported and the real *Ovis ammon* horn matches Thompson's
+spiral constant, but strict gnomonic self-similarity is not, and the cone/torsion component remains
+untested without 3D data.
+
 ## Known limitations
 
 - A lateral 2D view measures only `k_proj = sinβ cotα`; α and β are not separately identifiable
