@@ -1,0 +1,78 @@
+sim_id: thompson1917-t1917-010
+math_family: quantitative-empirical regenerative growth curves (Thompson 1917 Ch. III; Durbin 1909; Ellis 1909)
+model_spec:
+  model: "Thompson (1917) Ch. III 'Regeneration, or growth and repair': regenerated tail length L(t) is a lawful growth curve whose velocity V = dL/dt decays with time, and whose magnitude scales with the amount removed R"
+  velocity_definition: "V(t) = dL/dt (Fig. 36 is the derivative of Fig. 35)"
+  thompson_power_gloss: "V * t^2 = const  (p. 143)  =>  L(t) = L_inf - c / t"
+  log_linear_decay: "log V = log V0 - k t  (Fig. 37)  =>  L(t) = L_inf (1 - exp(-k (t - t0)))"
+  sigmoid_regime: "Exp. IV: V rises to a maximum about day 7 then declines (inflection in L)"
+  amount_removed_scaling: "L_n(R) = p_n * R  (Ellis table p. 148; p_n nearly constant in R)"
+  isochrone_law: "t_q(R): t_q(0) = 0, t_q -> inf as R -> 75 %; 'cubic parabola' R ~ t^3"
+  incomplete_restoration: "p_inf(R) < 1  (0.44 - 0.48)"
+  parameters:
+    seed: 1917010
+    fit_method: "SciPy least squares (curve_fit) on Thompson's printed tables; OLS in log space for decay exponents"
+    R_crit_pct: 75
+  inputs:
+    - datasets/thompson_1917/t1917-010/t1917_010_the_rate_of_growth_reference.json
+    - datasets/thompson_1917/t1917-010/thompson_p139_durbin_expII_regeneration.csv
+    - datasets/thompson_1917/t1917-010/thompson_p141_durbin_expII_interpolated.csv
+    - datasets/thompson_1917/t1917-010/thompson_p144_durbin_expIV_regeneration.csv
+    - datasets/thompson_1917/t1917-010/thompson_p148_ellis_tail_regeneration.csv
+    - datasets/thompson_1917/t1917-010/lithobates_clamitans_tadpole_specimen.jpg
+    - morphoeval/lean/loops/Thompson1917_T1917_010.lean
+equations:
+  - law_name: "Regenerative velocity is the derivative of the growth curve (telescoping)"
+    formula: "V(t) = L(t+1) - L(t);  sum_{t=3}^{29} V(t) = L(30) - L(3)"
+    lean_decl: "MathOfBiology.Loop_208.durbinV"
+    lean_theorem: "MathOfBiology.Loop_208.durbin_increments_telescope"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "L regenerated length (mm), V daily increment (mm/day), t days after amputation"
+    role: "Thompson p. 141-142: Fig. 36 'is simply the differential coefficient' of Fig. 35; checked on his interpolated Durbin table"
+    source_citation: "Thompson (1917) pp. 139-142, Figs. 35-36; Durbin (1909) Exp. II"
+  - law_name: "Thompson hyperbolic velocity gloss V t^2 = const"
+    formula: "V(t) = c / t^2  =>  L(t) = L_inf - c / t"
+    lean_decl: "MathOfBiology.Loop_208.hyperbolicV"
+    lean_theorem: "MathOfBiology.Loop_208.hyperbolic_velocity_antitone"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "c constant, t days, n = 2 claimed exponent"
+    role: "Thompson's stated empirical law for the declining phase; the script fits n freely and compares with the log-linear alternative"
+    source_citation: "Thompson (1917) p. 143 ('the velocity varies, or tends to vary, inversely as the square of the time')"
+  - law_name: "Log-linear (geometric) velocity decay and monomolecular approach"
+    formula: "V_{t+1} = q V_t, q < 1;  L_n = sum_k V_k;  L(t) = L_inf (1 - exp(-k (t - t0)))"
+    lean_decl: "MathOfBiology.Loop_208.decayV"
+    lean_theorem: "MathOfBiology.Loop_208.decayV_antitone"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "q = exp(-k) daily retention, V0 initial velocity, L_inf asymptote, t0 latent period"
+    role: "Thompson Fig. 37: logs of velocities 'fall approximately into a straight line' against time; the script tests this against the t^-2 gloss"
+    source_citation: "Thompson (1917) pp. 142-143, Fig. 37"
+  - law_name: "Ellis amount-removed scaling of the regenerate"
+    formula: "L_n(R) = p_n * R;  0 < p  and  R1 < R2  =>  L_n(R1) < L_n(R2)"
+    lean_decl: "MathOfBiology.Loop_208.regenerated"
+    lean_theorem: "MathOfBiology.Loop_208.regenerated_strict_mono"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "R amount removed (mm), p_n fraction of R restored after n days"
+    role: "Core of claim T1917-010: the amount (and hence rate) regenerated is related to the amount removed; checked on Ellis series O-S at day 9 and the day-32 plateau"
+    source_citation: "Thompson (1917) p. 148 table; Ellis (1909)"
+  - law_name: "Fig. 40 cubic-parabola isochrones"
+    formula: "R_q(t) = a t^3  (equivalently t_q(R) ~ R^(1/3));  t1 < t2 => R_q(t1) < R_q(t2);  R_q(0) = 0"
+    lean_decl: "MathOfBiology.Loop_208.cubicIsochrone"
+    lean_theorem: "MathOfBiology.Loop_208.cubic_isochrone_strict_mono"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "q per-cent of removed amount restored, R per-cent of tail removed, a shape constant, R_crit = 75 %"
+    role: "Thompson's constructed diagram: 'each curve approximates in form to a cubic parabola', starting from zero and diverging at 75 %"
+    source_citation: "Thompson (1917) pp. 147-149, Fig. 40"
+  - law_name: "Incomplete restoration plateau"
+    formula: "p_inf(R) < 1 for all series (44, 44, 48, 48 %)"
+    lean_decl: "MathOfBiology.Loop_208.regenerated"
+    lean_theorem: "MathOfBiology.Loop_208.ellis_restoration_incomplete"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_010.lean"
+    code_locus: "thompson/claims/t1917-010_the-rate-of-growth.py"
+    variables: "p_inf day-32 plateau fraction"
+    role: "Thompson p. 146: 'regeneration tends to fall somewhat short of a complete restoration of the lost part'"
+    source_citation: "Thompson (1917) p. 146, p. 148"
