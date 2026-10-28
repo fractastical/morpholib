@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-058> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-058-parameter-expressivity> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-058-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Cartesian transformation of the human skull into chimpanzee, baboon and dog (Figs. 404-408) — Parameter expressivity: 72/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Both morphospace parameters are now swept and their effects shown: k drives the predicted facial angle monotonically 89 -> 68 -> 55 -> 47 -> 43 -> 39 deg for k = 0 .. 2.5 and the explained fraction through a clear maximum (k* 0.85 for the chimpanzee); lambda drives bending monotonically to the affine limit. The GIF animates k = 0 -> 1 -> 2. Deduction: no third parameter (e.g. anisotropic intensity for face vs vault) is exposed, and the k and lambda effects are reported on the point estimate only, not under the jitter bootstrap." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5.1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-3> ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-058_on-the-theory-of-transformations.py L455–L500" ;
+        dct:description "LAM_SWEEP / K_SWEEP / fine k scan with argmax" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/a5007b9c0/thompson/claims/t1917-058_on-the-theory-of-transformations.py#L455-L500> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/thompson_1917/t1917-058/t1917_058_metrics.json (generated output)" ;
+        dct:description "pass2.sweep: facial_angle_monotone_decreasing_k_0_to_1.5 true, bending_monotone_decreasing_in_lambda true, k_optimum 0.85/1.15/1.30 — datasets/thompson_1917/t1917-058/t1917_058_metrics.json: rendered output of thompson/claims/t1917-058_on-the-theory-of-transformations.py at a5007b9c0, application/json, 49339 B, artifact_sha256 e96b962e952b3dbd3098ff99539074900d47c0f048b6b616b11c74631e90b09c (sha256 e96b962e952b3dbd3098ff99539074900d47c0f048b6b616b11c74631e90b09c), spec_fingerprint 974f3b1907dd69da0acb085b9f36dedce4c4532b025e0bf27519cd77a4567dc9" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-058-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/t1917_058_on_the_theory_of_transformatio_growth.gif (generated output)" ;
+        dct:description "k morph — docs/media/t1917_058_on_the_theory_of_transformatio_growth.gif: rendered output of thompson/claims/t1917-058_on-the-theory-of-transformations.py at a5007b9c0, image/gif, 1179678 B, 480×340 px, 19 frames, artifact_sha256 0f3e8a28771947c1d4d5bb2e0588d7f12173fc967eb74aaef2bae069037558ee (sha256 0f3e8a28771947c1d4d5bb2e0588d7f12173fc967eb74aaef2bae069037558ee), spec_fingerprint 974f3b1907dd69da0acb085b9f36dedce4c4532b025e0bf27519cd77a4567dc9" .
+    <https://w3id.org/delphi/resource/model/claude-fable-5.1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending)" ;
+        dct:identifier "claude-fable-5.1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5.1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/j.1525-142X.2005.05027.x>,
+            <https://doi.org/10.5061/dryad.7r85116> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form, Ch. XVII On the Theory of Transformations, pp. 770-773, Figs. 404-408" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://doi.org/10.1111/j.1525-142X.2005.05027.x> dct:date "2005"^^xsd:gYear ;
+        dct:title "Heterochrony and geometric morphometrics: a comparison of cranial growth in Pan paniscus versus Pan troglodytes" .
+    <https://doi.org/10.5061/dryad.7r85116> dct:date "2018"^^xsd:gYear ;
+        dct:title "Data from: Multiple factors behind early diversification of skull morphology in the continental radiation of New World monkeys" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Cartesian transformation of the human skull into chimpanzee, baboon and dog (Figs. 404-408) — Parameter expressivity 72/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T03:31:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-058-parameter-expressivity> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
