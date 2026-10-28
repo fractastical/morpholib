@@ -11,22 +11,22 @@ run:
   isolated: true
   notes: ''
 totals:
-  steps_completed: 6
+  steps_completed: 11
   steps_total: 12
-  wall_time_s: 1396.111
-  wall_time_min: 23.27
+  wall_time_s: 1648.176
+  wall_time_min: 27.47
   tier_a_wall_s: 1396.111
-  tier_b_wall_s: 0.0
+  tier_b_wall_s: 252.065
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   input_tokens: 0
-  output_tokens: 27992
+  output_tokens: 41913
   subagent_tokens: 0
-  total_llm_tokens: 27992
-  artifact_tokens: 27992
+  total_llm_tokens: 41913
+  artifact_tokens: 41913
   tier_a_llm_tokens: 27992
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 20.0
+  tier_b_llm_tokens: 13921
+  effective_tokens_per_s: 25.4
 steps:
 - num: 1
   slug: scout
@@ -244,129 +244,154 @@ steps:
   tier: B
   title: 7  Dual-agent audit
   actor: dual-assessors
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  model: claude-fable-5-1 + gemini-4-argon
+  status: completed
+  started_at: '2026-10-28T04:15:01.919Z'
+  ended_at: '2026-10-28T04:17:18.888Z'
+  duration_s: 136.969
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 3876
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3876
+    artifact_tokens: 3876
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit.yaml
+    bytes: 14550
+    sha256: 31b176557172c382ea12243bbfdaed91a3dae762e7c1ee0dcb83d964e6554318
+    tokens: 3876
   commands: []
-  notes: null
+  notes: Pass 1 audit ~60.7/100; 5 remediation items
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
   actor: tool (measure_outputs.py)
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-28T04:17:18.984Z'
+  ended_at: '2026-10-28T04:17:32.118Z'
+  duration_s: 13.134
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 1444
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 1444
+    artifact_tokens: 1444
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit.measurements.yaml
+    bytes: 4880
+    sha256: 70360bb1db07933a3cc02c9aead80cbfc13bc94118a11065d728edd1d0471005
+    tokens: 1444
   commands: []
-  notes: null
+  notes: 11 measurements, quick_gate 100/100
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
   actor: tool (build_morphoeval_kg.py)
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-28T04:17:32.220Z'
+  ended_at: '2026-10-28T04:18:32.200Z'
+  duration_s: 59.98
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 4969
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 4969
+    artifact_tokens: 4969
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit/REPORT.md
+    bytes: 10381
+    sha256: cdd5de88915df062fcfc451770952b41f2d6a7f18d7bebad1e3620190576acac
+    tokens: 3005
+  - file: morphoeval/kg/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit/thompson1917-t1917-032-claim.trig
+    bytes: 6647
+    sha256: 5bc940b6206159a2780c25a65fc8ffa7ff34461f79a21f83d28627ca44e7c4b6
+    tokens: 1964
   commands: []
-  notes: null
+  notes: 9 nanopubs, 472 triples, Project Delphi conformance OK (rubric reused from
+    levin v3)
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
   actor: tool (sign_morphoeval.py + check_signed.mjs)
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-28T04:18:32.312Z'
+  ended_at: '2026-10-28T04:19:00.866Z'
+  duration_s: 28.554
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 627
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 627
+    artifact_tokens: 627
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit/published.json
+    bytes: 1694
+    sha256: a801e406ea007399b2fa80bb58b6dff7e47033648a5ff013eb6ac8b923b02110
+    tokens: 627
   commands: []
-  notes: null
+  notes: 9 signed, 9 verified OK with @nanopub/sign
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
   actor: tool
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: completed
+  started_at: '2026-10-28T04:19:00.969Z'
+  ended_at: '2026-10-28T04:19:14.396Z'
+  duration_s: 13.428
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 3005
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3005
+    artifact_tokens: 3005
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit/REPORT.md
+    bytes: 10381
+    sha256: cdd5de88915df062fcfc451770952b41f2d6a7f18d7bebad1e3620190576acac
+    tokens: 3005
   commands: []
-  notes: null
+  notes: 'REPORT.md verified: overall 60.7, 9 trusty URIs recorded in published.json'
 - num: 12
   slug: remed
   tier: B->A
   title: 12 Remediate & re-score
   actor: builder+assessor
   model: null
-  status: pending
-  started_at: null
+  status: in_progress
+  started_at: '2026-10-28T04:19:14.495Z'
   ended_at: null
   duration_s: 0.0
   cpu_user_s: 0.0
@@ -383,3 +408,5 @@ steps:
   artifacts: []
   commands: []
   notes: null
+  _active_start_epoch: 1793161154.4958572
+  _transcript_offsets: {}
