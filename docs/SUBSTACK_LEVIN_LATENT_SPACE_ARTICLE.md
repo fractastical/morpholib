@@ -6,7 +6,7 @@
 
 ---
 
-For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a historian of math, it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (e.g. guru traditions).
+For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a [historian of math](https://mitpress.mit.edu/author/joel-dietz-39191/), it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (e.g. guru traditions).
 
 ![](https://fractastical.github.io/morpholib/media/galvani_1791_four_plates_and_mechanisms.png)
 
