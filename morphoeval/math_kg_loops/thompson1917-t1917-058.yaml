@@ -1,0 +1,111 @@
+sim_id: thompson1917-t1917-058
+math_family: "Thompson (1917) Cartesian Transformation of the Primate Skull: Affine Box-Stretch vs Non-Affine Whole-Diagram Warp (Thin-Plate Spline Decomposition)"
+claim_id: T1917-058
+date_made: "1917"
+model_spec:
+  model: "Thompson, D.W. (1917) On Growth and Form, Ch. XVII, pp. 770-773, Figs. 404-408: human skull in a 5x4 Cartesian net deformed into the chimpanzee, baboon and dog nets; formalised as a C^1 planar map T = affine + thin-plate-spline bending (Bookstein 1989) through the 30 digitised nodes of Fig. 405"
+  net: {abscissae: [0, 1, 2, 3, 4, 5], ordinates: ["0", "a", "b", "c", "d"], n_nodes: 30}
+  tps_kernel: "U(r) = r^2 log r"
+  tps_regularisation_lambda_default: 0.0
+  tps_regularisation_lambda_sweep: [0.0, 0.001, 0.01, 0.1, 1.0]
+  deformation_intensity_k_default: 1.0
+  deformation_intensity_k_sweep: [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+  landmarks: 11
+  landmark_jitter_sigma_fraction_of_centroid_size: 0.015
+  bootstrap_replicates: 1000
+  seed: 1917
+  inputs:
+    - datasets/thompson_1917/t1917-058/t1917_058_on_the_theory_of_transformatio_reference.json
+    - datasets/thompson_1917/t1917-058/scout_manifest.json
+    - datasets/thompson_1917/t1917-058/paper_citations.bib
+    - datasets/thompson_1917/t1917-058/fig404_human_skull_cartesian.jpg
+    - datasets/thompson_1917/t1917-058/fig405_chimpanzee_coordinates.jpg
+    - datasets/thompson_1917/t1917-058/homo_sapiens_lateral.jpg
+    - datasets/thompson_1917/t1917-058/pan_troglodytes_lateral.jpg
+    - datasets/thompson_1917/t1917-058/papio_ursinus_lateral.jpg
+    - datasets/thompson_1917/t1917-058/canis_familiaris_lateral.jpg
+  lean_module: morphoeval/lean/loops/Thompson1917_T1917_058.lean
+  lean_namespace: MathOfBiology.Loop_247
+  lean_verified: true
+  lean_version: "Lean 4.15.0"
+equations:
+  - law_name: "Affine Net Congruence: box stretch / shear keeps Cartesian cells congruent with a flat area field"
+    formula: "X = a i + b j + e, Y = c i + d j + f  =>  T(i+1,j) - T(i,j) = (a, c),  T(i,j+1) - T(i,j) = (b, d),  2 Area(T(cell_ij)) = a d - b c  for all (i, j);  b = c = 0 => constant ratio a d"
+    lean_decl: "MathOfBiology.Loop_247.cell_double_area"
+    lean_theorem: "MathOfBiology.Loop_247.affine_net_cells_congruent"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_058.lean#L47-L99"
+    lean_code: |
+      def affine_x (a b e i j : Int) : Int := a * i + b * j + e
+      def affine_y (c d f i j : Int) : Int := c * i + d * j + f
+      def cell_double_area (a b c d e f i j : Int) : Int :=
+        (affine_x a b e (i + 1) j - affine_x a b e i j) * (affine_y c d f i (j + 1) - affine_y c d f i j)
+        - (affine_x a b e i (j + 1) - affine_x a b e i j) * (affine_y c d f (i + 1) j - affine_y c d f i j)
+      theorem affine_net_cells_congruent (a b c d e f i j : Int) :
+          affine_x a b e (i + 1) j - affine_x a b e i j = a ∧
+          affine_y c d f (i + 1) j - affine_y c d f i j = c ∧
+          affine_x a b e i (j + 1) - affine_x a b e i j = b ∧
+          affine_y c d f i (j + 1) - affine_y c d f i j = d ∧
+          cell_double_area a b c d e f i j = a * d - b * c ∧
+          cell_double_area a 0 0 d e f i j = a * d
+    variables: "(i, j): Fig. 404 net node (abscissa 0..5 back-to-front, ordinate 0..4 bottom-to-top); a, d: axial stretch factors; b, c: shear terms; e, f: translation"
+    role: "Null model (the repo's 'rectangular box stretch'): if the human->ape difference were affine, Thompson's net lines would stay straight and every cell would scale by the same factor. The curved lines of Fig. 405 and the graded cell areas of p. 771 are quantified against this null by the bending-energy / affine-fraction decomposition (E2-E4 of the reference JSON)."
+    source_citation: "Thompson (1917) pp. 770-771, Figs. 404-406; Bookstein (1989) IEEE PAMI 11:567-585 (affine component of the TPS)"
+    code_locus: "thompson/claims/t1917-058_on-the-theory-of-transformations.py (tps_fit / affine_fit / cell_area_ratios)"
+
+  - law_name: "Thompson's Logarithmic Order of Cell-Area Increase (behind -> forwards, above -> downwards)"
+    formula: "log lambda(i, j) = alpha + beta_i i + beta_j j;  Delta_i log lambda = beta_i,  Delta_j log lambda = beta_j (constant);  beta_i > 0 => strictly increasing forwards;  beta_j < 0 => strictly increasing downwards"
+    lean_decl: "MathOfBiology.Loop_247.log_area"
+    lean_theorem: "MathOfBiology.Loop_247.log_area_gradient"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_058.lean#L108-L145"
+    lean_code: |
+      def log_area (alpha beta_i beta_j i j : Int) : Int := alpha + beta_i * i + beta_j * j
+      theorem log_area_gradient (alpha beta_i beta_j i j : Int) :
+          log_area alpha beta_i beta_j (i + 1) j - log_area alpha beta_i beta_j i j = beta_i ∧
+          log_area alpha beta_i beta_j i (j + 1) - log_area alpha beta_i beta_j i j = beta_j ∧
+          (0 < beta_i → ∀ di : Int, 0 < di →
+              log_area alpha beta_i beta_j i j < log_area alpha beta_i beta_j (i + di) j) ∧
+          (beta_j < 0 → ∀ dj : Int, 0 < dj →
+              log_area alpha beta_i beta_j i (j + dj) < log_area alpha beta_i beta_j i j) ∧
+          (log_area alpha beta_i beta_j (i + 2) j - log_area alpha beta_i beta_j (i + 1) j =
+            log_area alpha beta_i beta_j (i + 1) j - log_area alpha beta_i beta_j i j)
+    variables: "lambda(i, j): area of the deformed cell (i, j) divided by the area of the human Cartesian cell; alpha: log area scale; beta_i, beta_j: log-linear gradients along the abscissa and ordinate"
+    role: "Operationalises p. 771 'the corresponding areas of the network are seen to increase in a gradual and approximately logarithmic order' as a log-linear regression on the 20 digitised cells of Fig. 405: the claim is supported iff R^2 is high and the two sign conditions of the theorem hold (sub-claim C3)."
+    source_citation: "Thompson (1917) p. 771 (Figs. 405-407)"
+    code_locus: "thompson/claims/t1917-058_on-the-theory-of-transformations.py (cell_area_ratios / log_area_regression)"
+
+  - law_name: "Deformation-Intensity Family T_k = Id + k (T - Id): 'same order, increased intensity' (chimpanzee -> baboon)"
+    formula: "T_k(x) = x + k (T x - x);  T_0 = Id, T_1 = T;  T_k x - x = k (T x - x);  box stretch: T_k = (1 + k (a-1)) x;  a, d >= 1, 0 <= k <= k' => (1 + k(a-1))(1 + k(d-1)) <= (1 + k'(a-1))(1 + k'(d-1))"
+    lean_decl: "MathOfBiology.Loop_247.intensity_map"
+    lean_theorem: "MathOfBiology.Loop_247.intensity_family"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_058.lean#L153-L211"
+    lean_code: |
+      def intensity_map (a k x : Int) : Int := x + k * (a * x - x)
+      def intensity_scale (a k : Int) : Int := 1 + k * (a - 1)
+      def intensity_area (a d k : Int) : Int := intensity_scale a k * intensity_scale d k
+      theorem intensity_family (a d k k' x : Int) :
+          intensity_map a 0 x = x ∧
+          intensity_map a 1 x = a * x ∧
+          intensity_map a k x - x = k * (intensity_map a 1 x - x) ∧
+          intensity_map a k x = intensity_scale a k * x ∧
+          (1 ≤ a → 1 ≤ d → 0 ≤ k → k ≤ k' → intensity_area a d k ≤ intensity_area a d k')
+    variables: "k: deformation intensity (0 = human net, 1 = Thompson's chimpanzee net, >1 = his baboon hypothesis); a, d: axial stretch factors of the affine part; x: human-frame coordinate"
+    role: "Formalises p. 771 'the transformation is of precisely the same order, and differs only in an increased intensity or degree of deformation' and p. 772 'the chimpanzee's skull is much nearer to the human type than is the baboon's': the script fits k_C and k_B by projecting the real human->chimp and human->baboon Procrustes displacement fields on Thompson's drawn field and reports the cosine (same direction) and the ratio k_B / k_C > 1 (sub-claims C2, C4); the k-sweep is the parameter-expressivity axis of the audit."
+    source_citation: "Thompson (1917) pp. 771-772, Figs. 406-407"
+    code_locus: "thompson/claims/t1917-058_on-the-theory-of-transformations.py (intensity_sweep / displacement_field_cosine)"
+
+  - law_name: "Rectangular vs Triangular Conformation (Thompson's dog criterion): anterior taper of the height profile"
+    formula: "h_rect(x) = h0;  h_tri(x) = h0 - s x, s > 0;  xb < xf => h_rect(xf) = h_rect(xb),  h_tri(xf) < h_tri(xb),  h_tri(xb) - h_tri(xf) = s (xf - xb)"
+    lean_decl: "MathOfBiology.Loop_247.tri_height"
+    lean_theorem: "MathOfBiology.Loop_247.rectangular_vs_triangular"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_058.lean#L218-L242"
+    lean_code: |
+      def rect_height (h0 _x : Int) : Int := h0
+      def tri_height (h0 s x : Int) : Int := h0 - s * x
+      theorem rectangular_vs_triangular (h0 s xb xf : Int) (hs : 0 < s) (hx : xb < xf) :
+          rect_height h0 xf = rect_height h0 xb ∧
+          tri_height h0 s xf < tri_height h0 s xb ∧
+          tri_height h0 s xb - tri_height h0 s xf = s * (xf - xb)
+    variables: "h(x): dorsoventral height of the skull silhouette at anteroposterior station x; h0: posterior height; s: taper slope; xb, xf: posterior and anterior stations (25 % and 75 % of skull length)"
+    role: "p. 773: in the dog 'the former tapers away in front, a triangular taking the place of a rectangular conformation'. The script segments each specimen photograph (Otsu on the grey museum background), measures the silhouette height profile and reports the taper index h(xf)/h(xb), which the theorem shows equals 1 for a rectangle and falls below 1 for a triangle (sub-claim C5)."
+    source_citation: "Thompson (1917) p. 773, Fig. 408"
+    code_locus: "thompson/claims/t1917-058_on-the-theory-of-transformations.py (segment_specimen / taper_index)"
