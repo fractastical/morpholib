@@ -19,7 +19,7 @@ and repair* (pp. 138–149, Figs. 35–40):
 | `thompson_1917_p1NN_leafNNN.jpg` | Greyscale 1200 px copies of IA page scans (pp. 139, 140, 141, 144, 148) used to correct the OCR | `https://archive.org/download/ongrowthform1917thom/page/n{leaf-1}.jpg` |
 | `ongrowthform1917thom_ocr_excerpt_pp138-149.txt` | Verbatim OCR excerpt (lines 7744–8250 of the IA djvu text) | IA `ongrowthform1917thom` |
 | `lithobates_clamitans_tadpole_specimen.jpg` | CC-BY lateral photograph of a *Rana (Lithobates) clamitans* tadpole — Ellis's species | iNaturalist obs. 137092396, photo 234072694, (c) Evan Grimes, CC BY 4.0 |
-| `dryad_n6n6495_fitzpatrick_et_al_data.csv` | Pre-scouted Dryad hit (lizard tail autotomy / telomeres) | Dryad doi:10.5061/dryad.n6n6495 (CC0) — **DATASET_MISMATCH**, analogue only |
+| `dryad_n6n6495_fitzpatrick_et_al_data.csv` | Pre-scouted Dryad hit (lizard tail autotomy / telomeres); vendored copy is CRLF→LF normalised (pinned digest is of the LF bytes, original download digest kept in `reference.json`) | Dryad doi:10.5061/dryad.n6n6495 (CC0) — **DATASET_MISMATCH**, analogue only |
 | `t1917_010_the_rate_of_growth_reference.json` | Equations, state variables, boundary conditions, parameter regimes, claims tested, SHA-256 pins | this loop |
 | `scout_manifest.json` | Step 1 scouting dossier (dataset verification, specimen search, uniqueness check) | this loop |
 | `result.json` | Verdict written by `thompson/claims/t1917-010_the-rate-of-growth.py` | this loop |
@@ -50,6 +50,18 @@ labelled analogue, only as a provenance record.
   `L_n(R) ≈ p_n · R`.
 - **E6** Fig. 40 isochrones: `t_q(0) = 0`, `t_q → ∞` as `R → 75 %`, "cubic parabola" (`t_q ∝ R^{1/3}`).
 - **E7** Restoration is incomplete (`p_∞ ≈ 0.44–0.48`).
+
+## Headline result (Pass 2)
+
+Verdict **supported**: Ellis's absolute regenerate scales with the amount removed (r = 0.993 at
+day 9, 0.9997 at the day-32 plateau; exact permutation p = 1/24 each; R-independent null RMSE
+×4.8 / ×19 worse), both Durbin series are smooth lawful curves (exponential approach r = 0.9985,
+RMSE 0.089 mm; constant-velocity null ×13.5 worse; Gompertz inflection 6.3 d vs Thompson's "about
+the seventh day"), and the Fig. 40 isochrones follow a cubic parabola (log-log slope 0.35 vs 1/3).
+Caveats: Thompson's "V t² = const" gloss is not supported (fitted exponent 1.3, exponential decay
+fits better), and the divergence of the isochrones at 75 % is his extrapolation from the lethal
+fifth series, not something the four measured series require. The CC-BY specimen gives a CV tail
+fraction of 0.655 vs Thompson's 0.65.
 
 ## Reproduce
 
