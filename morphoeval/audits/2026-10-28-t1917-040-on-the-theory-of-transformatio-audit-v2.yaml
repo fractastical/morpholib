@@ -1,0 +1,113 @@
+# MorphoEval audit — Thompson (1917) T1917-040 Dürer/Camper facial profiles, Pass 2 (remediated)
+
+audit:
+  id: 2026-10-28-t1917-040-on-the-theory-of-transformatio-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-040-on-the-theory-of-transformatio-audit
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval loop thompson1917-t1917-040 Pass 2)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: cc716ad5c8529ea438a8998b3d46e62a3e104f44
+    environment:
+      python: "3.12"
+      numpy: "2.x"
+      scipy: "1.x"
+      matplotlib: "3.x"
+      Pillow: "10.x"
+    note: >-
+      Pass 2 default: grid sweep, bootstrap, KS test, specimen CV silhouette; verdict supported on
+      digitised Dürer profiles (TPS RMSE ≪ shuffled null); Dryad cichlid dataset not used.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, Ch. XVII, Figs. 353-358, 364, 366"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917)"
+    url: https://archive.org/details/ongrowthform1917thom
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE TPAMI 11:567-585 (1989)"
+    doi: 10.1109/34.24792
+  dryad0zpc86746:
+    title: "Effect of TSA on facial development in cichlid fishes (metadata only)"
+    venue: "Dryad"
+    doi: 10.5061/dryad.0zpc86746
+
+simulations:
+  - id: thompson1917-t1917-040
+    name: "Thompson (1917) Dürer/Camper human profile grid deformations (Pass 2)"
+    organism: "Homo sapiens profile (Fig. 364 + Commons skull lateral)"
+    script: thompson/claims/t1917-040_on-the-theory-of-transformations.py
+    output: docs/media/t1917_040_on_the_theory_of_transformatio_comparison.png
+    also:
+      - docs/media/t1917_040_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-040/result.json
+      - datasets/thompson_1917/t1917-040/t1917_040_metrics.json
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [thompson1917, bookstein1989, dryad0zpc86746]
+    summary: >-
+      Full validation on digitised Fig. 364 profiles: homologous TPS RMSE ≪ label-shuffled null
+      (ratio ≫ 1); Camper φ ordering preserved across profiles; specimen CV mask + core landmark
+      in-mask fraction ≥ 0.8; KS rejects shuffled residual equality (p ≪ 0.05).
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          Thompson stretch/shear/TPS on Dürer landmarks with 5×5 grid sweep and TPS λ ablation;
+          Lean Loop_232 proves rotation invariance, vertical stretch, and shear y-preservation.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [260, 310], note: "grid_sweep, bootstrap, KS in full_validation", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_040.lean, lines: [1, 55], note: "three theorems, zero sorry", supports: true}
+      specimen-match:
+        value: 58
+        rationale: >-
+          Segments Commons rendered skull (not museum photo) and plots silhouette; warped profile
+          not overlaid on specimen radiograph; upper calvaria landmarks off bone on this model.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [195, 220], note: "segment_skull_profile threshold mask", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/scout_manifest.json, lines: [44, 50], note: "rendered anatomical model caveat", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: >-
+          Sweeps k_vert and m_shear on Thompson Fig. 353/357 ranges plus TPS regularisation λ grid.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [268, 285], note: "25-cell affine sweep + lambda sweep", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          measure_morphoeval exports verdict, RMSE ratio, Camper angles, KS p-value, landmark-in-mask;
+          self_test asserts shuffled RMSE ≥ homologous and ablation ordering.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [330, 350], note: "measure_morphoeval dict", supports: true}
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_metrics.json, lines: [1, 40], note: "persisted run metrics", supports: true}
+      source-traceability:
+        value: 86
+        rationale: >-
+          IA Fig. 364/366 and Commons specimen SHA-256 pinned; Dryad metadata JSON pinned with
+          download-blocker note; result.json states DATASET_MISMATCH.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json, lines: [30, 45], note: "pinned_assets list", supports: true}
+      code-traceability:
+        value: 76
+        rationale: >-
+          Docstring maps E1-E5 equations; math_kg_loops yaml links Lean theorems to warp code paths.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-040.yaml, lines: [10, 35], note: "equation registry", supports: true}
+      repro-package:
+        value: 78
+        rationale: >-
+          --self-test verifies pins, determinism, ablation ordering, segmentation fraction; --pass1
+          retains reproducible baseline.
+        evidence:
+          - {file: thompson/claims/t1917-040_on-the-theory-of-transformations.py, lines: [478, 495], note: "self_test assertions", supports: true}
+    remediation: []

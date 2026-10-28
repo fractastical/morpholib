@@ -1,0 +1,35 @@
+sim_id: thompson1917-t1917-040
+math_family: geometric / Thompson coordinate deformation (Dürer-Camper facial profiles)
+model_spec:
+  model: "Thompson (1917) Ch. XVII Figs. 353-358, 364, 366 — human profile grids as whole-form deformations"
+  claim: "Human heads/faces in the Dürer/Camper tradition are mutually transformable by coordinate deformation; facial angle/proportion differences are whole-grid deformations."
+  empirical_data: "Thompson 1917 IA scan (Fig. 364 Dürer profiles digitised); Commons human skull lateral; Dryad 10.5061/dryad.0zpc86746 metadata only (fish, mismatch)"
+  inputs:
+    - datasets/thompson_1917/t1917-040/thompson1917_leaf759_p740_fig364_durer_profiles.jpg
+    - datasets/thompson_1917/t1917-040/homo_sapiens_lateral_profile.jpg
+    - datasets/thompson_1917/t1917-040/scout_manifest.json
+equations:
+  - law_name: Procrustes rotation distance invariance
+    formula: "‖R p - R q‖² = ‖p - q‖² for orthogonal R"
+    lean_decl: MathOfBiology.Loop_232.sq_dist
+    lean_theorem: MathOfBiology.Loop_232.procrustes_rotation_preserves_sq_dist
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_040.lean
+    role: GPA superimposition before Thompson grid warps on profile landmarks
+    variables: "R: 2×2 rotation; p,q: profile landmark coordinates"
+    source_citation: "Thompson (1917) Ch. XVII; Bookstein (1989) TPS"
+  - law_name: Vertical grid stretch (Fig. 353)
+    formula: "(x, y) ↦ (x, k y)"
+    lean_decl: MathOfBiology.Loop_232.vert_scale
+    lean_theorem: MathOfBiology.Loop_232.vertical_stretch_preserves_x
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_040.lean
+    role: Dürer proportion grid elongation along craniofacial axis
+    variables: "k: stretch factor; x,y: Cartesian grid coordinates"
+    source_citation: "Thompson (1917) Fig. 353"
+  - law_name: Horizontal shear preserves Frankfort-parallel levels
+    formula: "(x, y) ↦ (x + m y, y)"
+    lean_decl: MathOfBiology.Loop_232.horiz_shear
+    lean_theorem: MathOfBiology.Loop_232.shear_preserves_y
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_040.lean
+    role: Oblique-coordinate facial-angle change (Fig. 357 / 366)
+    variables: "m: shear; y: vertical grid index"
+    source_citation: "Thompson (1917) Figs. 357, 366; Camper facial angle"
