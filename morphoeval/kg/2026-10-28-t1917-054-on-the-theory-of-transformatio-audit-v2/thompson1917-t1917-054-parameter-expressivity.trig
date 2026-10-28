@@ -1,0 +1,82 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-054> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-054-parameter-expressivity> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-054-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Figs. 388-393: Archaeopteryx -> Apatornis pelvis by equidistant coordinate-grid interpolation — Parameter expressivity: 80/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "t moves the form monotonically (GIF; pubis angle 131 -> 162 deg; t* strictly increasing); the sweep over 6 semilandmark densities x 4 lambdas is run and reported (t* SD <= 0.003; prediction/endpoint ratio 0.51 -> 0.91 as lambda grows, i.e. lambda visibly trades endpoint fidelity for smoothness); three transformation families (dense TPS, coarse 9-anchor TPS, affine) are compared at every stage. Deduction: the anchor set of the coarse grid (9) is fixed, not swept." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "thompson/claims/t1917-054_on-the-theory-of-transformations.py L511–L514: coarse-grid anchor count fixed at 9 <https://github.com/fractastical/morpholib/blob/7a7c0f5b6/thompson/claims/t1917-054_on-the-theory-of-transformations.py#L511-L514>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-054-parameter-expressivity-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-054-parameter-expressivity-2> ;
+        pk:hasScore "0.8"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-054-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-054_on-the-theory-of-transformations.py L717–L755" ;
+        dct:description "parameter_sweep: 24 settings, t* mean/SD/CV, pred/endpoint range, all_monotone, all_beat_endpoint" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7a7c0f5b6/thompson/claims/t1917-054_on-the-theory-of-transformations.py#L717-L755> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-054-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/thompson_1917/t1917-054/result.json (generated output)" ;
+        dct:description "parameter_sweep rows and summary written to the verdict file — datasets/thompson_1917/t1917-054/result.json: rendered output of thompson/claims/t1917-054_on-the-theory-of-transformations.py at 7a7c0f5b6, application/json, 16321 B, artifact_sha256 2a03419b94cc0dcb4da4cc17a55affffa7098b5cc24fd2338149a48aa2a543d2 (sha256 2a03419b94cc0dcb4da4cc17a55affffa7098b5cc24fd2338149a48aa2a543d2), spec_fingerprint 2777b4737ea8977ede0d810eac8e3fa1010e0a04c769590e31a7cb66eaa76bf4" .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1007/BF02291478>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/jeb.13256>,
+            <https://doi.org/10.1206/0003-0090(2004)286%3C0001:MPTASO%3E2.0.CO;2> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form (Ch. XVII, On the Theory of Transformations, or the Comparison of Related Forms, pp. 757-759, Figs. 388-393)" .
+    <https://doi.org/10.1007/BF02291478> dct:date "1975"^^xsd:gYear ;
+        dct:title "Generalized Procrustes analysis" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://doi.org/10.1111/jeb.13256> dct:date "2018"^^xsd:gYear ;
+        dct:title "Pelvis morphology suggests that early Mesozoic birds were too heavy to contact incubate their eggs" .
+    <https://doi.org/10.1206/0003-0090(2004)286%3C0001:MPTASO%3E2.0.CO;2> dct:date "2004"^^xsd:gYear ;
+        dct:title "Morphology, phylogenetic taxonomy, and systematics of Ichthyornis and Apatornis (Avialae: Ornithurae)" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Figs. 388-393: Archaeopteryx -> Apatornis pelvis by equidistant coordinate-grid interpolation — Parameter expressivity 80/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:35:55Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-054-parameter-expressivity> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
