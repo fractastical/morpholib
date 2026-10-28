@@ -11,7 +11,20 @@ Transformations, or the Comparison of Related Forms", pp. 770-773, Figs. 404-408
      skulls of chimpanzee, baboon and dog: ape/human skull difference is a
      whole-diagram transformation (notably of the facial/cranial proportions)."
 
-Loop: thompson1917-t1917-058 (slot 247). Script version: v1 (Pass 1 baseline).
+Loop: thompson1917-t1917-058 (slot 247). Script version: v2 (Pass 2 remediation of audit
+2026-10-28-t1917-058-on-the-theory-of-transformatio-audit, items R1-R5):
+  R1 landmark-jitter bootstrap (sigma 1.5 % centroid size on every landmark, 3 px on every net
+     node, 1000 replicates) -> CIs for E_C, orderings, facial indices; label-permutation null
+     for E_C; goodness of fit r / RMSE / two-sample KS / paired Wilcoxon on per-landmark residuals.
+  R2 parameter-regime sweep: TPS regularisation lambda (0 -> affine limit) and intensity k
+     (0 .. 2.5, plus the mirrored k = -1 "anti-Thompson" net).
+  R3 negative / ablation controls: affine-only, mirrored net, label-shuffled null, wrong-target
+     specificity index.
+  R4 computer-vision segmentation of the four specimen photographs (saturation/value or
+     non-white mask -> largest component) -> silhouette height profile, anterior taper index
+     (Lean law 4) and silhouette face fraction; replaces the tied cosine test for C5.
+  R5 drawing-fidelity reported in the verdict; C4/C6 orderings re-run with Thompson's Fig. 404
+     drawing as the human reference (robustness to the rendered human model).
 
 What is tested and how (equation numbers refer to
 datasets/thompson_1917/t1917-058/t1917_058_on_the_theory_of_transformatio_reference.json)
@@ -93,7 +106,7 @@ DATA = REPO / "datasets" / "thompson_1917" / "t1917-058"
 REF_PATH = DATA / "t1917_058_on_the_theory_of_transformatio_reference.json"
 MEDIA = REPO / "docs" / "media"
 SLUG = "t1917_058_on_the_theory_of_transformatio"
-SCRIPT_VERSION = "v1"
+SCRIPT_VERSION = "v2"
 SEED = 1917
 
 LANDMARKS = ["PRO", "NAS", "RHI", "ORBS", "ORBI", "VTX", "OPC", "POR", "GON", "GNA", "MPOST"]
@@ -321,6 +334,224 @@ def facial_proportions(L: np.ndarray) -> dict:
             "face_fraction_of_skull_length": float(np.dot(PRO - NAS, fdir) / skull_len) if skull_len else float("nan")}
 
 
+# --------------------------------------------------------------------------- Pass 2: statistics, sweeps, controls, segmentation
+LAM_SWEEP = [0.0, 1e-3, 1e-2, 1e-1, 1.0, 10.0]
+K_SWEEP = [-1.0, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+N_BOOT = 1000
+N_PERM = 2000
+SIGMA_FRAC = 0.015      # landmark digitisation uncertainty, fraction of centroid size
+SIGMA_NODE_PX = 3.0     # Fig. 405 node uncertainty in crop pixels
+
+
+def explained(H: np.ndarray, P: np.ndarray, C: np.ndarray) -> float:
+    d0 = procrustes_distance(H, C)
+    return 1.0 - procrustes_distance(P, C) / d0 if d0 > 0 else float("nan")
+
+
+def goodness_of_fit(H404: np.ndarray, P: np.ndarray, C: np.ndarray) -> dict:
+    """r, RMSE, KS and Wilcoxon on per-landmark residuals of T(H) vs C, against H vs C."""
+    from scipy import stats
+    Pn = (P - P.mean(0)) / centroid_size(P)
+    Hn = (H404 - H404.mean(0)) / centroid_size(H404)
+    C_on_P, _ = procrustes_align(Pn, C)
+    C_on_H, _ = procrustes_align(Hn, C)
+    res_T = np.linalg.norm(C_on_P - Pn, axis=1)
+    res_0 = np.linalg.norm(C_on_H - Hn, axis=1)
+    r = float(np.corrcoef(Pn.ravel(), C_on_P.ravel())[0, 1])
+    r0 = float(np.corrcoef(Hn.ravel(), C_on_H.ravel())[0, 1])
+    ks = stats.ks_2samp(res_T, res_0)
+    try:
+        w = stats.wilcoxon(res_0 - res_T, alternative="greater")
+        w_p = float(w.pvalue)
+    except ValueError:
+        w_p = float("nan")
+    return {"pearson_r_T_vs_real": r, "pearson_r_human_vs_real": r0,
+            "rmse_T_vs_real_centroid_units": float(np.sqrt((res_T ** 2).mean())),
+            "rmse_human_vs_real_centroid_units": float(np.sqrt((res_0 ** 2).mean())),
+            "per_landmark_residual_T": dict(zip(LANDMARKS, res_T.round(4).tolist())),
+            "per_landmark_residual_human": dict(zip(LANDMARKS, res_0.round(4).tolist())),
+            "n_landmarks_improved": int((res_T < res_0).sum()),
+            "ks_statistic": float(ks.statistic), "ks_pvalue": float(ks.pvalue),
+            "wilcoxon_pvalue_residuals_reduced": w_p}
+
+
+def permutation_null(H404: np.ndarray, P: np.ndarray, C: np.ndarray, n_perm: int = N_PERM, seed: int = SEED) -> dict:
+    """Label-shuffled null (R3): does T move H toward THIS chimpanzee configuration, or toward
+    any configuration of these 11 points?"""
+    rng = np.random.default_rng(seed + 1)
+    e_obs = explained(H404, P, C)
+    es = np.empty(n_perm)
+    for b in range(n_perm):
+        perm = rng.permutation(C.shape[0])
+        es[b] = explained(H404, P, C[perm])
+    p = float((1 + (es >= e_obs).sum()) / (n_perm + 1))
+    return {"E_observed": e_obs, "E_null_mean": float(es.mean()), "E_null_sd": float(es.std()),
+            "E_null_q95": float(np.quantile(es, 0.95)), "p_value": p, "n_perm": n_perm}
+
+
+def bootstrap_jitter(ref: dict, n_boot: int = N_BOOT, sigma_frac: float = SIGMA_FRAC, seed: int = SEED) -> dict:
+    """R1: propagate digitisation uncertainty of every landmark and every net node."""
+    rng = np.random.default_rng(seed)
+    H = human_grid_nodes()
+    Cpx = chimp_net_nodes_px(ref)
+    H404 = fig404_px_to_grid(ref, landmarks_px(ref, "fig404_human_drawing")[0])
+    real = {sp: landmarks_xy(ref, key) for sp, key in SPECIMENS.items()}
+    cs = {sp: centroid_size(real[sp]) for sp in real}
+    cs404 = centroid_size(H404)
+    keys = ["E_chimp", "E_chimp_affine", "E_baboon", "E_dog", "E_human_specimen", "dir_cos",
+            "log_r2", "beta_i", "beta_j", "d_HC", "d_HB", "d_HD", "cos_cb", "cos_cd", "k_bc",
+            "F_h", "F_c", "F_b", "F_d", "phi_h", "phi_c", "phi_b", "phi_d"]
+    rec = {k: np.empty(n_boot) for k in keys}
+    for b in range(n_boot):
+        nodes_px = Cpx + rng.normal(0, SIGMA_NODE_PX, Cpx.shape)
+        nodes_al, _ = procrustes_align(H, nodes_px, scale=True)
+        T = tps_fit(H, nodes_al)
+        h = H404 + rng.normal(0, sigma_frac * cs404, H404.shape)
+        rj = {sp: real[sp] + rng.normal(0, sigma_frac * cs[sp], real[sp].shape) for sp in real}
+        P = tps_eval(T, h)
+        Pa = affine_eval(T, h)
+        rec["E_chimp"][b] = explained(h, P, rj["chimpanzee"])
+        rec["E_chimp_affine"][b] = explained(h, Pa, rj["chimpanzee"])
+        rec["E_baboon"][b] = explained(h, P, rj["baboon"])
+        rec["E_dog"][b] = explained(h, P, rj["dog"])
+        rec["E_human_specimen"][b] = explained(h, P, rj["human"])
+        C_on_h, _ = procrustes_align(h, rj["chimpanzee"])
+        rec["dir_cos"][b] = displacement_cosine(P - h, C_on_h - h)
+        lf = log_area_regression(cell_area_ratios(nodes_al))
+        rec["log_r2"][b], rec["beta_i"][b], rec["beta_j"][b] = lf["r2"], lf["beta_i"], lf["beta_j"]
+        Hs = rj["human"]
+        rec["d_HC"][b] = procrustes_distance(Hs, rj["chimpanzee"])
+        rec["d_HB"][b] = procrustes_distance(Hs, rj["baboon"])
+        rec["d_HD"][b] = procrustes_distance(Hs, rj["dog"])
+        fC = procrustes_align(Hs, rj["chimpanzee"])[0] - Hs
+        fB = procrustes_align(Hs, rj["baboon"])[0] - Hs
+        fD = procrustes_align(Hs, rj["dog"])[0] - Hs
+        rec["cos_cb"][b] = displacement_cosine(fC, fB)
+        rec["cos_cd"][b] = displacement_cosine(fC, fD)
+        rec["k_bc"][b] = (fB * fC).sum() / (fC ** 2).sum()
+        for sp, tag in (("human", "h"), ("chimpanzee", "c"), ("baboon", "b"), ("dog", "d")):
+            pr = facial_proportions(rj[sp])
+            rec[f"F_{tag}"][b], rec[f"phi_{tag}"][b] = pr["facial_index_F"], pr["facial_angle_deg"]
+
+    def summ(a):
+        return {"mean": float(a.mean()), "sd": float(a.std(ddof=1)), "cv": float(a.std(ddof=1) / abs(a.mean())) if a.mean() != 0 else float("nan"),
+                "ci95": [float(np.quantile(a, 0.025)), float(np.quantile(a, 0.975))]}
+    out = {k: summ(v) for k, v in rec.items()}
+    out["probabilities"] = {
+        "P_E_chimp_gt_0": float((rec["E_chimp"] > 0).mean()),
+        "P_E_chimp_gt_E_affine": float((rec["E_chimp"] > rec["E_chimp_affine"]).mean()),
+        "P_E_chimp_is_largest_target": float(((rec["E_chimp"] > rec["E_baboon"]) & (rec["E_chimp"] > rec["E_dog"]) & (rec["E_chimp"] > rec["E_human_specimen"])).mean()),
+        "P_log_r2_ge_0.8_with_signs": float(((rec["log_r2"] >= 0.8) & (rec["beta_i"] > 0) & (rec["beta_j"] < 0)).mean()),
+        "P_order_dHC_lt_dHB_lt_dHD": float(((rec["d_HC"] < rec["d_HB"]) & (rec["d_HB"] < rec["d_HD"])).mean()),
+        "P_cos_cb_ge_0.8": float((rec["cos_cb"] >= 0.8).mean()),
+        "P_k_bc_gt_1": float((rec["k_bc"] > 1).mean()),
+        "P_F_h_lt_F_c_lt_F_b": float(((rec["F_h"] < rec["F_c"]) & (rec["F_c"] < rec["F_b"])).mean()),
+        "P_phi_h_gt_phi_c_gt_phi_b": float(((rec["phi_h"] > rec["phi_c"]) & (rec["phi_c"] > rec["phi_b"])).mean()),
+    }
+    out["settings"] = {"n_boot": n_boot, "sigma_frac_centroid_size": sigma_frac, "sigma_node_px": SIGMA_NODE_PX, "seed": seed}
+    return out
+
+
+def parameter_sweep(ref: dict) -> dict:
+    """R2: lambda (regularisation -> affine limit) and k (intensity, incl. the mirrored net)."""
+    H = human_grid_nodes()
+    H404 = fig404_px_to_grid(ref, landmarks_px(ref, "fig404_human_drawing")[0])
+    real = {sp: landmarks_xy(ref, key) for sp, key in SPECIMENS.items()}
+    lam_rows = []
+    for lam in LAM_SWEEP:
+        T = build_transformation(ref, lam=lam)
+        P = tps_eval(T, H404)
+        lam_rows.append({"lam": lam, "bending_energy": T["bending_energy"],
+                         "node_rmse_grid_units": float(np.sqrt(((tps_eval(T, H) - T["chimp_nodes_aligned"]) ** 2).sum(1).mean())),
+                         "E_chimp": explained(H404, P, real["chimpanzee"]),
+                         "log_area_r2": log_area_regression(cell_area_ratios(tps_eval(T, H)))["r2"]})
+    T = build_transformation(ref)
+    k_rows = []
+    for k in K_SWEEP:
+        nodes_k = H + k * (T["chimp_nodes_aligned"] - H)
+        Tk = tps_fit(H, nodes_k)
+        P = tps_eval(Tk, H404)
+        pr = facial_proportions(P)
+        ratios = cell_area_ratios(nodes_k) if k != 0 else np.ones((4, 5))
+        k_rows.append({"k": k, "E_chimp": explained(H404, P, real["chimpanzee"]),
+                       "E_baboon": explained(H404, P, real["baboon"]), "E_dog": explained(H404, P, real["dog"]),
+                       "E_human_specimen": explained(H404, P, real["human"]),
+                       "predicted_facial_angle_deg": pr["facial_angle_deg"], "predicted_facial_index_F": pr["facial_index_F"],
+                       "area_ratio_front_over_back": float(ratios[:, -1].mean() / ratios[:, 0].mean()),
+                       "bending_energy": Tk["bending_energy"]})
+    ks = [r["k"] for r in k_rows if 0 <= r["k"] <= 1.5]
+    ang = [r["predicted_facial_angle_deg"] for r in k_rows if 0 <= r["k"] <= 1.5]
+    # fine scan of the intensity along Thompson's own ray: where does each real target sit?
+    kf = np.round(np.arange(0.0, 3.0001, 0.05), 3)
+    Ef = {sp: [] for sp in ("chimpanzee", "baboon", "dog")}
+    for k in kf:
+        Tk = tps_fit(H, H + k * (T["chimp_nodes_aligned"] - H))
+        P = tps_eval(Tk, H404)
+        for sp in Ef:
+            Ef[sp].append(explained(H404, P, real[sp]))
+    k_opt = {sp: float(kf[int(np.argmax(Ef[sp]))]) for sp in Ef}
+    E_opt = {sp: float(max(Ef[sp])) for sp in Ef}
+    return {"lambda_sweep": lam_rows, "k_sweep": k_rows,
+            "k_fine": kf.tolist(), "E_fine": {sp: np.round(Ef[sp], 4).tolist() for sp in Ef},
+            "k_optimum_along_thompson_ray": k_opt, "E_at_k_optimum": E_opt,
+            "baboon_optimum_more_intense_than_chimp": bool(k_opt["baboon"] > k_opt["chimpanzee"]),
+            "facial_angle_monotone_decreasing_k_0_to_1.5": bool(all(np.diff(ang) < 0)),
+            "bending_monotone_decreasing_in_lambda": bool(all(np.diff([r["bending_energy"] for r in lam_rows]) <= 1e-9)),
+            "E_chimp_at_k": {str(r["k"]): r["E_chimp"] for r in k_rows}}
+
+
+def segment_specimen(sp: str, ref: dict) -> dict:
+    """R4: silhouette segmentation of the specimen photograph and height-profile morphometrics."""
+    from PIL import Image
+    from scipy import ndimage as ndi
+    img = np.asarray(Image.open(DATA / SPECIMEN_IMAGES[sp]).convert("RGB")).astype(float) / 255.0
+    if sp == "human":   # white model on a pure-white (RGB = 1.0) page: anything that is not page-white
+        mask = img.min(axis=2) < 0.995
+        mask = ndi.binary_closing(mask, structure=np.ones((15, 15)))
+        method = "non-white mask (min RGB < 0.995; background is exactly 1.0) + closing 15 px on the rendered model"
+    else:               # cream bone vs grey backdrop / white stand: HSV saturation + value
+        mx, mn = img.max(axis=2), img.min(axis=2)
+        sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+        mask = (sat > 0.16) & (mx > 0.32)
+        method = "HSV saturation > 0.16 and value > 0.32 (cream bone vs grey backdrop), opening r=3, hole fill, largest component"
+    mask = ndi.binary_opening(mask, structure=np.ones((5, 5)))
+    mask = ndi.binary_fill_holes(mask)
+    lab, n = ndi.label(mask)
+    if n == 0:
+        return {"error": "no component"}
+    sizes = ndi.sum(mask, lab, range(1, n + 1))
+    mask = lab == (int(np.argmax(sizes)) + 1)
+    ys, xs = np.nonzero(mask)
+    pts = np.column_stack([xs, ys]).astype(float)
+    lm, _ = landmarks_px(ref, SPECIMENS[sp])
+    idx = {n_: k for k, n_ in enumerate(LANDMARKS)}
+    axis = lm[idx["PRO"]] - lm[idx["OPC"]]
+    L = np.linalg.norm(axis); ax = axis / L
+    perp = np.array([-ax[1], ax[0]])
+    u = (pts - lm[idx["OPC"]]) @ ax / L          # 0 at opisthocranion, 1 at prosthion
+    v = (pts - lm[idx["OPC"]]) @ perp
+    nb = 40
+    edges = np.linspace(-0.1, 1.1, nb + 1)
+    prof_u, prof_h = [], []
+    for a, b_ in zip(edges[:-1], edges[1:]):
+        sel = (u >= a) & (u < b_)
+        if sel.sum() > 20:
+            prof_u.append(0.5 * (a + b_)); prof_h.append(float(v[sel].max() - v[sel].min()))
+    prof_u, prof_h = np.array(prof_u), np.array(prof_h)
+    back = prof_h[(prof_u >= 0.15) & (prof_u <= 0.35)].mean()
+    front = prof_h[(prof_u >= 0.65) & (prof_u <= 0.85)].mean()
+    u_orb = float(((lm[idx["ORBI"]] - lm[idx["OPC"]]) @ ax) / L)
+    area = float(mask.sum())
+    hmax = float(prof_h.max())
+    return {"method": method, "mask_area_px": area, "n_components": int(n),
+            "taper_index_front_over_back": float(front / back),
+            "triangularity_area_over_box": float(area / (L * hmax)) if hmax > 0 else float("nan"),
+            "silhouette_face_fraction_anterior_of_orbit": float((u > u_orb).mean()),
+            "u_orbitale": u_orb, "length_over_max_height": float(L / hmax),
+            "profile_u": prof_u.round(3).tolist(), "profile_h_px": prof_h.round(1).tolist(),
+            "_mask": mask}
+
+
 # --------------------------------------------------------------------------- the analysis
 def build_transformation(ref: dict, lam: float = 0.0) -> dict:
     """E1: Thompson's human->chimpanzee net as a TPS in human grid units."""
@@ -338,7 +569,7 @@ def displacement_cosine(u: np.ndarray, v: np.ndarray) -> float:
     return float((u * v).sum() / (np.linalg.norm(u) * np.linalg.norm(v)))
 
 
-def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0) -> dict:
+def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0, full: bool = True) -> dict:
     T = build_transformation(ref, lam=lam)
     H = human_grid_nodes()
     nodes_k = H + intensity_k * (T["chimp_nodes_aligned"] - H)
@@ -362,10 +593,10 @@ def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0) -> dict:
     d = procrustes_distance
     targets = {"chimpanzee": real["chimpanzee"], "baboon": real["baboon"], "dog": real["dog"],
                "human_specimen": real["human"], "chimpanzee_drawing_fig406": C406}
-    explained = {}
+    explained_targets = {}
     for name, tgt in targets.items():
         d0, d1, d1a = d(H404, tgt), d(P_full, tgt), d(P_aff, tgt)
-        explained[name] = {"d_human404_to_target": d0, "d_T_human404_to_target": d1,
+        explained_targets[name] = {"d_human404_to_target": d0, "d_T_human404_to_target": d1,
                            "d_affineT_human404_to_target": d1a,
                            "explained_fraction_full": 1.0 - d1 / d0 if d0 > 0 else float("nan"),
                            "explained_fraction_affine_only": 1.0 - d1a / d0 if d0 > 0 else float("nan")}
@@ -417,6 +648,48 @@ def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0) -> dict:
                 "d_chimp_drawing406_vs_chimp_specimen": d(C406, real["chimpanzee"]),
                 "d_human_specimen_vs_chimp_specimen": dist["chimpanzee"]}
 
+    # ---------------- Pass 2 (R1-R5) ----------------
+    pass2 = {}
+    if full:
+        pass2["goodness_of_fit"] = goodness_of_fit(H404, P_full, real["chimpanzee"])
+        pass2["permutation_null"] = permutation_null(H404, P_full, real["chimpanzee"])
+        pass2["bootstrap"] = bootstrap_jitter(ref)
+        pass2["sweep"] = parameter_sweep(ref)
+        # R3 controls: mirrored (anti-Thompson) net, wrong-target specificity
+        nodes_m = H - 1.0 * (T["chimp_nodes_aligned"] - H)
+        Pm = tps_eval(tps_fit(H, nodes_m), H404)
+        pass2["controls"] = {
+            "mirrored_net_E_chimp": explained(H404, Pm, real["chimpanzee"]),
+            "affine_only_E_chimp": explained_targets["chimpanzee"]["explained_fraction_affine_only"],
+            "specificity_index_E_chimp_minus_max_other": (explained_targets["chimpanzee"]["explained_fraction_full"]
+                - max(explained_targets[k]["explained_fraction_full"] for k in ("baboon", "dog", "human_specimen"))),
+            "E_by_target": {k: explained_targets[k]["explained_fraction_full"] for k in explained_targets},
+        }
+        # R4 segmentation
+        seg = {sp: segment_specimen(sp, ref) for sp in SPECIMENS}
+        pass2["segmentation"] = {sp: {k: v for k, v in seg[sp].items() if not k.startswith("_")} for sp in seg}
+        pass2["_masks"] = {sp: seg[sp]["_mask"] for sp in seg}
+        taper = {sp: seg[sp]["taper_index_front_over_back"] for sp in seg}
+        pass2["segmentation"]["summary"] = {
+            "taper_index": taper,
+            "dog_most_triangular": taper["dog"] < min(taper[s_] for s_ in ("human", "chimpanzee", "baboon")),
+            "triangularity": {sp: seg[sp]["triangularity_area_over_box"] for sp in seg},
+            "silhouette_face_fraction": {sp: seg[sp]["silhouette_face_fraction_anterior_of_orbit"] for sp in seg},
+            "face_fraction_order_H_lt_C_lt_B": (seg["human"]["silhouette_face_fraction_anterior_of_orbit"] <
+                                                seg["chimpanzee"]["silhouette_face_fraction_anterior_of_orbit"] <
+                                                seg["baboon"]["silhouette_face_fraction_anterior_of_orbit"]),
+        }
+        # R5 robustness: real-specimen orderings with Thompson's drawn human as the reference
+        dist404 = {sp: d(H404, real[sp]) for sp in ("chimpanzee", "baboon", "dog")}
+        pass2["robustness_human_reference"] = {
+            "distances_from_fig404_human": dist404,
+            "order_holds_with_fig404": dist404["chimpanzee"] < dist404["baboon"] < dist404["dog"],
+            "facial_index_fig404": props["human_drawing_fig404"]["facial_index_F"],
+            "facial_angle_fig404": props["human_drawing_fig404"]["facial_angle_deg"],
+            "F_order_with_fig404": props["human_drawing_fig404"]["facial_index_F"] < props["chimpanzee"]["facial_index_F"] < props["baboon"]["facial_index_F"],
+            "phi_order_with_fig404": props["human_drawing_fig404"]["facial_angle_deg"] > props["chimpanzee"]["facial_angle_deg"] > props["baboon"]["facial_angle_deg"],
+        }
+
     return {
         "transformation": {
             "lam": lam, "intensity_k": intensity_k,
@@ -432,7 +705,7 @@ def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0) -> dict:
                       "affineT_human_fig404": P_aff.tolist(),
                       **{f"real_{sp}": real[sp].tolist() for sp in real},
                       "chimpanzee_fig406": C406.tolist()},
-        "C1_whole_diagram_test": {"targets": explained,
+        "C1_whole_diagram_test": {"targets": explained_targets,
                                   "direction_cosine_thompson_vs_real_human_to_chimp": dir_cos,
                                   "intensity_k_fit_of_real_on_thompson": k_fit},
         "C4_distances_from_human_specimen": dist,
@@ -443,6 +716,8 @@ def analyse(ref: dict, lam: float = 0.0, intensity_k: float = 1.0) -> dict:
         "tps_decomposition_real": decomp,
         "C6_facial_proportions": props,
         "drawing_fidelity": fidelity,
+        "pass2": {k: v for k, v in pass2.items() if not k.startswith("_")},
+        "_masks": pass2.get("_masks", {}),
         "_model": T, "_Tk": Tk, "_H404": H404, "_P_full": P_full, "_real": real, "_C406": C406,
     }
 
@@ -464,19 +739,36 @@ def verdict_from(res: dict) -> dict:
         "C4_chimp_nearer_than_baboon_than_dog": dist["chimpanzee"] < dist["baboon"] < dist["dog"],
         "C2_baboon_same_direction_as_chimp_cos_ge_0.8": fields["cosine_chimp_baboon"] >= 0.8,
         "C2_baboon_more_intense_k_gt_1": fields["intensity_k_baboon_over_chimp"] > 1.0,
-        "C5_dog_less_aligned_with_chimp_than_baboon": fields["cosine_chimp_dog"] < fields["cosine_chimp_baboon"],
         "C6_facial_index_H_lt_C_lt_B": props["human"]["facial_index_F"] < props["chimpanzee"]["facial_index_F"] < props["baboon"]["facial_index_F"],
         "C6_facial_angle_H_gt_C_gt_B": props["human"]["facial_angle_deg"] > props["chimpanzee"]["facial_angle_deg"] > props["baboon"]["facial_angle_deg"],
     }
+    p2 = res.get("pass2") or {}
+    if p2:
+        bs, pn, seg = p2["bootstrap"], p2["permutation_null"], p2["segmentation"]["summary"]
+        checks.update({
+            "C1_bootstrap_CI95_of_E_chimp_excludes_0": bs["E_chimp"]["ci95"][0] > 0.0,
+            "C1_permutation_null_p_lt_0.05": pn["p_value"] < 0.05,
+            "C1_specificity_E_chimp_largest_of_targets": p2["controls"]["specificity_index_E_chimp_minus_max_other"] > 0.0,
+            "C1_mirrored_net_moves_away": p2["controls"]["mirrored_net_E_chimp"] < 0.0,
+            "C5_dog_most_triangular_silhouette": bool(seg["dog_most_triangular"]),
+            "C4_order_robust_P_ge_0.9": bs["probabilities"]["P_order_dHC_lt_dHB_lt_dHD"] >= 0.9,
+            "C6_face_orders_robust_P_ge_0.9": min(bs["probabilities"]["P_F_h_lt_F_c_lt_F_b"], bs["probabilities"]["P_phi_h_gt_phi_c_gt_phi_b"]) >= 0.9,
+        })
+    else:
+        checks["C5_dog_less_aligned_with_chimp_than_baboon"] = fields["cosine_chimp_dog"] < fields["cosine_chimp_baboon"]
     n_pass = sum(checks.values())
     core = checks["C1_T_moves_human_toward_real_chimp"] and checks["C1_T_beats_affine_box_stretch"]
-    if core and n_pass >= 9:
+    if p2:
+        core = core and checks["C1_bootstrap_CI95_of_E_chimp_excludes_0"] and checks["C1_permutation_null_p_lt_0.05"]
+    frac = n_pass / len(checks)
+    if core and frac >= 0.8:
         verdict = "supported"
-    elif not checks["C1_T_moves_human_toward_real_chimp"]:
+    elif not checks["C1_T_moves_human_toward_real_chimp"] or (p2 and not checks["C1_bootstrap_CI95_of_E_chimp_excludes_0"] and not checks["C1_permutation_null_p_lt_0.05"]):
         verdict = "refuted"
     else:
         verdict = "mixed"
-    return {"verdict": verdict, "checks": checks, "n_checks_passed": int(n_pass), "n_checks": len(checks)}
+    failed = [k for k, v in checks.items() if not v]
+    return {"verdict": verdict, "checks": checks, "n_checks_passed": int(n_pass), "n_checks": len(checks), "failed_checks": failed}
 
 
 def _m(name, value, unit, method, reference=None, source=None, note=None, derived_from="script"):
@@ -553,6 +845,42 @@ def measure_morphoeval(res: dict | None = None) -> list[dict]:
                       dec[sp]["affine_fraction_of_displacement_ss"], "fraction of displacement sum of squares",
                       "least-squares affine fit of the Procrustes-superimposed specimen to the human specimen; remainder is non-affine (bending)",
                       reference=1.0, source="box-stretch null: all change affine"))
+    p2 = res.get("pass2") or {}
+    if p2:
+        bs, pn, gof, sw, ct = p2["bootstrap"], p2["permutation_null"], p2["goodness_of_fit"], p2["sweep"], p2["controls"]
+        seg = p2["segmentation"]
+        out += [
+            _m("Bootstrap mean of E_chimp under landmark-digitisation jitter (R1)", bs["E_chimp"]["mean"], "fraction (dimensionless)",
+               f"{bs['settings']['n_boot']} replicates, sigma = {bs['settings']['sigma_frac_centroid_size']*100:.1f} % centroid size on all landmarks, {bs['settings']['sigma_node_px']:.0f} px on all 30 net nodes",
+               reference=0.0, source="null: no transformation", note=f"95 % CI [{bs['E_chimp']['ci95'][0]:.3f}, {bs['E_chimp']['ci95'][1]:.3f}], CV {bs['E_chimp']['cv']:.2f}, P(E>0) = {bs['probabilities']['P_E_chimp_gt_0']:.3f}"),
+            _m("Bootstrap 95 % CI lower bound of E_chimp (R1)", bs["E_chimp"]["ci95"][0], "fraction (dimensionless)", "2.5th percentile of the jitter bootstrap", reference=0.0, source="support requires the CI to exclude 0"),
+            _m("Permutation-null p-value of E_chimp (label-shuffled chimpanzee landmarks, R3)", pn["p_value"], "probability",
+               f"{pn['n_perm']} label permutations of the real chimpanzee configuration; null mean {pn['E_null_mean']:+.3f}, sd {pn['E_null_sd']:.3f}, q95 {pn['E_null_q95']:.3f}", reference=0.05, source="alpha"),
+            _m("Pearson r between T(H) and the real chimpanzee coordinates after Procrustes superimposition (R1)", gof["pearson_r_T_vs_real"], "r (dimensionless)",
+               "22 centred, scaled coordinates", reference=gof["pearson_r_human_vs_real"], source="r of the untransformed human drawing vs the same chimpanzee"),
+            _m("RMSE of T(H) vs real chimpanzee per landmark (R1)", gof["rmse_T_vs_real_centroid_units"], "centroid-size units",
+               "root-mean-square Procrustes residual over 11 landmarks", reference=gof["rmse_human_vs_real_centroid_units"], source="RMSE of the untransformed human drawing vs the same chimpanzee",
+               note=f"{gof['n_landmarks_improved']}/11 landmarks improved; Wilcoxon p = {gof['wilcoxon_pvalue_residuals_reduced']:.3g}"),
+            _m("Two-sample KS statistic, per-landmark residuals T(H)-vs-C against H-vs-C (R1)", gof["ks_statistic"], "D (dimensionless)",
+               "scipy.stats.ks_2samp on 11 + 11 residual distances", note=f"p = {gof['ks_pvalue']:.3f} (n = 11 per sample: low power)"),
+            _m("Mirrored (anti-Thompson, k = -1) net: E_chimp (R3 negative control)", ct["mirrored_net_E_chimp"], "fraction (dimensionless)",
+               "T_{-1} = Id - (T - Id) applied to the Fig. 404 landmarks", reference=0.0, source="a direction-blind effect would give E ~ 0; a correct direction gives E < 0 here"),
+            _m("Specificity index E_chimp - max(E_baboon, E_dog, E_human) (R3)", ct["specificity_index_E_chimp_minus_max_other"], "fraction (dimensionless)",
+               "wrong-target control", reference=0.0, source="T drawn for the chimpanzee should help the chimpanzee most", note=f"P(chimp largest) = {bs['probabilities']['P_E_chimp_is_largest_target']:.3f}"),
+            _m("Optimal intensity k* along Thompson's ray for the real chimpanzee (R2)", sw["k_optimum_along_thompson_ray"]["chimpanzee"], "k (dimensionless)",
+               "argmax over k in [0, 3] step 0.05 of E(k) with T_k = Id + k (T - Id)", reference=1.0, source="Thompson drew the chimpanzee net at k = 1", note=f"E(k*) = {sw['E_at_k_optimum']['chimpanzee']:.3f}"),
+            _m("Optimal intensity k* along Thompson's ray for the real baboon (R2)", sw["k_optimum_along_thompson_ray"]["baboon"], "k (dimensionless)",
+               "argmax over k in [0, 3] of E_baboon(k)", reference=">k*_chimp", source="Thompson p. 771: baboon = same transformation at increased intensity", note=f"E(k*) = {sw['E_at_k_optimum']['baboon']:.3f}; dog k* = {sw['k_optimum_along_thompson_ray']['dog']:.2f}"),
+            _m("Predicted facial angle of T_k(H) at k = 1 (Thompson's chimpanzee net) (R2)", [r for r in sw["k_sweep"] if r["k"] == 1.0][0]["predicted_facial_angle_deg"], "degrees",
+               "E7 on the transformed Fig. 404 landmarks", reference=props["chimpanzee"]["facial_angle_deg"], source="facial angle measured on the real chimpanzee specimen",
+               note="monotone decreasing in k on [0, 1.5]: " + str(sw["facial_angle_monotone_decreasing_k_0_to_1.5"])),
+        ]
+        for sp in ("human", "chimpanzee", "baboon", "dog"):
+            out.append(_m(f"Silhouette taper index h(front)/h(back) from image segmentation ({sp}) (R4)", seg[sp]["taper_index_front_over_back"], "ratio (dimensionless)",
+                          seg[sp]["method"] + "; height profile along OPC->PRO, front = 65-85 %, back = 15-35 % of length",
+                          reference=1.0, source="rectangular conformation (Lean law 4); Thompson p. 773: the dog is triangular (< 1)"))
+            out.append(_m(f"Silhouette face fraction anterior of orbitale ({sp}) (R4)", seg[sp]["silhouette_face_fraction_anterior_of_orbit"], "fraction of silhouette area",
+                          "segmented mask pixels with projection on OPC->PRO beyond orbitale", note="Thompson p. 770: enlargement of the jaws relative to the braincase in apes"))
     return out
 
 
@@ -603,8 +931,10 @@ def make_comparison_figure(ref: dict, res: dict, out_png: Path) -> None:
 
     T, H404, P = res["_model"], res["_H404"], res["_P_full"]
     H = human_grid_nodes()
-    fig = plt.figure(figsize=(18, 11))
-    gs = fig.add_gridspec(3, 4, height_ratios=[1.1, 1.0, 1.0])
+    p2 = res.get("pass2") or {}
+    nrows = 4 if p2 else 3
+    fig = plt.figure(figsize=(18, 15 if p2 else 11))
+    gs = fig.add_gridspec(nrows, 4, height_ratios=[1.1, 1.0, 1.0, 1.0][:nrows])
 
     # (a) Fig. 404 with landmarks
     ax = fig.add_subplot(gs[0, 0])
@@ -706,6 +1036,53 @@ def make_comparison_figure(ref: dict, res: dict, out_png: Path) -> None:
     ax2.plot(sps4, [props[s]["facial_angle_deg"] for s in sps4], "s--", color="green", label="facial angle (°)")
     ax.set_ylabel("F = |NAS-PRO| / |NAS-OPC|", color="purple"); ax2.set_ylabel("facial angle (°)", color="green")
     ax.set_title("C6: facial/cranial proportions on the real specimens", fontsize=9)
+
+    if p2:
+        bs, pn, sw, seg = p2["bootstrap"], p2["permutation_null"], p2["sweep"], p2["segmentation"]
+        # (h) bootstrap vs permutation null
+        ax = fig.add_subplot(gs[3, 0])
+        rng = np.random.default_rng(SEED)
+        null = rng.normal(pn["E_null_mean"], pn["E_null_sd"], 4000)
+        ax.hist(null, bins=40, color="0.7", alpha=0.8, density=True, label=f"label-shuffled null (p={pn['p_value']:.4f})")
+        ci = bs["E_chimp"]["ci95"]
+        ax.axvspan(ci[0], ci[1], color="royalblue", alpha=0.25, label=f"jitter bootstrap 95% CI [{ci[0]:.2f}, {ci[1]:.2f}]")
+        ax.axvline(pn["E_observed"], color="royalblue", lw=2, label=f"observed E = {pn['E_observed']:.3f}")
+        ax.axvline(p2["controls"]["mirrored_net_E_chimp"], color="firebrick", ls="--", label=f"mirrored net E = {p2['controls']['mirrored_net_E_chimp']:.2f}")
+        ax.axvline(p2["controls"]["affine_only_E_chimp"], color="orange", ls=":", label=f"affine only E = {p2['controls']['affine_only_E_chimp']:.2f}")
+        ax.set_xlabel("explained fraction E (human → real chimpanzee)"); ax.legend(fontsize=6.5, loc="upper left")
+        ax.set_title("R1/R3: uncertainty and controls for the headline", fontsize=9)
+        # (i) k sweep
+        ax = fig.add_subplot(gs[3, 1])
+        kf = np.array(sw["k_fine"])
+        for sp, c in (("chimpanzee", "royalblue"), ("baboon", "darkorange"), ("dog", "firebrick")):
+            ax.plot(kf, sw["E_fine"][sp], color=c, label=f"{sp}: k*={sw['k_optimum_along_thompson_ray'][sp]:.2f}")
+            ax.axvline(sw["k_optimum_along_thompson_ray"][sp], color=c, lw=0.6, ls=":")
+        ax.axhline(0, color="k", lw=0.5); ax.axvline(1.0, color="k", lw=0.8, ls="--")
+        ax.set_xlabel("intensity k of T_k = Id + k (T − Id)   (k = 1: Thompson's net)"); ax.set_ylabel("explained fraction E(k)")
+        ax2 = ax.twinx()
+        ks_ = [r["k"] for r in sw["k_sweep"] if r["k"] >= 0]
+        ax2.plot(ks_, [r["predicted_facial_angle_deg"] for r in sw["k_sweep"] if r["k"] >= 0], "s-", color="green", ms=3, label="predicted facial angle")
+        ax2.set_ylabel("predicted facial angle (°)", color="green")
+        ax.legend(fontsize=7, loc="lower left")
+        ax.set_title("R2: intensity sweep along Thompson's own ray", fontsize=9)
+        # (j) lambda sweep
+        ax = fig.add_subplot(gs[3, 2])
+        lams = [max(r["lam"], 1e-4) for r in sw["lambda_sweep"]]
+        ax.semilogx(lams, [r["E_chimp"] for r in sw["lambda_sweep"]], "o-", color="royalblue", label="E_chimp")
+        ax.set_ylabel("E_chimp", color="royalblue"); ax.set_xlabel("TPS regularisation λ (10⁻⁴ ≡ 0; → affine limit)")
+        ax3 = ax.twinx()
+        ax3.semilogx(lams, [r["bending_energy"] for r in sw["lambda_sweep"]], "^--", color="purple", label="bending energy")
+        ax3.set_ylabel("bending energy", color="purple")
+        ax.set_title("R2: regularisation sweep (smooth ↔ affine)", fontsize=9)
+        # (k) segmentation taper
+        ax = fig.add_subplot(gs[3, 3])
+        for sp, c in (("human", "0.3"), ("chimpanzee", "royalblue"), ("baboon", "darkorange"), ("dog", "firebrick")):
+            u = np.array(seg[sp]["profile_u"]); h = np.array(seg[sp]["profile_h_px"])
+            ax.plot(u, h / h.max(), color=c, label=f"{sp}: taper {seg[sp]['taper_index_front_over_back']:.2f}, face {seg[sp]['silhouette_face_fraction_anterior_of_orbit']:.2f}")
+        ax.axvspan(0.15, 0.35, color="0.9"); ax.axvspan(0.65, 0.85, color="0.9")
+        ax.set_xlabel("position along OPC → PRO (0 = occiput, 1 = prosthion)"); ax.set_ylabel("silhouette height / max")
+        ax.legend(fontsize=6.5, loc="lower left")
+        ax.set_title("R4: segmented-silhouette height profiles (dog = most triangular?)", fontsize=9)
     v = verdict_from(res)
     fig.suptitle(f"T1917-058 — Thompson (1917) Ch. XVII Figs. 404-408: is the ape/human skull difference a whole-diagram "
                  f"transformation?   verdict: {v['verdict'].upper()} ({v['n_checks_passed']}/{v['n_checks']} checks)  [script {SCRIPT_VERSION}]",
@@ -815,6 +1192,18 @@ def self_test() -> int:
     assert np.isfinite(lf["r2"]) and -1 <= res["C1_whole_diagram_test"]["targets"]["chimpanzee"]["explained_fraction_full"] <= 1
     mm = measure_morphoeval(res)
     assert len(mm) >= 20 and all({"name", "value", "unit", "method"} <= set(m) for m in mm)
+    # Pass 2: permutation null is centred on 0 and reproducible; bootstrap reproducible; masks sane
+    pn = res["pass2"]["permutation_null"]
+    assert abs(pn["E_null_mean"]) < 0.05 and 0 < pn["p_value"] <= 1
+    bs2 = bootstrap_jitter(ref, n_boot=50)
+    bs3 = bootstrap_jitter(ref, n_boot=50)
+    assert bs2["E_chimp"]["mean"] == bs3["E_chimp"]["mean"], "bootstrap must be seed-deterministic"
+    for sp in SPECIMENS:
+        sg = res["pass2"]["segmentation"][sp]
+        assert 0.3 < sg["taper_index_front_over_back"] < 1.5 and sg["mask_area_px"] > 1e5, sp
+    sw = res["pass2"]["sweep"]
+    assert sw["lambda_sweep"][0]["node_rmse_grid_units"] < 1e-6 and sw["bending_monotone_decreasing_in_lambda"]
+    assert [r for r in sw["k_sweep"] if r["k"] == 0.0][0]["E_chimp"] == 0.0
     print(f"[self-test] OK in {time.time() - t0:.1f}s  (pinned files {sum(pins.values())}/{len(pins)}, "
           f"net bending {T['bending_energy']:.3f}, E_chimp {mm[0]['value']:+.3f}, "
           f"log-area R² {lf['r2']:.2f}, {len(mm)} measurements)")
@@ -822,6 +1211,49 @@ def self_test() -> int:
 
 
 # --------------------------------------------------------------------------- main
+def pass2_headline(res: dict) -> dict:
+    p2 = res.get("pass2") or {}
+    if not p2:
+        return {}
+    bs, pn, gof, sw, seg = p2["bootstrap"], p2["permutation_null"], p2["goodness_of_fit"], p2["sweep"], p2["segmentation"]
+    return {
+        "E_chimp_bootstrap_mean_ci95": [round(bs["E_chimp"]["mean"], 3), [round(x, 3) for x in bs["E_chimp"]["ci95"]]],
+        "E_chimp_permutation_p": pn["p_value"],
+        "pearson_r_T_vs_real_chimp": round(gof["pearson_r_T_vs_real"], 3),
+        "pearson_r_human_vs_real_chimp": round(gof["pearson_r_human_vs_real"], 3),
+        "rmse_T_vs_real_chimp_centroid_units": round(gof["rmse_T_vs_real_centroid_units"], 4),
+        "rmse_human_vs_real_chimp_centroid_units": round(gof["rmse_human_vs_real_centroid_units"], 4),
+        "ks_pvalue_residuals": round(gof["ks_pvalue"], 3),
+        "wilcoxon_pvalue_residuals": round(gof["wilcoxon_pvalue_residuals_reduced"], 4),
+        "mirrored_net_E_chimp": round(p2["controls"]["mirrored_net_E_chimp"], 3),
+        "k_optimum_along_thompson_ray": sw["k_optimum_along_thompson_ray"],
+        "silhouette_taper_index": {k: round(seg[k]["taper_index_front_over_back"], 3) for k in ("human", "chimpanzee", "baboon", "dog")},
+        "silhouette_face_fraction": {k: round(seg[k]["silhouette_face_fraction_anterior_of_orbit"], 3) for k in ("human", "chimpanzee", "baboon", "dog")},
+        "bootstrap_probabilities": {k: round(v, 3) for k, v in bs["probabilities"].items()},
+    }
+
+
+def sub_claim_verdicts(res: dict) -> dict:
+    """Per-sub-claim labels (C1-C6) from the point estimates and the Pass 2 statistics."""
+    v = verdict_from(res)["checks"]
+    p2 = res.get("pass2") or {}
+    out = {}
+    c1 = v["C1_T_moves_human_toward_real_chimp"] and v["C1_T_beats_affine_box_stretch"]
+    if p2:
+        c1 = c1 and v["C1_bootstrap_CI95_of_E_chimp_excludes_0"] and v["C1_permutation_null_p_lt_0.05"]
+    out["C1_whole_diagram_transformation_gives_chimpanzee"] = "supported" if c1 else "refuted"
+    out["C3_logarithmic_area_gradient"] = "supported" if (v["C3_log_area_gradient_r2_ge_0.8"] and v["C3_signs_forward_up_down_down"]) else "refuted"
+    out["C4_chimp_nearer_than_baboon_than_dog"] = "supported" if v["C4_chimp_nearer_than_baboon_than_dog"] else "refuted"
+    c2_dir, c2_int = v["C2_baboon_same_direction_as_chimp_cos_ge_0.8"], v["C2_baboon_more_intense_k_gt_1"]
+    if p2:
+        c2_int = c2_int and p2["sweep"]["baboon_optimum_more_intense_than_chimp"]
+    out["C2_baboon_same_order_increased_intensity"] = "supported" if (c2_dir and c2_int) else ("mixed" if c2_int else "refuted")
+    if p2:
+        out["C5_dog_triangular_different_lines"] = "supported" if v["C5_dog_most_triangular_silhouette"] else "refuted"
+    out["C6_facial_cranial_proportions"] = "supported" if (v["C6_facial_index_H_lt_C_lt_B"] and v["C6_facial_angle_H_gt_C_gt_B"]) else "refuted"
+    return out
+
+
 def _strip_private(d: dict) -> dict:
     return {k: v for k, v in d.items() if not k.startswith("_")}
 
@@ -882,7 +1314,9 @@ def main(argv=None) -> int:
             "intensity_k_baboon_over_chimp": round(res["C2_C5_displacement_fields"]["intensity_k_baboon_over_chimp"], 2),
             "facial_index_F": {k: round(res["C6_facial_proportions"][k]["facial_index_F"], 3) for k in ("human", "chimpanzee", "baboon", "dog")},
             "facial_angle_deg": {k: round(res["C6_facial_proportions"][k]["facial_angle_deg"], 1) for k in ("human", "chimpanzee", "baboon", "dog")},
+            **pass2_headline(res),
         },
+        "sub_claim_verdicts": sub_claim_verdicts(res),
         "script": "thompson/claims/t1917-058_on-the-theory-of-transformations.py",
         "script_version": SCRIPT_VERSION,
         "figure": str(out_png.relative_to(REPO)),
