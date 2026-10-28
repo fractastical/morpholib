@@ -396,12 +396,24 @@ def load_thompson_claims() -> dict | None:
         print("WARNING: thompson/thompson_1917_claims.json not found — building without the claims browser")
         return None
     reg = json.loads(p.read_text())
+    # Per-claim P(resolvable): deterministic rubric ledger (prices data/tools/
+    # effort, NOT truth odds). Logged by thompson/score_1917_resolvability.py.
+    led_path = p.with_name("thompson_1917_resolvability.json")
+    ledger = {}
+    if led_path.exists():
+        led = json.loads(led_path.read_text())
+        ledger = {x["claim_id"]: x for x in led["claims"]}
+    else:
+        print("WARNING: thompson_1917_resolvability.json not found — claims carry no P(resolvable)")
     claims = [{"id": c["id"], "chapter": c["chapter"], "chapter_title": c["chapter_title"],
                "pages": c["pages"], "figures": c["figures"], "claim": c["claim"], "type": c["type"],
                "status": c["pass2"]["status"], "what_remains": c["pass2"]["what_remains"],
                "method": c["pass2"]["method"], "data_needed": c["pass2"]["data_needed"],
                "effort": f"{c['pass2']['effort_days'][0]}–{c['pass2']['effort_days'][1]}d ({c['pass2']['effort_class']})",
-               "priority": c["pass2"]["priority"]} for c in reg["claims"]]
+               "priority": c["pass2"]["priority"],
+               "p_resolvable": ledger.get(c["id"], {}).get("p_percent"),
+               "p_band": ledger.get(c["id"], {}).get("band"),
+               "p_basis": ledger.get(c["id"], {}).get("adjustments")} for c in reg["claims"]]
     from collections import OrderedDict
     ch_titles: "OrderedDict[str, None]" = OrderedDict()
     for c in claims:
@@ -434,15 +446,29 @@ def thompson_graph_nodes(thomp: dict) -> tuple[list[dict], list[dict]]:
         cid = f"tch-{i}"
         done = sum(c["status"] in ("DONE_REPO", "DONE_ELSEWHERE") for c in cs)
         status = "solved" if done == len(cs) else ("open" if done == 0 and all(c["status"] == "UNTESTED" for c in cs) else "partial")
+        ps = [c["p_resolvable"] for c in cs if c.get("p_resolvable") is not None]
+        p_mean = round(sum(ps) / len(ps), 1) if ps else None
         nodes.append({"id": cid, "x": xs[i % 6], "y": 1805 + (i // 6) * 88, "status": status,
                       "family": "Thompson claims", "label": f"Ch. {cs[0]['chapter'].split()[0]} · {len(cs)} claims",
-                      "sub": f"{title} — {done}/{len(cs)} done · click to see the claims",
+                      "sub": f"{title} — {done}/{len(cs)} done" + (f" · P(resolve) {p_mean:g}%" if p_mean is not None else "") + " · click to see the claims",
                       "time": "1917", "timeKind": "recorded", "source": "thompson/thompson_1917_claims.json",
                       "detail": (f"Chapter {cs[0]['chapter']} — {title}: {len(cs)} claims "
                                  f"({', '.join(sorted({c['status'] for c in cs}))}). "
-                                 f"Click this node to list all {len(cs)} claim(s) in the inspector; "
+                                 + (f"P(resolvable) per claim (deterministic rubric, thompson/thompson_1917_resolvability.json): "
+                                    f"mean {p_mean:g}%, range {min(ps):g}–{max(ps):g}% — already-resolved claims sit at 100%. " if ps else "")
+                                 + f"Click this node to list all {len(cs)} claim(s) in the inspector; "
                                  "click any claim in that list for its full 1917 wording and assessment.")})
-        edges.append({"from": "t-claims", "to": cid, "agent": "wonder", "probStatus": "structural"})
+        if p_mean is not None:
+            edges.append({"from": "t-claims", "to": cid, "agent": "wonder", "prob": p_mean,
+                          "probStatus": "provisional_scored",
+                          "probNote": (f"P(resolvable) = mean of per-claim rubric scores for this chapter's {len(cs)} claims "
+                                       f"({done} already resolved at 100%), scored 2026-10-27 by thompson/score_1917_resolvability.py "
+                                       "over dataset-existence/automation/effort. Deterministic rubric pricing resolvability, "
+                                       "NOT a Delphi posterior and NOT P(Thompson was right). Per-claim ledger: "
+                                       "thompson/thompson_1917_resolvability.json."),
+                          "label": f"P(resolve) {p_mean:g}%"})
+        else:
+            edges.append({"from": "t-claims", "to": cid, "agent": "wonder", "probStatus": "structural"})
     return nodes, edges
 
 
@@ -1040,7 +1066,7 @@ function renderClaims(){
  if(!CS.sel) CS.sel=THOMP.claims[0].id;
  const sel=THOMP.claims.find(c=>c.id===CS.sel)||THOMP.claims[0];
  const list=claimList();
- const rows=list.map(c=>`<div class="prow ${c.id===sel.id?'sel':''}" onclick="CS.sel='${c.id}';renderClaims()"><span class="dot" style="background:${CCOL[c.status]}"></span><b class="small">${c.id}</b> <span class="badge" style="background:${CCOL[c.status]}">${c.status}</span> <span class="small mut">Ch. ${esc(c.chapter)} · pp. ${esc(c.pages)} · Figs. ${esc(c.figures)} · ${esc(c.priority)} · effort ${esc(c.effort)}</span><br><span class="small">${esc(c.claim.slice(0,150))}${c.claim.length>150?'…':''}</span></div>`).join('') || '<p class="small mut">No claims match these filters.</p>';
+ const rows=list.map(c=>`<div class="prow ${c.id===sel.id?'sel':''}" onclick="CS.sel='${c.id}';renderClaims()"><span class="dot" style="background:${CCOL[c.status]}"></span><b class="small">${c.id}</b> <span class="badge" style="background:${CCOL[c.status]}">${c.status}</span> <span class="small mut">Ch. ${esc(c.chapter)} · pp. ${esc(c.pages)} · Figs. ${esc(c.figures)} · ${esc(c.priority)} · effort ${esc(c.effort)}${c.p_resolvable!=null?` · <b>P(resolve) ${c.p_resolvable}%</b> (${esc(c.p_band)})`:''}</span><br><span class="small">${esc(c.claim.slice(0,150))}${c.claim.length>150?'…':''}</span></div>`).join('') || '<p class="small mut">No claims match these filters.</p>';
  el.innerHTML=`<div class="row"><b style="flex:1">All ${THOMP.n} claims from <i>On Growth and Form</i> (1917) — cited, then assessed against this repo</b><a class="small" href="${THOMP.inventory_url}">full inventory</a></div>
 <p class="small mut">Status: <span class="badge" style="background:#1F8A65">DONE_REPO 9</span> <span class="badge" style="background:#F0A040">PARTIAL_REPO 13</span> <span class="badge" style="background:#2A9A8A">DONE_ELSEWHERE 13</span> <span class="badge" style="background:#C04848">UNTESTED 21</span> <span class="badge" style="background:#888">NOT_TESTABLE 3</span> · In the graph above, the <b>Thompson 1917 claims</b> hub (bottom band) groups these by chapter — click a chapter node to filter here, double-click it to collapse/expand its place in the graph.</p>
 <div class="row"><select onchange="CS.chapter=this.value;renderClaims()" aria-label="Filter by chapter"><option value="all">All chapters (${THOMP.n})</option>${THOMP.chapters.map(ch=>`<option ${CS.chapter===ch.title?'selected':''} value="${esc(ch.title)}">${esc(ch.title)} (${THOMP.claims.filter(c=>c.chapter_title===ch.title).length})</option>`).join('')}</select>
@@ -1052,7 +1078,8 @@ function renderClaims(){
 <p class="small"><b>Claim (1917, pp. ${esc(sel.pages)}, Figs. ${esc(sel.figures)}):</b> ${esc(sel.claim)}</p>
 <p class="small"><b>What remains / verdict:</b> ${esc(sel.what_remains)}</p>
 <p class="small"><b>Method that would settle it:</b> ${esc(sel.method)}</p>
-<p class="small"><b>Data needed:</b> ${esc(sel.data_needed)} · <b>Effort:</b> ${esc(sel.effort)} · <b>Priority:</b> ${esc(sel.priority)} · <b>Type:</b> ${esc(sel.type)}</p></div></div>`;
+<p class="small"><b>Data needed:</b> ${esc(sel.data_needed)} · <b>Effort:</b> ${esc(sel.effort)} · <b>Priority:</b> ${esc(sel.priority)} · <b>Type:</b> ${esc(sel.type)}</p>
+${sel.p_resolvable!=null?`<p class="small"><b>P(resolvable from an available dataset): ${sel.p_resolvable}%</b> (${esc(sel.p_band)}) — deterministic rubric over dataset existence / automation / effort (thompson/thompson_1917_resolvability.json); prices resolvability, not whether Thompson was right.</p>`:''}</div></div>`;
 }
 function renderNav(){ const fams=[...new Set(NODES.map(n=>n.family))];
  $('nodepicker').innerHTML='<option value="">Find a problem… ('+NODES.length+' nodes)</option>'+fams.map(f=>`<optgroup label="${esc(f)}">`+NODES.filter(n=>n.family===f).map(n=>`<option value="${n.id}">${esc(n.label)} — ${SLAB[n.status]}</option>`).join('')+'</optgroup>').join('');

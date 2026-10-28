@@ -116,7 +116,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Huxley's k = ratio of specific growth rates; the 1950 objection is logical (inconsistent between part-part and part-whole fits), not a percentage
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-009 — Thompson (1917), Ch. III, pp. 50-155, Figs. 25-32 — `SUPPORTED`
 
@@ -136,7 +136,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published counterclaim found. Absence of a test is the finding: this 1917 claim is still open.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-011 — Thompson (1917), Ch. IV, pp. 156-200, Figs. 41-59 — `SUPERSEDED`
 
@@ -182,7 +182,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Discrepancy ~0.15-0.18 (L/V patterns) vs ~0.03 (triangular): context decides, contra a universal surface-tension law
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-015 — Thompson (1917), Ch. V, pp. 201-276, Figs. 68-71 — `SUPPORTED`
 
@@ -224,7 +224,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** Plateau-style junction laws hold as the energy-minimising limit of vertex models, but real epithelia are active: measured junction angles and cell shapes deviate systematically, and the deviations carry the biology (proliferation, contractility). Thompson's 120-degree rule is the passive limit, not the tissue's operating point.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-019 — Thompson (1917), Ch. VII, pp. 293-345, Figs. 120-127 — `QUALIFIED`
 
@@ -236,7 +236,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Real epithelia: hexagons are only the modal class (~40-50% in the wing disc), with large 5- and 7-sided fractions
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-020 — Thompson (1917), Ch. VII, pp. 293-345, Figs. 136-175 (with Ch. VIII) — `SUPPORTED`
 
@@ -280,7 +280,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published counterclaim found. Open.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-024 — Thompson (1917), Ch. IX, pp. 411-487, Figs. 194-235 — `NO_DIRECT_TEST`
 
@@ -290,7 +290,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No direct test found. The modern mechanism literature (protein-guided silica deposition) supersedes the purely physical picture without ever scoring his ray-angle geometry.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-025 — Thompson (1917), Ch. IX-X, pp. 411-492, Figs. 221-235, 236-259 — `NO_DIRECT_TEST`
 
@@ -322,7 +322,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** 3+ Raup parameters replace Thompson's single spiral constant; deviations from log growth are systematic, not noise
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-028 — Thompson (1917), Ch. XI, pp. 493-586, Figs. 304-307 — `NO_DIRECT_TEST`
 
@@ -332,7 +332,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No direct test of his stated septal relations found. Open (and cheap to close -- see dataset audit).
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-029 — Thompson (1917), Ch. XII, pp. 587-611, Figs. 308-317 — `NO_DIRECT_TEST`
 
@@ -342,7 +342,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published counterclaim found. Open.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-030 — Thompson (1917), Ch. XII (with V), pp. 587-611; cf. 201-276, Figs. 84-89, 308-317 — `NO_DIRECT_TEST`
 
@@ -362,7 +362,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published test of horns as conical logarithmic helicoids, Thompson-style, was found. Open.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-032 — Thompson (1917), Ch. XIII, pp. 612-634, Figs. 318-324 — `NO_DIRECT_TEST`
 
@@ -372,7 +372,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No direct test found. Open.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-033 — Thompson (1917), Ch. XIV, pp. 635-651, Figs. 325-327 — `SUPPORTED`
 
@@ -384,7 +384,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Golden angle 137.5 deg and Fibonacci parastichies emerge from one control parameter (drop periodicity) in vitro (1992)
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-034 — Thompson (1917), Ch. XV, pp. 652-669, Figs. 328-330 — `SUPERSEDED`
 
@@ -396,7 +396,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Flight (hand-wing index) explains only ~4% of egg-shape variation (Stoddard 2017, as re-analysed); incubation site >60%, models 70-85% (Birkhead 2019) -- Thompson's geometry-only account has no explanatory variable at all
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-035 — Thompson (1917), Ch. XV, pp. 652-669, Figs. 328 — `NO_DIRECT_TEST`
 
@@ -472,7 +472,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No literature test of lanceolate->ovate->cordate leaf transformation under radial coordinates was found. (The repo has tested Thompson's Fig. 359 radial-cordate *formula* on ant heads -- an analogue, not this claim; see registry.) Open.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-042 — Thompson (1917), Ch. XVII, pp. 743, Figs. 367-368 — `NO_DIRECT_TEST`
 
@@ -578,7 +578,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published test of Thompson's crocodile-skull transformation was found. The data to do it have existed since at least 2013 (dryad.14fn1) -- the gap is framing, not data.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-052 — Thompson (1917), Ch. XVII, pp. 754-755, Figs. 384-386 — `NO_DIRECT_TEST`
 
@@ -608,7 +608,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** Heilmann's interpolation idea became standard machinery (TPS interpolation between landmark configurations is exactly how morphometricians now generate intermediates), so the *method* was vindicated by adoption. The *biological* claim -- that grid-interpolated forms are the real intermediate forms -- is only testable against fossils, and the literature does not test it on Heilmann's bird pelves.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-055 — Thompson (1917), Ch. XVII, pp. 760-764, Figs. 394-400 — `NO_DIRECT_TEST`
 
@@ -648,7 +648,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No published test of human->chimpanzee/baboon/dog skull transformation as Thompson drew it (Figs. 404-408) was found, despite abundant primate landmark data. Open -- and the most visible untested skull claim in the book.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-059 — Thompson (1917), Ch. Epilogue, pp. ~777-788, Figs. - — `NOT_TESTABLE`
 

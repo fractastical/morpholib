@@ -43,6 +43,9 @@ SCRIPTS = [
     "thompson/build_1917_claim_inventory.py",
     "thompson/build_1917_counterclaims.py",
     "thompson/scout_1917_datasets.py",
+    "thompson/score_1917_resolvability.py",
+    "thompson/merge_back_1917_verdicts.py",
+    "thompson/run_overnight_1917.py",
     "nanopubs/thompson_1917_process_to_nanopub.py",
     "nanopubs/thompson_1917_counterclaims_to_nanopubs.py",
 ]
@@ -82,6 +85,19 @@ class TestClaimRegistry(unittest.TestCase):
             self.assertIn(p["status"], PASS2, c["id"])
             lo, hi = p["effort_days"]
             self.assertTrue(0 <= lo <= hi, f"{c['id']} effort {lo}-{hi}")
+
+    def test_resolutions_record_model_and_pr(self):
+        # Every merged-back verdict must say who resolved the 1917 claim,
+        # with what model, and where the evidence lives.
+        resolved = [c for c in self.claims if "resolution" in c]
+        self.assertEqual(len(resolved), 18)
+        for c in resolved:
+            r = c["resolution"]
+            self.assertEqual(r["resolved_on"], "2026-10-28", c["id"])
+            self.assertIn(r["model"], ("composer-2.5", "claude-fable-5-1"), c["id"])
+            self.assertTrue(r["pr_url"].startswith("https://github.com/fractastical/morpholib/pull/"), c["id"])
+            self.assertIn(r["verdict"], ("supported", "refuted", "mixed", "untestable"), c["id"])
+            self.assertTrue((ROOT / r["result_json"]).exists(), c["id"])
 
 
 class TestCounterclaims(unittest.TestCase):
@@ -156,6 +172,42 @@ class TestDatasetAuditAndQueue(unittest.TestCase):
                     if r["automation"] in ("FULL_LOOP", "LOOP_WITH_SEED")}
         self.assertEqual(queued, expected)
         self.assertEqual(len(queued), 47)
+
+
+class TestResolvability(unittest.TestCase):
+    """P(resolvable) must be logged for every claim and consistent everywhere."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ledger = load(ROOT / "thompson" / "thompson_1917_resolvability.json")
+        cls.by_id = {x["claim_id"]: x for x in cls.ledger["claims"]}
+
+    def test_ledger_covers_all_59_dated_1917(self):
+        self.assertEqual([x["claim_id"] for x in self.ledger["claims"]],
+                         [f"T1917-{i:03d}" for i in range(1, 60)])
+        for x in self.ledger["claims"]:
+            self.assertEqual(x["date_made"], "1917")
+            self.assertTrue(0 <= x["p_percent"] <= 100, x["claim_id"])
+
+    def test_audit_and_queue_carry_same_probability(self):
+        audit = load(AUDIT)["rows"]
+        for r in audit:
+            self.assertEqual(r["p_resolvable_percent"], self.by_id[r["id"]]["p_percent"], r["id"])
+        queue = QUEUE.read_text()
+        for cid, x in self.by_id.items():
+            if x["automation"] in ("FULL_LOOP", "LOOP_WITH_SEED"):
+                self.assertIn(cid, queue)
+
+    def test_rubric_invariants(self):
+        sys.path.insert(0, str(ROOT / "thompson"))
+        from score_1917_resolvability import score_claim
+        self.assertGreater(score_claim("IN_REPO", "FULL_LOOP", "UNTESTED", [1, 2])["p_percent"],
+                           score_claim("NO_PUBLIC_FOUND", "FULL_LOOP", "UNTESTED", [1, 2])["p_percent"])
+        self.assertEqual(score_claim("IN_REPO", "DONE", "DONE_REPO", [1, 2])["p_percent"], 100.0)
+        self.assertLessEqual(score_claim("PUBLIC_CANDIDATE", "HUMAN_REQUIRED", "UNTESTED", [1, 2])["p_percent"], 25.0)
+        # An unprobed claim must never score as if absence were proven
+        self.assertGreater(score_claim("UNPROBED", "FULL_LOOP", "UNTESTED", [1, 2])["p_percent"],
+                           score_claim("NO_PUBLIC_FOUND", "FULL_LOOP", "UNTESTED", [1, 2])["p_percent"])
 
 
 class TestNanopubs(unittest.TestCase):

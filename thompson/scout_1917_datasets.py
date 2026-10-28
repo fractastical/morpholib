@@ -317,6 +317,13 @@ def main() -> int:
             if seed.get("commons"):
                 commons = commons_search(seed["commons"])
         existence, automation, reason = classify(c, seed, local, dryad, commons)
+        # Log P(resolvable) for every claim (rubric in score_1917_resolvability.py;
+        # feeds the problem-graph chapter edges + overnight dispatch order).
+        try:
+            from score_1917_resolvability import score_claim
+            _p = score_claim(existence, automation, c["pass2"]["status"], c["pass2"]["effort_days"])
+        except Exception:
+            _p = {"p_percent": None, "band": None, "base": None, "adjustments": []}
         # Thompson's figures are always a fallback dataset for figure claims
         digitize = bool(re.search(r"\d", c["figures"]))
         rows.append({
@@ -329,6 +336,8 @@ def main() -> int:
             "digitize_1917_figures": digitize,
             "seed_query": seed.get("query"), "human_blocker": seed.get("human"),
             "effort_days": c["pass2"]["effort_days"],
+            "p_resolvable_percent": _p["p_percent"], "p_resolvable_band": _p["band"],
+            "p_resolvable_components": {"base": _p["base"], "adjustments": _p["adjustments"]},
         })
         print(f"{c['id']}: {existence:<18} {automation:<15} dryad={len(dryad) if dryad is not None else 'UNPROBED'} commons={len(commons) if commons is not None else 'UNPROBED'} local={len(local)}")
 
@@ -369,6 +378,7 @@ def queue_entry(i: int, r: dict, claim: dict) -> dict:
         "governing_mechanism": claim["claim"],
         "dataset_existence": r["existence"],
         "dataset_audit_reason": r["reason"],
+        "p_resolvable_percent": r.get("p_resolvable_percent"),
         "proposed_slug": slug,
         "proposed_sim_id": f"thompson1917-{r['id'].lower()}",
         "proposed_script": f"thompson/claims/{r['id'].lower()}_{slugify(claim['chapter_title'])}.py",
