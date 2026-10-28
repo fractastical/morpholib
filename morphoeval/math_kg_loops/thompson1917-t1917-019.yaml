@@ -10,7 +10,9 @@ model_spec:
   delta_sweep: [0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.7, 1.0]
   lloyd_iters_sweep: [0, 2, 5, 10, 20]
   boundary: periodic torus (chi = 0)
-  specimen_segmentation: "alizarin-red ridge threshold -> distance-transform watershed -> interior-cell neighbour counts"
+  specimen_segmentation: "nucleus-marker watershed (blueness markers, -min(R,G,B) elevation) -> 4-connected label adjacency (>= 4 px contact) -> interior-cell neighbour counts; Fig. 125 and raster control via Otsu wall mask -> distance-peak watershed"
+  fit_objectives: ["total variation on p_n (n = 4..8)", "joint: TV + |dCV(area)| + |d excess perimeter|"]
+  controls: ["honeycomb delta = 0", "Poisson-Voronoi null", "rasterised-froth pipeline control (perimeter + window bias)", "Aboav-Weaire neighbour shuffle", "uniform-random cleavage ablation of the division chain"]
   seed: 20261028
   inputs:
     - datasets/thompson_1917/t1917-019/t1917_019_the_forms_of_tissues_or_cell_a_reference.json
@@ -42,7 +44,7 @@ equations:
     variables: "V vertices, E edges, F cells, n_i sides of cell i, χ Euler characteristic"
     role: "Proves the froth half of the claim: any trivalent tissue has mean side number 6 independent of mechanics; the specimen's ⟨n⟩ is compared to 6"
     source_citation: "Thompson (1917) pp. 309, 323, 325; Weaire & Rivier (1984) Contemp. Phys. 25:59 Sec. 2"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L198-L257"
   - law_name: "Second-Moment Honeycomb Criterion (mu2 = 0 iff all hexagons)"
     formula: "F·μ₂ = Σ (n_i − 6)² = Σ n_i² − 36F  (when ⟨n⟩ = 6);  three-class: F·μ₂ = n₅ + n₇;  μ₂ = 0 ⟺ n₅ = n₇ = 0;  torus: n₅ = n₇ so F·μ₂ = 2n₅"
     lean_decl: "MathOfBiology.Loop_214.second_moment_numerator"
@@ -62,7 +64,7 @@ equations:
     variables: "n₅, n₆, n₇ class counts; μ₂ second moment of the side-number distribution"
     role: "Separates Thompson's strict 'hexagons' reading (μ₂ = 0) from the froth reading (μ₂ > 0); the specimen's μ₂ locates it in the froth morphospace"
     source_citation: "Weaire & Rivier (1984) Eq. 2.3; Gibson et al. (2006) Nature 442:1038"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L198-L257"
   - law_name: "Least-Perimeter Regular Tiling & Hales Honeycomb Constant"
     formula: "P_n(A) = 2√(n A tan(π/n));  P₆⁴ = 192A² < P₄⁴ = 256A² < P₃⁴ = 432A²;  honeycomb wall length L = F·P₆/2 ⟹ 16L⁴ = 16·12·F⁴A², i.e. L/(F√A) = 12^{1/4} = 1.8612 (Hales 2001 lower bound)"
     lean_decl: "MathOfBiology.Loop_214.fourth_power_perimeter_hexagon"
@@ -85,7 +87,7 @@ equations:
     variables: "A cell area, P perimeter, L total wall length, F cell count"
     role: "Proves the least-perimeter half of the claim for the three regular tilings and fixes the honeycomb constant used by the script's excess_perimeter = L_measured / L_honeycomb(same areas) − 1"
     source_citation: "Thompson (1917) p. 330; Hales (2001) Discrete Comput. Geom. 25:1"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L198-L257"
   - law_name: "Lewis's Law Total-Area Invariance"
     formula: "A_n = A₆ + k(n − 6);  Σ_i A_{n_i} = A₆F + k(Σn_i − 6F) = A₆F on a torus for every slope k;  Lewis slope A₆ = 4k: 4A₅ = 3A₆, 4A₇ = 5A₆, A₅ + A₇ = 2A₆"
     lean_decl: "MathOfBiology.Loop_214.lewis_total_area"
@@ -106,7 +108,7 @@ equations:
     variables: "A6 hexagon-class mean area, k Lewis slope, n side number, F cell count, sum_n = Σ n_i total side count"
     role: "Shows the size-topology coupling measured on the specimen (Lewis fit slope) is a zero-sum redistribution around the hexagon; mean cell area is invariant"
     source_citation: "Lewis (1928) Anat. Rec. 38:341"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L198-L257"
   - law_name: "Aboav-Weaire Sum Rule (a cancels)"
     formula: "n·m(n) = (6 − a)n + (6a + μ₂);  Σ_i n_i m(n_i) = (6 − a)Σn_i + F(6a + μ₂) = F(36 + μ₂) when Σn_i = 6F;  honeycomb: 36F"
     lean_decl: "MathOfBiology.Loop_214.aboav_weaire_sum"
@@ -123,7 +125,7 @@ equations:
     variables: "m(n) mean side number of the neighbours of an n-gon, a Aboav parameter, mu2 second moment, F cell count, sum_n = Σ n_i total side count"
     role: "Gives the consistency identity Σ n m(n)/F = 36 + μ₂ that the script checks on the segmented specimen's neighbour graph"
     source_citation: "Aboav (1970) Metallography 3:383; Weaire & Rivier (1984)"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L198-L257"
   - law_name: "Gibson Division-Topology Law (why growing epithelia are froths, not honeycombs)"
     formula: "n-gon divides: daughters (k+3) + (n−2−k+3) = n + 4 sides, two cut neighbours +1 each ⟹ Σn → Σn + 6, F → F + 1, ⟨n⟩ = 6 preserved;  hexagon splitting symmetrically (k=2) → two pentagons, F·μ₂ = 2 > 0"
     lean_decl: "MathOfBiology.Loop_214.daughter1_sides"
@@ -144,4 +146,4 @@ equations:
     variables: "n sides of the mother cell, k undivided sides inherited by daughter 1"
     role: "Formalises the 2006 counterclaim mechanism: division keeps the froth mean at 6 but necessarily creates 5-gons, so Thompson's strict hexagonal optimum cannot hold in a dividing tissue"
     source_citation: "Gibson et al. (2006) Nature 442:1038; Gibson et al. (2011) Cell 144:427"
-    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L226-L276"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L266-L313"
