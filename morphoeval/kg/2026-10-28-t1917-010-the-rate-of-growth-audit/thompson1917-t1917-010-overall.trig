@@ -1,0 +1,77 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-010> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-010-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-010-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) regeneration as a lawful growth process — Durbin/Ellis tadpole tail curves — MorphoEval overall 55.0/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Pass 1 baseline. The script loads four SHA-256-pinned tables digitised from Thompson's own pages, fits the growth laws Thompson discusses (E2 hyperbolic gloss vs E3 exponential approach; E4 sigmoid), recovers the Fig. 37 velocity exponent (n = 1.31, not 2), confirms Ellis's amount-removed scaling (r = 0.993 day 9, 0.9997 plateau), replicates the Fig. 40 isochrones (beta = 0.35 vs 1/3) and writes result.json (supported, two caveats). It does not sweep parameter regimes, run any negative or ablation control, use the vendored specimen photograph, or report KS / permutation statistics, and the Dryad CSV digest pin breaks under .gitattributes LF normalisation on a fresh clone. Overall 55.0/100 (faithfulness 50.0, reproducibility 66.5); rubric morphoeval 0.1.0; checkpoint commit 7295001d7; environment: . Dimension assessments: Model fidelity to source 70, Morphological realism / specimen match 35, Parameter expressivity 40, Morphometric validation 55, Source and data traceability 78, Code-to-model traceability 74, Reproducibility package 52. Output judged: docs/media/t1917_010_the_rate_of_growth_comparison.png: rendered output of thompson/claims/t1917-010_the-rate-of-growth.py at 7295001d7, image/png, 488733 B, 1950×1170 px, artifact_sha256 e7b927671098f62af48498dd66d6e51aed896770bab8ba7854fbecd893524833 (sha256 e7b927671098f62af48498dd66d6e51aed896770bab8ba7854fbecd893524833), spec_fingerprint de10fcf1506d2328367848e4d263a6f76c4a536627abf0558ae32051c5aa7ba2. Dual provenance: spec_fingerprint: de10fcf1506d2328367848e4d263a6f76c4a536627abf0558ae32051c5aa7ba2; artifact_sha256: e7b927671098f62af48498dd66d6e51aed896770bab8ba7854fbecd893524833; input_dataset_sha256: {datasets/thompson_1917/t1917-010/lithobates_clamitans_tadpole_specimen.jpg=4a90d205c4f3ec5e..., datasets/thompson_1917/t1917-010/t1917_010_the_rate_of_growth_reference.json=8cf23ca99668fed8..., datasets/thompson_1917/t1917-010/thompson_p139_durbin_expII_regeneration.csv=ee7b4283ace77101..., datasets/thompson_1917/t1917-010/thompson_p141_durbin_expII_interpolated.csv=b44610d153e0e230..., datasets/thompson_1917/t1917-010/thompson_p144_durbin_expIV_regeneration.csv=cc4848894d2310d1..., datasets/thompson_1917/t1917-010/thompson_p148_ellis_tail_regeneration.csv=3b61cc051e28ff22..., morphoeval/lean/loops/Thompson1917_T1917_010.lean=36af9a4ae4b3f5de...}. Claim boundary: reported_in_source: Thompson (1917) pp. 139-145 reproduces Durbin's Exp. II and Exp. IV regenerated-length tables and asserts V falls 'inversely as the square of the time' with log V approximately linear (Fig. 37) and an inflection 'about the seventh day' in Exp. IV | Thompson (1917) p. 148 reproduces Ellis's series O/P/R/S (12-57 % of tail removed) and constructs Fig. 40 isochrones that 'approximate in form to a cubic parabola' and diverge at 75 % removed; reconstructed_in_script: Least-squares fits of exponential-approach, hyperbolic (L_inf - c/t), logistic and Gompertz laws to the printed tables; OLS decay exponents on Thompson's interpolated increments; Ellis absolute-regenerate scaling and linearly interpolated isochrones with log-log slopes; transfer_boundary: No transfer to a modern dataset: the pre-scouted Dryad lizard dataset is a DATASET_MISMATCH and is excluded from the verdict; does_not_claim: A mechanistic model of tail regeneration, or that the exponential/Gompertz laws are the true generative process rather than descriptive fits to 7-10 points per series." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add a parameter-regime sweep: decay exponent n in [0.5, 3] -> RMSE of the integrated law on Exp. II (minimum vs Thompson's n = 2), and amputation level R -> isochrone time with the 75 % asymptote",
+            "remediation needed: Add negative/ablation controls: exact permutation test of Ellis amount-removed labels, constant-velocity (linear) null and R-independent null, with p-values",
+            "remediation needed: Fix GIF label clipping and the Exp. IV negative y-axis floor; add dependency pins in the script header",
+            "remediation needed: Normalise the Dryad CSV to LF, re-pin its digest and record the original download digest separately so verify_sha256 passes from a fresh clone",
+            "remediation needed: Report KS statistics on standardised residuals, coefficient of variation of the restored fraction, and fit a free-exponent generalised power law to the integrated curve",
+            "remediation needed: Segment the vendored L. clamitans specimen (threshold + principal axis + width profile) to measure tail fraction of total length and compare with Thompson's 65 % / 62 %; overlay the mask on the figure",
+            "remediation needed: Write superseding Pass 2 audit after Step 12" ;
+        pk:hasScore "0.55"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval cloud loop 208, Pass 1 self-audit)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0000-0001-9184-8944> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0000-0001-9184-8944>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1002/jez.1400070302>,
+            <https://doi.org/10.1002/jez.1400070303>,
+            <https://doi.org/10.1098/rsbl.2019.0151> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form" .
+    <https://doi.org/10.1002/jez.1400070302> dct:date "1909"^^xsd:gYear ;
+        dct:title "An analysis of the rate of regeneration throughout the regenerative process" .
+    <https://doi.org/10.1002/jez.1400070303> dct:date "1909"^^xsd:gYear ;
+        dct:title "The relation of the amount of tail regenerated to the amount removed in tadpoles of Rana clamitans" .
+    <https://doi.org/10.1098/rsbl.2019.0151> dct:date "2019"^^xsd:gYear ;
+        dct:title "Tail loss and telomeres: consequences of large-scale tissue regeneration in a terrestrial ectotherm" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) regeneration as a lawful growth process — Durbin/Ellis tadpole tail curves — MorphoEval overall 55.0/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:08:32Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0000-0001-9184-8944> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-010-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-010> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/thompson1917-claim-validation> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/thompson1917-claim-validation> rdfs:label "thompson1917-claim-validation" .
+}
