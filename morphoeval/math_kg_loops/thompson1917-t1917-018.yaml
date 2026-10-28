@@ -1,0 +1,131 @@
+sim_id: thompson1917-t1917-018
+math_family: "geometric — Plateau / Lamarle minimal-partition laws and Lami tension balance at tri-cellular junctions (Thompson 1917 Ch. VII)"
+claim_id: T1917-018
+claim: "Cells in contact, like soap films, meet three-at-a-time at ~120 degrees and in other respects obey Plateau's laws of film configuration."
+model_spec:
+  model: "Thompson (1917) Ch. VII pp. 293-345: Lami/Plateau tri-junction balance (Fig. 113 cases), Lamarle minimal partition (threes at 120 deg), tested by junction-angle scoring of segmented epithelia against a 120-degree null with an a-priori +/-15 degree tolerance and f3 >= 0.90 three-fold fraction"
+  plateau_angle_deg: 120.0
+  tolerance_deg: 15.0
+  three_fold_fraction_threshold: 0.90
+  vertex_energy: "E = sum_e Lambda(phi_e) l_e + sum_c (K/2)(A_c - A0)^2, Lambda(phi) = Lambda0 (1 + eps cos 2 phi)"
+  Lambda0: 1.0
+  K: 1.0
+  eps_sweep: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+  n_cells: 96
+  relax_steps: 400
+  seed: 1917
+  junction_sampling_radius_px: {human_corneal_endothelium: 9, allium_cepa_epidermis: 12, thompson_fig103: 28, thompson_fig124: 14}
+  inputs:
+    - datasets/thompson_1917/t1917-018/t1917_018_the_forms_of_tissues_or_cell_a_reference.json
+    - datasets/thompson_1917/t1917-018/human_corneal_endothelium_specimen.jpg
+    - datasets/thompson_1917/t1917-018/allium_cepa_epidermis_specimen.jpg
+    - datasets/thompson_1917/t1917-018/thompson1917_fig103_maize_parenchyma.png
+    - datasets/thompson_1917/t1917-018/thompson1917_fig124_girardia_epidermis.png
+    - datasets/thompson_1917/t1917-018/ongrowthform1917thom_0318.jp2
+    - datasets/thompson_1917/t1917-018/ongrowthform1917thom_0341.jp2
+    - datasets/thompson_1917/t1917-018/scout_manifest.json
+    - datasets/thompson_1917/t1917-018/paper_citations.bib
+lean_module: morphoeval/lean/loops/Thompson1917_T1917_018.lean
+lean_namespace: MathOfBiology.Loop_213
+lean_checked_with: "Lean 4.35.0 (elan stable), 0 errors, 0 sorry"
+equations:
+  - law_name: "Thompson Fig. 113 tension cases: 90 / >90 / 120 degrees"
+    formula: "alpha + beta + gamma = 360;  (T = T', t -> 0) => alpha = beta = 90;  (T = T' = t) => alpha = beta = gamma = 120;  (T = T') => gamma < 120 <=> alpha > 120"
+    lean_decl: "MathOfBiology.Loop_213.closes_full_turn"
+    lean_theorem: "MathOfBiology.Loop_213.thompson_fig113_three_cases"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L39-L64"
+    lean_code: |
+      def closes_full_turn (alpha beta gamma : Int) : Prop :=
+        alpha + beta + gamma = 360
+      theorem thompson_fig113_three_cases (alpha beta gamma : Int)
+          (h : closes_full_turn alpha beta gamma) :
+          (alpha = beta → gamma = 180 → alpha = 90 ∧ beta = 90) ∧
+          (alpha = beta → beta = gamma → alpha = 120 ∧ beta = 120 ∧ gamma = 120) ∧
+          (alpha = beta → (gamma < 120 ↔ 120 < alpha)) ∧
+          (closes_full_turn 100 100 160)
+    variables: "alpha, beta, gamma: interior angles at a planar tri-junction (degrees); T, T': outer film tensions; t: partition tension"
+    role: "Formalises the three worked cases of Thompson (1917) p. 303 that the script's `lami_angles_from_tensions` reproduces numerically (regime table rows 1-3)"
+    source_citation: "Thompson (1917) On Growth and Form pp. 296-297, 303 Fig. 113"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (lami_angles_from_tensions, thompson_fig113_cases)"
+
+  - law_name: "Lami balance at 120 degrees iff equal tensions"
+    formula: "T1 e1 + T2 e2 + T3 e3 = 0 with e_k at 0, 120, 240 deg  <=>  T1 = T2 = T3   (2 T1 - T2 - T3 = 0 and sqrt3 (T2 - T3) = 0)"
+    lean_decl: "MathOfBiology.Loop_213.lami_balance_x"
+    lean_theorem: "MathOfBiology.Loop_213.lami_balance_iff_equal_tensions"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L72-L108"
+    lean_code: |
+      def lami_balance_x (T1 T2 T3 : Int) : Int := 2 * T1 - T2 - T3
+      def lami_balance_y (r T2 T3 : Int) : Int := r * (T2 - T3)
+      theorem lami_balance_iff_equal_tensions (r T1 T2 T3 : Int) (hr : r ≠ 0) :
+          (lami_balance_x T1 T2 T3 = 0 ∧ lami_balance_y r T2 T3 = 0) ↔ (T1 = T2 ∧ T2 = T3)
+    variables: "T1, T2, T3: line tensions of the three films; r: the (non-zero) vertical unit standing for sqrt 3"
+    role: "Justifies reading a measured 120-degree junction as evidence of equal cortical tension, and the script's inference of tension ratios from measured angles (inverse Lami)"
+    source_citation: "Thompson (1917) p. 297; Plateau (1873); Alt, Ganguly & Salbreux (2017) Phil. Trans. R. Soc. B 372:20150520"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (lami_angles_from_tensions, tensions_from_angles)"
+
+  - law_name: "Angle-sum identity: the tri-junction mean is 120 by construction; only dispersion is testable"
+    formula: "(alpha - 120) + (beta - 120) + (gamma - 120) = 0  =>  test statistic D_v = sqrt(mean_i (theta_i - 120)^2), tolerance |theta - 120| <= 15"
+    lean_decl: "MathOfBiology.Loop_213.plateau_deviation"
+    lean_theorem: "MathOfBiology.Loop_213.tri_junction_mean_is_always_120"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L112-L134"
+    lean_code: |
+      def plateau_deviation (theta : Int) : Int := theta - 120
+      theorem tri_junction_mean_is_always_120 (alpha beta gamma : Int)
+          (h : closes_full_turn alpha beta gamma) :
+          plateau_deviation alpha + plateau_deviation beta + plateau_deviation gamma = 0 ∧
+          (plateau_deviation alpha = 0 → plateau_deviation beta = 0 → gamma = 120) ∧
+          (plateau_deviation alpha = plateau_deviation beta →
+            plateau_deviation gamma = -2 * plateau_deviation alpha)
+    variables: "theta_i: measured interior angles at one vertex; D_v: per-vertex Plateau deviation"
+    role: "Fixes the statistical design of the test: pooled SD and per-vertex RMS deviation vs. the Poisson-Voronoi negative control, never the pooled mean"
+    source_citation: "Thompson (1917) p. 310 ('meeting, by threes, at angles of 120 degrees, irrespective of the size of the individual cells')"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (plateau_statistics)"
+
+  - law_name: "Euler / three-valent froth bookkeeping and T1 charge conservation"
+    formula: "V - E + F = 0, 3V = 2E  =>  2E = 6F (mean 6 sides), V = 2F;  (5, 7) <- (6, 6) conserves 12"
+    lean_decl: "MathOfBiology.Loop_213.three_valent_froth_euler_bookkeeping"
+    lean_theorem: "MathOfBiology.Loop_213.three_valent_froth_euler_bookkeeping"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L144-L147"
+    lean_code: |
+      theorem three_valent_froth_euler_bookkeeping (V E F : Int)
+          (h_euler : V - E + F = 0) (h_trivalent : 3 * V = 2 * E) :
+          2 * E = 6 * F ∧ V = 2 * F ∧ (5 + 7 : Int) = 6 + 6
+    variables: "V, E, F: vertices, edges, cells of a periodic three-valent network"
+    role: "Underwrites the periodic Voronoi-vertex simulation (every seed tessellation is three-valent, mean 6 sides) and the f3 three-fold-fraction statistic"
+    source_citation: "Thompson (1917) pp. 310, 319; Gibson et al. (2006) Nature 442:1038"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (periodic_voronoi_network, relax_froth)"
+
+  - law_name: "Three regular n-gons close a vertex iff n = 6 (120-degree rule = honeycomb)"
+    formula: "3 (n - 2) 180 = 360 n  <=>  n = 6;  interior angle of the hexagon = 120"
+    lean_decl: "MathOfBiology.Loop_213.n_times_interior_angle"
+    lean_theorem: "MathOfBiology.Loop_213.three_regular_polygons_close_vertex_iff_hexagon"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L152-L172"
+    lean_code: |
+      def n_times_interior_angle (n : Int) : Int := (n - 2) * 180
+      theorem three_regular_polygons_close_vertex_iff_hexagon (n : Int) :
+          (3 * n_times_interior_angle n = 360 * n ↔ n = 6) ∧
+          n_times_interior_angle 6 = 6 * 120 ∧
+          n_times_interior_angle 4 = 4 * 90
+    variables: "n: polygon side number"
+    role: "Links the junction-angle claim (T1917-018) to the hexagonal-tessellation claim (T1917-019) and to the polygon-class P(n) reported by the script"
+    source_citation: "Thompson (1917) pp. 319-321 Fig. 121 (after Bonanni)"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (polygon_class_distribution)"
+
+  - law_name: "Plateau four-fold vertex instability (Steiner two-Y beats X)"
+    formula: "1 + sqrt 3 = 2.7320 < 2 sqrt 2 = 2.8284 for the unit square; certified at 1e-4: 17321^2 >= 3e8, 14142^2 <= 2e8, 10000 + 17321 < 2 * 14142"
+    lean_decl: "MathOfBiology.Loop_213.sqrt3_1e4_upper"
+    lean_theorem: "MathOfBiology.Loop_213.steiner_two_y_beats_x_partition"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_018.lean#L177-L207"
+    lean_code: |
+      def sqrt3_1e4_upper : Int := 17321
+      def sqrt2_1e4_lower : Int := 14142
+      theorem steiner_two_y_beats_x_partition :
+          sqrt3_1e4_upper * sqrt3_1e4_upper ≥ 3 * 100000000 ∧
+          sqrt2_1e4_lower * sqrt2_1e4_lower ≤ 2 * 100000000 ∧
+          10000 + sqrt3_1e4_upper < 2 * sqrt2_1e4_lower
+      theorem square_of_sum_expansion (k r : Int) :
+          (k + r) * (k + r) = k * k + 2 * (k * r) + r * r
+    variables: "unit-square partitions: X (four films from the centre) vs two-Y Steiner tree"
+    role: "Plateau's second law (no four-fold film vertices) that the script tests as the f3 three-fold fraction and the square-lattice ablation control"
+    source_citation: "Thompson (1917) pp. 309-310; Lamarle (1864); Taylor (1976) Ann. Math. 103:489-539"
+    code_locus: "thompson/claims/t1917-018_the-forms-of-tissues-or-cell-aggregates.py (steiner_vs_cross_lengths, square_lattice_control)"
