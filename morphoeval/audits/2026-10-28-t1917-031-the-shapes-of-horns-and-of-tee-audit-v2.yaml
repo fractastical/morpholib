@@ -1,0 +1,193 @@
+# MorphoEval audit v2 (Pass 2 remediation) — T1917-031 Thompson (1917) horns as logarithmic spirals on a cone, 2026-10-28
+#
+# Supersedes 2026-10-28-t1917-031-the-shapes-of-horns-and-of-tee-audit (Pass 1, overall 53.5).
+# Remediates R2 (real specimen + Capra figure), R3 (gnomonic breadth test, implied beta), R4 (bootstrap CI,
+# KS, controls, ablation), R5 (verdict logic separating form / alpha-beta identifiability / self-similarity;
+# Dryad labelled as non-shape analogue), R6 (two-pass end trimming about the fitted pole), R7 (beta sweep).
+# R1 (independent second assessor) remains OPEN: builder and assessor are the same agent (Claude Fable 5.1).
+#
+# Headline: the logarithmic-spiral FORM is supported on both Ovis ammon sources (log spiral beats the circle
+# null by delta-AIC 425 on Thompson's Fig. 320 and 666 on the real Argali horn, and is not beaten by an
+# Archimedean spiral).  The real specimen's projected spiral angle is 74.7 deg (bootstrap 95 % CI 73.6-75.6),
+# matching Thompson's "about 75 deg"; Thompson's own drawing projects at 84.2 deg, consistent with 75 deg only
+# on a cone of semi-angle ~22 deg (alpha and beta are not separable in 2D — Lean theorem).  Strict gnomonic
+# self-similarity (E4) FAILS on Fig. 320 (breadth pitch 0.32 vs edge pitch 0.13) and is inconclusive on the
+# photograph.  Verdict: mixed.  Overall 53.5 -> 67.6.
+
+audit:
+  id: 2026-10-28-t1917-031-the-shapes-of-horns-and-of-tee-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-031-the-shapes-of-horns-and-of-tee-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending R1)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 430ab132
+    note: >-
+      Cloud loop thompson1917-t1917-031 (slot 225), branch cursor/t1917-031-bovid-horn-spiral-1bd0 on
+      origin/main fc7454cd8. Python 3.12.3, numpy/scipy/scikit-image/Pillow/matplotlib per requirements.txt,
+      Lean 4.35.0. Script v2.0.0-pass2; full run 11 s, --self-test 11 s (bootstrap 20 per source).
+
+references:
+  thompson1917:
+    title: "On Growth and Form — Ch. XIII, The Shapes of Horns, and of Teeth or Tusks: with a Note on Torsion"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), pp. 612-634, Figs. 318-324; IA scan ongrowthform1917thom"
+    url: https://archive.org/details/ongrowthform1917thom
+  skalak1997:
+    title: "Kinematics of surface growth"
+    authors: "Skalak R, Farrow DA, Hoger A"
+    venue: "Journal of Mathematical Biology 35:869-907 (1997)"
+    doi: 10.1007/s002850050081
+  evans2021:
+    title: "A universal power law for modelling the growth and form of teeth, claws, horns, thorns, beaks, and shells"
+    authors: "Evans AR, Pollock TI, Cleuren SGC, et al."
+    venue: "BMC Biology 19:58 (2021)"
+    doi: 10.1186/s12915-021-00990-w
+  tidiere2020data:
+    title: "Data from: Variation in the ontogenetic allometry of horn length in bovids along a body mass continuum"
+    authors: "Tidiere M, Gaillard J-M, Garel M, Lemaitre J-F, Toigo C, Pelabon C"
+    venue: "Dryad (2020), CC0"
+    doi: 10.5061/dryad.qz612jmb4
+    role: registry-named dataset; species match, shape-variable mismatch (labelled analogue, not in the verdict)
+
+simulations:
+  - id: thompson1917-t1917-031
+    name: "Thompson (1917) Ch. XIII — bovid horns as logarithmic spirals wound on a cone (Pass 2)"
+    organism: "Ovis ammon (Argali): real skull photograph + Thompson's Fig. 320; Capra sinaitica: Thompson's Fig. 319"
+    domain: morphogenesis
+    script: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py
+    output: docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png
+    extra_outputs:
+      - docs/media/t1917_031_the_shapes_of_horns_and_of_tee_growth.gif
+      - datasets/thompson_1917/t1917-031/t1917_031_metrics.json
+      - datasets/thompson_1917/t1917-031/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-031-the-shapes-of-horns-and-of-tee-audit
+    source_refs: [thompson1917, skalak1997, evans2021, tidiere2020data]
+    claim_boundary:
+      reported_in_source:
+        - "Ovis ammon spiral angle about 75 deg; Highland ram a little more; Scinde wild goat < 70 deg; Oryx 20-40 deg (p. 617)"
+        - "Argali species share alpha but differ in the cone/helical component beta (pp. 617-618)"
+        - "trihedral edge lengths 80:74:45 cm (p. 618); St Venant torsion curves on the rings (pp. 621-624)"
+      reconstructed_in_script:
+        - "E1 free-pole log-spiral fits of the outer edge of Fig. 320, Fig. 319 and the Argali photograph; AIC vs Archimedean spiral and circle; bootstrap CI; KS test"
+        - "E4 ray-based breadth test about the fitted pole; E2 implied cone semi-angle; sensitivity sectors; synthetic controls and ablation"
+      transfer_boundary:
+        - "a lateral 2D projection measures k_proj = sin(beta) cot(alpha), not alpha itself"
+        - "the Argali photograph is perspective, not orthographic; the flaring tip arc drives the spiral estimate (sensitivity flag)"
+      does_not_claim:
+        - "torsion / St Venant warping; inter-species beta differences; thickness-curvature rule; teeth or tusks"
+    summary: >-
+      Fig. 320 (Ovis ammon drawing, 521 pts, 269 deg): alpha_proj 84.2 deg [83.7, 84.6], R 1.90,
+      r 0.968, RMSE 3.7 %, log spiral beats circle by dAIC 425 and Archimedean by 22; beta implied
+      by alpha = 75 deg is 22 deg. Real Argali horn (HSV sheath mask, 478 pts, 215 deg): alpha_proj
+      74.7 deg [73.6, 75.6], R 5.57, r 0.995, RMSE 2.6 %, dAIC circle 666, Archimedean +2 —
+      matches Thompson's 75 deg, but dropping the ventral/tip arc makes the remaining arc
+      circle-like (sensitivity range 74.7-87.0 deg). Capra sinaitica half-whorl: alpha not
+      identifiable (53-86 deg across sectors). Gnomonic test fails on Fig. 320 (|k_breadth| 0.32 vs
+      |k_outer| 0.13), inconclusive on the photo. Controls: synthetic alpha 75 recovered to 75.0,
+      circle null -> circle, shuffled ablation r 0.97 -> 0.01. Verdict mixed. Overall 67.6/100.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          E1-E4 implemented as Thompson states them; E2 is now used in the right direction (implied
+          beta from k_proj rather than treating alpha_proj as alpha), and the Lean module proves the
+          non-identifiability that this rests on plus the Pass-2 data pins (alpha match, dAIC, E4
+          failure) with 0 sorry. The gnomonic test implements E4 literally (breadth along rays). Still
+          2D: no 3D centreline, so beta is inferred, never measured; E5 remains a rendering.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [85, 141], note: "log_spiral, k_from_alpha, beta_from_k_alpha (E2 inverted), whorl_ratio, helico_spiral, horn_surface", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_031.lean, lines: [32, 153], note: "16 theorems: whorl-ratio invariance, breadth law, alpha-beta non-identifiability, growth velocities, trihedral ratio, Pass-2 data pins; lean exit 0", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [478, 549], note: "analyse_specimen: breadth test E4 along rays from the fitted pole with validity gating", supports: true}
+          - {file: datasets/thompson_1917/t1917-031/result.json, lines: [0, 0], note: "beta_implied_deg reported, not measured; cone component untested", supports: false}
+      specimen-match:
+        value: 58
+        rationale: >-
+          A real Ovis ammon horn is now segmented (HSV sheath mask excludes the bleached skull) and
+          the fitted spiral tracks its outer edge over 215 deg with 2.6 % RMSE; the overlay on
+          Thompson's Fig. 320 tracks the dorsal/posterior edge; the E2 helicoid is rendered with the
+          Fig.-320-implied beta. Deductions: n = 1 real specimen in perspective view, the spiral
+          estimate on it is driven by the tip arc (sensitivity flag), the Capra figure is a halftone
+          whose half-whorl cannot pin alpha, and the visual match of the helicoid to the photograph is
+          qualitative.
+        evidence:
+          - {file: docs/media/t1917_031_the_shapes_of_horns_and_of_tee_comparison.png, lines: [0, 0], note: "Fig. 320 + Argali photo + Capra overlays, ln rho linearity, AIC bars, gnomonic scatter, alpha/beta sweeps, E2 helicoid, controls", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [207, 219], note: "segment_photo_hsv: saturation/value/hue mask, opening, largest component, closing, hole fill", supports: true}
+          - {file: datasets/thompson_1917/t1917-031/t1917_031_metrics.json, lines: [0, 0], note: "argali sensitivity sectors [-90,140], [-60,120] give alpha 87.0 / 85.3 with r 0.77 / 0.94 (sector_sensitive = true)", supports: false}
+      parameter-expressivity:
+        value: 70
+        rationale: >-
+          alpha sweep (65-85) and beta sweep at alpha = 75 (15-90) are rendered and tabulated
+          (model_regime_table alpha x beta -> k_proj, R, alpha_proj); the self-test checks the
+          monotone effect of beta; --bootstrap is a CLI parameter; trim_ends / sectors / thresholds
+          are data-driven from reference.json. Breadth ratio and handedness are still fixed.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [613, 661], note: "analyse_all: regime table over alpha x beta, species contrast, controls", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [805, 824], note: "beta sweep panel and alpha sweep panel", supports: true}
+      morphometric-validation:
+        value: 66
+        rationale: >-
+          Per source: alpha_proj with bootstrap 95 % CI, R, Pearson r, RMSE (abs and relative), KS
+          p-value, dAIC vs two nulls, implied beta, k_breadth vs k_outer; plus positive/negative
+          controls, a shuffled ablation, sector-sensitivity ranges and a species contrast —
+          23 measurement rows with reference values. Deductions: the bootstrap CI (+/-0.5 deg)
+          understates the model uncertainty revealed by the sector sensitivity (up to 12 deg); the
+          gnomonic test is pole-dependent and inconclusive on the photo; the KS test rejects
+          normality on Fig. 320 (ring corrugations); n = 1 real specimen.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [439, 471], note: "gof_stats (KS, residual CV), bootstrap_alpha (sorted resampling), loglinear_k", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [552, 583], note: "synthetic_controls + ablation_shuffle", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [664, 709], note: "measure_morphoeval rows incl. sensitivity-aware methods and reference values", supports: true}
+          - {file: datasets/thompson_1917/t1917-031/result.json, lines: [0, 0], note: "sector_sensitivity flags true for the photo and the Capra figure", supports: false}
+      source-traceability:
+        value: 82
+        rationale: >-
+          Unchanged pins (IA leaf mapping, 5 SHA-256 inputs re-verified at runtime, Commons
+          licence/author, Dryad DOI + version + zip digest); the Dryad mismatch is now carried
+          through to result.json as an explicit dataset_mismatch_flag, and the Dryad table is
+          summarised (log-log slopes) so its content is visible. The .gitattributes keeps the vendored
+          table byte-exact. Deductions as in v1 (no Crossref re-verification of secondary DOIs; Brooke
+          1875 lacks a DOI).
+        evidence:
+          - {file: datasets/thompson_1917/t1917-031/t1917_031_the_shapes_of_horns_and_of_tee_reference.json, lines: [0, 0], note: "input_dataset_sha256, digitisation annotations incl. sensitivity sectors and trim_ends, acceptance criteria a-d", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [585, 610], note: "dryad_analogue: labelled non-shape analogue summary", supports: true}
+      code-traceability:
+        value: 74
+        rationale: >-
+          Docstring maps E1-E5 and tests T1-T4 to pages; every fit/segmentation step is a named
+          function with its equation id; reference.json carries the loci; the math-KG YAML links five
+          laws to Lean declarations and script line ranges. Deductions: the ray-based inner-edge rule
+          and the trimming rule are the script's own constructions, not Thompson's whorl-breadth
+          procedure (Ch. XI p. 558), and this is only stated in comments.
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [1, 64], note: "docstring: equations, test design T1-T4, identifiability, controls, claim boundary", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-031.yaml, lines: [0, 0], note: "5 laws, lean_locus + code_locus updated to v2 line ranges", supports: true}
+      repro-package:
+        value: 64
+        rationale: >-
+          Deterministic (seed 1917 for bootstrap/controls), --self-test (24 assertions incl. a trim
+          test, E2 inversion, controls, real-data sanity) passes, full run 11 s, inputs SHA-verified,
+          documented invocation with --bootstrap/--no-gif, checkpoint commit 430ab132 contains the
+          scored script. Deductions: no per-script dependency pins; skimage deprecation path; the
+          ephemeral nanopub signing key is loop-local (sign-only, not published).
+        evidence:
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [949, 992], note: "self_test", supports: true}
+          - {file: thompson/claims/t1917-031_the-shapes-of-horns-and-of-teeth-or-tusks-with-a.py, lines: [995, 1017], note: "main with --self-test / --no-gif / --bootstrap", supports: true}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — still builder-scored"
+      - id: R8
+        item: "3D centrelines (MorphoSource CT or photogrammetry) for >= 3 Argali / Ovis specimens to measure alpha and beta separately and test the cone/torsion component"
+      - id: R9
+        item: "Orthographic lateral photographs of isolated horn sheaths (museum specimens) so the sector-sensitivity of alpha_proj disappears and the breadth test becomes conclusive"
+      - id: R10
+        item: "Replace the ray-based breadth test with a pole-free local test (breadth vs radius of curvature along the outer edge)"
+      - id: R11
+        item: "Fit the Capra sinaitica horn only with a constrained pole (e.g. on the horn-base normal) or use a full-whorl Capra falconeri specimen so the goat-vs-sheep contrast is identifiable"
