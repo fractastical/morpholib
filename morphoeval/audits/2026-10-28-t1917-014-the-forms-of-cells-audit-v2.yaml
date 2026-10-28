@@ -1,0 +1,232 @@
+# MorphoEval audit — Thompson (1917) claim T1917-014 "The Forms of Cells": are Lagena tests
+# Delaunay (constant-mean-curvature) surfaces of revolution?  Pass 2 (v2), 2026-10-28.
+# Supersedes 2026-10-28-t1917-014-the-forms-of-cells-audit (Pass 1, overall 60.8).
+#
+# Single-assessor Pass 2 for `thompson/claims/t1917-014_the-forms-of-cells.py` (v2, commit
+# a1dca587c).  LIMITATION: builder and assessor are the same cloud agent (claude-fable-5-1);
+# remediation R1 (independent second assessor) remains open.
+#
+# Pass 1 remediation closed in this round: R2 real photographs (Kireenko 2022 CC BY 4.0 plate,
+# 5 unilocular tests + 2 polythalamous controls, 100 um scale bars), R3 ellipsoid null and
+# free-form noise floor, R4 KS statistic / 2-fold CV / Pearson r per model, R5 negative controls
+# plus a sphere+cylinder model ablation, R6 B / t parameter-regime sweep, R7 result.json verdict.
+#
+# Headline: verdict MIXED.  11/18 unilocular tests are Delaunay-compatible: 11/13 flask or
+# globular morphotypes (median nRMSE 0.050, free-form floor 0.049, ellipsoid null 0.116,
+# sphere+cylinder ablation 0.148) and 0/5 slender spindles (median 0.209; L/W 4.7-10.9 exceeds
+# the Lean-checked unduloid bead bound L/W <= pi).  Specificity caveat: 1/2 polythalamous
+# controls (the egg-shaped Quinqueloculina) also passes the gate, so the positive result is
+# 'consistent with' rather than a unique demonstration; the spindle refutation is specific.
+
+audit:
+  id: 2026-10-28-t1917-014-the-forms-of-cells-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes: 2026-10-28-t1917-014-the-forms-of-cells-audit
+  supersedes_audit_id: 2026-10-28-t1917-014-the-forms-of-cells-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, Pass 2; cloud loop thompson1917-t1917-014)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: cell-morphology
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a1dca587c
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scikit-image: "0.26.0"
+      lean: "4.35.0"
+    note: >-
+      Branch cursor/t1917-014-the-forms-of-cells-8998; Pass 2 script committed as a1dca587c
+      on top of origin/main fd43e5aba.  Lean module unchanged since Pass 1 and re-checked
+      (exit 0, 18 theorems, 0 sorry).  --self-test 4 s, full run 11 s.
+
+references:
+  thompson1917:
+    title: "On Growth and Form (1st ed.), Ch. V The Forms of Cells, pp. 201-276"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917)"
+    url: https://archive.org/details/ongrowthform1917thom
+  delaunay1841:
+    title: "Sur la surface de révolution dont la courbure moyenne est constante"
+    authors: "Delaunay C"
+    venue: "Journal de Mathématiques Pures et Appliquées 6:309-314 (1841)"
+    url: http://www.numdam.org/item/JMPA_1841_1_6__309_0/
+  kenmotsu1980:
+    title: "Surfaces of revolution with prescribed mean curvature"
+    authors: "Kenmotsu K"
+    venue: "Tôhoku Mathematical Journal 32(1):147-153 (1980)"
+    doi: 10.2748/tmj/1178229688
+  kireenko2022:
+    title: "Image dataset of benthic foraminifera in multicorer and gravity corer sediments from north-western Scotland shelf (North Atlantic Ocean)"
+    authors: "Kireenko L, Tikhonova A, Kozina N, Matul A"
+    venue: "Biodiversity Data Journal 10:e87457 (2022)"
+    doi: 10.3897/BDJ.10.e87457
+    role: modern CC-BY specimen photographs (Lagena 61a/62a, Oolina 63, Fissurina 57a/58a; controls 64a, 66a)
+  prazeres2015:
+    title: "Data from: Ocean acidification induces biochemical and morphological changes in the calcification process of large benthic foraminifera"
+    authors: "Prazeres M, Uthicke S, Pandolfi JM"
+    venue: "Dryad (2015)"
+    doi: 10.5061/dryad.28816
+    role: pre-scouted dataset, verified DATASET_MISMATCH (not used)
+
+simulations:
+  - id: thompson1917-t1917-014
+    name: "Thompson (1917) T1917-014 — Lagena and other unilocular tests vs. the Plateau/Delaunay catalogue (Pass 2)"
+    organism: "Lagena spp., Oolina sp., Fissurina sp. (monothalamic Foraminifera); 13 Thompson/Brady drawings + 5 photographs; Globobulimina and Quinqueloculina as polythalamous controls"
+    script: thompson/claims/t1917-014_the-forms-of-cells.py
+    output: docs/media/t1917_014_the_forms_of_cells_comparison.png
+    extra_outputs:
+      - docs/media/t1917_014_the_forms_of_cells_growth.gif
+      - datasets/thompson_1917/t1917-014/t1917_014_metrics.json
+      - datasets/thompson_1917/t1917-014/result.json
+    also:
+      - morphoeval/lean/loops/Thompson1917_T1917_014.lean
+      - morphoeval/math_kg_loops/thompson1917-t1917-014.yaml
+    domain: cell-morphology
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-014-the-forms-of-cells-audit
+    source_refs: [thompson1917, delaunay1841, kenmotsu1980, kireenko2022, prazeres2015]
+    model_spec:
+      model: "Kenmotsu CMC surfaces of revolution; Delaunay flask (sphere + unduloid + cylinder) and Delaunay bead composites; ellipsoid null, sphere+cylinder ablation, free-form degree-6 reference"
+      decision_rule: "nRMSE <= min(max(0.06, 1.5 x free-form nRMSE), 0.10) and asymmetry <= 0.12"
+      inputs:
+        - datasets/thompson_1917/t1917-014/thompson_1917_fig84_lagena_after_brady.png
+        - datasets/thompson_1917/t1917-014/thompson_1917_leaf0276_p256_fig84.jp2
+        - datasets/thompson_1917/t1917-014/kireenko_2022_bdj_e87457_fig8_station5656mc.jpg
+        - datasets/thompson_1917/t1917-014/t1917_014_the_forms_of_cells_reference.json
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) p. 256: Lagena shells are 'flask-shaped ... whose surface is simply that of an unduloid, or more frequently ... an unduloid combined with a portion of a sphere'; p. 218: the CMC surfaces of revolution are the plane, sphere, cylinder, catenoid, unduloid and nodoid"
+      reconstructed_in_script:
+        - "Kenmotsu (1980) parametrisation of the Delaunay family; C1 sphere-unduloid-cylinder flask and unduloid bead composites fitted by bounded least squares to the meridional radius profile of 13 Fig. 84 silhouettes and 7 photographed tests, compared against an ellipsoid null, a sphere+cylinder ablation and a free-form polynomial with nRMSE, Pearson r, KS statistic and 2-fold CV"
+      transfer_boundary:
+        - "The drawings are Brady's as redrawn in 1917; the photographs are 2-D side views of 3-D tests, so axisymmetry is tested only by bilateral symmetry of the outline; the outline test has limited specificity for egg-shaped shells (1/2 polythalamous controls pass)"
+      does_not_claim:
+        - "No claim about the surface-tension mechanism (hanging drop); no claim about Nodosaria chains, Orbulina or non-foram protists; no claim that passing tests are uniquely Delaunay rather than merely consistent; n = 2 controls and n = 5 photographed unilocular tests are small samples"
+    summary: >-
+      v2 keeps the exact Delaunay catalogue of v1 and adds everything Pass 1 lacked: the
+      Kireenko (2022) CC-BY photographs are segmented (Otsu, largest component, plate-wide
+      100 um scale-bar calibration), each silhouette is fitted by E7 flask, E8 bead, an
+      ellipsoid null, a sphere+cylinder ablation and a free-form degree-6 reference, with
+      nRMSE, Pearson r, KS statistic and 2-fold CV; a B/t regime sweep tabulates the
+      catalogue; polythalamous controls are run through the same pipeline; result.json
+      records the verdict.  Result: MIXED — 11/18 unilocular tests compatible (flask-like
+      11/13 at median nRMSE 0.050 vs free-form 0.049, null 0.116, ablation 0.148; spindles
+      0/5 at 0.209), Delaunay beats the ablation on 17/18 and the null on 13/18, 1/2
+      controls pass (specificity caveat).  Overall 73.8/100.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          Catalogue implemented from the Kenmotsu first-integral form with all five members
+          and the correct limits, self-tested against the root identities, the elliptic
+          period and the closed-form flask join radius; 18 Lean theorems (0 sorry) check the
+          integer algebra including the bead aspect bound and join feasibility.  The
+          sphere+cylinder ablation shows the unduloid shoulder is load-bearing (17/18 tests
+          fit worse without it).  Deductions: join is C1 not C2, neck has no apertural lip,
+          the nodoid branch is characterised in the sweep but not offered as a fit model.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [141, 206], note: "classify_delaunay, neck_ratio, unduloid_period, bead_aspect_ratio, kenmotsu_profile, kenmotsu_full, catenoid_profile, flask_join_radius (E4-E7)", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [209, 262], note: "flask_profile (E7), bead_profile (E8), ellipsoid null, sphere_cylinder ablation, freeform_fit", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_014.lean, lines: [32, 221], note: "18 kernel-checked theorems, 0 sorry", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [503, 526], note: "parameter_sweep characterises the nodoid (B > 1) but MODELS has no nodoid fit", supports: false}
+      specimen-match:
+        value: 62
+        rationale: >-
+          Real specimens are now compared side by side (panels E-F): 4/5 photographed
+          unilocular tests (Fissurina 57a/58a, Lagena 62a, Oolina 63) are traced by the
+          Delaunay composite to within 0.018-0.051 nRMSE, Lagena 61a fails (0.083 vs
+          free-form 0.018: its neck tapers like a cone rather than an unduloid), and the 13
+          drawings split flask/spindle as in Pass 1.  Deductions: only one plate and five
+          unilocular photographs; the egg-shaped Quinqueloculina control also matches, so the
+          visual match is not specific to single-chambered tests; the drawn spindles are
+          visibly not reproduced (the honest negative).
+        evidence:
+          - {file: docs/media/t1917_014_the_forms_of_cells_comparison.png, lines: [0, 0], note: "panel B segmented plate, D 13 drawn profiles, E 7 photograph crops with outlines, F photograph profiles with fits", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [309, 352], note: "find_scale_bars + segment_photo: Otsu, largest component, hole fill, plate-wide 100 um bar assignment", supports: true}
+          - {file: datasets/thompson_1917/t1917-014/t1917_014_metrics.json, lines: [0, 0], note: "bdj_61a best_nrmse 0.083 > gate 0.060 (not compatible); bdj_66a control compatible", supports: false}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          parameter_sweep tabulates catalogue member, neck ratio (strictly decreasing,
+          asserted), period/(2a) and bead aspect ratio (within [1, pi], asserted) over 14
+          values of B including the nodoid branch (axial back-tracking detected), and the
+          flask join radius over t for three B values; the GIF animates B and L_neck.  Fitted
+          B spans 0.30-0.85 across specimens.  Deductions: no CLI to override parameters;
+          the t sweep is plotted for one B only.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [503, 526], note: "parameter_sweep over SWEEP_B and SWEEP_T with monotonicity and bound assertions", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [790, 822], note: "render_growth_gif sweeps B 0 -> 0.98 and L_neck", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [934, 940], note: "argparse exposes only --self-test / --no-gif", supports: false}
+      morphometric-validation:
+        value: 70
+        rationale: >-
+          Every silhouette gets nRMSE, Pearson r, KS statistic and 2-fold CV for five
+          models; the Delaunay residual is judged against the per-specimen free-form floor
+          (capped at 0.10) rather than a fixed number; the ellipsoid null (median 0.116) and
+          the sphere+cylinder ablation (0.148) are both clearly worse than Delaunay (0.057);
+          photograph sizes are calibrated from the scale bars (Lagena 186-276 um, Oolina
+          224 um, Fissurina 204-227 um) and cross-checked against the typical unilocular size
+          range.  Deductions: n = 2 negative controls, one of which passes; KS p-values are
+          dominated by the row count and only the statistic is informative; no published
+          Lagena outline morphometrics exist to compare the fitted B distribution against.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [437, 500], note: "fit_all (five models, KS, CV), decide (gate with floor and cap), summarise_specimen", supports: true}
+          - {file: datasets/thompson_1917/t1917-014/result.json, lines: [0, 0], note: "headline numbers: 11/18, flask-like 11/13, spindles 0/5, null 0.116, ablation 0.148, controls 1/2", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [99, 107], note: "only two polythalamous control panels", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Claim text and figure pinned to IA leaf 0276 with JP2 and crop SHA-256; photograph
+          pinned to the Commons file (sha1 and SHA-256) with DOI, licence and caption; both
+          inputs re-verified at load time; Dryad mismatch documented with pinned metadata;
+          OpenAlex query pinned.  Deduction: Kenmotsu/Kireenko DOIs are not resolved
+          programmatically in this round.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [130, 137], note: "verify_inputs() checks both inputs against the reference JSON and in-script pins", supports: true}
+          - {file: datasets/thompson_1917/t1917-014/scout_manifest.json, lines: [0, 0], note: "dataset verification, DATASET_MISMATCH reasoning, Commons/OpenAlex records", supports: true}
+          - {file: datasets/thompson_1917/t1917-014/paper_citations.bib, lines: [1, 105], note: "Thompson, Delaunay, Plateau, Kenmotsu x2, Hadzhilazova, Brady, Kireenko, Prazeres, Laplace", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Module docstring maps E3-E8 and the comparators to pages 216-263; every model
+          function names its equation; the decision rule is spelled out with its three
+          constants; the math KG YAML and Lean module cite v2 line ranges.  The constants
+          0.06 / 1.5 / 0.10 / 0.12 remain judgement calls, now documented as such.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [1, 62], note: "docstring: equations, comparators, statistics, decision rule, data, usage", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-014.yaml, lines: [0, 0], note: "six laws with lean_locus and v2 code_locus ranges", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [112, 115], note: "gate constants are stated, not derived from a noise model", supports: false}
+      repro-package:
+        value: 78
+        rationale: >-
+          Deterministic (no RNG), --self-test 4 s covering identities, joins, sweep
+          invariants, synthetic recovery, comparator ordering and both segmentations; full
+          run 11 s writes figure, GIF, metrics and result.json; environment versions recorded
+          here.  Deductions: no per-script pinned requirements file; repo .gitignore excludes
+          PNGs so the figure and the Fig. 84 crop must be force-added.
+        evidence:
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [885, 931], note: "self_test()", supports: true}
+          - {file: thompson/claims/t1917-014_the-forms-of-cells.py, lines: [934, 957], note: "main(): documented invocation, writes metrics + result + figure + GIF", supports: true}
+    overall:
+      value: 73.8
+      formula: "weighted mean over rubric 0.1.0 dimensions (0.20*80 + 0.25*62 + 0.10*72 + 0.15*70 + 0.10*88 + 0.08*80 + 0.12*78)"
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — both passes are builder-scored"
+      - id: R8
+        item: "More photographed unilocular tests (Kireenko 2022 Fig. 19: Lagena 112/113, Procerolagena 114, Oolina 115/116) and more polythalamous controls so the specificity caveat rests on n > 2"
+      - id: R9
+        item: "Offer the nodoid (B > 1) and the catenoid as fit models so every catalogue member is tested, not only characterised"
+      - id: R10
+        item: "Derive the nRMSE gate from a segmentation-noise model (e.g. bootstrap over threshold 0.035-0.055) instead of fixed constants"
+      - id: R11
+        item: "Test the surface-of-revolution premise in 3-D (apertural views 61b/62b are nearly circular; quantify their circularity)"

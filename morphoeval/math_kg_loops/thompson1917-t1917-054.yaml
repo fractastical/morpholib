@@ -1,0 +1,111 @@
+sim_id: thompson1917-t1917-054
+math_family: "geometric-methodological — Thompson (1917) method of transformations: equidistant interpolation of coordinate grids between two known forms (Archaeopteryx -> Apatornis pelvis, Heilmann Figs. 388-393)"
+claim_id: T1917-054
+model_spec:
+  model: "Thompson 1917 Ch. XVII pp. 757-759: phi_t(x) = (1 - t) x + t phi(x), t in {0, 1/4, 1/2, 3/4, 1}; phi realised as a thin-plate spline (Bookstein 1989) fitted to acetabulum + 4 process-tip landmarks (+ arc-length semilandmarks) of the Fig. 393 Archaeopteryx and Apatornis silhouettes; affine-only phi as the 'simple transformation' control"
+  stages_t: [0.0, 0.25, 0.5, 0.75, 1.0]
+  reference_grid: {vertical_lines: 9, horizontal_lines: 8}
+  segmentation: {threshold: otsu, opening_iterations: 1, n_components: 5, crop_box_fraction: [0.25, 0.17, 0.80, 0.70]}
+  landmarks: {acetabulum: "largest interior hole centroid", tips: 4, semilandmarks_per_segment_default: 24, coarse_grid_anchors: 9}
+  tps_regularisation_lambda_default: 0.0
+  sweep: {n_semi: [8, 12, 16, 24, 32, 48], lambda: [0.0, 0.001, 0.01, 0.1]}
+  controls: [nearest_endpoint, affine_interpolation, coarse_9_anchor_grid, pairing_permutation, correspondence_cyclic_shift_null, ks_residuals, jacobian_no_fold]
+  procrustes: "translation + centroid-size scaling + rotation (complex-plane closed form), full Procrustes distance"
+  seed: 1917
+  inputs:
+    - datasets/thompson_1917/t1917-054/ongrowthform1917thom_p757_leaf0776_figs388-389.jpg
+    - datasets/thompson_1917/t1917-054/ongrowthform1917thom_p758_leaf0777_figs390-391.jpg
+    - datasets/thompson_1917/t1917-054/ongrowthform1917thom_p759_leaf0778_fig392.jpg
+    - datasets/thompson_1917/t1917-054/ongrowthform1917thom_p760_leaf0779_fig393.jpg
+    - datasets/thompson_1917/t1917-054/archaeopteryx_lithographica_berlin_specimen_mfn.jpg
+    - datasets/thompson_1917/t1917-054/apatornis_celer_holotype_synsacrum_marsh1880.jpg
+    - datasets/thompson_1917/t1917-054/dryad_k1v34cf_deeming_mayr_2018_metadata.json
+    - datasets/thompson_1917/t1917-054/t1917_054_on_the_theory_of_transformatio_reference.json
+    - datasets/thompson_1917/t1917-054/scout_manifest.json
+    - datasets/thompson_1917/t1917-054/paper_citations.bib
+equations:
+  - law_name: "Thompson equidistant grid interpolation — endpoints, constant stage displacement and exact midpoint (E2/E6)"
+    formula: "phi_t(x) = (1 - t) x + t phi(x);  with t = k/4 and 4 phi_{k/4}(a) = interp4(k, a, b) = (4 - k) a + k b:  interp4(0) = 4a,  interp4(4) = 4b,  interp4(k+1) - interp4(k) = b - a,  2 interp4(2) = interp4(0) + interp4(4)"
+    lean_decl: "MathOfBiology.Loop_243.interp4"
+    lean_theorem: "MathOfBiology.Loop_243.interp_endpoints_and_equidistant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_054.lean#L24-L57"
+    lean_code: |
+      def interp4 (k a b : Int) : Int := (4 - k) * a + k * b
+      theorem interp_endpoints_and_equidistant (k a b : Int) :
+          interp4 0 a b = 4 * a ∧
+          interp4 4 a b = 4 * b ∧
+          interp4 (k + 1) a b - interp4 k a b = b - a ∧
+          2 * interp4 2 a b = interp4 0 a b + interp4 4 a b
+    variables: "a: coordinate of a point in the Archaeopteryx (Cartesian, Fig. 388) grid; b = phi(a): its image in the Apatornis grid (Fig. 389); k in 0..4: Thompson's stage (k/4); interp4: 4x the interpolated coordinate"
+    role: "Operational meaning of 'three intermediate and equidistant co-ordinate systems' (p. 759): stage 0 is Archaeopteryx, stage 4 is Apatornis, consecutive stages differ by the same displacement, stage 2 is the exact midpoint"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XVII p. 759 and Fig. 390"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L368-L371"
+
+  - law_name: "Frame independence of the interpolated form — similarity equivariance (E2 under Procrustes superimposition)"
+    formula: "interp4(k, c a + d, c b + d) = c interp4(k, a, b) + 4 d  for any scale c and translation d applied to both endpoint drawings"
+    lean_decl: "MathOfBiology.Loop_243.interp_scale"
+    lean_theorem: "MathOfBiology.Loop_243.interp_similarity_equivariant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_054.lean#L60-L72"
+    lean_code: |
+      theorem interp_translate (k x y d : Int) :
+          interp4 k (x + d) (y + d) = interp4 k x y + 4 * d
+      theorem interp_scale (k x y c : Int) :
+          interp4 k (c * x) (c * y) = c * interp4 k x y
+      theorem interp_similarity_equivariant (k a b c d : Int) :
+          interp4 k (c * a + d) (c * b + d) = c * interp4 k a b + 4 * d
+    variables: "c: common scale factor; d: common translation; a, b, k as above"
+    role: "Guarantees that the choice of drawing scale/position (or of the Procrustes frame used to compare with Fig. 393) cannot change which intermediate form the construction predicts"
+    source_citation: "Thompson (1917) Ch. XVII pp. 727-733 (transformations compared up to similarity); Gower (1975) Psychometrika 40:33-51"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L281-L298"
+
+  - law_name: "No-fold property of interpolated grids — intermediate coordinate systems stay orientation-preserving (E1 at every stage, 1-D form)"
+    formula: "a1 < a2 and b1 < b2 and 0 <= k <= 4  =>  interp4(k, a1, b1) < interp4(k, a2, b2);  a <= b => 4a <= interp4(k, a, b) <= 4b"
+    lean_decl: "MathOfBiology.Loop_243.interp4"
+    lean_theorem: "MathOfBiology.Loop_243.interp_no_fold"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_054.lean#L82-L105"
+    lean_code: |
+      theorem interp_no_fold (k a1 a2 b1 b2 : Int) (hk0 : 0 ≤ k) (hk4 : k ≤ 4)
+          (ha : a1 < a2) (hb : b1 < b2) :
+          interp4 k a1 b1 < interp4 k a2 b2
+      theorem interp_between (k a b : Int) (hk0 : 0 ≤ k) (hk4 : k ≤ 4) (hab : a ≤ b) :
+          4 * a ≤ interp4 k a b ∧ interp4 k a b ≤ 4 * b
+    variables: "a1 < a2: two grid coordinates in order in the Archaeopteryx grid; b1 < b2: their images in order in the Apatornis grid"
+    role: "If both endpoint grids are unfolded along a coordinate line, every interpolated grid of Fig. 390 is unfolded too, so inscribing a pelvis in it is well-defined; the script's check_no_fold() tests the 2-D Jacobian analogue numerically"
+    source_citation: "Thompson (1917) Ch. XVII p. 759 ('a complete co-ordinate diagram is drawn' from each interpolated system) and Fig. 390"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L483-L509"
+
+  - law_name: "Soundness of the best-fit stage statistic t* (E7)"
+    formula: "4 D = interp4(k, A, B) (both coordinates)  =>  4 <D - A, B - A> = k |B - A|^2,  i.e. t* = <D - A, B - A>/|B - A|^2 = k/4"
+    lean_decl: "MathOfBiology.Loop_243.interp4"
+    lean_theorem: "MathOfBiology.Loop_243.best_fit_stage_sound"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_054.lean#L115-L134"
+    lean_code: |
+      theorem best_fit_stage_sound (k Ax Ay Bx By Dx Dy : Int)
+          (hx : 4 * Dx = interp4 k Ax Bx) (hy : 4 * Dy = interp4 k Ay By) :
+          4 * ((Dx - Ax) * (Bx - Ax) + (Dy - Ay) * (By - Ay)) =
+            k * ((Bx - Ax) * (Bx - Ax) + (By - Ay) * (By - Ay))
+    variables: "A = (Ax, Ay): Archaeopteryx landmark; B = (Bx, By): Apatornis landmark; D = (Dx, Dy): drawn intermediate landmark; k/4: nominal stage"
+    role: "Shows that the projection statistic used to test Thompson's 'equidistant' claim returns exactly the nominal stage for a perfect interpolant, so the measured residual |t* - k/4| attributes to Heilmann's drawing (or to the digitisation), not to the statistic"
+    source_citation: "this loop (test statistic); Thompson (1917) p. 759 for the equidistance claim under test"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L373-L376"
+
+  - law_name: "Interpolation of Thompson's 'simple' affine transformations — determinant endpoints, shear area-preservation and scaling orientation-preservation (E5)"
+    formula: "M_k = (4 - k) I + k A;  det M_0 = 16, det M_4 = 16 det A;  A = [[1, s],[0, 1]] => det M_k = 16 for all k;  A = diag(p, q), p, q >= 1, k >= 0 => det M_k > 0"
+    lean_decl: "MathOfBiology.Loop_243.interpDet"
+    lean_theorem: "MathOfBiology.Loop_243.shear_interp_preserves_area"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_054.lean#L27-L35,#L143-L178"
+    lean_code: |
+      def interpDet (k a11 a12 a21 a22 : Int) : Int :=
+        interpMat11 k a11 * interpMat22 k a22 - interpMat12 k a12 * interpMat21 k a21
+      theorem affine_interp_det_endpoints (a11 a12 a21 a22 : Int) :
+          interpDet 0 a11 a12 a21 a22 = 16 ∧
+          interpDet 4 a11 a12 a21 a22 = 16 * (a11 * a22 - a12 * a21)
+      theorem shear_interp_preserves_area (k s : Int) :
+          interpDet k 1 s 0 1 = 16
+      theorem scaling_interp_orientation_preserving (k p q : Int)
+          (hk0 : 0 ≤ k) (hp : 1 ≤ p) (hq : 1 ≤ q) :
+          0 < interpDet k p 0 0 q
+    variables: "A = [[a11, a12],[a21, a22]]: linear part of the Archaeopteryx->Apatornis affine fit; s: shear; p, q: axis scalings; k: stage"
+    role: "Thompson's own catalogue of transformations (shear, simple strain) interpolates without ever reversing orientation; the script's affine-only control implements M_t and compares it with the thin-plate-spline grid"
+    source_citation: "Thompson (1917) Ch. XVII pp. 727-733 (shear, simple strain, oblique coordinates)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L349-L365"

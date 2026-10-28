@@ -1,0 +1,228 @@
+# MorphoEval audit — Thompson (1917) Ch. XVII Figs. 404-408, claim T1917-058 — Pass 2
+# Supersedes 2026-10-28-t1917-058-on-the-theory-of-transformatio-audit (Pass 1, v1, 62.1/100).
+#
+# Re-score of `thompson/claims/t1917-058_on-the-theory-of-transformations.py` v2 after the
+# Pass 1 remediation list R1-R5 was implemented (R6, an independent cross-provider second
+# assessor, is still open: builder and assessor are the same agent, claude-fable-5.1).
+#
+# What changed (v1 -> v2):
+#   R1 landmark-jitter bootstrap (1000 reps; sigma 1.5 % centroid size on all landmarks, 3 px
+#      on all 30 net nodes) -> E_chimp 0.30 [0.19, 0.41], P(E > 0) = 1.000; label-permutation
+#      null (2000) p = 0.0005; goodness of fit r 0.92 -> 0.97, RMSE 0.116 -> 0.075 centroid
+#      units, 10/11 landmarks improved, Wilcoxon p = 0.012, KS p = 0.075 (n = 11).
+#   R2 lambda sweep (bending 2.10 -> 0.49, E 0.35 -> 0.38 -> 0.32) and k sweep with a fine
+#      scan: E peaks at k* = 0.85 for the real chimpanzee (Thompson drew k = 1), 1.15 for the
+#      baboon, 1.30 for the dog; predicted facial angle falls monotonically 89 -> 55 -> 43 deg.
+#   R3 mirrored (k = -1) net E = -0.60; specificity index +0.11 (P 0.946); affine-only -0.12.
+#   R4 silhouette segmentation of all four photographs: taper index dog 0.88 < chimp 0.94 <
+#      human 0.97 < baboon 1.06 (dog most triangular, Thompson p. 773); silhouette face
+#      fraction 0.29 / 0.37 / 0.53 / 0.43 for H / C / B / D.
+#   R5 orderings re-run with Thompson's Fig. 404 drawing as the human reference: all hold;
+#      drawing fidelity d(Fig.404, human model) = 0.21 reported in the verdict.
+# Result: 16/17 checks; sub-claims C1, C3, C4, C5, C6 supported, C2 mixed (baboon is more
+# intense, k_B/k_C = 1.25 and k*_B > k*_C, but only 78 % co-directional with the chimpanzee
+# change: cos 0.76 [0.69, 0.82] - "precisely the same order" is too strong).
+
+audit:
+  id: 2026-10-28-t1917-058-on-the-theory-of-transformatio-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-058-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5.1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a5007b9c0
+    note: >-
+      Branch cursor/t1917-058-primate-skull-transformation-ac9f; script v2 committed with
+      re-rendered outputs.  Environment: Python 3.12, numpy 2.5.4, scipy 1.18.1,
+      matplotlib 3.11.2 (Agg), Pillow 13.0, Lean 4.15.0.  Full run 7.5 s, self-test 2.7 s.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, Ch. XVII On the Theory of Transformations, pp. 770-773, Figs. 404-408"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917); Internet Archive scan ongrowthform1917thom, leaves 789-792"
+    url: https://archive.org/details/ongrowthform1917thom
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE Trans. Pattern Anal. Mach. Intell. 11(6):567-585 (1989)"
+    doi: 10.1109/34.24792
+  mitteroecker2005:
+    title: "Heterochrony and geometric morphometrics: a comparison of cranial growth in Pan paniscus versus Pan troglodytes"
+    venue: "Evolution & Development 7(3):244-258 (2005)"
+    doi: 10.1111/j.1525-142X.2005.05027.x
+    role: modern GM context for chimpanzee cranial shape
+  aristide2018:
+    title: "Data from: Multiple factors behind early diversification of skull morphology in the continental radiation of New World monkeys"
+    venue: "Dryad (2018)"
+    doi: 10.5061/dryad.7r85116
+    role: dataset named by the pre-scout; platyrrhines only -> DATASET_MISMATCH, metadata pinned, not used
+
+simulations:
+  - id: thompson1917-t1917-058
+    name: "Thompson (1917) Cartesian transformation of the human skull into chimpanzee, baboon and dog (Figs. 404-408)"
+    organism: "Homo sapiens, Pan troglodytes, Papio ursinus, Canis lupus familiaris (lateral skull)"
+    script: thompson/claims/t1917-058_on-the-theory-of-transformations.py
+    output: docs/media/t1917_058_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_058_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-058/t1917_058_metrics.json
+      - datasets/thompson_1917/t1917-058/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-058-on-the-theory-of-transformatio-audit
+    source_refs: [thompson1917, bookstein1989, mitteroecker2005, aristide2018]
+    model_spec:
+      model: "TPS reconstruction of Thompson's Fig. 405 net (30 nodes) + Procrustes explained-fraction test against real specimens, with jitter bootstrap, permutation null, lambda/k sweeps, mirrored-net control and silhouette segmentation (v2)"
+      tps_regularisation_lambda: 0.0
+      tps_regularisation_lambda_sweep: [0.0, 0.001, 0.01, 0.1, 1.0, 10.0]
+      deformation_intensity_k: 1.0
+      deformation_intensity_k_sweep: [-1.0, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+      landmarks: 11
+      bootstrap_replicates: 1000
+      permutation_replicates: 2000
+      landmark_jitter_sigma_fraction_of_centroid_size: 0.015
+      net_node_jitter_px: 3.0
+      seed: 1917
+      inputs:
+        - datasets/thompson_1917/t1917-058/t1917_058_on_the_theory_of_transformatio_reference.json
+        - datasets/thompson_1917/t1917-058/fig404_human_skull_cartesian.jpg
+        - datasets/thompson_1917/t1917-058/fig405_chimpanzee_coordinates.jpg
+        - datasets/thompson_1917/t1917-058/homo_sapiens_lateral.jpg
+        - datasets/thompson_1917/t1917-058/pan_troglodytes_lateral.jpg
+        - datasets/thompson_1917/t1917-058/papio_ursinus_lateral.jpg
+        - datasets/thompson_1917/t1917-058/canis_familiaris_lateral.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) pp. 770-773: the human skull drawn in a 5x4 Cartesian net (Fig. 404) and the chimpanzee, baboon and dog skulls drawn in deformed nets (Figs. 405-408); prose statements that the deformation is one 'harmonious and congruent transformation', that cell areas increase 'in approximately logarithmic order' from above downwards and behind forwards, that the baboon differs 'only in an increased intensity', that the chimpanzee is 'much nearer the human type than the baboon', and that the dog's net 'tapers away in front' on 'different lines'."
+      reconstructed_in_script:
+        - "The Fig. 405 net digitised and reconstructed as a thin-plate spline T in human grid units (E1-E3); cell-area log-linear regression (E4); 11 homologous landmarks digitised by the loop agent on Fig. 404, Fig. 406 and four Commons specimens; full-Procrustes explained fraction of T(H) toward the real chimpanzee (E6) with jitter bootstrap, label-permutation null, r / RMSE / KS / Wilcoxon; lambda and k sweeps with k* scan; mirrored-net and wrong-target controls; silhouette segmentation taper index and face fraction; facial index and facial angle (E7)."
+      transfer_boundary:
+        - "One specimen per taxon (museum photographs for chimpanzee, baboon, dog; a rendered anatomical model for the human, whose influence is bounded by the Fig. 404-reference robustness check); the baboon and dog nets of Figs. 407-408 were not digitised, so C2/C5 are tested on real specimens (and, for C2, on the k* scan along the chimpanzee ray), not on Thompson's drawings of them."
+      does_not_claim:
+        - "Nothing about growth, ontogeny or phylogeny; no claim that Thompson's curves are the optimal smooth map (a lambda-smoothed net does slightly better, E 0.38 vs 0.35); no claim that the baboon lies on exactly the chimpanzee ray - C2 is reported as mixed; the verdict is for these four specimens and would need a population sample to generalise."
+    summary: >-
+      v2 keeps the v1 reconstruction (bending 2.10, det A 0.54, log-area R^2 0.95 with
+      beta_i +0.40 / beta_j -0.61) and adds the statistics the Pass 1 audit asked for.
+      Headline: Thompson's drawn human->chimpanzee net removes 35 % of the Procrustes distance
+      from the Fig. 404 human to a real chimpanzee skull; jitter bootstrap 0.30 [0.19, 0.41],
+      P(E > 0) = 1.000; label-shuffled null mean 0.00 +/- 0.03, p = 0.0005; r 0.92 -> 0.97,
+      RMSE 0.116 -> 0.075, 10/11 landmarks improved (Wilcoxon p 0.012, KS p 0.075).
+      Controls: affine box stretch -0.12, mirrored net -0.60, specificity +0.11
+      (P 0.946 that the chimpanzee is the best-helped target).  Along Thompson's own ray the
+      real chimpanzee is best matched at k* = 0.85 (he drew 1.0), the baboon at 1.15 and the
+      dog at 1.30 - "increased intensity" is literally recovered - but the baboon's
+      displacement is only 76 % [69, 82] co-directional with the chimpanzee's, so "precisely
+      the same order" is too strong (C2 mixed).  Segmented silhouettes: the dog is the most
+      triangular (taper 0.88 vs 0.94 / 0.97 / 1.06) and the silhouette face fraction orders
+      H 0.29 < C 0.37 < B 0.53.  Facial angles 89 / 68 / 56 / 45 deg with P 0.94 for the
+      H > C > B ordering; all real-specimen orderings also hold with the Fig. 404 drawing as
+      the human reference.  Verdict 16/17 checks: supported (C1, C3, C4, C5, C6 supported;
+      C2 mixed).  Overall 72.6/100.
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: >-
+          Unchanged core (Thompson's own Fig. 405 net as an exact-interpolation TPS, affine +
+          bending decomposition, Lean-checked laws) plus the lambda sweep that now
+          demonstrates the affine limit numerically (bending 2.10 -> 0.49 at lambda 10 with
+          the affine-only end point at -0.12).  The k* scan recovers Thompson's "increased
+          intensity" ordering (0.85 < 1.15 < 1.30) from the real specimens.  Remaining
+          deduction: Figs. 407-408 nets still not digitised, so the baboon and dog
+          transformations Thompson actually drew are not reconstructed.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [200, 237], note: "tps_fit / tps_eval / affine_fit: E1-E3", supports: true}
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [455, 500], note: "parameter_sweep: lambda rows, k rows, fine k* scan for the three real targets", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_058.lean, lines: [153, 211], note: "intensity_family: T_k displacement linear in k, area ratio monotone - the law the k* scan instantiates", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/scout_manifest.json, lines: [1, 40], note: "Fig. 407/408 nets not digitised", supports: false}
+      specimen-match:
+        value: 66
+        rationale: >-
+          The warped Fig. 404 is visually Thompson's Fig. 406 (panel c), the segmented real
+          silhouettes (panel k) show the dog's forward taper and the apes' larger facial
+          share exactly as pp. 770-773 describe, and the landmark test against the real
+          chimpanzee now carries a confidence interval that excludes zero and beats a
+          label-shuffled null.  Deductions: still n = 1 per taxon; the human reference is a
+          rendered model (its effect is bounded - all orderings also hold against the Fig.
+          404 drawing - but a real human photograph was not obtained, R5 only partly done);
+          the drawn human sits d_P = 0.21 from the model, reported but not removed.
+        evidence:
+          - {file: docs/media/t1917_058_on_the_theory_of_transformatio_comparison.png, lines: [0, 0], note: "panels c, e-h, k: warped drawing, landmarked specimens, Procrustes overlay, bootstrap/null, segmented height profiles", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/t1917_058_metrics.json, lines: [0, 0], note: "pass2.segmentation.summary: dog taper 0.88 lowest; face fraction H<C<B; pass2.robustness_human_reference all true", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/scout_manifest.json, lines: [60, 80], note: "homo_sapiens_lateral.jpg is a rendered anatomical model, not a museum photograph", supports: false}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          Both morphospace parameters are now swept and their effects shown: k drives the
+          predicted facial angle monotonically 89 -> 68 -> 55 -> 47 -> 43 -> 39 deg for
+          k = 0 .. 2.5 and the explained fraction through a clear maximum (k* 0.85 for the
+          chimpanzee); lambda drives bending monotonically to the affine limit.  The GIF
+          animates k = 0 -> 1 -> 2.  Deduction: no third parameter (e.g. anisotropic
+          intensity for face vs vault) is exposed, and the k and lambda effects are reported
+          on the point estimate only, not under the jitter bootstrap.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [455, 500], note: "LAM_SWEEP / K_SWEEP / fine k scan with argmax", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/t1917_058_metrics.json, lines: [0, 0], note: "pass2.sweep: facial_angle_monotone_decreasing_k_0_to_1.5 true, bending_monotone_decreasing_in_lambda true, k_optimum 0.85/1.15/1.30", supports: true}
+          - {file: docs/media/t1917_058_on_the_theory_of_transformatio_growth.gif, lines: [0, 0], note: "k morph", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: >-
+          Every headline now has an uncertainty and a null: jitter bootstrap CIs on E, the
+          orderings (P = 1.00 for d_HC < d_HB < d_HD, 0.998 / 0.94 for the facial index /
+          angle orderings), permutation p = 0.0005, r / RMSE / KS / Wilcoxon on per-landmark
+          residuals, mirrored-net and specificity controls, and image-segmentation
+          morphometrics independent of the landmarks (taper, face fraction).  Facial angles
+          sit inside the Camper bands.  Deductions: n = 11 landmarks makes the KS test
+          low-powered (p 0.075); no published landmark table for these exact taxa was found,
+          so the only literature anchors are the Camper bands; one specimen per taxon means
+          the bootstrap covers digitisation error, not biological variation.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [351, 452], note: "goodness_of_fit, permutation_null, bootstrap_jitter", supports: true}
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [503, 553], note: "segment_specimen: mask, height profile, taper index, face fraction", supports: true}
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [725, 771], note: "verdict_from: CI, permutation, specificity, mirrored, taper and robustness checks added", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/t1917_058_metrics.json, lines: [0, 0], note: "pass2.goodness_of_fit.ks_pvalue 0.075 (n=11, low power)", supports: false}
+      source-traceability:
+        value: 85
+        rationale: >-
+          Unchanged: all 13 vendored files SHA-256 pinned and re-verified at runtime, Commons
+          author/licence/SHA1, IA leaf rule, DOIs, and the explicit DATASET_MISMATCH record
+          for the pre-scouted Dryad set.  Deduction unchanged: the Dryad archive bytes could
+          not be fetched (bearer token / Anubis), only its metadata is pinned.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [141, 149], note: "verify_pinned_files", supports: true}
+          - {file: datasets/thompson_1917/t1917-058/scout_manifest.json, lines: [1, 60], note: "named-dataset verification and provenance", supports: true}
+      code-traceability:
+        value: 78
+        rationale: >-
+          Docstring maps E1-E7, the Lean laws and the R1-R5 items to functions and to
+          Thompson's pages; measurement names cite the page they test; sub_claim_verdicts()
+          returns a per-sentence verdict.  Deduction unchanged: the digitised node ->
+          figure-label correspondence is documented, not machine-checked.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [1, 105], note: "docstring with v2 remediation map", supports: true}
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [1236, 1255], note: "sub_claim_verdicts C1-C6", supports: true}
+      repro-package:
+        value: 74
+        rationale: >-
+          Deterministic (seed 1917 for bootstrap and permutation; self-test asserts
+          bit-identical bootstrap means across two runs), self-test 2.7 s, full run 7.5 s,
+          documented CLI (--self-test, --no-gif, --lam, --k), outputs at documented paths,
+          metrics and result JSON regenerated each run.  Deductions: dependencies not pinned
+          per script; Lean needs an elan toolchain; checkpoint is a feature-branch commit.
+        evidence:
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [1148, 1211], note: "self_test incl. Pass 2 determinism and sanity checks", supports: true}
+          - {file: thompson/claims/t1917-058_on-the-theory-of-transformations.py, lines: [1261, 1340], note: "main(): CLI, metrics, result.json, figure, GIF", supports: true}
+    remediation:
+      - id: R6
+        item: "Independent second assessor (different provider) - both rounds are builder-scored"
+      - id: R7
+        item: "Population sample: >= 5 specimens per taxon (e.g. MorphoSource / Phenome10K lateral renders) so the bootstrap covers biological variation, not only digitisation error"
+      - id: R8
+        item: "Digitise the baboon and dog nets of Figs. 407-408 (manual node placement) to test C2/C5 on Thompson's own drawn transformations, not only on real specimens"
+      - id: R9
+        item: "Replace the rendered human model with a museum photograph of a real Homo sapiens skull (Commons API was unavailable for most of this run)"

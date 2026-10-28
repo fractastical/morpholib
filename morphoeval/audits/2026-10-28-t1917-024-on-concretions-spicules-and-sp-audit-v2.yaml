@@ -1,0 +1,253 @@
+# MorphoEval audit v2 (Pass 2 remediation) — Thompson (1917) T1917-024, spicule rays as Plateau
+# borders — 2026-10-28.  Supersedes the Pass-1 audit (62.3).
+#
+# Remediates R2-R8 of Pass 1.  The rendered-sweep measurement closure (R3) exposed a real Pass-1
+# defect: the angular-mean ray axis was biased by a 1-3 px junction offset (noise floor for the
+# closest-pair difference d up to 11.7 deg on perfectly symmetric renders).  v2 fits each ray
+# direction by PCA of arc-centre positions: recovery r = 0.9999, RMSE 0.35 deg, d noise floor
+# <= 2.3 deg.  With a Dirichlet(1,1,1) random-partition null, the SEM plate's median d = 4.4 deg
+# (null median 34.8; set-mean MC p < 5e-5; KS p = 8e-6), the population micrograph shows the
+# 120-deg mode (mean |theta-120| 17.3 vs null 71.2; all-within-15 0.52 vs null 0.011, n = 25),
+# and Thompson's own Fig. 214 panels A-D give d median 3.5 (set-mean MC p = 0.0012).  The E5
+# one-parameter family beats the crystal-120 and lattice-30 alternatives by RMSE and AIC.
+# VERDICT (result.json): MIXED — P1/P2 geometry supported on Grantia; P3 and alcyonarians
+# untestable here; the 'passive deposition between any cells' mechanism is contradicted by
+# sclerocyte cell biology; bilateral symmetry of a sclerocyte sextet is an unexcluded cause of
+# 'two equal angles'.  Same builder-assessor limitation as v1 (R1 open).  Overall 62.3 -> 75.9.
+
+audit:
+  id: 2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, single-agent Pass 2; second assessor pending R1)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 94f2bb26b6ace7b3ff6e099ae0c8472784d36c7c
+    note: >-
+      Pass-2 commit on branch cursor/t1917-024-sponge-spicules-ab2b (v2 script, measurements,
+      result.json, rendered outputs).  Environment: Python 3.12.3, numpy 1.26.4, scipy 1.18.1,
+      scikit-image 0.26.0, matplotlib 3.11.2, Pillow 13.0.0; Lean 4.35.0.  Full run 4 s.
+
+references:
+  thompson1917:
+    title: "On Growth and Form (Ch. IX: On Concretions, Spicules, and Spicular Skeletons, pp. 411-487, Figs. 194-235)"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917)"
+    url: https://archive.org/details/ongrowthform1917thom
+  vansoest2018:
+    title: "Calcareous sponges of the Western Indian Ocean and Red Sea"
+    authors: "van Soest RWM, de Voogd NJ"
+    venue: "Zootaxa 4426(1):1-160 (2018)"
+    doi: 10.11646/zootaxa.4426.1.1
+    role: "primary specimen image (Fig. 53, Grantia aff. indica, CC BY 3.0 via Wikimedia Commons)"
+  readey2020:
+    title: "Grantia Spicules (spicules of Grantia, 100x)"
+    authors: "Readey M"
+    venue: "Wikimedia Commons, CC BY-SA 4.0 (2020)"
+    url: https://commons.wikimedia.org/wiki/File:Grantia_Spicules.jpg
+    role: "population specimen image"
+  rossi2016:
+    title: "Crystallographic orientation and concentric layers in spicules of calcareous sponges"
+    authors: "Rossi AL, Ribeiro B, Lemos M, Werckmann J, Borojevic R, Fromont J, Klautau M, Farina M"
+    venue: "Journal of Structural Biology 196(2):164-172 (2016)"
+    doi: 10.1016/j.jsb.2016.04.009
+  voigt2017:
+    title: "Spicule formation in calcareous sponges: Coordinated expression of biomineralization genes and spicule-type specific genes"
+    authors: "Voigt O, Adamska M, Adamski M, Kittelmann A, Wencker L, Wörheide G"
+    venue: "Scientific Reports 7:45658 (2017)"
+    doi: 10.1038/srep45658
+    role: counter-evidence (dedicated sclerocyte sextet)
+  ledger1977:
+    title: "Spicule formation in the calcareous sponge Sycon ciliatum"
+    authors: "Ledger PW, Jones WC"
+    venue: "Cell and Tissue Research 181(4):553-567 (1977)"
+    doi: 10.1007/BF00221776
+    role: counter-evidence (founder/thickener sclerocyte pairs)
+  manning2010:
+    title: "Coaction of intercellular adhesion and cortical tension specifies tissue surface tension"
+    authors: "Manning ML, Foty RA, Steinberg MS, Schoetz E-M"
+    venue: "PNAS 107(28):12517-12522 (2010)"
+    doi: 10.1073/pnas.1003743107
+    role: "modern form of the E5 contact-angle relation"
+  nadhira2019:
+    title: "Three-dimensionally preserved soft tissues and calcareous hexactins in a Silurian sponge: implications for early sponge evolution"
+    authors: "Nadhira A, Sutton MD, Botting JP, Muir LA, Gueriau P, King A, Briggs DEG, Siveter DJ, Siveter DJ"
+    venue: "Royal Society Open Science 6:190911 (2019); data doi:10.5061/dryad.8mv00jv"
+    doi: 10.1098/rsos.190911
+    role: "pre-assigned dataset — DATASET_MISMATCH for the triradiate test, metadata pinned only"
+
+simulations:
+  - id: thompson1917-t1917-024
+    name: "Thompson (1917) spicule rays as Plateau borders of the secreting cell field vs Grantia ray angles (Pass 2: null control, sweep closure, ablations, three samples)"
+    organism: "Grantia aff. indica Dendy, 1913 (SEM plate, ZMA Por. 11556b); Grantia sp. (spread); Haeckel/Thompson Fig. 214 drawings"
+    script: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py
+    output: docs/media/t1917_024_on_concretions_spicules_and_sp_comparison.png
+    extra_outputs:
+      - docs/media/t1917_024_on_concretions_spicules_and_sp_growth.gif
+      - datasets/thompson_1917/t1917-024/measurements/sem_ray_angles.json
+      - datasets/thompson_1917/t1917-024/measurements/rho_sweep.json
+      - datasets/thompson_1917/t1917-024/measurements/population_ray_angles.json
+      - datasets/thompson_1917/t1917-024/measurements/fig214_digitised.json
+      - datasets/thompson_1917/t1917-024/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit
+    source_refs: [thompson1917, vansoest2018, readey2020, rossi2016, voigt2017, ledger1977, manning2010, nadhira2019]
+    provenance:
+      spec_fingerprint: 77e8201d27dd51cb520268fe921b47c6a9cc21b65c7f28e750eaa978978c6f12
+      artifact_sha256: e4526bfdf295d88731e41f15187b4f2dee07e46d148a0f2b39d42425edfa6985
+      input_dataset_sha256:
+        grantia_indica_zootaxa4426_fig53_sem.jpg: 70194abe78894820ff61347417ba7f2b7fa7c20ed1a42261893c6a46947bad59
+        grantia_spicules_readey_100x.jpg: 08641621770534e19f605acd532684124e5b3886c3a69cfb32e4c9657c3a7f30
+        thompson1917_fig214_ia_leaf465_p445.jpg: 019168c1fa4adddc2c3f731369f8f0160115f2f45f4331a55bc3be3d99637988
+        dryad_8mv00jv_dataset_metadata.json: 8b1273b453ccdb77ae1562f25c263883504c6600483e84a1a96e50c159207c24
+    summary: >-
+      TESTED CLAIM, verdict MIXED.  Model: Neumann tension triangle E1-E3 with the equiangular
+      point E4, one-parameter sagittal family E5 (cos theta_pair = -rho/2), tetrahedral /
+      orthogonal limits E7/E8 and the law-of-sines inverse; six Lean theorems; the general
+      three-tension model is shown saturated (realises 100 % of random angle triplets) so only
+      E5 is tested.  Measurement: PCA ray axes from radial arcs, validated by rendering 20 E5
+      spicules at known rho in random orientation and re-measuring (r = 0.9999, RMSE 0.35 deg,
+      rho RMSE 0.011, d noise floor <= 2.3 deg).  SEM plate (8 three-ray spicules): closest-pair
+      difference d median 4.4 deg vs Dirichlet null median 34.8 (set-mean MC p < 5e-5, KS p =
+      8e-6, 5/8 below the null 5th percentile); unpaired deviation 26 deg; fitted rho 0.20 (T-
+      shaped atrial tetractine f) to 1.12; all 7 spicules with rho < 1 have unpaired > paired
+      (F4); rho CV within the three tubar triactines d = 0.004.  Alternatives on the same
+      angles: crystal-120 RMSE 15.3, lattice-30 8.5, E5 2.25 deg (E5 preferred by AIC).
+      Population spread (25 physical triradiates of 28 detections): mean |theta - 120| = 17.3
+      vs null 71.2; all-within-15 fraction 0.52 vs null 0.011 (P1).  Thompson's own Fig. 214
+      panels A-D digitised: 92/108/160, 89/93/178, 110/110/140, 115/121/125; d median 3.5,
+      set-mean MC p = 0.0012; E and F unresolved (hairline drawings).  Not tested: P3
+      (tetrahedral; apical ray end-on in 2D), alcyonarian spicules, and the mechanism itself,
+      which modern sclerocyte biology contradicts in Thompson's 'any three cells' form.  Rubric
+      scores rate the simulation package.  Overall 75.9/100.
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917, pp. 443-449), after Dreyer (1892) and Plateau (1873): calcareous spicule rays follow the junction lines of 3 or 4 contiguous cells; 120 deg for equal tensions, 'two equal angles and one unequal' otherwise, grading to a T; tetrahedral ~109 deg for four cells; the spicule is 'a crystal under restraint'.  Evidence given: Haeckel's drawings (Fig. 214), no angle table."
+      reconstructed_in_script:
+        - "Exact Neumann law of cosines / law of sines, E5 family and inverse, tetrahedral and orthogonal constants, interstice area; PCA radial-arc ray-angle extraction validated by a rendered rho sweep; Dirichlet(1,1,1) null for the closest-pair difference with MC and KS tests; crystal-120 and lattice-30 ablations with RMSE/AIC; three samples (CC BY SEM plate n = 8, CC BY-SA population spread n = 25 physical, Thompson Fig. 214 n = 4 panels); result.json with per-prediction verdict components."
+      transfer_boundary:
+        - "One SEM plate from one individual and one spread of one Grantia sample; drawings are Haeckel's not photographs; 2D projections of trihedral spicules (near- vs chord-axis RMSE 5.3 deg quantifies curvature/projection sensitivity); no alcyonarian material; tetractine apical ray not measurable."
+      does_not_claim:
+        - "Does NOT claim Thompson's mechanism is correct: Ledger & Jones (1977) and Voigt et al. (2017) show a dedicated founder/thickener sclerocyte sextet; only the geometric predictions are supported, and bilateral symmetry of that sextet would also yield two equal angles — the data cannot separate tension balance from a symmetric cell programme."
+        - "Does NOT claim the general three-tension model is tested: it is saturated (fraction realised 1.0) and cannot fail; only E5 is falsifiable here."
+        - "Does NOT claim P3 (tetrahedral 109.47 deg) or anything about alcyonarian spicules; both are 'untestable' in result.json."
+        - "Does NOT use the pre-assigned Dryad dataset (hexactine fossil tomograms, 5.8 GB): DATASET_MISMATCH recorded with pinned metadata."
+        - "Does NOT claim independent confirmation: builder-scored (R1 open)."
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          Everything Thompson states algebraically is implemented exactly and Lean-checked, and
+          v2 adds the law-of-sines inverse, the saturation demonstration (F1) and the explicit
+          falsifiable-content statement, which is the honest reading of a tension-triangle
+          model.  Still no foam / cell-doublet simulation of the deposition field itself (the
+          GIF's three-cell field remains illustrative), and ray curvature is treated as a
+          measurement nuisance rather than modelled (Thompson's own 'bourrelet' remark).
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [102, 140], note: "neumann_angles (E3), tensions_from_angles (E2 inverse), sagittal_angles (E5), tension_ratio_from_angles, polyhedral_ray_angles (E7/E8), interstice_area (E9)", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [165, 182], note: "general_model_saturation: fraction realised 1.0 — general model not testable", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_024.lean, lines: [59, 229], note: "6 theorems, lean exit 0, 0 sorry", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [557, 564], note: "three_cell_field: cells on sector bisectors, not a tension-derived foam", supports: false}
+      specimen-match:
+        value: 70
+        rationale: >-
+          Six-panel comparison: SEM overlay with per-spicule axes and angles; measured vs E5
+          renders at fitted rho with corrected orientation (the Pass-1 mis-orientation is
+          fixed); Thompson's own Fig. 214 with digitised axes; population spread histogram.
+          The Y (c), sagittal (d), near-equiangular (e) and T (f) forms are all visibly
+          reproduced by the one-parameter family.  Deductions: rays rendered straight (real c,
+          e laterals curve), tetractine apical rays not rendered (stated), drawings E/F
+          unresolved, and still a single SEM individual.
+        evidence:
+          - {file: docs/media/t1917_024_on_concretions_spicules_and_sp_comparison.png, lines: [0, 0], note: "panels (a) SEM axes, (b) measured vs E5, (f) Fig. 214 digitised", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [599, 605], note: "basal_direction: ray not bounding the unpaired gap (orientation fix R6)", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/measurements/fig214_digitised.json, lines: [0, 0], note: "panels E, F unresolved: hairline outlines detach", supports: false}
+      parameter-expressivity:
+        value: 78
+        rationale: >-
+          rho is swept over 20 values across its whole range with measured outputs: the
+          re-measured unpaired angle is strictly monotone in rho and both angles track E5 with
+          r = 0.9999; rho, threshold, null size and sample selection are exposed on the CLI.
+          Deductions: the sweep is over rendered spicules (model-to-measurement closure), not
+          over an independent generative parameter of a deposition field; the general three-
+          tension model is only sampled for saturation, not swept with outputs.
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [522, 554], note: "rho_sweep: render at known rho, re-measure, r / RMSE / monotonicity", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/measurements/rho_sweep.json, lines: [0, 0], note: "20/20 recovered, r 0.9999, RMSE pair 0.35 deg, rho RMSE 0.011", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [939, 948], note: "CLI: --threshold --n-null --rhos --skip-population --skip-fig214 --no-gif", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: >-
+          The tautological Pass-1 angle plane is replaced by a real test: closest-pair
+          difference vs a stated null (Dirichlet partition), per spicule and as a set (MC p
+          with resolution floor, KS), with the method's own noise floor measured on known
+          renders; alternatives scored on the same data (RMSE/AIC); P1 tested on an
+          independent population sample with its own null; Thompson's own figure digitised and
+          tested; near- vs chord-axis sensitivity, angle CV and within-type rho CV reported.
+          Deductions: n = 8 + 25 + 4 from three heterogeneous sources; the population method
+          accepts only 28 of 273 junction candidates (selection effects unquantified); the AIC
+          treats the lattice snap as 0 free parameters (generous to the alternative, but a
+          discrete-choice penalty is debatable); projection error of trihedral spicules is
+          bounded only indirectly (near vs chord RMSE 5.3 deg).
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [185, 240], note: "paired_difference_null, null_statistics (MC + KS), alternative_models (RMSE, AIC)", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [394, 449], note: "measure_population with physical flag and Dirichlet null", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [451, 497], note: "measure_fig214: hole-filled drawing digitisation, unresolved panels reported", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/result.json, lines: [0, 0], note: "headline numbers: d 4.4 vs 34.8, p < 5e-5, KS 8e-6; population 17.3 vs 71.2; Fig. 214 p 0.0012", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/measurements/population_ray_angles.json, lines: [0, 0], note: "28 detections from 273 junction candidates: strong selection, unquantified", supports: false}
+      source-traceability:
+        value: 85
+        rationale: >-
+          Eight references, seven with Crossref-verified DOIs; three specimen files with
+          licence, credit, Commons SHA-1 and SHA-256, all re-verified at run time
+          (verify_specimens); IA leaf/page rule and OCR excerpt stored; the Dryad mismatch is
+          documented with pinned API metadata; result.json records dataset status including
+          'analogue: false'.  Deductions unchanged: Dryad payload not fetched; Haeckel 1872 /
+          Dreyer 1892 without resolvable identifiers.
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [246, 253], note: "verify_specimens: all three digests checked", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/paper_citations.bib, lines: [1, 128], note: "12 entries incl. Manning 2010 (E5 modern form)", supports: true}
+          - {file: datasets/thompson_1917/t1917-024/result.json, lines: [0, 0], note: "dataset block: preassigned DATASET_MISMATCH, primary/population/source-figure SHA-256", supports: true}
+      code-traceability:
+        value: 78
+        rationale: >-
+          Header now states P1-P3, E1-E9, F1-F4 and the ablations with page numbers; each
+          analysis function names its prediction (F1 saturation, F2 null, F4 ordering); the
+          Lean header and KG yaml map theorems to equations and functions.  Deductions: KG
+          code loci are by function name; segmentation constants (90/400/1500/0.9; population
+          0.06/5-26 px; drawing 0.10) are tuned to these images and traced only to the plate.
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [1, 66], note: "CLAIM UNDER TEST / MODEL / FALSIFIABLE CONTENT / DATA header", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-024.yaml, lines: [60, 131], note: "5 laws with lean_theorem, lean_locus, code_locus", supports: true}
+      repro-package:
+        value: 74
+        rationale: >-
+          Deterministic (seeded RNG for null, sweep orientations and saturation sample),
+          --self-test covers model identities, inverse, null, saturation, sweep closure,
+          alternatives, digests, detections and Fig. 214 (< 1 s); full run 4 s; CLI
+          documented; measure_morphoeval returns the list format measure_outputs.py expects
+          (Pass-1 crash fixed and now exercised); scikit-image FutureWarnings silenced.
+          Deductions: no per-script dependency pin; checkpoint is a branch commit; the
+          population and drawing extractors are tuned to two specific images.
+        evidence:
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [903, 936], note: "self_test: 20 assertions incl. sweep closure thresholds", supports: true}
+          - {file: thompson/claims/t1917-024_on-concretions-spicules-and-spicular-skeletons.py, lines: [848, 900], note: "measure_morphoeval: 10 measurement records with reference values and null notes", supports: true}
+    remediation:
+      - id: R1
+        item: "Independent second assessor (different provider) — Pass 2 is still builder-scored"
+      - id: R9
+        item: "A second SEM individual/species (e.g. Sycon, Leucosolenia plates in Zootaxa 4426 or other CC BY sources) so the SEM d-statistic is not n = 8 from one specimen"
+      - id: R10
+        item: "Quantify population-extraction selection: manually annotate a random subset of the 273 junction candidates to estimate the acceptance bias of the 3-arc criterion"
+      - id: R11
+        item: "Model ray curvature (Plateau bourrelet / curved partitions of unequal cells) so the near- vs chord-axis difference (RMSE 5.3 deg) becomes a prediction, not a nuisance"
+      - id: R12
+        item: "3D test of P3: micro-CT or stereo-SEM of tetractines to measure the apical ray angle against 109.47 deg"
+      - id: R13
+        item: "Alcyonarian (octocoral) sclerites: the claim text names them and nothing here tests them"

@@ -1,0 +1,73 @@
+{
+  "claim_id": "T1917-041",
+  "sim_id": "thompson1917-t1917-041",
+  "citation": {
+    "author": "Thompson, D.W.",
+    "year": 1917,
+    "title": "On Growth and Form",
+    "chapter": "XVII — On the Theory of Transformations",
+    "pages": "~732",
+    "figures": "359-360",
+    "internet_archive": "https://archive.org/details/ongrowthform1917thom"
+  },
+  "state_variables": {
+    "u": "Cartesian x in a leaf outline coordinate frame (petiole at origin, tip along +y)",
+    "v": "Cartesian y",
+    "y0": "Radial coordinate pole offset (arrest/base point on petiole axis)",
+    "rho": "sqrt(u^2 + (v - y0)^2) — radial distance from arrest point",
+    "phi": "atan2(u, v - y0) — polar angle about arrest point",
+    "k": "Tangential angle scaling (cordate bilobing when k > 1)"
+  },
+  "governing_equations": [
+    {
+      "id": "polar_decomposition",
+      "latex": "\\rho = \\sqrt{u^2 + (v-y_0)^2},\\; \\phi = \\mathrm{atan2}(u, v-y_0)"
+    },
+    {
+      "id": "radial_cordate_8p",
+      "latex": "x' = a_1 \\rho \\sin(k\\phi) + a_2 \\rho \\cos\\phi \\sin(k\\phi) + t_x;\\; y' = b_1 \\rho \\cos(k\\phi) + b_2 \\rho \\cos\\phi \\cos(k\\phi) + t_y",
+      "code_locus": "thompson/claims/t1917-041_on-the-theory-of-transformations.py:fit_radial_cordate_8p"
+    }
+  ],
+  "boundary_conditions": [
+    "Petiole insertion fixed at the radial pole (u=0, v=y0 maps to transformed stem point)",
+    "Closed outline sampled CCW with tip at maximum v"
+  ],
+  "parameter_regime_table": [
+    {"regime": "lanceolate", "k_range": [0.98, 1.04], "f2": 0.0, "description": "narrow elongate leaf"},
+    {"regime": "ovate", "k_range": [1.04, 1.12], "f2": 0.0, "description": "broadened base, acuminate tip"},
+    {"regime": "cordate", "k_range": [1.12, 1.28], "f2": ">0", "description": "bilobed base / heart shape"},
+    {"regime": "begonia_instance", "k_range": [1.05, 1.22], "description": "asymmetric cordate Begonia rex panel"}
+  ],
+  "empirical_claims": [
+    "Lanceolate, ovate and cordate leaves are mutual transforms under one radial coordinate system",
+    "Begonia leaf exemplifies the same radial transformation family"
+  ],
+  "null_models": [
+    {"id": "similarity_box", "params": 4},
+    {"id": "affine", "params": 6}
+  ],
+  "pinned_assets": [
+    {
+      "path": "datasets/thompson_1917/t1917-041/thompson1917_fig359_360_page752.jp2",
+      "sha256": "87d76271e051f523c59d3129be14b97a6ffb3d9fc17540996755cccd827003ce",
+      "kind": "ia_scan_page"
+    },
+    {
+      "path": "datasets/thompson_1917/t1917-041/thompson1917_fig359_360_page752.png",
+      "sha256": "a1ec495c645838d4e66eb3e0ce27ae33e073ffddabcd71636237ab6e568a95a4",
+      "kind": "ia_scan_page_png"
+    },
+    {
+      "path": "datasets/thompson_1917/t1917-041/begonia_rex_leaf_specimen.jpg",
+      "sha256": "77e0f2c83de070257b7a61cc157729506dec7f3cb69d40a335995bc9652b35ac",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Begonia_rex_1zz.jpg"
+    }
+  ],
+  "dryad_reference": {
+    "doi": "10.5061/dryad.0722ps8",
+    "title": "Effectiveness of modern leaf analysis tools for the morpho-ecological study of plants: the case of Primula albenensis",
+    "role": "supporting morphometric methods literature (not primary specimen for this claim)"
+  }
+}

@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-032> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-032-specimen-match> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-032-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) T1917-032 — teeth & tusks: differential-accretion log spiral + St Venant torsion — Morphological realism / specimen match: 50/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "HSV segmentation + skeleton longest path recovers the mammoth tusk centreline and width (`segment_mammoth_tusk`, `tusk_centreline_profile`, L247-L328) and the overlay beats the circle null, but the smoothed curvature changes sign 3 times (root bend, straight shaft, reversed tip hook) so the plane log spiral mis-tracks root and tip; the narwhal panel is an analogue; no comparison against Thompson's own tusk description beyond text." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-032/result.json L1–L57: kappa_sign_changes = 3 recorded; T1_single_sign_curvature = false <https://github.com/fractastical/morpholib/blob/0e7e77bc1/datasets/thompson_1917/t1917-032/result.json#L1-L57>",
+            "docs/media/t1917_032_the_shapes_of_horns_and_of_tee_comparison.png (generated output, not in repo): Panel (a) overlay: log spiral tracks the shaft but diverges at root and reversed tip hook; panel (c) 3 curvature sign changes — docs/media/t1917_032_the_shapes_of_horns_and_of_tee_comparison.png: rendered output of thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py at 0e7e77bc1, image/png, 901553 B, 2200×1265 px, artifact_sha256 ce504b6b180f886e2d607acf30623c6aa5ed49ff489607778ef4157b67be39f8 (sha256 ce504b6b180f886e2d607acf30623c6aa5ed49ff489607778ef4157b67be39f8), spec_fingerprint d3a3c036d2236fa5e48fed4d773ebe5efc0177f2fb7ef111e8e3fe7dfc6e5241" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-032-specimen-match-1> ;
+        pk:hasScore "0.5"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-032-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py L247–L328" ;
+        dct:description "HSV segmentation, skeleton longest path, width via distance transform, curvature profile" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/0e7e77bc1/thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py#L247-L328> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 226 Pass 1 primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/pull/309> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1016/j.dib.2018.09.029>,
+            <https://doi.org/10.14430/arctic1723>,
+            <https://doi.org/10.2307/1301992>,
+            <https://gallica.bnf.fr/ark:/12148/bpt6k99739w> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form" .
+    <https://doi.org/10.1016/j.dib.2018.09.029> dct:date "2018"^^xsd:gYear ;
+        dct:title "Data on the angular characteristics of the spiral structure of the narwhal tusk" .
+    <https://doi.org/10.14430/arctic1723> dct:date "1988"^^xsd:gYear ;
+        dct:title "The spiral in the tusk of the narwhal" .
+    <https://doi.org/10.2307/1301992> dct:date "1966"^^xsd:gYear ;
+        dct:title "Geometric analysis of shell coiling: general problems" .
+    <https://gallica.bnf.fr/ark:/12148/bpt6k99739w> dct:date "1856"^^xsd:gYear ;
+        dct:title "Mémoire sur la torsion des prismes, avec des considérations sur leur flexion" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) T1917-032 — teeth & tusks: differential-accretion log spiral + St Venant torsion — Morphological realism / specimen match 50/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:43:58Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-032-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/pull/309> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

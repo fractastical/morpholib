@@ -1,0 +1,100 @@
+# MorphoEval audit — Thompson (1917) T1917-008, Pass 2 (supersedes Pass 1)
+
+audit:
+  id: 2026-10-28-t1917-008-the-rate-of-growth-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-008-the-rate-of-growth-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (loop 206 Pass 2)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High"
+    homepage: https://www.anthropic.com
+  publisher_orcid: https://orcid.org/0000-0001-9184-8944
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917-claim-validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    note: Pass 2 after Step 12 remediation (sweep, ablation, CV, KS).
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D'Arcy W."
+    venue: "Cambridge University Press (1917), Ch. III"
+    url: https://archive.org/details/ongrowthform1917thom
+  huxley1932:
+    title: "Problems of Relative Growth"
+    authors: "Huxley, Julian S."
+    year: 1932
+    url: https://archive.org/details/problemsofrelati033044mbp
+
+simulations:
+  - id: thompson1917-t1917-008
+    name: "Thompson (1917) differential relative growth / Huxley allometry"
+    organism: "Mammals, plaice, Pheidole megacephala (analogue)"
+    script: thompson/claims/t1917-008_the-rate-of-growth.py
+    output: docs/media/t1917_008_the_rate_of_growth_comparison.png
+    extra_outputs:
+      - docs/media/t1917_008_the_rate_of_growth_growth.gif
+    status: evaluated
+    source_refs: [thompson1917, huxley1932]
+    summary: >-
+      Pass 2 remediated assessment (78.4/100). Log-log fits to Thompson Figs 18–22, parameter sweep over k,
+      isometry ablation RMSE deltas, KS tests on log residuals, Pheidole head CV segmentation, SHA-256 dataset
+      locks, Lean 4 theorems, and result.json verdict (supported for differential allometry; Pheidole labelled analogue).
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          Implements Huxley-Thompson relative growth ODE, log-log fits, ablation against k=1, and links three Lean laws.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [95, 110], note: "simulate_relative_growth", supports: true}
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [175, 195], note: "isometry_ablation and ks_log_residual", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_008.lean, lines: [1, 75], note: "0 sorry theorems", supports: true}
+      specimen-match:
+        value: 62
+        rationale: >-
+          CV head-fraction computed on CC Pheidole minor worker photo; comparison figure annotates CV metrics though
+          full photo overlay remains schematic (not pixel-aligned to mesosoma CSV).
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [112, 145], note: "segment_ant_head_mask", supports: true}
+          - {file: datasets/thompson_1917/t1917-008/pheidole_megacephala_minor_head.jpg, lines: [0, 0], note: "Vendored CC specimen", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: >-
+          parameter_regime_sweep documents monotonic change in organ/body ratio vs k across 0.5–3.0 with k=1 marker.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [147, 165], note: "parameter_regime_sweep", supports: true}
+          - {file: docs/media/t1917_008_the_rate_of_growth_comparison.png, lines: [0, 0], note: "Sweep panel in 2x3 figure", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: >-
+          Fitted exponents match expected regimes (brain k~0.72, plaice k~3); measure_morphoeval exports k, RMSE, head fraction.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [320, 355], note: "measure_morphoeval", supports: true}
+          - {file: datasets/thompson_1917/t1917-008/result.json, lines: [1, 30], note: "headline_numbers verdict", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          IA scan pin, OpenAlex scout entries, Commons specimens, and locked digests in reference JSON.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-008/scout_manifest.json, lines: [1, 50], note: "IN_REPO verification", supports: true}
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [55, 65], note: "verify_sha256", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Each CSV maps to a Thompson figure; math_kg_loops yaml lists lean_decl/code_locus pairs.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-008.yaml, lines: [1, 35], note: "sim_id and equations", supports: true}
+      repro-package:
+        value: 78
+        rationale: >-
+          Deterministic measure_morphoeval, --self-test with exponent guards, pinned dataset hashes.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [357, 375], note: "run_self_test", supports: true}

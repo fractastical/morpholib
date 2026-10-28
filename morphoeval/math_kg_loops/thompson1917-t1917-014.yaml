@@ -1,0 +1,141 @@
+sim_id: thompson1917-t1917-014
+slot: 211
+claim_id: T1917-014
+organism: "Lagena spp. and other monothalamic (unilocular) Foraminifera (Oolina, Fissurina); Orbulina as sphere limit"
+anatomical_structure: "Calcareous unilocular test (flask / spindle / globular morphotypes) — meridional outline"
+phenomenon_size_m: 4.0e-04
+log10_size_m: -3.4
+size_human: "0.3-0.6 mm"
+scale_tier: 3_tissue_100um_1mm
+geological_age_ma: 0.0
+geological_period: Holocene (Extant); genus Lagena known since the Jurassic
+math_family: "Constant-Mean-Curvature Surfaces of Revolution (Delaunay 1841 / Plateau catalogue: sphere, cylinder, unduloid, nodoid, catenoid) — geometric"
+lean_verification: kernel_checked_core_lean4_no_imports
+model_spec:
+  model: "Thompson (1917) Ch. V pp. 216-263: Laplace pressure p = T(1/R1 + 1/R2) makes a uniformly tensed cell surface a CMC surface; Plateau's six surfaces of revolution; Delaunay (1841) roulettes; Lagena = unduloid or unduloid + sphere portion"
+  computable_form: "Kenmotsu (1980) arc-length parametrisation r(s) = sqrt(1 + B^2 + 2B sin 2Hs)/(2H), dz/ds = (1 + B sin 2Hs)/sqrt(...)"
+  composite_models:
+    delaunay_flask_E7: "sphere(R) C1-joined at r_j^2 = R(1-B^2)/(4H(1-RH)) to unduloid(H, B), neck C1-joined to cylinder of length L_neck; parameters (R, B, t, L_neck, z0)"
+    delaunay_bead_E8: "single unduloid bulge-to-neck window continued by its neck cylinder; parameters (H, B, z_c)"
+  controls:
+    null_model: "ellipsoid (smooth surface of revolution that is NOT CMC)"
+    free_form: "degree-6 polynomial in r^2 (upper bound of attainable fit)"
+    negative_control: "polythalamous tests (Globobulimina 64a, Quinqueloculina 66a) from the same plate"
+    ablation: "sphere + cylinder flask with the unduloid shoulder removed (C0 join)"
+    statistics: "nRMSE, Pearson r, two-sample KS statistic, 2-fold cross-validated nRMSE"
+  decision_rule: "Delaunay-compatible iff best catalogue fit nRMSE <= min(max(0.06, 1.5 x free-form nRMSE), 0.10) and bilateral asymmetry <= 0.12 (Pass 2); Pass 1 used the fixed 0.06 gate"
+  seed: deterministic (no RNG)
+  inputs:
+    - datasets/thompson_1917/t1917-014/thompson_1917_fig84_lagena_after_brady.png
+    - datasets/thompson_1917/t1917-014/thompson_1917_leaf0276_p256_fig84.jp2
+    - datasets/thompson_1917/t1917-014/kireenko_2022_bdj_e87457_fig8_station5656mc.jpg
+    - datasets/thompson_1917/t1917-014/t1917_014_the_forms_of_cells_reference.json
+    - datasets/thompson_1917/t1917-014/scout_manifest.json
+    - datasets/thompson_1917/t1917-014/paper_citations.bib
+external_datasets:
+  - name: "Internet Archive scan of Thompson (1917) On Growth and Form, 1st ed. (item ongrowthform1917thom), leaf 0276 = p. 256 Fig. 84"
+    url: https://archive.org/details/ongrowthform1917thom
+    license: public domain
+  - name: "Kireenko et al. (2022) Image dataset of benthic foraminifera, north-western Scotland shelf — Figure 8 (Wikimedia Commons)"
+    url: https://commons.wikimedia.org/wiki/File:Foraminifera_(10.3897-BDJ.10.e87457)_Figure_8.jpg
+    doi: 10.3897/BDJ.10.e87457
+    license: CC BY 4.0
+  - name: "Prazeres, Uthicke & Pandolfi (2015) Dryad dataset — pre-scouted, verified DATASET_MISMATCH, not used"
+    url: https://doi.org/10.5061/dryad.28816
+    doi: 10.5061/dryad.28816
+    license: CC0
+aristotelian:
+  megiston_genos: "Protozoa (Rhizopoda / Foraminifera)"
+  subaltern_genos: "Lagenida (monothalamic hyaline Foraminifera)"
+  genus: Lagena
+  poion_form: "Flask, spindle and globular surfaces of revolution"
+  poson_law: "Constant mean curvature H; Kenmotsu parameter B"
+  efficient_cause: "Surface tension of the protoplasmic pellicle (Thompson's hypothesis); hanging-drop analogy"
+equations:
+  - law_name: "Delaunay first integral — neck/bulge root identities"
+    formula: "r/sqrt(1+r'^2) - H r^2 = C;  r_min + r_max = 1/H = 2a;  r_min r_max = C/H = a^2 - c^2 = b^2"
+    lean_decl: MathOfBiology.Loop_211.rMax
+    lean_theorem: MathOfBiology.Loop_211.roots_product
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L32-L69
+    lean_code: |
+      def rMax (a c : Int) : Int := a + c
+      def rMin (a c : Int) : Int := a - c
+      theorem roots_sum (a c : Int) : rMax a c + rMin a c = 2 * a
+      theorem roots_product (a c : Int) : rMax a c * rMin a c = a * a - c * c
+      theorem first_integral_turning_points (a c : Int) :
+          rMax a c * rMax a c - rMin a c * rMin a c = 2 * a * (rMax a c - rMin a c)
+    variables: "a: semi-major axis of Delaunay's rolling ellipse (= 1/(2H)); c: focal half-distance; r_max = a + c bulge radius; r_min = a - c neck radius"
+    role: "Fixes the two turning radii of every unduloid from (H, C); used by kenmotsu_profile and checked numerically in self_test"
+    source_citation: "Thompson (1917) pp. 216-219 (Laplace formula, Delaunay 1841 footnote, Fig. 61); Delaunay (1841) J. Math. Pures Appl. 6:309"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L170-L182
+  - law_name: "Neck-ratio law of the unduloid family"
+    formula: "rho = r_min/r_max = (1 - B)/(1 + B) = (a - c)/(a + c); 0 <= rho <= 1, strictly decreasing in c; rho = 1 cylinder, rho = 0 string of spheres"
+    lean_decl: MathOfBiology.Loop_211.rMin
+    lean_theorem: MathOfBiology.Loop_211.neck_ratio_strict_anti
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L72-L105
+    lean_code: |
+      theorem neck_between (a c : Int) (h0 : 0 ≤ c) (h1 : c ≤ a) : 0 ≤ rMin a c ∧ rMin a c ≤ rMax a c
+      theorem cylinder_limit (a : Int) : rMin a 0 = rMax a 0
+      theorem sphere_limit (a : Int) : rMin a a = 0
+      theorem neck_ratio_strict_anti (a c₁ c₂ : Int) (ha : 0 < a) (h : c₁ < c₂) :
+          rMin a c₂ * rMax a c₁ < rMin a c₁ * rMax a c₂
+    variables: "B = c/a: Kenmotsu parameter = eccentricity of the rolling ellipse"
+    role: "Single shape parameter of the unduloid up to scale; the fitted B is reported per specimen and swept in the GIF (cylinder -> unduloid -> spheres)"
+    source_citation: "Thompson (1917) p. 218: 'the more unequal the two axes are of our ellipse, the more pronounced will be the sinuosity of the described roulette'"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L154-L157
+  - law_name: "Kenmotsu radius envelope (CMC surface of revolution)"
+    formula: "(2H r)^2 = 1 + B^2 + 2B sin(2Hs);  (1-B)^2 <= (2Hr)^2 <= (1+B)^2"
+    lean_decl: MathOfBiology.Loop_211.kenmotsu_envelope
+    lean_theorem: MathOfBiology.Loop_211.kenmotsu_envelope
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L108-L122
+    lean_code: |
+      theorem kenmotsu_envelope (S B σ : Int) (hB0 : 0 ≤ B) (hσl : -S ≤ σ) (hσu : σ ≤ S) :
+          (S - B) * (S - B) ≤ S * S + B * B + 2 * (B * σ) ∧
+          S * S + B * B + 2 * (B * σ) ≤ (S + B) * (S + B)
+    variables: "S: integer scale of the sine (σ = S sin 2Hs); B in [0, S]"
+    role: "Guarantees the meridian stays within [r_min, r_max]; mirrors the envelope assertion in self_test"
+    source_citation: "Kenmotsu (1980) Tohoku Math. J. 32:147-153, eq. (2.4); Thompson (1917) p. 223 on the unduloid's curvature sum staying positive and constant"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L170-L192
+  - law_name: "Plateau/Delaunay catalogue trichotomy"
+    formula: "B = 0 cylinder; 0 < B < 1 unduloid; B = 1 string of spheres; B > 1 nodoid; H = 0 catenoid"
+    lean_decl: MathOfBiology.Loop_211.catalogue
+    lean_theorem: MathOfBiology.Loop_211.catalogue_exhaustive
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L125-L150
+    lean_code: |
+      def catalogue (S B : Int) : Nat :=
+        if B = 0 then 0 else if B < S then 1 else if B = S then 2 else 3
+      theorem catalogue_unduloid (S B : Int) (h0 : 0 < B) (h1 : B < S) : catalogue S B = 1
+      theorem catalogue_exhaustive (S B : Int) :
+          catalogue S B = 0 ∨ catalogue S B = 1 ∨ catalogue S B = 2 ∨ catalogue S B = 3
+    variables: "B scaled by S"
+    role: "The 'very few in number' surfaces Thompson lists on p. 218; classify_delaunay in the script"
+    source_citation: "Thompson (1917) pp. 218-219, Figs. 61-65; Plateau (1873) Statique des liquides"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L141-L151
+  - law_name: "Unduloid bead aspect-ratio bound (refutation lemma for fusiform Lagena)"
+    formula: "L_bead <= pi/H (arc length), W = (1+B)/H >= 1/H  =>  L/W <= pi;  exact value 2E(e)/(1+e)"
+    lean_decl: MathOfBiology.Loop_211.bead_aspect_bound
+    lean_theorem: MathOfBiology.Loop_211.spindle_not_bead
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L156-L173
+    lean_code: |
+      theorem bead_aspect_bound (L P W : Int) (hL : L ≤ P) (hP : P ≤ 3142) (hW : 1000 ≤ W) :
+          1000 * L ≤ 3142 * W
+      theorem spindle_not_bead (L W : Int) (hW : 1000 ≤ W) (h : 3142 * W < 1000 * L) :
+          ¬ ∃ P : Int, L ≤ P ∧ P ≤ 3142
+      theorem fig84_spindle_3_not_bead : ¬ ∃ P : Int, (10940 : Int) ≤ P ∧ P ≤ 3142
+    variables: "L: axial bead length; P: meridian arc length over one period (= pi/H); W: bead width 2 r_max; scale 1000 = 1/H"
+    role: "Shows a priori that the slender spindles of Fig. 84 (L/W 5-11) cannot be single unduloids; bead_aspect_ratio in the script"
+    source_citation: "Consequence of Kenmotsu (1980) dz/ds = cos psi <= 1; Thompson (1917) p. 256 'simply that of an unduloid' tested"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L159-L168
+  - law_name: "Delaunay flask C1 join (sphere + unduloid + cylinder)"
+    formula: "r_j^2 = R^2 (1-B^2)/(4 kappa (1-kappa)), kappa = R H;  join on the sphere iff 1-B^2 <= 4 kappa (1-kappa);  equator join at kappa = (1+B)/2"
+    lean_decl: MathOfBiology.Loop_211.flask_equator_join
+    lean_theorem: MathOfBiology.Loop_211.flask_join_feasible
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_014.lean#L176-L221
+    lean_code: |
+      theorem flask_equator_join (S B : Int) : (S + B) * (2 * S - (S + B)) = S * S - B * B
+      theorem flask_join_feasible (S B k : Int) (hk1 : S - B ≤ 2 * k) (hk2 : 2 * k ≤ S + B) :
+          S * S - B * B ≤ 4 * (k * (S - k))
+    variables: "R: sphere radius; H, B: unduloid; kappa = RH in [(1-B)/2, (1+B)/2]; k = S kappa"
+    role: "Makes Thompson's 'unduloid combined with a portion of a sphere' a well-posed 5-parameter model (flask_profile)"
+    source_citation: "Thompson (1917) p. 256 (Lagena), p. 257 (Darling's hanging drops 'unduloids with spherical ends'), p. 226 Fig. 67 (cylinder capped by spheres)"
+    code_locus: thompson/claims/t1917-014_the-forms-of-cells.py#L199-L235

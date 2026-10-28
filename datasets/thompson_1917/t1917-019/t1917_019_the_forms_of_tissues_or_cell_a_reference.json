@@ -1,0 +1,120 @@
+{
+  "schema_version": "morphoeval-reference-2.3-thompson1917-claim",
+  "slot": 214,
+  "slot_id": "thompson1917-t1917-019",
+  "claim_id": "T1917-019",
+  "sim_id": "thompson1917-t1917-019",
+  "date_made": "1917",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge: Cambridge University Press. Chapter VII 'The Forms of Tissues, or Cell-Aggregates', pp. 293-345; Figs. 120-127 (pp. 317-325).",
+    "ia_identifier": "ongrowthform1917thom",
+    "ia_url": "https://archive.org/details/ongrowthform1917thom",
+    "copyright": "public domain (NOT_IN_COPYRIGHT)",
+    "page_rule": "printed page = IA leaf index n (0-based) - 19"
+  },
+  "claim": "Tissue cells tessellate approximately as hexagons / as a froth, the configuration that partitions area with least perimeter.",
+  "primary_quotes": [
+    {"page": 305, "text": "the general resemblance between a cellular tissue and a 'froth' ..."},
+    {"page": 309, "text": "in dividing a closed space into a given number of chambers by means of partition-walls, the least possible area of these partition-walls, taken together, can only be attained when they meet together in groups of three, at equal angles, that is to say at angles of 120 degrees."},
+    {"page": 321, "text": "The hexagonal pattern is illustrated among organisms in countless cases, but those in which the pattern is perfectly regular, by reason of perfect uniformity of force and perfect equality of the individual cells, are not so numerous. The hexagonal epithelium-cells of the pigment layer of the eye, external to the retina, are a good example."},
+    {"page": 321, "text": "In an ordinary columnar epithelium, such as that of the intestine ... the cells are less uniform in size, small cells are apt to be intercalated among the larger, and the perfect symmetry is accordingly lost."},
+    {"page": 323, "text": "the rule still holds that only three partitions (in surface view) meet in a point; and at their point of meeting the walls are for a short distance manifestly curved, so as to permit the junction to take place at or nearly at the normal angle of 120 degrees."},
+    {"page": 325, "text": "where there is greater and more irregular variation in size, the cells will be on the average hexagonal, but some will have fewer and some more sides than six."},
+    {"page": 330, "text": "just as the closely packed hexagons gave the minimal extent of boundary in a plane, so the actual solid figure ... might be that which, for a given solid content, gives the minimum of surface."}
+  ],
+  "claim_decomposition": {
+    "C1_mean_six_froth": {
+      "statement": "A tissue is a trivalent planar froth: mean polygon side number is 6 (exactly 6 - 6*chi/F), with a spread of 5- and 7-gons.",
+      "test": "segmented specimen: three-way vertices fraction, mean n of interior cells, mu2 = var(n)",
+      "pass_criterion": "|<n> - 6| <= 0.15 for interior cells after border exclusion; >= 90 % of junctions trivalent"
+    },
+    "C2_hexagonal_optimum": {
+      "statement": "Among equal-area partitions the regular hexagonal honeycomb has least perimeter (Hales 2001); a tissue approaches it.",
+      "test": "excess perimeter eps = L_total / L_honeycomb(same cell areas) - 1, and per-cell shape index p = P/sqrt(A) vs regular-hexagon 3.7224",
+      "pass_criterion": "eps <= 0.10 (tissue within 10 % of the isoperimetric honeycomb bound for its own area distribution)"
+    },
+    "C3_near_regular_hexagons": {
+      "statement": "Cells are 'approximately hexagons' — read strictly, the modal class is hexagonal and most cells are 6-gons.",
+      "test": "hexagon fraction p6 of interior cells vs honeycomb (1.0), vs Gibson 2006 proliferating-epithelium Markov fixed point (0.464), vs normal adult corneal endothelium clinical norm (0.55-0.70)",
+      "pass_criterion": "p6 is the modal class AND p6 >= 0.5 for the strict reading; p6 in [0.4, 0.7] for the froth reading"
+    }
+  },
+  "equations": [
+    {"id": "E1", "name": "Euler trivalent-froth side-sum", "formula": "3V = 2E,  sum_i n_i = 2E,  V - E + F = chi  =>  sum_i n_i = 6F - 6 chi;  <n> = 6 - 6 chi / F", "variables": "V vertices, E edges, F faces (cells), n_i sides of cell i, chi Euler characteristic (0 periodic, 2 sphere, 1 disc with boundary counted as a face)", "source": "Thompson p. 325 'on the average hexagonal'; Weaire & Rivier 1984 Sec. 2", "lean": "MathOfBiology.Loop_214.trivalent_side_sum, torus_mean_six, sphere_pentagon_excess"},
+    {"id": "E2", "name": "Second moment of the polygon distribution", "formula": "mu2 = sum_n p_n (n - 6)^2 = (1/F) sum_i n_i^2 - 36 (when <n> = 6);  mu2 = 0 iff every cell is a hexagon", "variables": "p_n fraction of n-gons", "source": "Weaire & Rivier 1984 Eq. 2.3", "lean": "MathOfBiology.Loop_214.second_moment_identity, honeycomb_iff_zero_second_moment"},
+    {"id": "E3", "name": "Isoperimetric honeycomb bound (least perimeter)", "formula": "P_n(A) = 2 sqrt(n A tan(pi/n));  P_6(A) = 2 (12)^(1/4) sqrt(A) = 3.7224 sqrt(A);  P_6^4 = 192 A^2 < P_4^4 = 256 A^2 < P_3^4 = 432 A^2;  Hales: L_total >= (1/2) sum_i P_6(A_i) for any partition into cells of areas A_i (equal-area case)", "variables": "P perimeter, A area, L_total total edge length (each edge shared by two cells)", "source": "Thompson p. 330; Hales 2001 Discrete Comput. Geom. 25:1", "lean": "MathOfBiology.Loop_214.hexagon_least_fourth_power_perimeter, honeycomb_edge_length_identity"},
+    {"id": "E4", "name": "Lewis's law (size-topology)", "formula": "<A_n> = A_6 (1 + lambda (n - 6)),  Lewis 1928: lambda = 1/4 i.e. <A_n> = A_6 (n - 2)/4", "variables": "<A_n> mean area of n-gons", "source": "Lewis 1928 Anat. Rec. 38:341", "lean": "MathOfBiology.Loop_214.lewis_total_area_invariance"},
+    {"id": "E5", "name": "Aboav-Weaire law (neighbour topology)", "formula": "m(n) = (6 - a) + (6a + mu2)/n,  a ~ 1.2 for froths;  sum rule: sum_n n p_n m(n) = 36 + mu2", "variables": "m(n) mean side number of the neighbours of an n-gon", "source": "Aboav 1970 Metallography 3:383; Weaire & Rivier 1984", "lean": "MathOfBiology.Loop_214.aboav_weaire_sum_rule"},
+    {"id": "E6", "name": "Division topology (Gibson 2006)", "formula": "n-cell divides -> daughters s1 + s2 = n + 4 (each daughter: k + 3 and n - 2 - k + 3 sides), the two neighbours cut by the new wall gain one side each;  total sides +6 per +1 cell, so <n> = 6 is preserved; Markov fixed point p = (0.029, 0.289, 0.464, 0.208, 0.010) for n = 4..8", "variables": "k undivided sides inherited by daughter 1", "source": "Gibson et al. 2006 Nature 442:1038", "lean": "MathOfBiology.Loop_214.division_daughter_side_sum, division_preserves_mean_six"}
+  ],
+  "state_variables": ["cell polygon class n_i (number of neighbours = number of sides)", "cell area A_i (px^2 or um^2)", "cell perimeter P_i", "shape index p_i = P_i / sqrt(A_i)", "junction valence (3 or 4+)", "tissue totals F, E, V"],
+  "boundary_conditions": {
+    "simulation": "periodic (torus, chi = 0) Voronoi / Lloyd relaxation on an L x L box",
+    "specimen": "finite micrograph window; cells touching the image border are excluded from polygon-class statistics (interior cells only); neighbour counts use the full segmentation"
+  },
+  "parameter_regime": [
+    {"parameter": "delta", "meaning": "positional disorder of the hexagonal seed lattice (fraction of lattice spacing)", "range": [0.0, 1.0], "canonical": 0.35, "effect": "p6 falls monotonically from 1 to the Poisson-Voronoi limit ~0.29; mu2 rises from 0 to ~1.78"},
+    {"parameter": "lloyd_iters", "meaning": "Lloyd / centroidal-Voronoi relaxation steps (froth relaxation toward least perimeter)", "range": [0, 40], "canonical": 0, "effect": "lowers excess perimeter and mu2, raises p6"},
+    {"parameter": "n_cells", "meaning": "number of cells on the torus", "range": [64, 1024], "canonical": 400},
+    {"parameter": "seed", "meaning": "RNG seed", "canonical": 20261028}
+  ],
+  "reference_values": [
+    {"name": "honeycomb hexagon fraction p6", "value": 1.0, "source": "ideal", "note": "Thompson's strict reading"},
+    {"name": "honeycomb mu2", "value": 0.0, "source": "ideal"},
+    {"name": "regular hexagon shape index P/sqrt(A)", "value": 3.7224, "source": "2*(12)^(1/4); Hales 2001"},
+    {"name": "regular pentagon / square / triangle shape index", "value": [3.8120, 4.0, 4.5590], "source": "2 sqrt(n tan(pi/n))"},
+    {"name": "Poisson-Voronoi p6", "value": 0.2947, "source": "Weaire & Rivier 1984 Table 1 (approx.)"},
+    {"name": "Poisson-Voronoi mu2", "value": 1.78, "source": "Weaire & Rivier 1984 (approx.)"},
+    {"name": "Gibson 2006 Drosophila wing disc polygon distribution p4..p8 (Markov fixed point)", "value": [0.029, 0.289, 0.464, 0.208, 0.010], "source": "Gibson et al. 2006 Nature 442:1038 (approx., read from their Fig. 3/Eq. 1 fixed point)"},
+    {"name": "Gibson 2006 observed Drosophila wing disc p5, p6, p7", "value": [0.28, 0.46, 0.21], "source": "Gibson et al. 2006 (approx.)"},
+    {"name": "normal adult human corneal endothelium % hexagonal cells", "value": 0.616, "range": [0.55, 0.70], "source": "Sheng & Bullimore 2007 Cornea 26:520: %Hex = 70 - 0.29 CLyears - 0.21 Age + 0.4 Rx; evaluated at Age 40, no contact lenses, Rx 0"},
+    {"name": "normal adult human corneal endothelium CV of cell area", "value": 0.315, "range": [0.25, 0.40], "source": "Sheng & Bullimore 2007: CoV = 24.3 + 0.72 CLyears + 0.18 Age (percent); Age 40"},
+    {"name": "normal adult human corneal endothelial cell density", "value": 2766, "unit": "cells/mm^2", "source": "Sheng & Bullimore 2007: ECD = 3274 - 12.7 Age; Age 40. Rao et al. 2000 Cornea 19:820: 2525 +/- 337 (Indian eyes, 20-87 y)"},
+    {"name": "Lewis law slope lambda", "value": 0.25, "source": "Lewis 1928"},
+    {"name": "Aboav-Weaire a", "value": 1.2, "source": "Weaire & Rivier 1984 (froths; range 1.0-1.5)"}
+  ],
+  "pinned_1917_figures": {
+    "fig124": {"file": "thompson_1917_p321_fig124_girardia.jpg", "page": 321, "caption": "Epidermis of Girardia (after Goebel)", "sha256": "63e3666f91ca461cddc301775de143af3dfacf14b8bd43326b74341dd60ec2ae"},
+    "fig125_126": {"file": "thompson_1917_p322_fig125_126_froth_elodea.jpg", "page": 322, "caption": "Fig. 125 Soap-froth under pressure (after Rhumbler), A compressed / B relaxed; Fig. 126 From leaf of Elodea canadensis (after Berthold)", "sha256": "1a31755fe8c43ca45a2faa5d5bd093714af36fa4b395ef6d23873eea1dc63294"},
+    "fig127_128": {"file": "thompson_1917_p325_fig127_128_corals.jpg", "page": 325, "caption": "Fig. 127 Lithostrotion Martini; Fig. 128 Cyathophyllum hexagonum (after Nicholson)", "sha256": "059ccb345ca10d424d46c5614656fb6f537a2359ea10f3841de1eb92a621362b"}
+  },
+  "specimens": {
+    "primary": {
+      "file": "human_corneal_endothelium_specimen.jpg",
+      "organism": "Homo sapiens — corneal endothelium in situ (alizarin red cell outlines)",
+      "tissue_class": "single-layer ocular epithelium (monolayer), non-proliferating adult",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg",
+      "author": "Zhiguo He",
+      "license": "CC BY-SA 4.0",
+      "commons_sha1": "e0abd0d9d7e22d97e338ef2ad9b59681052b2e23",
+      "sha256": "9daed5fb546e11bfdc60df0c8d9665515a93498b5f222befc8ad4bd9dfa6fb5a",
+      "width": 1290, "height": 1031,
+      "scale": "no scale bar; morphometrics reported in px and dimensionless ratios only",
+      "relation_to_claim": "direct instance of Thompson's 'hexagonal epithelium-cells ... of the eye' (p. 321); not an analogue"
+    },
+    "secondary": {
+      "file": "elodea_canadensis_leaf_specimen.jpg",
+      "organism": "Elodea canadensis — leaf epidermis / mesophyll, 40x brightfield",
+      "source_url": "https://commons.wikimedia.org/wiki/File:C%C3%A9lulas_de_Elodea_40x_(Daemon_Canchig).png",
+      "author": "Daemon Canchig",
+      "license": "CC BY-SA 4.0",
+      "commons_sha1_original": "e8a3cc68dd6ce40e6a12f0c2dc433054582f720d",
+      "sha256": "ffa66c5d5bfa1afbb56f3f6a651473c35ceec4cba238a918523d6a665a07a7b1",
+      "width": 1495, "height": 1600,
+      "relation_to_claim": "same species as Thompson Fig. 126; elongated 'apparently quadrangular' cells (p. 322-323); chloroplast clutter makes automatic segmentation unreliable, so it is used only as a visual side-by-side with Fig. 126"
+    }
+  },
+  "input_dataset_sha256": {
+    "datasets/thompson_1917/t1917-019/human_corneal_endothelium_specimen.jpg": "9daed5fb546e11bfdc60df0c8d9665515a93498b5f222befc8ad4bd9dfa6fb5a",
+    "datasets/thompson_1917/t1917-019/elodea_canadensis_leaf_specimen.jpg": "ffa66c5d5bfa1afbb56f3f6a651473c35ceec4cba238a918523d6a665a07a7b1",
+    "datasets/thompson_1917/t1917-019/thompson_1917_p321_fig124_girardia.jpg": "63e3666f91ca461cddc301775de143af3dfacf14b8bd43326b74341dd60ec2ae",
+    "datasets/thompson_1917/t1917-019/thompson_1917_p322_fig125_126_froth_elodea.jpg": "1a31755fe8c43ca45a2faa5d5bd093714af36fa4b395ef6d23873eea1dc63294",
+    "datasets/thompson_1917/t1917-019/thompson_1917_p325_fig127_128_corals.jpg": "059ccb345ca10d424d46c5614656fb6f537a2359ea10f3841de1eb92a621362b"
+  },
+  "counterclaim_2026": {
+    "relation": "QUALIFIED",
+    "who": "Gibson et al. 2006; Farhadifar et al. 2007",
+    "text": "Epithelial polygon distributions are froth-like but not simply 'hexagons tile best': proliferating epithelia have a characteristic polygon spectrum (substantial pentagon/heptagon fractions) explained by division topology, not by perimeter minimisation alone. Thompson's froth analogy survives, his implied hexagonal optimum does not describe growing tissue.",
+    "source": "thompson/thompson_1917_counterclaims.json [T1917-019]"
+  }
+}

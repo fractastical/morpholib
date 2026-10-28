@@ -1,0 +1,92 @@
+{
+  "claim_id": "T1917-054",
+  "slot_id": "thompson1917-t1917-054",
+  "sim_id": "thompson1917-t1917-054",
+  "date_made": "1917",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge: Cambridge University Press. Ch. XVII, 'On the Theory of Transformations, or the Comparison of Related Forms', pp. 757-759, Figs. 388-393 (figures drawn by Gerhard Heilmann, 1915).",
+    "internet_archive_item": "ongrowthform1917thom",
+    "url": "https://archive.org/details/ongrowthform1917thom",
+    "license": "public domain (author d. 1948; artist d. 1946; published 1917)"
+  },
+  "claim_text": "The pelves of Archaeopteryx and Apatornis (after Heilmann) and intermediate configurations can be found by interpolation between coordinate-transformed forms - i.e. interpolated grids generate biologically real intermediate forms.",
+  "quotes": [
+    {"page": 757, "text": "...this process may be especially useful, and will be most obviously legitimate, when we apply it to the particular case of representing intermediate stages between two forms which are actually known to exist, in other words, of reconstructing the transitional stages through which the course of evolution must have successively travelled if it has brought about the change from some ancestral type to its presumed descendant."},
+    {"page": 759, "text": "In Fig. 390 the outlines of these two co-ordinate systems are superposed upon one another, and those of three intermediate and equidistant co-ordinate systems are interpolated between them. From each of these latter systems, so determined by direct interpolation, a complete co-ordinate diagram is drawn, and the corresponding outline of a pelvis is found from each of these systems of co-ordinates, as in Figs. 391, 392."},
+    {"page": 759, "text": "Finally, in Fig. 393 the complete series is represented, beginning with the known pelvis of Archaeopteryx, and leading up by our three intermediate hypothetical types to the known pelvis of Apatornis."}
+  ],
+  "model": {
+    "name": "Thompson-Heilmann coordinate-grid interpolation (method of transformations)",
+    "math_family": "geometric-methodological",
+    "state_variables": {
+      "x = (xi, eta)": "Cartesian coordinates of the Archaeopteryx reference grid (Fig. 388): 9 vertical lines labelled 1..9, 8 horizontal lines labelled a..h; the pelvis outline is inscribed in this grid",
+      "phi(x)": "position in the Apatornis grid (Fig. 389) of the point with reference coordinates x: a smooth, orientation-preserving map of the plane",
+      "t": "interpolation parameter, 0 = Archaeopteryx, 1 = Apatornis; Thompson's three intermediates are t = 1/4, 1/2, 3/4 ('equidistant')",
+      "Omega_A": "the Archaeopteryx pelvis region (ilium + ischium + pubis, acetabulum as interior hole) inscribed in the reference grid",
+      "Omega_t": "the interpolated pelvis region phi_t(Omega_A)"
+    },
+    "equations": [
+      {"id": "E1", "name": "coordinate transformation", "formula": "phi : R^2 -> R^2, phi(grid_A) = grid_B, det(D phi) > 0", "source": "Thompson 1917 Ch. XVII pp. 727-729 (method) and Figs. 388-389 (this instance)"},
+      {"id": "E2", "name": "equidistant grid interpolation", "formula": "phi_t(x) = (1 - t) x + t phi(x),  t in {0, 1/4, 1/2, 3/4, 1}", "source": "p. 759 'three intermediate and equidistant co-ordinate systems are interpolated between them' and Fig. 390"},
+      {"id": "E3", "name": "inscribed intermediate form", "formula": "Omega_t = phi_t(Omega_A);  boundary(Omega_t) = phi_t(boundary(Omega_A))", "source": "p. 759 'the corresponding outline of a pelvis is found from each of these systems of co-ordinates' and Figs. 391-393"},
+      {"id": "E4", "name": "thin-plate spline realisation of phi (modern formalisation of the grid)", "formula": "phi(x) = A x + b + sum_i w_i U(|x - p_i|),  U(r) = r^2 log r^2,  sum_i w_i = 0,  sum_i w_i p_i = 0", "source": "Bookstein 1989 IEEE TPAMI 11:567-585 (explicitly built as the mathematical form of Thompson's grids)"},
+      {"id": "E5", "name": "affine special case (Thompson's 'simple' transformations) and its interpolation", "formula": "phi(x) = A x + b;  phi_t(x) = ((1 - t) I + t A) x + t b;  det((1-t) I + t A) is quadratic in t and positive on [0,1] when A has positive eigenvalues", "source": "Thompson 1917 pp. 727-733 (shear, simple strain, oblique transformations)"},
+      {"id": "E6", "name": "linear-morph identity for corresponding points", "formula": "if phi(a_i) = b_i then phi_t(a_i) = (1 - t) a_i + t b_i; differences between consecutive equidistant stages are constant: phi_{(k+1)/4}(a_i) - phi_{k/4}(a_i) = (b_i - a_i)/4", "source": "consequence of E2; this is what 'equidistant' means operationally"},
+      {"id": "E7", "name": "best-fit stage and equidistance residual", "formula": "t*_k = <D_k - A, B - A> / |B - A|^2 for drawn intermediate D_k (Procrustes-aligned);  equidistance residual = |t*_k - k/4|", "source": "this loop (test statistic, not in Thompson)"}
+    ],
+    "boundary_conditions": {
+      "endpoints": "phi_0 = identity (Archaeopteryx, Fig. 388); phi_1 = phi (Apatornis, Fig. 389)",
+      "grid_domain": "9 x 8 reference grid lines; the outline lies strictly inside the grid in both figures",
+      "orientation": "pelvis in left lateral view, anterior to the left (ilium blade dorsal, pubis directed posteroventrally), identical in all five panels of Fig. 393",
+      "topology": "each form is a single connected region with one interior hole (acetabulum); interpolation must preserve this topology"
+    },
+    "parameter_regime": [
+      {"parameter": "t", "range": "[0, 1]", "nominal": "0, 0.25, 0.5, 0.75, 1", "controls": "stage along the Archaeopteryx -> Apatornis transformation"},
+      {"parameter": "transformation family", "values": "affine (Thompson's simple strains) | thin-plate spline (smooth grid)", "controls": "how much of the grid distortion beyond shear/scale is admitted"},
+      {"parameter": "landmarks used to fit phi", "values": "acetabulum centre + 4 process tips (sparse) | + arc-length semilandmarks between tips (dense, n_per_segment in 8..48)", "controls": "which correspondences define the grid"},
+      {"parameter": "TPS regularisation lambda", "range": "[0, 1e-1] in centroid-size units", "controls": "smoothness of phi (0 = interpolating)"}
+    ],
+    "empirical_claims": [
+      {"id": "C1", "claim": "The three interpolated forms are intermediate between Archaeopteryx and Apatornis.", "testable": true, "test": "Procrustes distance of each drawn intermediate to A and B; best-fit t* strictly increasing in 0 < t*_1 < t*_2 < t*_3 < 1"},
+      {"id": "C2", "claim": "The stages are equidistant (t = 1/4, 1/2, 3/4).", "testable": true, "test": "|t*_k - k/4| small relative to the drawing noise (and vs. a shuffled-t null)"},
+      {"id": "C3", "claim": "The intermediate forms follow from the interpolated grids (a reproducible procedure, not free-hand).", "testable": true, "test": "linear morph of landmark/semilandmark correspondences reproduces each drawn intermediate better than either endpoint and better than an affine-only interpolation"},
+      {"id": "C4", "claim": "The intermediates are biologically real (match actual intermediate Mesozoic bird pelves).", "testable": false, "reason": "no 2-D landmark/outline dataset of phylogenetically intermediate taxa (Jeholornis, Sapeornis, Confuciusornis, Enantiornithes, Hesperornithes, Ichthyornis) is pinned here; the pre-scouted Dryad dataset is a variable mismatch (1-D pelvic-canal width). Thompson himself labels the stages 'hypothetical types'."}
+    ]
+  },
+  "digitisation": {
+    "primary_surface": "Fig. 393 (p. 760, leaf n779): five wash-drawn silhouettes, dark on cream paper, vertically stacked (top = Archaeopteryx, bottom = Apatornis)",
+    "crop_box_fraction_of_page": {"x0": 0.25, "y0": 0.17, "x1": 0.80, "y1": 0.70},
+    "segmentation": "grayscale -> Otsu threshold (observed 139 on 0..255) -> binary opening (1 iteration) -> connected components -> five largest components (> 50,000 px each at 1904x3128 page resolution) ordered top-to-bottom; the 'GH 1915' signature (2,762 px) and halftone specks are excluded by size",
+    "expected_component_area_px": {"archaeopteryx": 63091, "stage_1": 62858, "stage_2": 68702, "stage_3": 76398, "apatornis": 80484},
+    "landmarks": "L0 acetabulum = centroid of the largest interior hole; L1..L4 = the four most prominent process tips (anterior ilium, posterior ilium, ischium, pubis) found as peaks of the boundary's radial distance from L0; semilandmarks resampled by arc length between consecutive landmarks"
+  },
+  "inputs_sha256": {
+    "ongrowthform1917thom_p757_leaf0776_figs388-389.jpg": "5214f00748cee71c784bb2daa94ed949fd21503da2efe31061da149006ddc454",
+    "ongrowthform1917thom_p758_leaf0777_figs390-391.jpg": "3b7d8054e6d7e995201fb6c1c77a1dc10212cce4d74fb2fdc67c447c80a7ec7a",
+    "ongrowthform1917thom_p759_leaf0778_fig392.jpg": "17283e61fc5624412dd9ffdd9cefb607c80f57e555f23317f564b7793eb7ebf7",
+    "ongrowthform1917thom_p760_leaf0779_fig393.jpg": "0e73dc9e37ed7e64a51cefe2b29248f084ea471ee13c7d250ac8410490f40023",
+    "archaeopteryx_lithographica_berlin_specimen_mfn.jpg": "96341aed3d81b2b65ba969f59488c57cbe74f5b651669f105f21757e8c904b2c",
+    "apatornis_celer_holotype_synsacrum_marsh1880.jpg": "28213a31e4c887186df1d57685b157d3e10f92d876a82de11593b69dfd29a392",
+    "dryad_k1v34cf_deeming_mayr_2018_metadata.json": "4f2b721ee3bec249bd7fd1c54ccd8dc75014acb9dee91be9f5aa536c7aa8528c"
+  },
+  "specimen_photograph": {
+    "file": "archaeopteryx_lithographica_berlin_specimen_mfn.jpg",
+    "organism": "Archaeopteryx lithographica (Berlin specimen, Museum für Naturkunde, HMN 1880/81)",
+    "source": "https://commons.wikimedia.org/wiki/File:Archaeopteryx_lithographica_(Berlin_specimen).jpg",
+    "author": "H. Raab (User:Vesta)",
+    "license": "CC BY-SA 3.0",
+    "original_sha256": "cb75589e6f766d0c1d263aacc47959f11e98230451b26f54b4fe0ecbfc91c362",
+    "derivative": "downscaled 1888x2552 -> 1200x1622 px, JPEG q88",
+    "use": "documentary specimen anchor; bone-vs-matrix colour segmentation reported as a descriptive statistic only (pelvis disarticulated on slab; not used for the verdict)"
+  },
+  "empirical_reference_table": {
+    "description": "Scalar reference values entering the comparison; all are measured by this loop from the pinned Fig. 393 scan unless a literature source is given",
+    "rows": [
+      {"quantity": "number of drawn stages", "value": 5, "source": "Fig. 393"},
+      {"quantity": "nominal interpolation stages t", "value": [0.0, 0.25, 0.5, 0.75, 1.0], "source": "p. 759 'three intermediate and equidistant'"},
+      {"quantity": "reference grid lines", "value": {"vertical": 9, "horizontal": 8}, "source": "Fig. 388 labels 1-9 and a-h"},
+      {"quantity": "Apatornis celer holotype", "value": "YPM 1451, Niobrara Chalk, Kansas; Marsh 1873/1880", "source": "Marsh 1880 Odontornithes; Commons File:Apatornis.jpg"},
+      {"quantity": "Deeming & Mayr 2018 sample", "value": "21 Mesozoic bird species, pelvic-canal width vs body mass (analogue; mismatch)", "source": "doi:10.5061/dryad.k1v34cf metadata"}
+    ]
+  }
+}

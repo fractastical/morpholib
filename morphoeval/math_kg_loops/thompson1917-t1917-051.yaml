@@ -1,0 +1,34 @@
+sim_id: thompson1917-t1917-051
+math_family: geometric morphometrics / Thompson coordinate deformation
+model_spec:
+  model: "Thompson (1917) Ch. XVII Fig. 383 crocodylian skull coordinate transformation"
+  claim: "Skulls of C. porosus, C. americanus, Notosuchus terrestris mutually transformable by coordinate deformation"
+  empirical_data: "Watanabe & Slice (2014) Dryad 10.5061/dryad.14fn1 — 78 3D landmarks, 204 specimens, 10 extant species"
+  inputs:
+    - datasets/thompson_1917/t1917-051/WatanabeSlice_JEB_PreGPA.nts
+    - datasets/thompson_1917/t1917-051/scout_manifest.json
+equations:
+  - law_name: Procrustes rotation distance invariance
+    formula: "‖R p - R q‖² = ‖p - q‖² for orthogonal R"
+    lean_decl: MathOfBiology.Loop_241.sq_dist
+    lean_theorem: MathOfBiology.Loop_241.procrustes_rotation_preserves_sq_dist
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_051.lean
+    role: Formal backbone for GPA superimposition before Thompson-style warps
+    variables: "R: 2×2 rotation; p,q: landmark coordinates in ℝ²"
+    source_citation: "Thompson (1917) Ch. XVII; Bookstein (1989) TPS"
+  - law_name: Similarity scale multiplies squared distances by k²
+    formula: "‖k p - k q‖² = k² ‖p - q‖²"
+    lean_decl: MathOfBiology.Loop_241.similarity_scale_sq_dist
+    lean_theorem: MathOfBiology.Loop_241.similarity_scale_sq_dist
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_051.lean
+    role: Noise floor for uniform scaling in Thompson rectilinear-to-deformed grids
+    variables: "k: uniform scale; p,q: landmarks"
+    source_citation: "Thompson (1917) pp. 752-753"
+  - law_name: Affine shear preserves x-parallel chords
+    formula: "(x, y) ↦ (x, y + m x) maps y₂ = y₁ ⟹ y₂' = y₁'"
+    lean_decl: MathOfBiology.Loop_241.shear_y
+    lean_theorem: MathOfBiology.Loop_241.affine_shear_preserves_x_parallel
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_051.lean
+    role: Oblique-grid Thompson transformation family
+    variables: "m: shear coefficient; x,y: grid coordinates"
+    source_citation: "Thompson (1917) coordinate deformation grids"

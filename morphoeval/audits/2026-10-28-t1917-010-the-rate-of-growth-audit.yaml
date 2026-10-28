@@ -1,0 +1,158 @@
+# MorphoEval audit — Thompson (1917) Ch. III regeneration-rate claim T1917-010, Pass 1 (v1 baseline)
+
+audit:
+  id: 2026-10-28-t1917-010-the-rate-of-growth-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval cloud loop 208, Pass 1 self-audit)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: https://orcid.org/0000-0001-9184-8944
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917-claim-validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 7295001d7
+    note: >-
+      Pass 1 baseline (commit 7295001d7) before Step 12 remediation. Scored against the v1 script as
+      committed: no parameter-regime sweep, no negative/ablation control, no computer-vision use of the
+      vendored specimen, no KS / permutation statistics, and a SHA-256 pin that breaks on fresh clone.
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D'Arcy W."
+    venue: "Cambridge University Press (1917), Ch. III, pp. 138-149, Figs. 35-40"
+    url: https://archive.org/details/ongrowthform1917thom
+  durbin1909:
+    title: "An analysis of the rate of regeneration throughout the regenerative process"
+    authors: "Durbin, Marion L."
+    venue: "Journal of Experimental Zoology 7: 397-420"
+    year: 1909
+    doi: 10.1002/jez.1400070302
+  ellis1909:
+    title: "The relation of the amount of tail regenerated to the amount removed in tadpoles of Rana clamitans"
+    authors: "Ellis, Max M."
+    venue: "Journal of Experimental Zoology 7: 421-455"
+    year: 1909
+    doi: 10.1002/jez.1400070303
+  fitzpatrick2019:
+    title: "Tail loss and telomeres: consequences of large-scale tissue regeneration in a terrestrial ectotherm"
+    authors: "Fitzpatrick, L. et al."
+    venue: "Biology Letters 15: 20190151; Dryad doi:10.5061/dryad.n6n6495"
+    year: 2019
+    doi: 10.1098/rsbl.2019.0151
+
+simulations:
+  - id: thompson1917-t1917-010
+    name: "Thompson (1917) regeneration as a lawful growth process — Durbin/Ellis tadpole tail curves"
+    organism: "Rana (Lithobates) clamitans tadpoles (Ellis 1909); Rana tadpoles (Durbin 1909)"
+    script: thompson/claims/t1917-010_the-rate-of-growth.py
+    output: docs/media/t1917_010_the_rate_of_growth_comparison.png
+    extra_outputs:
+      - docs/media/t1917_010_the_rate_of_growth_growth.gif
+      - datasets/thompson_1917/t1917-010/result.json
+    status: evaluated
+    source_refs: [thompson1917, durbin1909, ellis1909, fitzpatrick2019]
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) pp. 139-145 reproduces Durbin's Exp. II and Exp. IV regenerated-length tables and asserts V falls 'inversely as the square of the time' with log V approximately linear (Fig. 37) and an inflection 'about the seventh day' in Exp. IV"
+        - "Thompson (1917) p. 148 reproduces Ellis's series O/P/R/S (12-57 % of tail removed) and constructs Fig. 40 isochrones that 'approximate in form to a cubic parabola' and diverge at 75 % removed"
+      reconstructed_in_script:
+        - "Least-squares fits of exponential-approach, hyperbolic (L_inf - c/t), logistic and Gompertz laws to the printed tables; OLS decay exponents on Thompson's interpolated increments; Ellis absolute-regenerate scaling and linearly interpolated isochrones with log-log slopes"
+      transfer_boundary:
+        - "No transfer to a modern dataset: the pre-scouted Dryad lizard dataset is a DATASET_MISMATCH and is excluded from the verdict"
+      does_not_claim:
+        - "A mechanistic model of tail regeneration, or that the exponential/Gompertz laws are the true generative process rather than descriptive fits to 7-10 points per series"
+    summary: >-
+      Pass 1 baseline. The script loads four SHA-256-pinned tables digitised from Thompson's own pages,
+      fits the growth laws Thompson discusses (E2 hyperbolic gloss vs E3 exponential approach; E4 sigmoid),
+      recovers the Fig. 37 velocity exponent (n = 1.31, not 2), confirms Ellis's amount-removed scaling
+      (r = 0.993 day 9, 0.9997 plateau), replicates the Fig. 40 isochrones (beta = 0.35 vs 1/3) and writes
+      result.json (supported, two caveats). It does not sweep parameter regimes, run any negative or
+      ablation control, use the vendored specimen photograph, or report KS / permutation statistics, and
+      the Dryad CSV digest pin breaks under .gitattributes LF normalisation on a fresh clone.
+    scores:
+      model-fidelity:
+        value: 70
+        rationale: >-
+          The exact laws Thompson states are implemented (E2 L_inf - c/t from V t^2 = const; E3 exponential
+          approach from Fig. 37; E4 sigmoid; E5 L_n = p_n R; E6 cubic-parabola isochrones) and mirrored by
+          17 kernel-checked Lean theorems. The script does not yet fit the free-exponent power law to the
+          integrated curve, so Thompson's n ~ 2 claim is only tested on the increment series.
+        evidence:
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [136, 153], note: "law_exp_approach, law_hyperbolic, law_logistic, law_gompertz implement E2-E4", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [186, 195], note: "velocity_decay_exponents: Fig. 37 exponential vs power exponent", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [239, 254], note: "ellis_isochrones log-log beta vs cubic parabola 1/3", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_010.lean, lines: [1, 215], note: "E1-E7 theorems, 0 sorry, Lean 4.35.0", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [175, 184], note: "fit_growth_laws has no free-exponent generalised power law L_inf - c/t^(n-1)", supports: false}
+      specimen-match:
+        value: 35
+        rationale: >-
+          A CC-BY lateral photograph of Ellis's species is vendored and the p. 148 page scan is shown in the
+          figure, but the specimen is never segmented or measured; no tail-fraction morphometric is compared
+          with Thompson's 65 % (Ellis) / 62 % (Durbin) tail proportion, and the GIF tadpoles are schematic.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-010/lithobates_clamitans_tadpole_specimen.jpg, lines: [0, 0], note: "CC-BY iNaturalist L. clamitans tadpole vendored and pinned", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [364, 369], note: "page scan panel only; SPECIMEN constant unused", supports: false}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [375, 386], note: "_tadpole_patch schematic ellipse + polygon, not specimen-derived", supports: false}
+      parameter-expressivity:
+        value: 40
+        rationale: >-
+          Fits expose k, L_inf, t0, n and beta but no panel sweeps a parameter across its regime (e.g. decay
+          exponent n from 0.5 to 3, or amputation level R toward the 75 % critical point) to show monotone
+          control of the output.
+        evidence:
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [428, 442], note: "analyse() runs single fits; no sweep over n, k or R", supports: false}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [239, 254], note: "isochrone slopes computed per q only", supports: true}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Quantitative comparisons with the printed tables are made (r, RMSE, exponent, inflection day,
+          plateau fraction) and exported by measure_morphoeval, but there is no negative/ablation control
+          (e.g. permutation of amount-removed labels, constant-velocity null), no KS or coefficient-of-variation
+          statistic, and no specimen-derived morphometric.
+        evidence:
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [206, 223], note: "ellis_scaling: Pearson r, through-origin slope, plateau CV", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [510, 526], note: "measure_morphoeval exports 10 metrics", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [445, 464], note: "verdict() has no null-model comparison", supports: false}
+      source-traceability:
+        value: 78
+        rationale: >-
+          IA scan identifier with page-offset rule, five vendored page scans with original download digests,
+          OCR excerpt, Durbin/Ellis DOIs, Dryad DOI + mismatch rationale, iNaturalist observation URL and
+          licence are all recorded; the Dryad CSV digest, however, is pinned on CRLF bytes that git normalises
+          to LF, so the pin is not reproducible from a clone.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-010/t1917_010_the_rate_of_growth_reference.json, lines: [60, 110], note: "sha256_digests, ia_scan.pages_vendored, pre_scouted_dataset mismatch", supports: true}
+          - {file: datasets/thompson_1917/t1917-010/scout_manifest.json, lines: [1, 60], note: "Dryad verification, DATASET_MISMATCH flags, OCR corrections", supports: true}
+          - {file: datasets/thompson_1917/t1917-010/dryad_n6n6495_fitzpatrick_et_al_data.csv, lines: [1, 38], note: "CRLF file; committed blob is LF -> digest mismatch on fresh clone", supports: false}
+      code-traceability:
+        value: 74
+        rationale: >-
+          Each loader names the Thompson page and original Durbin/Ellis table; each law docstring cites the
+          equation id and page; math_kg yaml links six laws to Lean declarations and the script. Panel titles
+          cite figure numbers. No per-function mapping table in the README yet.
+        evidence:
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [82, 131], note: "loaders cite p. 139/141/144/148 tables", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-010.yaml, lines: [1, 80], note: "six equations with lean_decl/lean_theorem/code_locus", supports: true}
+      repro-package:
+        value: 52
+        rationale: >-
+          --self-test with numeric guards, fixed seed and deterministic measure_morphoeval exist, but the
+          Dryad digest pin fails after git LF normalisation (fresh clone -> verify_sha256 raises), no
+          dependency pins are stated in the header, and GIF label text is clipped.
+        evidence:
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [529, 549], note: "run_self_test numeric guards", supports: true}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [64, 68], note: "verify_sha256 covers all 12 pins including non-reproducible Dryad CRLF digest", supports: false}
+          - {file: thompson/claims/t1917-010_the-rate-of-growth.py, lines: [388, 413], note: "render_growth_gif xlim 48 clips labels", supports: false}
+    remediation:
+      - "Normalise the Dryad CSV to LF, re-pin its digest and record the original download digest separately so verify_sha256 passes from a fresh clone"
+      - "Add a parameter-regime sweep: decay exponent n in [0.5, 3] -> RMSE of the integrated law on Exp. II (minimum vs Thompson's n = 2), and amputation level R -> isochrone time with the 75 % asymptote"
+      - "Add negative/ablation controls: exact permutation test of Ellis amount-removed labels, constant-velocity (linear) null and R-independent null, with p-values"
+      - "Segment the vendored L. clamitans specimen (threshold + principal axis + width profile) to measure tail fraction of total length and compare with Thompson's 65 % / 62 %; overlay the mask on the figure"
+      - "Report KS statistics on standardised residuals, coefficient of variation of the restored fraction, and fit a free-exponent generalised power law to the integrated curve"
+      - "Fix GIF label clipping and the Exp. IV negative y-axis floor; add dependency pins in the script header"
+      - "Write superseding Pass 2 audit after Step 12"

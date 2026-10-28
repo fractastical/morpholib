@@ -1,0 +1,131 @@
+sim_id: thompson1917-t1917-029
+math_family: "Logarithmic-Spiral Chamber Succession & Gnomonic Geometric Growth (Thompson 1917 Ch. XII, quantitative-geometric)"
+model_spec:
+  model: "Thompson (1917) Ch. XII foraminiferal chamber succession: similar chambers in continued proportion L_n = L_1 rho^n, each subtending a constant vectorial angle d, optionally screw-translated (Textularia); logarithmic spiral r = r_0 exp(theta cot alpha); genera as points of one continuous (rho, d, overlap, T) family"
+  claim_id: T1917-029
+  date_made: "1917"
+  source_pages: "587-611 (equations and tables pp. 591-598; series of genera pp. 602-605)"
+  governing_equations:
+    logarithmic_spiral: "r(theta) = r_0 exp(theta cot alpha)"
+    whorl_ratio: "W = exp(2 pi cot alpha); rho_half = sqrt(W)"
+    chamber_succession: "L_{n+1}/L_n = rho (constant)"
+    mass_proportional_growth: "V_{n+1} = q (V_0 + ... + V_n)  =>  V_{n+1}/V_n = 1 + q"
+    equal_angle: "theta_n = n d; m d = 360 => chamber n+m is one whorl later, rho^m larger"
+  thompson_published_parameters:
+    fusulina_whorl_ratio_von_moller: 1.5
+    fusulina_half_whorl_ratio_von_moller: 1.225
+    fusulina_constant_angle_deg: 86.3
+    triloculina_chamber_ratio_van_iterson: 1.323
+    pulvinulina_chamber_ratio_rhumbler: 1.187
+    cyclammina_chamber_angle_deg: 20
+    triloculina_chamber_angle_deg: 120
+    biloculina_chamber_angle_deg: 180
+  seed: 1917
+  script_version: v2-pass2
+  verdict_rules:
+    T1: "median r(ln D, k) >= 0.98 and BIC geometric > arithmetic in >= 80 % of specimens"
+    T2: "median CV of successive ratios <= 0.15 and early/mid/late-third drift <= 10 % in every genus"
+    T3: "Triticites mean half-whorl ratio within 0.05 of 1.225"
+    T4: "Monte-Carlo p >= 0.05 for the largest interior gap of the pooled ratio distribution and adjacent genus ranges overlap"
+  inputs:
+    - datasets/thompson_1917/t1917-029/t1917_029_the_spiral_shells_of_the_foram_reference.json
+    - datasets/thompson_1917/t1917-029/shi2020_dryad_sn02v6x26_Landmarks.dat
+    - datasets/thompson_1917/t1917-029/shi2020_dryad_sn02v6x26_Table_1.csv
+    - datasets/thompson_1917/t1917-029/fusulinid_axial_thin_section_commons_NEON.jpg
+    - datasets/thompson_1917/t1917-029/thompson1917_fig309_nummulina_antiquior_vonmoller_p591.jpg
+    - datasets/thompson_1917/t1917-029/scout_manifest.json
+  script: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+  lean_file: morphoeval/lean/loops/Thompson1917_T1917_029.lean
+  lean_namespace: MathOfBiology.Loop_223
+equations:
+  - law_name: "Thompson (1917) Continued-Proportion Chamber Succession & Gnomonic Self-Similarity Law"
+    formula: "L_n = L_1 ρ^n,   L_{n+1}/L_n = ρ,   L_{n+m} = ρ^m L_n,   W = ρ_half^2,   L_{n+1} L_m = L_n L_{m+1}"
+    lean_decl: "MathOfBiology.Loop_223.chamberSize"
+    lean_theorem: "MathOfBiology.Loop_223.geometric_succession_is_gnomonic"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_029.lean#L61-L83"
+    lean_code: |
+      def chamberSize (L1 rho n : Nat) : Nat :=
+        L1 * rho ^ n
+      theorem geometric_succession_is_gnomonic (L1 rho n m : Nat) :
+          chamberSize L1 rho (n + 1) = rho * chamberSize L1 rho n ∧
+          chamberSize L1 rho (n + m) = rho ^ m * chamberSize L1 rho n ∧
+          chamberSize L1 rho (n + 2) = (rho * rho) * chamberSize L1 rho n ∧
+          chamberSize L1 rho (n + 1) * chamberSize L1 rho m
+            = chamberSize L1 rho n * chamberSize L1 rho (m + 1)
+    variables: "L_n: linear breadth of chamber or half-whorl n; L_1: initial breadth; ρ: constant linear growth ratio (1.187 Pulvinulina, 1.225 Fusulina half-whorl, 1.323 Triloculina); W = ρ_half²: whole-whorl ratio (1.5 Fusulina)"
+    role: "Formalises the core of claim T1917-029: a constant ratio makes every later chamber a gnomon of the earlier shell (p. 591 'the big many-chambered shell is of just the same shape as the smaller and younger shell'), gives the half-whorl -> whorl rule used on p. 593, and yields the index-free cross-product invariance tested on the Dryad fusulinid half-whorl series"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XII pp. 591-595 (von Moller Fusulina table p. 593; van Iterson Triloculina table p. 595)"
+    code_locus: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L128-L149"
+    code_locus_secondary: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L209-L248"
+  - law_name: "Thompson (1917) Mass-Proportional Growth => Constant Chamber-Volume Ratio Law"
+    formula: "V_{n+1} = q (V_0 + V_1 + ... + V_n)   ⟹   V_{n+2}/V_{n+1} = 1 + q,   S_n = V_0 (1+q)^n,   V_{n+1} = q V_0 (1+q)^n"
+    lean_decl: "MathOfBiology.Loop_223.chamberVol"
+    lean_theorem: "MathOfBiology.Loop_223.thompson_mass_proportional_growth_constant_volume_ratio"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_029.lean#L89-L113"
+    lean_code: |
+      def cumMass (V0 q : Nat) : Nat → Nat
+        | 0 => V0
+        | n + 1 => (1 + q) * cumMass V0 q n
+      def chamberVol (V0 q n : Nat) : Nat :=
+        q * cumMass V0 q n
+      theorem thompson_mass_proportional_growth_constant_volume_ratio (V0 q n : Nat) :
+          chamberVol V0 q (n + 1) = (1 + q) * chamberVol V0 q n ∧
+          cumMass V0 q n = V0 * (1 + q) ^ n ∧
+          chamberVol V0 q n = q * V0 * (1 + q) ^ n
+    variables: "V_n: volume of chamber n; S_n: cumulative shell mass; q: growth increment as a fraction of the whole pre-existing mass; 1+q: constant volume ratio; ρ = (1+q)^{1/3} for similar chambers"
+    role: "Thompson's physiological derivation (pp. 597-598) of why the ratio should be constant: growth at each instant proportional to the whole existing mass; the Lean proof shows the recursion closes to a geometric series exactly"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XII pp. 597-598"
+    code_locus: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L151-L158"
+  - law_name: "von Moller / Thompson (1917) Log-Difference Constancy: Half-Whorl 0.088 -> Whole-Whorl 0.176 (log10 1.5)"
+    formula: "log L_n = a + n c;   log L_{n+1} − log L_n = c;   log L_{n+2} − log L_n = 2c;   c = 0.088 ⟹ 2c = 0.176 = log10 1.5"
+    lean_decl: "MathOfBiology.Loop_223.logSize"
+    lean_theorem: "MathOfBiology.Loop_223.log_difference_constancy_half_and_whole_whorl"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_029.lean#L119-L134"
+    lean_code: |
+      def logSize (a c n : Nat) : Nat :=
+        a + n * c
+      theorem log_difference_constancy_half_and_whole_whorl (a c n : Nat) :
+          logSize a c (n + 1) - logSize a c n = c ∧
+          logSize a c (n + 2) - logSize a c n = 2 * c ∧
+          logSize 982 88 2 - logSize 982 88 0 = 176
+    variables: "a: log of the first half-whorl breadth (von Moller 0.982 for 0.096 mm); c: constant log-difference per half-whorl (0.088); 2c: per whorl (0.176)"
+    role: "Makes the p. 593 arithmetic a theorem: a linear log-size series has constant first differences and doubled alternate differences, which is exactly the statistic (slope of log D_k on half-whorl index k) fitted per specimen on the Dryad data"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XII p. 593 (von Moller 1878 Fusulina cylindrica opposite-whorl series)"
+    code_locus: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L209-L248"
+    code_locus_secondary: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L321-L410"
+  - law_name: "Thompson (1917) Equal-Angle Condition & Whorl Periodicity (Biloculina 180°, Triloculina 120°, Cyclammina 20°)"
+    formula: "θ_n = n d;   m d = 360 ⟹ θ_{n+m} = θ_n + 360 ∧ L_{n+m} = ρ^m L_n;   (d, m) ∈ {(180, 2), (120, 3), (20, 18)}"
+    lean_decl: "MathOfBiology.Loop_223.chamberAngle"
+    lean_theorem: "MathOfBiology.Loop_223.equal_angle_whorl_periodicity"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_029.lean#L140-L155"
+    lean_code: |
+      def chamberAngle (d n : Nat) : Nat :=
+        n * d
+      theorem equal_angle_whorl_periodicity (d m n L1 rho : Nat) (h : m * d = 360) :
+          chamberAngle d (n + m) = chamberAngle d n + 360 ∧
+          chamberSize L1 rho (n + m) = rho ^ m * chamberSize L1 rho n ∧
+          chamberAngle 180 2 = 360 ∧ chamberAngle 120 3 = 360 ∧ chamberAngle 20 18 = 360
+    variables: "θ_n: vectorial angle of chamber n (degrees); d: constant angle subtended by one chamber; m: chambers per whorl; ρ^m = W: whorl ratio"
+    role: "The second of Thompson's two conditions for a logarithmic spiral (pp. 595-597): with equal subtended angles the geometric series of chambers closes into whorls with ratio W = ρ^m; drives the generative chamber model's Miliolid, Cyclammina and rotaline morphs"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XII pp. 595-597, Figs. 311-313"
+    code_locus: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L123-L149"
+    code_locus_secondary: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L161-L206"
+  - law_name: "Thompson (1917) Continuous Series of Genera: Monotone Ratio Ordering with Orbitolitid (ρ = 1) and Nodosarian (d = 0) Limits"
+    formula: "ρ ≤ ρ' ⟹ L_1 ρ^n ≤ L_1 ρ'^n;   ρ = 1 ⟹ L_n = L_1 (circle, α = 90°);   d = 0 ⟹ θ_n = 0 (straight Nodosarian line)"
+    lean_decl: "MathOfBiology.Loop_223.chamberSize"
+    lean_theorem: "MathOfBiology.Loop_223.continuous_series_and_limiting_cases"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_029.lean#L162-L171"
+    lean_code: |
+      def chamberSize (L1 rho n : Nat) : Nat :=
+        L1 * rho ^ n
+      def chamberAngle (d n : Nat) : Nat :=
+        n * d
+      theorem continuous_series_and_limiting_cases (L1 rho rho' n : Nat) (h : rho ≤ rho') :
+          chamberSize L1 rho n ≤ chamberSize L1 rho' n ∧
+          chamberSize L1 1 n = L1 ∧
+          chamberAngle 0 n = 0
+    variables: "ρ, ρ': two growth ratios (two genera); n: chamber index; d = 0: Nodosarian limiting angle; ρ = 1: Orbitolitid limiting ratio"
+    role: "Formal content of the 'continuous geometric series transformable into one another' half of the claim (pp. 602-605): the family is totally ordered along the ratio axis and contains Thompson's two limiting cases as members, not exceptions"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XII pp. 602-605"
+    code_locus: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L178-L206"
+    code_locus_secondary: "thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py#L550-L582"
