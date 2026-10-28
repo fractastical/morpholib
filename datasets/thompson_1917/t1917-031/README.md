@@ -64,7 +64,7 @@ figures from the pinned IA scan `ongrowthform1917thom` (printed page = leaf − 
 |---|---|---|---|---|---|---|---|---|---|
 | Fig. 320 *Ovis ammon* (drawing) | 269° | 84.2° (83.7–84.6) | 1.90 | 0.968 | 3.7 % | **+425** | +22 | 22° | 77.6–84.2° |
 | Argali skull photo (real) | 215° | **74.7° (73.6–75.6)** | 5.57 | 0.995 | 2.6 % | **+666** | +2 | plane match (|Δ| < 5°) | 74.7–87.0° (flag) |
-| Fig. 319 *Capra sinaitica* (far horn) | ~half whorl | 86° primary; 53–86° across sectors | — | 0.89 | 4.7 % | +104 | −3 | — | not identifiable |
+| Fig. 319 *Capra sinaitica* (far horn) | ~half whorl | 86° primary; 53–86° across sectors | — | 0.89 | 7.6 % | +104 | −5 | — | not identifiable |
 
 - **(a) Log-spiral form:** on both *Ovis ammon* sources the logarithmic spiral beats the circle null
   decisively and is not beaten by the Archimedean spiral → supported.
@@ -72,7 +72,8 @@ figures from the pinned IA scan `ongrowthform1917thom` (printed page = leaf − 
   drawing projects at 84°, consistent with 75° only on a cone of semi-angle ≈ 22° (α, β not separable in 2D).
 - **(c) Gnomonic self-similarity (E4):** fails on Fig. 320 — breadth decays with |k| = 0.32 while the outer
   edge has |k| = 0.13 (the horn tapers 2.5× faster than its spiral tightens); inconclusive on the photo
-  (fitted pole lies inside the sheath, so ray breadths are invalid).
+  (breadth along rays shows no exponential trend at all, r = 0.04: the trihedral section rotates along the
+  whorl — Thompson's torsion — so projected breadth is not a clean proxy for the generating curve).
 - **(d) Species contrast:** the ibex half-whorl does not pin α (53–86° depending on sector); Thompson's
   "goat < 70°" cannot be confirmed or refuted from Fig. 319.
 - Controls: synthetic α = 75° recovered to 75.0° (pole error 0.1 px); noisy circle classified as circle
