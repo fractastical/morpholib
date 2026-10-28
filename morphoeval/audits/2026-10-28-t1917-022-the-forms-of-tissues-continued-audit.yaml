@@ -1,0 +1,73 @@
+# MorphoEval Pass 1 (v1) Audit — Thompson (1917) Ch. VIII claim T1917-022 (Slot 217)
+audit:
+  id: 2026-10-28-t1917-022-the-forms-of-tissues-continued-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Cloud Loop Slot 217 Pass 1 Assessor)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d56cf26f6d31eb8cd1b41b5301fdde110
+    note: Pass 1 baseline before Step 12 remediation
+
+simulations:
+  - id: thompson1917-t1917-022
+    name: "Thompson (1917) T1917-022 — isoperimetric/minimal-area hollow & aggregate partitions"
+    organism: "Ophiurid pluteus; plant tissue partitions; pollen; radiolarian analogues (Commons)"
+    script: thompson/claims/t1917-022_the-forms-of-tissues-continued.py
+    output: docs/media/t1917_022_the_forms_of_tissues_continued_comparison.png
+    extra_outputs:
+      - docs/media/t1917_022_the_forms_of_tissues_continued_growth.gif
+    status: evaluated
+    summary: >-
+      Pass 1 baseline: Lean laws E1-E5 pinned; Thompson IA plates vendored; initial script lacked
+      robust junction-angle metrology and full parameter sweeps; catch-all claim scored as split structures.
+    scores:
+      model-fidelity:
+        value: 58
+        rationale: Core isoperimetric, Plateau, and Fig. 176 template laws implemented; Weaire-Phelan ablation noted but froth KS weak.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [1, 80], note: "E1-E6 docstring mapping", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_022.lean, lines: [1, 90], note: "five Lean theorems", supports: true}
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [350, 380], note: "froth-tissue KS initially failing", supports: false}
+      specimen-match:
+        value: 40
+        rationale: Plates displayed; segmentation immature on first pass.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-022/scout_manifest.json, lines: [1, 60], note: "IA primary + analogue vetting", supports: true}
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [130, 200], note: "first-pass junction detector produced non-Plateau angles", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: delta and Lloyd sweeps declared; not all tied to GOF tables in v1.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-022/t1917_022_the_forms_of_tissues_continued_reference.json, lines: [30, 45], note: "parameter_regimes table", supports: true}
+      morphometric-validation:
+        value: 42
+        rationale: measure_morphoeval present; KS to froth immature.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [480, 520], note: "measure_morphoeval dict", supports: true}
+      source-traceability:
+        value: 78
+        rationale: SHA-256 pinned reference JSON and scout manifest.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [55, 70], note: "verify_dataset_integrity", supports: true}
+      code-traceability:
+        value: 68
+        rationale: Plate crops and equation IDs documented.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-022.yaml, lines: [1, 40], note: "equation to Lean links", supports: true}
+      repro-package:
+        value: 62
+        rationale: self-test and media outputs; result.json added in remediation.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [525, 545], note: "run_self_test", supports: true}
+    remediation:
+      - "Fix Plateau junction-angle metrology and froth raster gradient pipeline."
+      - "Improve Fig. 176 radial voting and pollen circularity segmentation."
+      - "Add GOF RMSE/r/KS between froth model and tissue junction samples; write result.json verdict."
