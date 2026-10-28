@@ -762,7 +762,7 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         "6. Claims 5–7: Planaria, Frogs & Biobots",
         "7. The Score",
         "8. How This Was Audited",
-        "9. Nathan Sweet",
+        "9. Rationalism: Short and Sweet",
         "10. On Dualism: Within/Without, AI Stack",
         "11. Conclusion",
         "12. Footnotes, the ++ & Problem Graph",
