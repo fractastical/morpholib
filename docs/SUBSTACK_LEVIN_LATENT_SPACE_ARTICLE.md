@@ -252,19 +252,6 @@ With the dualist deductions taken out of each denominator before averaging, stru
 
 ---
 
-## How This Was Audited
-
-How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and the "Nothing New Here" blog critics have strong priors?
-
-The methodology used in this article—which we call the **Adversarial Epistemic Loop (AEL)**—was developed across three successive evaluation systems in Project Delphi:
-1. **Stage 1 — NeuroEval ([Zenodo `10.5281/zenodo.20622878`](https://doi.org/10.5281/zenodo.20622878)):** Built first to evaluate data transparency, reproducibility, and neural-coding rigor in computational and biohybrid/wetware neuroscience papers.
-2. **Stage 2 — BioEval ([Zenodo `10.5281/zenodo.20567719`](https://doi.org/10.5281/zenodo.20567719)):** Extended that rubric to score bioinformatics and computational-biology papers for reproducibility, statistical calibration, and information-theoretic rigor.
-3. **Stage 3 — MorphoEval ([Zenodo `10.5281/zenodo.23680705`](https://doi.org/10.5281/zenodo.23680705); code in [`fractastical/morpholib`](https://github.com/fractastical/morpholib)):** Turned the evaluation machinery from *grading published papers* to *generating, executing, and auditing the mathematical models themselves* in a 12-step closed loop—where every verbal claim is translated into multi-language executable code (**Python 3, C++20, Node.js**) and machine-checked **Lean 4** theorems (`0 sorry`), locked against **SHA-256** empirical datasets, audited blind by **three competing AI model families** (Google DeepMind’s `gemini-4-argon`, Anthropic’s `claude-fable-5-1` / `claude-sonnet-5-5`, and OpenAI’s `gpt-5.6-sol`), and pre-registered as cryptographically signed **Nanopublications** before unblinding held-out species.
-
-📄 **Want the full line-by-line code traceability tables, all 24 mathematical/biophysical equations, SHA-256 dataset locks, and the 12 terminal commands to re-run every experiment?** Read our standalone **[4-Page Illustrated Methods & Provenance PDF (`levin_latent_space_methods_and_provenance.pdf`)](https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf)** (and **[Markdown Methods Guide (`docs/LEVIN_LATENT_SPACE_METHODS.md`)](https://github.com/fractastical/morpholib/blob/main/docs/LEVIN_LATENT_SPACE_METHODS.md)**).
-
----
-
 ## Rationalism: Short and Sweet
 
 Nathan Sweet (*Sweet Rationalism*) asked for a decisive comparison. A non-physical pattern earns a place only when it predicts, compresses, or intervenes better than the best physical account. The rule has to be frozen first. A failed prediction costs something, and a repair has to buy a new risk.
@@ -400,6 +387,19 @@ We don't need non-physical ghosts beaming into the machine, and we don't need re
 23. **Thompson, D. W. (1917).** *On Growth and Form*. Cambridge University Press. [doi:10.5962/bhl.title.11332](https://doi.org/10.5962/bhl.title.11332) (and 1910 Oxford translation of Aristotle’s *Historia Animalium*, [doi:10.5962/bhl.title.147382](https://doi.org/10.5962/bhl.title.147382))
 24. **Vandenberg, L. N., Adams, D. S., & Levin, M. (2012).** Normalized shape and location of perturbed craniofacial structures in the *Xenopus* tadpole reveal an innate ability to achieve correct morphology. *Developmental Dynamics* 241(5):863–878. [doi:10.1002/dvdy.23770](https://doi.org/10.1002/dvdy.23770)
 25. **Zhang, T., Goldstein, A., & Levin, M. (2025).** Classical sorting algorithms as a model of morphogenesis: self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence. *Adaptive Behavior* 33(1):25–54. [doi:10.1177/10597123241269740](https://doi.org/10.1177/10597123241269740)
+
+---
+
+## Appendix — How This Was Audited
+
+How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and the "Nothing New Here" blog critics have strong priors?
+
+The methodology used in this article—which we call the **Adversarial Epistemic Loop (AEL)**—was developed across three successive evaluation systems in Project Delphi:
+1. **Stage 1 — NeuroEval ([Zenodo `10.5281/zenodo.20622878`](https://doi.org/10.5281/zenodo.20622878)):** Built first to evaluate data transparency, reproducibility, and neural-coding rigor in computational and biohybrid/wetware neuroscience papers.
+2. **Stage 2 — BioEval ([Zenodo `10.5281/zenodo.20567719`](https://doi.org/10.5281/zenodo.20567719)):** Extended that rubric to score bioinformatics and computational-biology papers for reproducibility, statistical calibration, and information-theoretic rigor.
+3. **Stage 3 — MorphoEval ([Zenodo `10.5281/zenodo.23680705`](https://doi.org/10.5281/zenodo.23680705); code in [`fractastical/morpholib`](https://github.com/fractastical/morpholib)):** Turned the evaluation machinery from *grading published papers* to *generating, executing, and auditing the mathematical models themselves* in a 12-step closed loop—where every verbal claim is translated into multi-language executable code (**Python 3, C++20, Node.js**) and machine-checked **Lean 4** theorems (`0 sorry`), locked against **SHA-256** empirical datasets, audited blind by **three competing AI model families** (Google DeepMind’s `gemini-4-argon`, Anthropic’s `claude-fable-5-1` / `claude-sonnet-5-5`, and OpenAI’s `gpt-5.6-sol`), and pre-registered as cryptographically signed **Nanopublications** before unblinding held-out species.
+
+The line-by-line traceability tables, the 24 equations, the dataset locks, and the commands to re-run every experiment are in the **[methods PDF](https://fractastical.github.io/morpholib/levin_latent_space_methods_and_provenance.pdf)** and the **[methods guide](https://github.com/fractastical/morpholib/blob/main/docs/LEVIN_LATENT_SPACE_METHODS.md)**.
 
 ---
 
