@@ -1,0 +1,620 @@
+{
+ "schema": "morphoeval-reference-1.0 / thompson-1917-claim-reference",
+ "claim_id": "T1917-058",
+ "sim_id": "thompson1917-t1917-058",
+ "paper": {
+  "citation": "Thompson, D.W. (1917) On Growth and Form. Cambridge: Cambridge University Press. Ch. XVII 'On the Theory of Transformations, or the Comparison of Related Forms', pp. 770-773, Figs. 404-408.",
+  "scan": "https://archive.org/details/ongrowthform1917thom (leaves 789-792 = printed pp. 770-773)",
+  "figures": {
+   "404": "Human skull inscribed in a 5 x 4 Cartesian network (abscissae 0..5 back-to-front, ordinates 0,a,b,c,d bottom-to-top), p. 770",
+   "405": "Co-ordinates of chimpanzee's skull, as a projection of the Cartesian co-ordinates of Fig. 404 (net only), p. 770",
+   "406": "Skull of chimpanzee drawn in the net of Fig. 405, p. 771",
+   "407": "Skull of baboon in the corresponding (more intensely deformed) net, p. 771",
+   "408": "Skull of dog, compared with the human skull of Fig. 404, p. 773"
+  }
+ },
+ "mathematical_model": {
+  "name": "Thompson Cartesian transformation (method of co-ordinates), formalised as a smooth planar map",
+  "state_variables": "x = (x, y): position of a homologous anatomical point in the human reference frame (Fig. 404 grid units, 1 unit = 1 cell); x' = T(x) in the target species' frame",
+  "equations": {
+   "E1_whole_diagram_map": "x' = T(x) = A x + t + sum_k w_k U(|x - p_k|), U(r) = r^2 log r (thin-plate spline through the digitised net nodes p_k -> p'_k; T is C^1 and the unique minimiser of the bending energy among interpolants)",
+   "E2_affine_part": "A = [[a11,a12],[a21,a22]]; the 'rectangular box stretch' null is a11>0, a22>0, a12=a21=0",
+   "E3_bending_energy": "J[T] = integral (T_xx^2 + 2 T_xy^2 + T_yy^2) dx dy = (1/8 pi) w^T K w  (0 iff T is affine)",
+   "E4_cell_area_ratio": "lambda(i,j) = Area(T(cell_ij)) / Area(cell_ij)  (shoelace on the 4 digitised node corners); Thompson's 'approximately logarithmic order' <=> log lambda(i,j) ~ alpha + beta_i i + beta_j j with beta_i > 0 (behind->forwards), beta_j < 0 (above->downwards)",
+   "E5_procrustes_distance": "d_P(X,Y) = min_{s,R,t} || (X - cX)/|X - cX| - s R (Y - cY)/|Y - cY| - t ||_F  (full Procrustes, 2D)",
+   "E6_explained_fraction": "E = 1 - d_P(T(H), C) / d_P(H, C): fraction of the human->target shape distance removed by applying Thompson's drawn transformation T to the human landmarks H (C = real target landmarks)",
+   "E7_facial_proportions": "F = |NAS-PRO| / |NAS-OPC| (face projection : braincase length); facial angle phi = angle between PRO->NAS and the Frankfort line ORBI->POR; Thompson: phi -> ~90 deg in man"
+  },
+  "boundary_conditions": "T is defined on the human bounding box [0,5] x [0,4] (Fig. 404); the net nodes of Fig. 405 are Dirichlet data; outside the box T is the TPS extrapolation",
+  "parameter_regime": {
+   "tps_regularisation_lambda": {
+    "default": 0.0,
+    "sweep": [
+     0.0,
+     0.001,
+     0.01,
+     0.1,
+     1.0
+    ],
+    "meaning": "0 = exact interpolation of the drawn net; large = affine-only limit (box stretch)"
+   },
+   "deformation_intensity_k": {
+    "default": 1.0,
+    "sweep": [
+     0.0,
+     0.5,
+     1.0,
+     1.5,
+     2.0,
+     2.5
+    ],
+    "meaning": "T_k = Id + k (T - Id): k=0 human, k=1 Thompson's chimpanzee net, k>1 Thompson's 'increased intensity' baboon hypothesis"
+   },
+   "landmark_jitter_sigma_fraction_of_centroid_size": {
+    "default": 0.015,
+    "meaning": "digitisation-uncertainty bootstrap"
+   }
+  }
+ },
+ "digitisation": {
+  "fig404_grid_pixels": {
+   "x_lines_px": [
+    64,
+    207,
+    353,
+    498,
+    642,
+    791
+   ],
+   "y_lines_px_image_down": {
+    "d": 50,
+    "c": 197,
+    "b": 342,
+    "a": 488,
+    "0": 631
+   },
+   "method": "ink projection peaks on fig404_human_skull_cartesian.jpg (crop of leaf 789 box x600-1460,y800-1500)",
+   "cell_px": 145.3
+  },
+  "fig405_chimpanzee_net_nodes_px": {
+   "method": "Otsu ink mask -> remove thick label glyphs -> skeletonize -> degree>=3 skeleton junctions clustered (r=6 px); the four boundary corners (0,0),(0,d),(5,d),(5,0) are L-corners, not junctions, and were read manually at 4x zoom (+/-3 px)",
+   "image": "fig405_chimpanzee_coordinates.jpg (crop of leaf 789 box x560-1460,y1600-2160)",
+   "node_order": "rows = ordinate level 0,a,b,c,d (bottom to top in Fig. 404); columns = abscissa 0..5 (back to front); pixel y increases downward",
+   "nodes": {
+    "0": [
+     [
+      73.0,
+      218.0
+     ],
+     [
+      127.9,
+      313.1
+     ],
+     [
+      204.7,
+      386.3
+     ],
+     [
+      319.0,
+      474.8
+     ],
+     [
+      499.0,
+      534.8
+     ],
+     [
+      831.0,
+      506.0
+     ]
+    ],
+    "a": [
+     [
+      173.0,
+      195.7
+     ],
+     [
+      219.4,
+      250.0
+     ],
+     [
+      281.1,
+      295.6
+     ],
+     [
+      385.0,
+      344.0
+     ],
+     [
+      557.2,
+      375.0
+     ],
+     [
+      824.7,
+      336.7
+     ]
+    ],
+    "b": [
+     [
+      237.0,
+      154.0
+     ],
+     [
+      278.7,
+      182.7
+     ],
+     [
+      331.4,
+      210.8
+     ],
+     [
+      424.5,
+      238.5
+     ],
+     [
+      535.5,
+      231.5
+     ],
+     [
+      706.3,
+      168.7
+     ]
+    ],
+    "c": [
+     [
+      280.0,
+      106.0
+     ],
+     [
+      314.4,
+      117.7
+     ],
+     [
+      362.5,
+      128.5
+     ],
+     [
+      426.5,
+      132.0
+     ],
+     [
+      485.8,
+      121.8
+     ],
+     [
+      564.2,
+      80.0
+     ]
+    ],
+    "d": [
+     [
+      300.0,
+      62.0
+     ],
+     [
+      330.3,
+      67.7
+     ],
+     [
+      365.0,
+      71.2
+     ],
+     [
+      409.7,
+      66.3
+     ],
+     [
+      448.8,
+      56.0
+     ],
+     [
+      478.0,
+      42.0
+     ]
+    ]
+   },
+   "uncertainty_px": 3.0
+  },
+  "landmark_protocol": {
+   "n": 11,
+   "definitions": [
+    [
+     "PRO",
+     "prosthion: most anterior-inferior point of the upper alveolar process between the central incisors"
+    ],
+    [
+     "NAS",
+     "nasion: midline frontonasal junction / deepest point of the nasal root in profile"
+    ],
+    [
+     "RHI",
+     "rhinion: anterior-inferior tip of the nasal bones (top of the bony nasal aperture)"
+    ],
+    [
+     "ORBS",
+     "supraorbitale: highest point of the lateral orbital margin"
+    ],
+    [
+     "ORBI",
+     "orbitale: lowest point of the lateral orbital margin"
+    ],
+    [
+     "VTX",
+     "vertex (Type-II pseudo-landmark): vault-outline point farthest from the chord PRO-OPC"
+    ],
+    [
+     "OPC",
+     "opisthocranion (Type-II pseudo-landmark): posterior-outline point farthest from PRO"
+    ],
+    [
+     "POR",
+     "porion: uppermost point of the external auditory meatus"
+    ],
+    [
+     "GON",
+     "gonion: angle of the mandible (most posterior-inferior point of the ramus-corpus junction)"
+    ],
+    [
+     "GNA",
+     "gnathion: most anterior-inferior point of the mandibular symphysis"
+    ],
+    [
+     "MPOST",
+     "distal end of the upper post-canine tooth row (posterior-most visible upper molar)"
+    ]
+   ],
+   "digitiser": "loop agent (claude-fable-5.1) reading 25-50 px coordinate overlays at 1.3-1.6x zoom; NOT an expert osteologist",
+   "uncertainty_px_vendored": 12.0,
+   "uncertainty_note": "propagated by the jitter bootstrap in the script (sigma = 1.5% centroid size ~ 10-15 px)"
+  },
+  "landmarks_px_image_down": {
+   "fig404_human_drawing": {
+    "image": "fig404_human_skull_cartesian.jpg",
+    "facing": "right",
+    "PRO": [
+     738,
+     500
+    ],
+    "NAS": [
+     688,
+     318
+    ],
+    "RHI": [
+     732,
+     352
+    ],
+    "ORBS": [
+     650,
+     322
+    ],
+    "ORBI": [
+     650,
+     415
+    ],
+    "VTX": [
+     310,
+     50
+    ],
+    "OPC": [
+     72,
+     345
+    ],
+    "POR": [
+     507,
+     452
+    ],
+    "GON": [
+     603,
+     612
+    ],
+    "GNA": [
+     712,
+     622
+    ],
+    "MPOST": [
+     652,
+     508
+    ]
+   },
+   "fig406_chimpanzee_drawing": {
+    "image": "fig406_chimpanzee_skull.jpg",
+    "facing": "right",
+    "PRO": [
+     745,
+     340
+    ],
+    "NAS": [
+     575,
+     128
+    ],
+    "RHI": [
+     655,
+     210
+    ],
+    "ORBS": [
+     520,
+     85
+    ],
+    "ORBI": [
+     525,
+     215
+    ],
+    "VTX": [
+     340,
+     58
+    ],
+    "OPC": [
+     148,
+     215
+    ],
+    "POR": [
+     335,
+     312
+    ],
+    "GON": [
+     470,
+     492
+    ],
+    "GNA": [
+     762,
+     478
+    ],
+    "MPOST": [
+     552,
+     365
+    ]
+   },
+   "homo_sapiens_specimen": {
+    "image": "homo_sapiens_lateral.jpg",
+    "facing": "right",
+    "PRO": [
+     850,
+     930
+    ],
+    "NAS": [
+     833,
+     545
+    ],
+    "RHI": [
+     888,
+     668
+    ],
+    "ORBS": [
+     768,
+     522
+    ],
+    "ORBI": [
+     760,
+     730
+    ],
+    "VTX": [
+     440,
+     30
+    ],
+    "OPC": [
+     45,
+     350
+    ],
+    "POR": [
+     505,
+     735
+    ],
+    "GON": [
+     560,
+     1090
+    ],
+    "GNA": [
+     865,
+     1235
+    ],
+    "MPOST": [
+     665,
+     975
+    ]
+   },
+   "pan_troglodytes_specimen": {
+    "image": "pan_troglodytes_lateral.jpg",
+    "facing": "right",
+    "PRO": [
+     1095,
+     550
+    ],
+    "NAS": [
+     775,
+     240
+    ],
+    "RHI": [
+     870,
+     390
+    ],
+    "ORBS": [
+     735,
+     160
+    ],
+    "ORBI": [
+     735,
+     335
+    ],
+    "VTX": [
+     340,
+     95
+    ],
+    "OPC": [
+     108,
+     340
+    ],
+    "POR": [
+     405,
+     482
+    ],
+    "GON": [
+     560,
+     735
+    ],
+    "GNA": [
+     1010,
+     715
+    ],
+    "MPOST": [
+     755,
+     625
+    ]
+   },
+   "papio_ursinus_specimen": {
+    "image": "papio_ursinus_lateral.jpg",
+    "facing": "right",
+    "PRO": [
+     1120,
+     450
+    ],
+    "NAS": [
+     540,
+     225
+    ],
+    "RHI": [
+     1040,
+     395
+    ],
+    "ORBS": [
+     560,
+     140
+    ],
+    "ORBI": [
+     610,
+     300
+    ],
+    "VTX": [
+     470,
+     115
+    ],
+    "OPC": [
+     102,
+     445
+    ],
+    "POR": [
+     315,
+     505
+    ],
+    "GON": [
+     560,
+     725
+    ],
+    "GNA": [
+     950,
+     740
+    ],
+    "MPOST": [
+     715,
+     535
+    ]
+   },
+   "canis_familiaris_specimen": {
+    "image": "canis_familiaris_lateral.jpg",
+    "facing": "left",
+    "PRO": [
+     120,
+     300
+    ],
+    "NAS": [
+     520,
+     218
+    ],
+    "RHI": [
+     165,
+     288
+    ],
+    "ORBS": [
+     690,
+     205
+    ],
+    "ORBI": [
+     620,
+     350
+    ],
+    "VTX": [
+     770,
+     185
+    ],
+    "OPC": [
+     1180,
+     340
+    ],
+    "POR": [
+     955,
+     568
+    ],
+    "GON": [
+     810,
+     705
+    ],
+    "GNA": [
+     190,
+     450
+    ],
+    "MPOST": [
+     585,
+     455
+    ]
+   }
+  }
+ },
+ "empirical_claims_to_test": [
+  {
+   "id": "C1",
+   "claim": "Thompson's drawn human->chimpanzee net (Fig. 405), applied to the human skull landmarks of Fig. 404, moves them toward a real chimpanzee skull",
+   "metric": "E6 explained fraction E_C > 0 (bootstrap CI excludes 0), and T(H) closer to real chimp than the affine-only (box-stretch) fit of the drawn net"
+  },
+  {
+   "id": "C3",
+   "claim": "cell areas of the chimpanzee net increase in approximately logarithmic order from above downwards and from behind forwards",
+   "metric": "R^2 of log lambda(i,j) on (i,j) >= 0.8 with beta_i > 0 and beta_j < 0"
+  },
+  {
+   "id": "C4",
+   "claim": "chimpanzee nearer to human than baboon; dog farther still",
+   "metric": "d_P(H,C) < d_P(H,B) < d_P(H,D) on real specimens"
+  },
+  {
+   "id": "C2",
+   "claim": "baboon transformation is of the same order as chimpanzee's, only more intense",
+   "metric": "cosine between the H->C and H->B Procrustes displacement fields >= 0.8 and best-fit intensity k_B/k_C > 1"
+  },
+  {
+   "id": "C5",
+   "claim": "dog deformation is on different lines (not an intensified ape transformation)",
+   "metric": "cosine(H->C, H->D) < cosine(H->C, H->B); dog taper index (anterior/posterior silhouette height) lowest"
+  },
+  {
+   "id": "C6",
+   "claim": "facial/cranial proportions: face enlarges and facial angle falls from man to apes",
+   "metric": "F_H < F_C < F_B and phi_H > phi_C > phi_B on real specimens"
+  }
+ ],
+ "biological_reference_values_literature": {
+  "camper_facial_angle_deg": {
+   "Homo sapiens": "70-80 (Camper 1791 range ~70-80; modern crania ~80-85 with Frankfort reference)",
+   "Pan troglodytes": "~45-55",
+   "Papio": "~30-40",
+   "source": "textbook ranges; used only as a sanity band, not as a fitted target"
+  },
+  "note": "No published 2D lateral landmark table for exactly Homo/Pan/Papio/Canis with these 11 landmarks was found in the open literature during scouting; the Commons specimens are therefore the empirical reference."
+ },
+ "pinned_files_sha256": {
+  "canis_familiaris_lateral.jpg": "e5b1eab566faf5edbdfadb4dcfd481b16986ecf415f5ba556c75935e074a9a68",
+  "dryad_7r85116_metadata.json": "3a9d4e15adcd608a27249f51c192cd26c08a92e172e63e3c939621ae9e6190c7",
+  "fig404_human_skull_cartesian.jpg": "568644185cca883a036d5a642074298c5fb5ad0ad024ba046697554a4f0cc1e4",
+  "fig405_chimpanzee_coordinates.jpg": "7314ff685861068f87b276a74abdc1e6c34456f8e15589071f5eeb55a7c98f0f",
+  "fig406_chimpanzee_skull.jpg": "9eec226ba9aa9d72dd0dfa3dde3b4c66265c0573991abb1805e95c7703df86a3",
+  "fig407_baboon_skull.jpg": "efa23a2233d6cc509c7d90e5f071067c01bc89c2fd49d5fac96b1337aa184651",
+  "fig408_dog_skull.jpg": "db26279193be83332cb40d7eaf175bf3040bdf470684cc5e18f053fd991be9aa",
+  "homo_sapiens_lateral.jpg": "3457d096022c4b4f6da8b3ba4dfa2b6ff96ae1bae84ed34056cbf78cee41e5e6",
+  "pan_troglodytes_lateral.jpg": "04455ef234b6ac4a110c2e3c8e308775b142b051d1306c516acff6a8017959d4",
+  "papio_ursinus_lateral.jpg": "02e80d49035d39402ddfc3657025f851ad8dc7f922cdf9090a661c093144af69",
+  "thompson_1917_leaf789_p770_figs404_405.jpg": "a0235719db9caefe06e6429b878701c2e8559421f822c9677e62ff8760e3b394",
+  "thompson_1917_leaf790_p771_figs406_407.jpg": "91e1e4e75acb996139b18a42a317f3537c6f9978d983897170bd169ccb00ea12",
+  "thompson_1917_leaf792_p773_fig408.jpg": "9c1e561e91602ccaf2a3319047b839945229ee324c797d555b168c29cf2e660c"
+ },
+ "named_dataset_dryad_7r85116": {
+  "status": "DATASET_MISMATCH (platyrrhines only; see scout_manifest.json)",
+  "metadata_sha256": "3a9d4e15adcd608a27249f51c192cd26c08a92e172e63e3c939621ae9e6190c7"
+ }
+}
