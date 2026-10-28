@@ -67,6 +67,24 @@ scan as the dataset, so Fig. 214 (p. 445, leaf 465) is pinned and digitised, and
 run on a real CC BY SEM plate of the *same genus* (*Grantia*). The 90° hexactine network of the
 Dryad specimen is cited only as the six-ray limiting case, with no verdict weight.
 
+## Verdict (Pass 2, `result.json`): **mixed**
+
+| prediction | result |
+|---|---|
+| P2 "two equal angles, one unequal" (SEM, n = 8) | supported: closest-pair difference median 4.4° vs Dirichlet-null median 34.8° (set-mean MC p < 5e-5, KS p = 8e-6); method noise floor ≤ 2.3° |
+| P2 sagittal ordering F4 (unpaired > paired when rho < 1) | supported: 7/7 |
+| P2 on Thompson's own Fig. 214 (panels A-D digitised) | supported: d median 3.5°, set-mean MC p = 0.0012 (E, F hairlines unresolved) |
+| P1 120° mode (population spread, n = 25 physical) | supported: mean \|theta − 120\| = 17.3° vs null 71.2°; all-within-15° 0.52 vs null 0.011 |
+| E5 vs crystallographic alternatives | E5 RMSE 2.25° vs crystal-120 15.3°, lattice-30 8.5° (AIC prefers E5) |
+| P3 tetrahedral 109.47° (tetractines) | untestable in 2D (apical ray end-on); carried by Lean proof only |
+| alcyonarian spicules | untestable (no data in this loop) |
+| mechanism "passive deposition between any three cells" | contradicted by sclerocyte biology (Ledger & Jones 1977; Voigt et al. 2017); the geometric content survives; a symmetric sclerocyte sextet is an unexcluded cause of two equal angles |
+
+The general three-tension model is saturated (realises every angle triplet) and is not tested;
+only the one-parameter sagittal family E5 is falsifiable here. Audits:
+`morphoeval/audits/2026-10-28-t1917-024-on-concretions-spicules-and-sp-audit{,-v2}.yaml`
+(Pass 1 62.3 → Pass 2 75.9; builder-scored, second assessor open).
+
 ## Script
 
 ```bash
