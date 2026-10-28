@@ -555,22 +555,27 @@ SWEEP_N_BOUNDARY = (80, 120, 160)
 
 
 def parameter_sweep(verbose: bool = True) -> dict:
+    """Sweep only the primary Hyrachyus->Aceratherium pair (Pass 2); secondary pairs are fixed at defaults."""
+    verify_inputs(load_reference())
     rows = []
     for maxd in SWEEP_MAXD:
         for lam in SWEEP_LAM:
             for nb in SWEEP_N_BOUNDARY:
-                r = run_analysis(maxd=maxd, lam=lam, n_boundary=nb, verbose=False)
-                hl = r["headline"]
+                panels = {k: load_panel(k, n_boundary=nb) for k in ("hyrackyus_394", "aceratherium_395")}
+                primary = analyze_pair(
+                    "hyrackyus_394", "aceratherium_395", panels, maxd=maxd, lam=lam, n_boundary=nb
+                )
+                pt = primary.get("tps", {})
                 rows.append({
                     "maxd": maxd,
                     "lam": lam,
                     "n_boundary": nb,
-                    "n_matched": hl["primary_n_matched"],
-                    "procrustes_tps": hl["primary_procrustes_tps"],
-                    "procrustes_identity": hl["primary_procrustes_identity"],
-                    "iou_tps": hl["primary_iou_tps"],
-                    "tps_beats_identity": hl["primary_tps_beats_identity_procrustes"],
-                    "tps_beats_affine": hl["primary_tps_beats_affine_procrustes"],
+                    "n_matched": primary.get("n_matched", 0),
+                    "procrustes_tps": pt.get("procrustes"),
+                    "procrustes_identity": primary.get("identity", {}).get("procrustes"),
+                    "iou_tps": pt.get("iou"),
+                    "tps_beats_identity": primary.get("tps_beats_identity_procrustes"),
+                    "tps_beats_affine": primary.get("tps_beats_affine_procrustes"),
                 })
     beats_id = [row["tps_beats_identity"] for row in rows if row["n_matched"] >= 40]
     out = {"rows": rows, "n_settings": len(rows), "all_beat_identity_when_matched": bool(beats_id and all(beats_id))}

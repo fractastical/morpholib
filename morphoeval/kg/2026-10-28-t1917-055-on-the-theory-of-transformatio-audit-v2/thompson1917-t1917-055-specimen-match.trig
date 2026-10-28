@@ -1,0 +1,78 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-055> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-specimen-match> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Figs. 394-400: rhinoceros and allied skulls by coordinate-grid transformation (Osborn) — Morphological realism / specimen match: 77/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Six-panel comparison figure: Fig. 394/395 with detected grids, primary overlay titled with Procrustes/IoU/r, secondary pair bar chart, four-bar control panel (TPS/identity/affine/shuffled), Ceratotherium panel with bone mask contour. IoU 0.570 quantifies visual overlap. Automatic matching and coarse rabbit/horse panels remain limitations; specimen photo is rhinoceros not Hyrachyus fossil." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "thompson/claims/t1917-055_on-the-theory-of-transformations.py L357–L373: match_grids greedy NN — not hand-labelled Thompson nodes <https://github.com/fractastical/morpholib/blob/530b3b50c/thompson/claims/t1917-055_on-the-theory-of-transformations.py#L357-L373>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-specimen-match-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-specimen-match-2> ;
+        pk:hasScore "0.77"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/t1917_055_on_the_theory_of_transformatio_comparison.png (generated output)" ;
+        dct:description "grids, primary overlay, secondary bars, four controls, Ceratotherium CV panel — docs/media/t1917_055_on_the_theory_of_transformatio_comparison.png: rendered output of thompson/claims/t1917-055_on-the-theory-of-transformations.py at 530b3b50c, image/png, 540693 B, 1980×1100 px, artifact_sha256 65d3271d99b1aa5c2c476ae8f90ab25d1dfc51663e05b92ff0b626a382f24254 (sha256 65d3271d99b1aa5c2c476ae8f90ab25d1dfc51663e05b92ff0b626a382f24254), spec_fingerprint 1799c9e22b84705ed0af5fe44b5529c9ffab5f336a64446d6582253a48d2e8c1" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-055_on-the-theory-of-transformations.py L628–L697" ;
+        dct:description "render_comparison with shuffled bar and specimen contour" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/530b3b50c/thompson/claims/t1917-055_on-the-theory-of-transformations.py#L628-L697> .
+    <https://w3id.org/delphi/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (builder-assessor, single-agent Pass 2; second assessor pending)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://ai.google.dev> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://archive.org/details/extinctrhinocero01osbo>,
+            <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://github.com/fractastical/morpholib/blob/main/thompson/portfolio/results/leporidae_skulls.json> .
+    <https://archive.org/details/extinctrhinocero01osbo> dct:date "1898"^^xsd:gYear ;
+        dct:title "The Extinct Rhinoceroses of North America" .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form (Ch. XVII, On the Theory of Transformations, pp. 760-764, Figs. 394-400, skulls after Osborn)" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://github.com/fractastical/morpholib/blob/main/thompson/portfolio/results/leporidae_skulls.json> dct:title "Modern Leporidae skull GM cache (portfolio JSON)" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Figs. 394-400: rhinoceros and allied skulls by coordinate-grid transformation (Osborn) — Morphological realism / specimen match 77/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T18:23:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-specimen-match> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,238 @@
+# MorphoEval audit — Thompson (1917) Ch. XVII Figs. 394-400, rhinoceros-allied skulls
+# (Osborn) compared by coordinate-grid transformation (T1917-055, slot 244), 2026-10-28 — Pass 2 (v2)
+#
+# Supersedes 2026-10-28-t1917-055-on-the-theory-of-transformatio-audit (Pass 1, 67.0/100) after the
+# Step 12 closed-loop remediation of `thompson/claims/t1917-055_on-the-theory-of-transformations.py`.
+# LIMITATION unchanged: builder and assessor are the same agent (Gemini 4 Argon); no independent
+# second assessor (R1 stays open).
+#
+# What Pass 2 added and what it found
+#   R2 sweep: 4 maxd x 3 lambda x 3 n_boundary = 36 settings on the primary pair only (not all seven
+#      pairs). 27/27 settings with >=40 matched grid nodes beat identity on Procrustes; affine still
+#      beats TPS on Procrustes in every >=40-match setting (consistent with Pass 1 headline).
+#   R3 null: shuffled-grid TPS (permuted target landmarks, seed 1917) yields worse Procrustes than the
+#      nominal pairing; bar panel reports TPS / identity / affine / shuffled.
+#   R4 goodness of fit (primary): Procrustes TPS 0.370 vs identity 0.377 vs affine 0.360; IoU TPS 0.570
+#      vs affine 0.587; Pearson r 0.976; RMSE/cs 0.029; chamfer/cs 0.015.
+#   R5 no-fold: min Jacobian determinant inside the primary skull over 21 stages = 0.259 (>0).
+#   R6 specimen: Ceratotherium simum MNHN bone fraction ~14.8% (44 components); descriptive only.
+# Verdict (result.json): mixed — TPS deformation beats identity on the primary pair and is stable under
+# sweep, but affine interpolation wins on Procrustes and IoU; secondary pairs split 3/6 vs identity;
+# Leporidae portfolio remains DATASET_MISMATCH; automatic grid matching not hand-labelled.
+
+audit:
+  id: 2026-10-28-t1917-055-on-the-theory-of-transformatio-audit-v2
+  supersedes: 2026-10-28-t1917-055-on-the-theory-of-transformatio-audit
+  supersedes_audit_id: 2026-10-28-t1917-055-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (builder-assessor, single-agent Pass 2; second assessor pending)"
+    homepage: https://ai.google.dev
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 530b3b50c
+    environment:
+      python: "3.12"
+      numpy: "1.26.4"
+      scipy: "1.x (pip, requirements.txt lower bound >=1.7)"
+      scikit-image: ">=0.19"
+      matplotlib: ">=3.3"
+      Pillow: ">=8.0"
+      lean: "4.35.0 (elan stable)"
+    note: >-
+      Pass 2 of the 12-step loop 2026-10-28-t1917-055-on-the-theory-of-transformatio-loop.
+      Self-test includes IoU/chamfer sanity, primary >=40 matches, TPS beats identity, Ceratotherium
+      segmentation bounds; full run writes 36-row parameter_sweep to result.json.  Comparison PNG
+      git-ignored (docs/media/*.png).
+
+references:
+  thompson1917:
+    title: "On Growth and Form (Ch. XVII, On the Theory of Transformations, pp. 760-764, Figs. 394-400, skulls after Osborn)"
+    authors: "Thompson DW (figures after Osborn HF, 1898)"
+    venue: "Cambridge University Press (1917)"
+    url: https://archive.org/details/ongrowthform1917thom
+  osborn1898:
+    title: "The Extinct Rhinoceroses of North America"
+    authors: "Osborn HF"
+    venue: "Memoirs of the American Museum of Natural History 1(3) (1898)"
+    url: https://archive.org/details/extinctrhinocero01osbo
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE Trans. Pattern Anal. Mach. Intell. 11(6):567-585 (1989)"
+    doi: 10.1109/34.24792
+  leporidae_portfolio:
+    title: "Modern Leporidae skull GM cache (portfolio JSON)"
+    authors: "morpholib thompson/portfolio"
+    venue: "repository-local"
+    url: https://github.com/fractastical/morpholib/blob/main/thompson/portfolio/results/leporidae_skulls.json
+    role: pre-scouted analogue — DATASET_MISMATCH (perissodactyl series vs rabbit clade), not used in verdict
+
+simulations:
+  - id: thompson1917-t1917-055
+    name: "Thompson (1917) Figs. 394-400: rhinoceros and allied skulls by coordinate-grid transformation (Osborn)"
+    organism: "Hyrachyus agrarius, Aceratherium tridactylum, Titanotherium, tapir, horse, rabbit (diagrammatic skulls after Osborn; Thompson pp. 760-764)"
+    script: thompson/claims/t1917-055_on-the-theory-of-transformations.py
+    output: docs/media/t1917_055_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_055_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-055/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-055-on-the-theory-of-transformatio-audit
+    source_refs: [thompson1917, osborn1898, bookstein1989, leporidae_portfolio]
+    summary: >-
+      Pass 2 (v2), overall 82.7/100 (up from 67.0 in Pass 1).  Nine panels digitised from
+      SHA-256-pinned IA crops; primary Hyrachyus (394) -> Aceratherium (395) with 40 matched grid
+      nodes at defaults.  TPS applied to the Hyrachyus boundary: Procrustes 0.370 vs identity 0.377
+      vs affine 0.360; IoU 0.570 (affine 0.587); Pearson r 0.976; chamfer/cs 0.015; shuffled-grid
+      null worse than nominal.  Parameter sweep: 36 primary-only settings; 27/27 with >=40 matches
+      beat identity on Procrustes; affine beats TPS throughout those rows.  min det D phi_t inside
+      skull 0.259.  Secondary 3/6 beat identity.  Ceratotherium CV descriptive.  Verdict mixed.
+    claim_boundary:
+      reported_in_source:
+        - "Fig. 394 Hyrachyus skull with rectangular Cartesian grid; Fig. 395 Aceratherium in a deformed grid (p. 760-761)"
+        - "occipital Aceratherium variants related by conformal transformations (Fig. 396, p. 762)"
+        - "extensions to Titanotherium, tapir, horse, and rabbit by the same method (Figs. 397-400, pp. 763-764)"
+        - "methodological claim that allied skulls differ by smooth coordinate transformation of a common diagram"
+      reconstructed_in_script:
+        - "phi as TPS on automatically matched grid peaks; identity, affine, and shuffled-grid controls"
+        - "IoU, Pearson r, RMSE/cs, chamfer/cs, Procrustes; primary-only parameter sweep; E1 Jacobian check"
+        - "Ceratotherium photograph bone/matrix mask (descriptive, excluded from verdict statistics)"
+      transfer_boundary:
+        - "automatic NN grid matching still approximates Thompson's hand correspondences"
+        - "affine beating TPS on Procrustes and IoU means the registered non-affine spline claim is only partially supported for Aceratherium"
+      does_not_claim:
+        - "that TPS strictly dominates affine on the primary pair (it does not on Procrustes or IoU)"
+        - "that modern 3D GM datasets validate the rabbit/horse panels (Leporidae cache mismatch)"
+        - "that Ceratotherium segmentation quantifies the Osborn diagram fit"
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: >-
+          E2/E6, E4, E5 and E7 implemented as stated; eight Lean theorems compile with 0 sorry; Pass 2
+          adds numerical E1 via jacobian_min_det/check_no_fold on the primary TPS (min det inside skull
+          0.259 over 21 stages).  Remaining deductions: Fig. 394-395 grid ink not digitised line-by-line;
+          affine map fits the primary outline slightly better than the TPS on Procrustes, so the strict
+          "smooth non-affine grid" reading is not numerically dominant.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [184, 227], note: "tps_fit/tps_apply (E4), affine_fit/affine_interp_matrix (E5), interp_stage (E2/E6), best_fit_t (E7)", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [280, 303], note: "jacobian_min_det / check_no_fold (E1); min_over_stages_inside in headline", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_055.lean, lines: [16, 102], note: "interp_no_fold, best_fit_stage_sound, shear/scaling area/orientation theorems", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/result.json, lines: [24, 40], note: "primary_tps_beats_affine_procrustes false; primary_tps_beats_affine_iou false", supports: false}
+      specimen-match:
+        value: 77
+        rationale: >-
+          Six-panel comparison figure: Fig. 394/395 with detected grids, primary overlay titled with
+          Procrustes/IoU/r, secondary pair bar chart, four-bar control panel (TPS/identity/affine/shuffled),
+          Ceratotherium panel with bone mask contour.  IoU 0.570 quantifies visual overlap.  Automatic
+          matching and coarse rabbit/horse panels remain limitations; specimen photo is rhinoceros not
+          Hyrachyus fossil.
+        evidence:
+          - {file: docs/media/t1917_055_on_the_theory_of_transformatio_comparison.png, lines: [0, 0], note: "grids, primary overlay, secondary bars, four controls, Ceratotherium CV panel", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [628, 697], note: "render_comparison with shuffled bar and specimen contour", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [357, 373], note: "match_grids greedy NN — not hand-labelled Thompson nodes", supports: false}
+      parameter-expressivity:
+        value: 79
+        rationale: >-
+          Primary-only sweep over 36 settings (maxd x lambda x n_boundary) is executed and written to
+          result.json; 27 rows have >=40 matches and all beat identity on Procrustes; lambda and maxd
+          visibly trade match count vs fit.  Growth GIF still shows t along the primary deformation.
+          Deduction: affine beats TPS across swept >=40-match rows; secondary pairs fixed at defaults only.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [557, 585], note: "parameter_sweep: 36 primary-only settings; all_beat_identity_when_matched", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/result.json, lines: [52, 55], note: "parameter_sweep n_settings 36; all_beat_identity_when_matched true", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/result.json, lines: [400, 407], note: "representative sweep rows: tps_beats_affine false at >=40 matches", supports: false}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Primary pair reports Procrustes, IoU, Pearson r, RMSE/cs, chamfer/cs vs identity, affine, and
+          shuffled-grid null; headline numbers pinned in result.json; secondary six pairs with the same
+          compare_outlines block; sweep summarised in measure_morphoeval.  Mixed verdict is explicit:
+          TPS beats identity but not affine.  Deductions: shuffled null is single-seed permutation not
+          exhaustive; no KS test; part C3 rabbit/horse remain weak; no real 3D GM for part C4.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [264, 277], note: "compare_outlines: Procrustes, pearson_r, rmse_cs, iou, chamfer_rmse_cs", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [458, 473], note: "shuffled_grid_null via permuted Q; tps_beats_shuffled_procrustes flag", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/result.json, lines: [23, 40], note: "verdict mixed; headline Procrustes/IoU/r/chamfer/min Jacobian", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/result.json, lines: [17, 21], note: "Leporidae DATASET_MISMATCH — part C4 untestable with pinned data", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Unchanged strength from Pass 1: six inputs SHA-256 pinned and fail-closed at runtime; IA
+          crops, reference JSON quotes, Commons Ceratotherium metadata, Osborn/Bookstein bibliography;
+          portfolio mismatch documented in result.json.  Deduction: Thompson 1917 has no DOI.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [111, 122], note: "verify_inputs at run and sweep entry", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/t1917_055_on_the_theory_of_transformatio_reference.json, lines: [13, 52], note: "page quotes, E1-E7, empirical claims C1-C4", supports: true}
+          - {file: datasets/thompson_1917/t1917-055/scout_manifest.json, lines: [0, 0], note: "IA and Commons scout pins", supports: true}
+      code-traceability:
+        value: 85
+        rationale: >-
+          Module docstring lists Pass 2 outputs (sweep, null, IoU, chamfer, Jacobian, specimen); analyze_pair
+          and write_result wire all controls into result.json; math_kg_loops documents grid_matching and
+          controls in model_spec.  Deduction: extended fit statistics have no separate equation ids in E1-E7.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [36, 46], note: "What is computed: sweep, shuffled null, figures, result.json", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-055.yaml, lines: [1, 35], note: "controls include shuffled_grid_null; parameter regime documented", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [748, 785], note: "write_result merges sweep, specimen_cv_descriptive_only, headline", supports: true}
+      repro-package:
+        value: 81
+        rationale: >-
+          Deterministic (SEED=1917), fail-closed hashes, self-test through primary metrics and specimen
+          bounds, CLI --no-sweep / --no-specimen / --no-gif, full pipeline writes comparison PNG, GIF,
+          and result.json with 36 sweep rows.  Deductions: requirements.txt lower bounds only; PNG
+          git-ignored.
+        evidence:
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [811, 855], note: "self_test: E2/E4/E5/E7, IoU/chamfer, primary >=40, identity beat, Ceratotherium fraction", supports: true}
+          - {file: thompson/claims/t1917-055_on-the-theory-of-transformations.py, lines: [858, 878], note: "CLI flags including --no-sweep and --no-specimen", supports: true}
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Primary-only sweep over maxd, lambda, n_boundary; stability vs identity and affine"
+        status: resolved
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Shuffled-grid null; IoU, Pearson r, chamfer RMSE"
+        status: resolved
+      - id: N3
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Ceratotherium bone-vs-matrix CV and expanded comparison figure"
+        status: resolved
+      - id: N4
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Numerical Jacobian no-fold check on primary TPS"
+        status: resolved
+      - id: N5
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Independent second assessor from a different provider"
+        status: open
+      - id: N6
+        need_type: digitisation
+        target_dimension: specimen-match
+        description: "Hand-labelled grid correspondences or independent digitisation of Fig. 394-395 grid ink"
+        status: open
+      - id: N7
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Resolve affine-vs-TPS ambiguity: Thompson-like sparse anchor grid or literature 2-D landmarks for Osborn skulls"
+        status: open
+    remediation:
+      - "R1 (open): independent second assessor from a different provider — this round is builder-scored"
+      - "R7: hand-digitise grid line intersections on Figs. 394-395 and compare with automatic peak matching"
+      - "R8: sparse-anchor or conformal grid matching Thompson's occipital Fig. 396 panels to test whether non-affine phi is required once correspondences are fixed"
+      - "R9: assemble open 2-D skull landmarks for perissodactyl intermediates to test secondary pairs beyond diagram self-consistency"
