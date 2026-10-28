@@ -760,11 +760,11 @@ def render_fig8_ai_vs_human_authorship_heatmap():
         "4. Claim 3: C=2 Anti-Clustering Wave",
         "5. Claim 4: 10,303 Fishes & Blind Test",
         "6. Claims 5–7: Planaria, Frogs & Biobots",
-        "7. Scoreboard Room & 3-Pillar Rubric",
-        "8. Conservation Lab: Neuro→Bio→MorphoEval",
-        "9. Curator’s Reply: D vs. D+P & Foresight",
+        "7. The Score",
+        "8. How This Was Audited",
+        "9. Nathan Sweet",
         "10. On Dualism: Within/Without, AI Stack",
-        "11. Exit: Thompson 1913, Aristotle & Verdict",
+        "11. Conclusion",
         "12. Footnotes, the ++ & Problem Graph",
     ]
     dims = [

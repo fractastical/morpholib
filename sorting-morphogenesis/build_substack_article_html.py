@@ -305,8 +305,8 @@ def render_body(md_text: str) -> str:
     )
     # Curator cards vs. source quotations.
     body = re.sub(
-        r'<blockquote>\n<p><strong>Curator’s verdict',
-        r'<blockquote class="curator-card">\n<p><strong>Curator’s verdict',
+        r'<blockquote>\n<p><strong>Verdict',
+        r'<blockquote class="curator-card">\n<p><strong>Verdict',
         body,
     )
     body = body.replace("<blockquote>\n", '<blockquote class="source-quote">\n')
