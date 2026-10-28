@@ -1,0 +1,103 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-019> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-model-fidelity> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Ch. VII — tissue cells as hexagons / froth vs. human corneal endothelium (Pass 1 baseline) — Model fidelity to source: 62/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "The froth laws the claim rests on (E1 Euler mean six, E2 mu2, E3 Hales bound, E4 Lewis, E5 Aboav-Weaire) are implemented exactly on Voronoi polygons and asserted in --self-test; the division chain (E6) reproduces Gibson's spectrum to 0.03. But \"least perimeter\" is modelled only by Lloyd relaxation (a proxy), and the model is never confronted with tissue, so the claim itself is not yet tested." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L127–L138: lloyd_step is a centroidal-Voronoi proxy, not a surface-tension energy minimiser <https://github.com/fractastical/morpholib/blob/afd867b4c/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L127-L138>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-3>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-4> ;
+        pk:hasScore "0.62"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L98–L124" ;
+        dct:description "periodic_voronoi: 3x3 tiled Voronoi, neighbour sets mod N, polygon areas and perimeters" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/afd867b4c/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L98-L124> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L159–L212" ;
+        dct:description "polygon_statistics: <n>, mu2, p_n, excess perimeter vs 2*12^(1/4) sqrt(A), Lewis and Aboav-Weaire fits, sum rule" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/afd867b4c/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py L226–L276" ;
+        dct:description "gibson_markov_fixed_point: Binomial(s,1/3) side gain + through-centre cleavage; uniform-random ablation present but unused in run()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/afd867b4c/thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L226-L276> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-019-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Thompson1917_T1917_019.lean L37–L68" ;
+        dct:description "Law 1 trivalent_side_sum / torus_mean_six / sphere_pentagon_excess proved (Lean 4.35.0, 0 errors)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/afd867b4c/morphoeval/lean/loops/Thompson1917_T1917_019.lean#L37-L68> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 1; cross-provider second assessor pending R7)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg>,
+            <https://doi.org/10.1002/ar.1090380305>,
+            <https://doi.org/10.1007/s004540010071>,
+            <https://doi.org/10.1016/0026-0800(70)90038-8>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1038/nature05014>,
+            <https://doi.org/10.1080/00107518408210979>,
+            <https://doi.org/10.1097/ICO.0b013e318033a6da> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form — Ch. VII The Forms of Tissues, or Cell-Aggregates (pp. 293-345, Figs. 120-127)" .
+    <https://commons.wikimedia.org/wiki/File:Morphology_of_human_corneal_endothelium_in_situ.jpg> dct:date "2015"^^xsd:gYear ;
+        dct:title "Morphology of human corneal endothelium in situ (alizarin red) — Wikimedia Commons, CC BY-SA 4.0" .
+    <https://doi.org/10.1002/ar.1090380305> dct:date "1928"^^xsd:gYear ;
+        dct:title "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis" .
+    <https://doi.org/10.1007/s004540010071> dct:date "2001"^^xsd:gYear ;
+        dct:title "The Honeycomb Conjecture" .
+    <https://doi.org/10.1016/0026-0800(70)90038-8> dct:date "1970"^^xsd:gYear ;
+        dct:title "The arrangement of grains in a polycrystal" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The Influence of Cell Mechanics, Cell-Cell Interactions, and Proliferation on Epithelial Packing" .
+    <https://doi.org/10.1038/nature05014> dct:date "2006"^^xsd:gYear ;
+        dct:title "The emergence of geometric order in proliferating metazoan epithelia" .
+    <https://doi.org/10.1080/00107518408210979> dct:date "1984"^^xsd:gYear ;
+        dct:title "Soap, cells and statistics — random patterns in two dimensions" .
+    <https://doi.org/10.1097/ICO.0b013e318033a6da> dct:date "2007"^^xsd:gYear ;
+        dct:title "Factors Affecting Corneal Endothelial Morphology" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Ch. VII — tissue cells as hexagons / froth vs. human corneal endothelium (Pass 1 baseline) — Model fidelity to source 62/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T03:02:34Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-019-model-fidelity> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
