@@ -96,10 +96,12 @@
    }
   ],
   "test_statistics": {
-   "warp_family_fit": "per ordered specimen pair, least-squares similarity (4 dof), anisotropic (5 dof, rotation+two scales) and full affine / Durer grid (6 dof) fits of landmark set A onto B; residual RMSE in centroid-size units; LOO-CV residual",
-   "variance_explained": "R_affine = 1 - SS(affine)/SS(similarity): fraction of non-similarity shape difference captured by the whole-grid deformation",
+   "warp_family_fit": "per ordered specimen pair, in the Camper frame (photograph horizontal after declared deskew): null = uniform scale + translation (3 dof), Dürer sub-family U = [[a,b],[0,d]] (vertical scale d, horizontal stretch c = a/d, shear k = b/d; 5 dof), affine upper bound (6 dof, rotation free); residual RMSE in centroid-size units; leave-one-landmark-out CV; landmark-only and dense (common landmarks + 30 semilandmarks prn->me) configurations",
+   "variance_explained": "R_Durer = 1 - SS(Durer)/SS(null): fraction of non-scale shape difference captured by the whole-grid deformation",
    "noise_floor": "landmark re-detection RMSE under image perturbation (rescale 0.85/1.15, blur sigma 1 px)",
-   "facial_angle_link": "Pearson r between fitted shear k_AB and the measured change in profile inclination / convexity angle (E5)"
+   "facial_angle_link": "Pearson r / slope between fitted shear k_AB and the measured change in tan of the E-line (Prn->Pg) inclination from the frame vertical (E5 holds for any line; the E-line uses two required landmarks and is not corrupted by hair at the glabella)",
+   "verdict_rule": "supported: dense Durer residual <= 1.5 x noise floor AND median R_Durer >= 0.6 AND |r_E5| >= 0.7; refuted: median R_Durer < 0.3; mixed otherwise (strong form flagged 'not supported' when residual > 3 x noise floor)",
+   "controls": "positive: exact Durer grid (c = 1.25, omega = 75 deg) of each specimen recovered; negative: scrambled correspondences; ablation: exact grid + 10 % pronasale-only displacement must leave a residual; pose sensitivity: configurations rotated +/-5 deg"
   }
  },
  "empirical_claims_to_test": [
