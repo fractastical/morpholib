@@ -46,7 +46,8 @@ equations:
     variables: "x: normalised axial coordinate on [-1, 1] (half-length = 1); y: normalised half-breadth; c0, c1, c2, c3: Preston (1953) coefficients (c0 breadth, c1 / c3 odd asymmetry and pointedness terms, c2 even cylindricity term); R_pole = p(±1)^2: osculating-circle radius at each pole; s = ±1: pole selector"
     role: "Defines Thompson's 'definite family' of meridian curves and derives the closed-form polar-asymmetry index PA = max(R_-/R_+, R_+/R_-) that reproduces Biggins et al.'s numerically searched index on all 1389 eggs (Pearson r = 0.99997); the symmetric-ends criterion c1 + c3 = 0 formalises Thompson's grebe / pelican / cormorant class and the sphere member formalises his owl / tortoise class"
     source_citation: "Thompson (1917) p. 652; Preston (1953) Auk 70:160-182; Biggins, Thompson & Birkhead (2018) Ecol. Evol. 8:9728-9738 Eq. (1)"
-    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L46-L70"
+    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L110-L146"
+    code_locus_secondary: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L159-L184"
 
   - law_name: "Exact Volume of the Preston Solid of Revolution: Sphere Normalisation, Ellipsoid Breadth-Squared Scaling and End-for-End Reflection Invariance"
     formula: "315 V / (4 π (L/2)^3) = 105 c0^2 + 21 (c1^2 + 2 c0 c2) + 9 (c2^2 + 2 c1 c3) + 5 c3^2;  sphere (c0 = 1) ⇒ 105 ⇒ V = 4π/3;  V(2 c0, 0, 0, 0) = 4 V(c0, 0, 0, 0);  V(c0, -c1, c2, -c3) = V(c0, c1, c2, c3)"
@@ -63,7 +64,7 @@ equations:
     variables: "V: egg volume; L: egg length (mm); c0..c3: Preston coefficients; the integral ∫_{-1}^{1} p(x)^2 (1 - x^2) dx evaluated exactly term by term (∫ x^{2k}(1 - x^2) dx = 4 / ((2k+1)(2k+3)))"
     role: "Makes the 'solid of revolution' part of the claim quantitative: the volume functional of the meridian family in closed form (checked numerically in the script's self-test against trapezoidal integration to 1e-3 on the guillemot C126) and its invariance under reversing which pole is pointed"
     source_citation: "Thompson (1917) p. 652 ('simple solids of revolution'); Biggins et al. (2018) volume computation in Analysis.R (volcc)"
-    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L72-L81"
+    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L148-L157"
 
   - law_name: "Thompson Envelope Equation p_n + T(1/r + 1/r') = P at the Poles: Sphere under Uniform Pressure and Pole-Tension Proportional to Pole Radius"
     formula: "pn r r' + T (r + r') - P r r' = 0;  at a pole r = r' = R with pn = 0:  T (R + R) - P R^2 = 0 ⇒ P R = 2 T;  0 < P ∧ Rp < Rb ⇒ P Rp < P Rb (blunt pole carries the larger tension)"
@@ -81,9 +82,9 @@ equations:
           (laplaceResidual 0 T R R P = 0 → P * R = 2 * T) ∧
           poleTwiceTension P Rp < poleTwiceTension P Rb
     variables: "pn: normal component of external (oviduct) pressure; T: membrane tension; r, r': principal radii of curvature; P: internal fluid pressure; R: common pole radius; Rb, Rp: blunt and pointed pole radii"
-    role: "Formalises Thompson's p. 658 'equation of all eggs in the universe' in cleared-denominator form, derives the sphere for uniform pressure (p. 659) and shows that under his own pole assumption (pn = 0, one P) the tension is proportional to the pole radius, so his side-remark that T is greatest at the small end has the sign reversed - recorded in the audit as a mixed detail orthogonal to the shape-family claim"
+    role: "Formalises Thompson's p. 658 'equation of all eggs in the universe' in cleared-denominator form, derives the sphere for uniform pressure (p. 659) and shows that under his own pole assumption (pn = 0, one P) the tension is proportional to the pole radius, so his side-remark that T is greatest at the small end has the sign reversed - recorded in the audit as a mixed detail orthogonal to the shape-family claim. In code the equation is inverted on every egg as the mean-curvature profile 2H(x) = (P - p_n)/T (`mean_curvature_profile`) and used as the 4-constraint 'Thompson closure' of the Preston family (`thompson_closure`, residual < 1e-15 on the guillemot C126; sphere from uniform pressure) and the pressure-asymmetry path (`thompson_closure_sweep`)"
     source_citation: "Thompson (1917) pp. 658-659; Thompson (1908) Nature 78:111-113"
-    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L56-L70"
+    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L186-L277"
 
   - law_name: "Thompson Cone-Ended-Cylinder Equilibrium p cos²θ = p' cos²θ': Lower External Pressure at the Tapered End"
     formula: "p a = p' a' with a = N cos^2(θ), a' = N cos^2(θ');  0 ≤ a ∧ 0 < p' ∧ a' < a ⇒ p < p'"
@@ -97,9 +98,9 @@ equations:
           (hbal : coneBalance p a p' a') (ha : 0 ≤ a) (hp' : 0 < p') (hlt : a' < a) :
           p < p'
     variables: "p, p': radial pressures at the two conical ends; θ, θ': cone semi-angles (θ small at the tapered end); a, a': integer-scaled cos^2 of the semi-angles (N a common scale); the tapered end has the larger cos^2"
-    role: "Thompson's p. 657 force balance for the guillemot-type conical egg in the oviduct; proves the direction he states ('at the more tapered end where θ is small p is small'), which underlies his claim that the pointed form favours blunt-end-first transport (p. 658)"
+    role: "Thompson's p. 657 force balance for the guillemot-type conical egg in the oviduct; proves the direction he states ('at the more tapered end where θ is small p is small'), which underlies his claim that the pointed form favours blunt-end-first transport (p. 658); `cone_balance_pressure_ratio` evaluates p/p' = cos^2(θ')/cos^2(θ) < 1 and the self-test asserts the sign"
     source_citation: "Thompson (1917) pp. 657-658"
-    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L56-L70"
+    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L279-L286"
 
   - law_name: "Prolate-Never-Oblate: Elongation ≥ 1 and Mid-Point Maximum Breadth of the Ellipsoid Member"
     formula: "B = 2 c0 k,  L = 2 k;  c0 ≤ 1 ∧ 0 ≤ k ⇒ B ≤ L;  c0^2 (1 - x^2) ≤ c0^2 for x^2 ≥ 0;  y(0)^2 = c0^2"
@@ -117,6 +118,7 @@ equations:
           prestonHalfBreadthSq c0 0 0 0 x ≤ c0 * c0 ∧
           prestonHalfBreadthSq c0 0 0 0 0 = c0 * c0
     variables: "B: maximum breadth; L: length; k: half-length scale (pixels or mm); c0: ellipsoid breadth coefficient (Elongation E = L/B = 1/c0); x: normalised axial coordinate"
-    role: "Formalises Thompson's p. 652 statement that the egg 'is a prolate, but never an oblate, spheroid' for the ellipsoid member of the family; the script tests it empirically as min Elongation = 1.035 over 1399 eggs"
+    role: "Formalises Thompson's p. 652 statement that the egg 'is a prolate, but never an oblate, spheroid' for the ellipsoid member of the family; the script tests it empirically as min Elongation = 1.035 over 1411 eggs (1389 Biggins + 10 range + 12 photographed) and records the verdict component C5 in result.json"
     source_citation: "Thompson (1917) p. 652"
-    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L56-L70"
+    code_locus: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L136-L146"
+    code_locus_secondary: "thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py#L874-L954"

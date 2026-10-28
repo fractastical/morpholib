@@ -56,6 +56,19 @@ interstitial), pinned, and found to **match** the claim's species and variables:
 outline shape, with per-egg meridian-curve parameters (Biggins) and 181-species outline PCs with body-mass
 covariates (Deeming). No analogue dataset was substituted.
 
+## Verdict (Step 12, `result.json`)
+
+**supported** for the claim as stated. Headline numbers (Pass 2 script run): 1411 eggs (1389 Biggins + 10 range set + 12
+segmented from photographs), minimum elongation 1.035 (prolate never oblate); Preston family median RMSE / breadth
+0.0018 (max 0.0061) over 132 eggs; guillemot C126 photograph re-fitted to \(c = (0.488, -0.245, 0.043, 0.117)\) vs
+published \((0.488, -0.246, 0.039, 0.121)\) (profile \(r = 0.99999\), axisymmetry residual 0.4 % of half-breadth);
+Steiner's Cartesian oval 7.4× worse than Preston on the guillemot (Thompson p. 654 footnote confirmed); between-species
+\(\eta^2\) of elongation 0.67 (Kruskal–Wallis \(p = 2\times10^{-100}\), 29 species), order-level \(\eta^2\) of
+Deeming PC1 / PC2 = 0.38 / 0.57; asymmetry vs relative egg mass Spearman \(\rho = 0.39\) (\(p = 7\times10^{-8}\),
+Thompson p. 655 statement 5). Two details are flagged: Thompson's "penguin spherical" example is wrong for *Aptenodytes*
+(King Penguin E = 1.42, PA = 2.87), and his p. 659 remark that the membrane tension is greatest at the small end has the
+sign reversed under his own equation (Lean Law 3).
+
 ## Note on Thompson's figures
 
 The Ch. XV figures cited in the claim row (Figs. 328–330) belong to the sea-urchin corollary (pp. 661–669); the
