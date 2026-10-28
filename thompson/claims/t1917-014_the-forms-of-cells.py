@@ -305,8 +305,8 @@ def analyse_fig84() -> dict:
             "fraction_delaunay_compatible": n_ok / max(1, len(specimens))}
 
 
-def measure_morphoeval(analysis: dict | None = None) -> dict:
-    """Quantitative morphometrics for the MorphoEval audit (JSON-serialisable)."""
+def morphometrics_dict(analysis: dict | None = None) -> dict:
+    """Quantitative morphometrics of the Fig. 84 analysis (JSON-serialisable)."""
     a = analysis or analyse_fig84()
     sp = a["specimens"]
     nr = np.array([s["best_nrmse"] for s in sp])
@@ -330,6 +330,40 @@ def measure_morphoeval(analysis: dict | None = None) -> dict:
         "catalogue_members_used": sorted({classify_delaunay(s["best_B"]) for s in sp} | {"sphere", "cylinder"}),
         "specimens": [{k: v for k, v in s.items() if not k.startswith("_")} for s in sp],
     }
+
+
+def measure_morphoeval(analysis: dict | None = None) -> list[dict]:
+    """Measurement records for morphoeval/measure_outputs.py (name/value/unit/method/...)."""
+    m = morphometrics_dict(analysis)
+
+    def M(name, value, unit, method, reference=None, note=None):
+        d = {"name": name, "value": value, "unit": unit, "method": method, "derived_from": "script"}
+        if reference is not None:
+            d["reference_value"] = reference
+        if note:
+            d["note"] = note
+        return d
+
+    return [
+        M("Fig. 84 Lagena silhouettes segmented", m["n_specimens"], "count",
+          "background-normalised threshold + closing + hole fill + opening, area > 3000 px", reference=13,
+          note="13 specimens drawn by Thompson after Brady (1884)"),
+        M("Delaunay-compatible specimens (best catalogue fit nRMSE <= 0.06)", m["n_delaunay_compatible"], "count",
+          "least-squares fit of E7 flask and E8 bead to the meridional radius profile", reference=m["n_specimens"],
+          note="reference = all 13 if the claim held for every figured Lagena"),
+        M("median best-fit RMSE / r_max", m["best_nrmse_median"], "dimensionless",
+          "RMSE of the better of flask/bead over all rows of the silhouette", reference=RMSE_SUPPORT),
+        M("median best-fit RMSE / r_max, flask-like (L/W <= pi)", m["flask_like_nrmse_median"], "dimensionless",
+          "subset within the unduloid bead aspect bound", reference=RMSE_SUPPORT),
+        M("median best-fit RMSE / r_max, spindles (L/W > pi)", m["spindle_nrmse_median"], "dimensionless",
+          "subset outside the unduloid bead aspect bound (E6)", reference=RMSE_SUPPORT),
+        M("median Pearson r (observed vs fitted radius)", m["pearson_r_median"], "dimensionless", "np.corrcoef"),
+        M("median bilateral asymmetry index mean|r_L - r_R| / r_max", m["asymmetry_index_median"], "dimensionless",
+          "half-widths about the least-squares symmetry axis", reference=0.0,
+          note="0 for a perfect surface of revolution"),
+        M("fitted Kenmotsu B range", f"{m['fitted_B_range'][0]:.2f}-{m['fitted_B_range'][1]:.2f}", "dimensionless",
+          "best catalogue member per specimen"),
+    ]
 
 
 # --------------------------------------------------------------------------- figures
@@ -474,7 +508,8 @@ def main(argv=None) -> int:
         self_test()
         return 0
     a = analyse_fig84()
-    m = measure_morphoeval(a)
+    m = morphometrics_dict(a)
+    m["measurements"] = measure_morphoeval(a)
     METRICS_JSON.write_text(json.dumps(m, indent=2), encoding="utf-8")
     render_comparison(a)
     if not args.no_gif:
