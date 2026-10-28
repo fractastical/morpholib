@@ -8,9 +8,9 @@
 
 For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a [historian of math](https://mitpress.mit.edu/author/joel-dietz-39191/), it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (e.g. guru traditions).
 
-![](https://fractastical.github.io/morpholib/media/galvani_1791_four_plates_and_mechanisms.png)
+![](https://fractastical.github.io/morpholib/guide_step1_1917_rubber_sheet.png)
 
-*Plate I — Galvani’s four paradigms of animal electricity (Bologna, 1791). Jacopo Zambelli’s original copperplate Tabulae I–IV from* De viribus electricitatis in motu musculari, *each paired with our reconstruction of the physical circuit and sciatic-nerve response it implies: capacitive spark induction, atmospheric electricity, the bimetallic arc, and the intrinsic injury current. Provenance: [`models/1791-galvani-bioelectricity.py`](https://github.com/fractastical/morpholib/blob/main/models/1791-galvani-bioelectricity.py); engravings in the public domain.*
+*Plate I — Thompson’s rubber sheet. A parrotfish bent into an angelfish by curving the coordinate grid, redrawn from* On Growth and Form *(1917). Claim 4 scores this picture. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
 
 When I was working at the California Institute of Machine Consciousness in early 2026, my then-employer Joscha Bach would often elatedly insert concepts of *morphogenesis* into conversations. This term means, roughly, how things get to be their current shape, and tends to be a pretty mathy set of explanations.
 
@@ -155,7 +155,7 @@ The second major pillar Levin invokes for his latent space is **D’Arcy Wentwor
 
 ![](https://fractastical.github.io/morpholib/guide_step1_1917_rubber_sheet.png)
 
-*Plate XI — The 1917 rubber sheet. Thompson’s four coordinate families redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
+*Plate XI — The same sheet as Plate I, where the argument picks it up. Thompson’s coordinate families redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
 
 For the last 30 years, evolutionary biologists tried to test Thompson’s idea on computer landmark databases—and concluded he was mostly wrong across fish families. **Why did their tests fail?**
 
