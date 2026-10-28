@@ -14,20 +14,20 @@ run:
 totals:
   steps_completed: 0
   steps_total: 12
-  wall_time_s: 1155.506
-  wall_time_min: 19.26
+  wall_time_s: 1281.052
+  wall_time_min: 21.35
   tier_a_wall_s: 1155.506
-  tier_b_wall_s: 0.0
+  tier_b_wall_s: 125.546
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   input_tokens: 128
-  output_tokens: 25066
+  output_tokens: 58168
   subagent_tokens: 0
-  total_llm_tokens: 25194
-  artifact_tokens: 25066
+  total_llm_tokens: 58296
+  artifact_tokens: 58168
   tier_a_llm_tokens: 25194
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 21.8
+  tier_b_llm_tokens: 33102
+  effective_tokens_per_s: 45.5
 steps:
 - num: 1
   slug: scout
@@ -259,130 +259,154 @@ steps:
   slug: audit
   tier: B
   title: 7  Dual-agent audit
-  actor: dual-assessors
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: ok
+  started_at: '2026-10-28T02:58:33.449Z'
+  ended_at: '2026-10-28T02:58:33.528Z'
+  duration_s: 0.079
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 3968
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3968
+    artifact_tokens: 3968
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-014-the-forms-of-cells-audit.yaml
+    bytes: 15076
+    sha256: 9d1d87f27713510f1980592fccd6d7ac71e42b5044a182577330328eb58eddcb
+    tokens: 3968
   commands: []
-  notes: null
+  notes: Pass 1 single-assessor audit, overall 60.8; 7 remediation items
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
-  actor: tool (measure_outputs.py)
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: ok
+  started_at: '2026-10-28T02:58:33.613Z'
+  ended_at: '2026-10-28T02:58:45.745Z'
+  duration_s: 12.132
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 2175
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 2175
+    artifact_tokens: 2175
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-014-the-forms-of-cells-audit.measurements.yaml
+    bytes: 6808
+    sha256: 5c0f8b924e3dff5442756c10e2f576f4960390bb004773f9f02e00094a9eccd1
+    tokens: 2175
   commands: []
-  notes: null
+  notes: quick_gate 90/100 validated; 8 measurements
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
-  actor: tool (build_morphoeval_kg.py)
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: ok
+  started_at: '2026-10-28T02:58:45.828Z'
+  ended_at: '2026-10-28T03:00:01.786Z'
+  duration_s: 75.958
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 22999
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 22999
+    artifact_tokens: 22999
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-014-the-forms-of-cells-audit/REPORT.md
+    bytes: 11316
+    sha256: 38ead962604290e5db741948f36c2d2cecbfa4a44ab2bff651285b1b5e809cb9
+    tokens: 3271
+  - file: morphoeval/kg/2026-10-28-t1917-014-the-forms-of-cells-audit/morphoeval_2026-10-28-t1917-014-the-forms-of-cells-audit.ttl
+    bytes: 63227
+    sha256: bebc55646bf54c5623e211c6437b10ec5bc2185a5142f18d1e14f6329f4d1d39
+    tokens: 19728
   commands: []
-  notes: null
+  notes: 10 nanopubs, 552 triples, --conform --rubric-from bos-taurus-v7
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
-  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: ok
+  started_at: '2026-10-28T03:00:01.874Z'
+  ended_at: '2026-10-28T03:00:24.882Z'
+  duration_s: 23.009
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 689
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 689
+    artifact_tokens: 689
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-014-the-forms-of-cells-audit/published.json
+    bytes: 1853
+    sha256: 52ed092e5ae0d0fdd6d47ee69992f63bbdd4bc2f3a3d13c204a55435c4dda120
+    tokens: 689
   commands: []
-  notes: null
+  notes: 10 nanopubs signed (sign-only, not published); check_signed.mjs 10 ok 0 failed
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
-  actor: tool
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  status: ok
+  started_at: '2026-10-28T03:00:24.967Z'
+  ended_at: '2026-10-28T03:00:39.335Z'
+  duration_s: 14.368
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 3271
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 3271
+    artifact_tokens: 3271
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-014-the-forms-of-cells-audit/REPORT.md
+    bytes: 11316
+    sha256: 38ead962604290e5db741948f36c2d2cecbfa4a44ab2bff651285b1b5e809cb9
+    tokens: 3271
   commands: []
-  notes: null
+  notes: 'REPORT.md verified: overall 60.8 mostly faithful; 7 remediation items listed'
 - num: 12
   slug: remed
   tier: B->A
   title: 12 Remediate & re-score
-  actor: builder+assessor
+  actor: claude-fable-5-1
   model: null
-  status: pending
-  started_at: null
+  status: in_progress
+  started_at: '2026-10-28T03:00:39.418Z'
   ended_at: null
   duration_s: 0.0
   cpu_user_s: 0.0
@@ -398,4 +422,6 @@ steps:
     method: none
   artifacts: []
   commands: []
-  notes: null
+  notes: Pass 2 remediation of R2-R7
+  _active_start_epoch: 1793156439.4186137
+  _transcript_offsets: {}
