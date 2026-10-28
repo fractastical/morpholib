@@ -1,0 +1,34 @@
+sim_id: thompson1917-t1917-041
+math_family: Thompson1917_RadialPolarLeafTransformation
+model_spec:
+  model: "Thompson (1917) Ch. XVII Fig. 359–360 radial-cordate leaf outline transformation"
+  claim_id: T1917-041
+  coordinate_frame: "polar about petiole arrest point (rho, phi)"
+  inputs:
+    - datasets/thompson_1917/t1917-041/t1917_041_on_the_theory_of_transformatio_reference.json
+equations:
+  - law_name: Radial distance from arrest point
+    formula: "rho^2 = u^2 + (v - y0)^2"
+    lean_decl: MathOfBiology.Loop_233.rho_sq
+    lean_theorem: MathOfBiology.Loop_233.rho_sq_nonnegative
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_041.lean
+    code_locus: thompson/claims/t1917-041_on-the-theory-of-transformations.py
+    variables: "u, v, y0: leaf outline coordinates and arrest pole"
+    role: Non-negativity of squared radial distance in the polar frame
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XVII, Fig. 359, p. 732"
+  - law_name: Arrest-point translation anchor
+    formula: "u=0, v=y0 => rho=0 => (x',y') = (tx, b2*y0+ty)"
+    lean_decl: MathOfBiology.Loop_233.radial_cordate_x
+    lean_theorem: MathOfBiology.Loop_233.arrest_point_fixed
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_041.lean
+    variables: "a1,a2,b1,b2,tx,ty: radial-cordate coefficients"
+    role: Petiole arrest point maps to pure translation
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XVII, Fig. 359, p. 732"
+  - law_name: Radial mode explained variance
+    formula: "d^2 - (d - pred)^2 = d^2 when pred = d"
+    lean_decl: MathOfBiology.Loop_233.explained_var_num
+    lean_theorem: MathOfBiology.Loop_233.radial_mode_beats_zero_prediction
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_041.lean
+    variables: "d: landmark displacement; pred: model prediction"
+    role: Perfect radial prediction maximizes explained variance numerator
+    source_citation: "Thompson (1917) radial transformation formalism; MorphoEval loop T1917-041"
