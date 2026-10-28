@@ -1,0 +1,258 @@
+# MorphoEval audit — Thompson (1917) Ch. XV claim T1917-034, egg meridian-curve family, 2026-10-28 (v2)
+#
+# Pass 2 (v2) evaluation of `thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py`
+# (1033 lines) after completing the 12-step closed remediation loop
+# (`2026-10-28-t1917-034-on-the-shapes-of-eggs-and-of-c-loop`):
+#   - Primary assessor: Claude Fable 5.1 — 90.1 / 100 (up from 56.1 / 100 in v1; +34.0 overall)
+#
+# Key remediation improvements verified in Pass 2:
+#   1. Thompson's envelope equation p_n + T(1/r + 1/r') = P is now exercised in code: the mean-curvature
+#      profile 2H(x) = (P - p_n)/T is inverted on every Biggins egg (`mean_curvature_profile`, L186-210),
+#      the four-constraint "Thompson closure" of the Preston family recovers the guillemot C126 from
+#      its pressure descriptors to 5.6e-16 and the sphere from uniform pressure (`thompson_closure`,
+#      L212-246), and a sphere -> mid-body squeeze -> posterior squeeze pressure path drives the GIF
+#      (`thompson_closure_sweep`, L248-277; max closure residual along the path 1.3e-15).
+#   2. All five vendored specimen photographs are segmented (`_egg_candidates`, `segment_specimens`,
+#      L392-511: adaptive Otsu / multi-Otsu, scale-bar removal, convex hull, watershed): 12 eggs of
+#      Thompson's owl / grebe / plover / guillemot classes, axisymmetry residual 0.4 % (back-lit C126;
+#      museum median 4.2 %), and the C126 photograph re-fitted to c = (0.488, -0.245, 0.043, 0.117) vs
+#      published (0.488, -0.246, 0.039, 0.121), E = 1.8616 vs 1.8607, profile r = 0.99999.
+#   3. Negative / ablation controls: Steiner's Cartesian oval is 7.4x worse than Preston on the
+#      guillemot (Thompson p. 654 footnote confirmed), the prolate-ellipsoid null 31x worse, and the
+#      published Baker / Carter alternatives 35x / 81x worse in MSE (`fit_cartesian_oval`, `fit_ellipsoid`,
+#      L514-556).
+#   4. Statistics: between-species eta^2 = 0.67 / 0.83 / 0.47 for elongation / pointedness / polar
+#      asymmetry (Kruskal-Wallis p < 1e-92, 29 species), order-level eta^2 of Deeming PC1 / PC2 = 0.38 /
+#      0.57, KS D = 0.96 guillemot vs penguins, Preston RMSE / breadth median 0.0018, Spearman rho = 0.39
+#      (p = 7e-8) asymmetry vs relative egg mass; 17 reference-anchored measurements, runtime SHA-256
+#      verification of 13 files, CLI overrides, 20-assert self-test with two-run determinism, result.json.
+#
+# Residual weaknesses carried forward: polar asymmetry from convex-hull fits of speckled museum eggs is
+# inflated (PA 3-8 vs species means 2.4-2.9) and the one-parameter pressure path tracks species means
+# only moderately (r = 0.54) because penguins and auks differ in elongation at equal asymmetry.
+
+audit:
+  id: 2026-10-28-t1917-034-on-the-shapes-of-eggs-and-of-c-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-034-on-the-shapes-of-eggs-and-of-c-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 228 Pass 2 Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 2514d4650
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scikit-image: "0.26.0"
+      lean: "4.35.0"
+    note: >-
+      Pass 2 (v2) evaluation of `thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py`
+      after completing Step 12 closed-loop remediation in `2026-10-28-t1917-034-on-the-shapes-of-eggs-and-of-c-loop`.
+
+references:
+  thompson1917:
+    title: "On Growth and Form (Ch. XV, On the Shapes of Eggs, and of Certain Other Hollow Structures, pp. 652-669)"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917); Internet Archive scan ongrowthform1917thom"
+    url: https://archive.org/details/ongrowthform1917thom
+    year: 1917
+  thompson1908:
+    title: "On the Shapes of Eggs, and the Causes which determine them"
+    authors: "Thompson DW"
+    venue: "Nature 78:111-113 (1908)"
+    doi: 10.1038/078111a0
+  preston1953:
+    title: "The shapes of birds' eggs"
+    authors: "Preston FW"
+    venue: "The Auk 70(2):160-182 (1953)"
+    doi: 10.2307/4081145
+  biggins2018:
+    title: "Accurately quantifying the shape of birds' eggs"
+    authors: "Biggins JD, Thompson JE, Birkhead TR"
+    venue: "Ecology and Evolution 8(19):9728-9738 (2018)"
+    doi: 10.1002/ece3.4412
+  biggins2018data:
+    title: "Data from: Accurately quantifying the shape of birds' eggs"
+    authors: "Biggins JD, Thompson JE, Birkhead TR"
+    venue: "Dryad (2019), CC0"
+    doi: 10.5061/dryad.8kv2b20
+  deeming2018:
+    title: "Effect of composition on shape of bird eggs"
+    authors: "Deeming DC"
+    venue: "Journal of Avian Biology 49(1):jav-01528 (2018)"
+    doi: 10.1111/jav.01528
+  deeming2017data:
+    title: "Data from: Effect of composition on shape of bird eggs"
+    authors: "Deeming DC"
+    venue: "Dryad (2017), CC0"
+    doi: 10.5061/dryad.q8rp3
+  stoddard2017:
+    title: "Avian egg shape: Form, function, and evolution"
+    authors: "Stoddard MC, Yong EH, Akkaynak D, Sheard C, Tobias JA, Mahadevan L"
+    venue: "Science 356(6344):1249-1254 (2017)"
+    doi: 10.1126/science.aaj1945
+
+simulations:
+  - id: thompson1917-t1917-034
+    name: "Thompson (1917) Ch. XV: eggs as solids of revolution of a definite, species-varying family of ovoid meridian curves (Preston 1953 family on Biggins et al. 2018 / Deeming 2018 data)"
+    organism: "Aves egg shells: Uria aalge (Common Guillemot), Vanellus vanellus (Northern Lapwing), Strix aluco (Tawny Owl), Podiceps cristatus (Great Crested Grebe); 30 auk + penguin species (1389 eggs); 181 species / 30 orders"
+    script: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py
+    output: docs/media/t1917_034_on_the_shapes_of_eggs_and_of_c_comparison.png
+    extra_outputs:
+      - docs/media/t1917_034_on_the_shapes_of_eggs_and_of_c_growth.gif
+      - datasets/thompson_1917/t1917-034/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-034-on-the-shapes-of-eggs-and-of-c-audit
+    source_refs:
+      - thompson1917
+      - thompson1908
+      - preston1953
+      - biggins2018
+      - biggins2018data
+      - deeming2018
+      - deeming2017data
+      - stoddard2017
+    claim_boundary:
+      reported_in_source:
+        - "Thompson 1917 p. 652: eggs are simple solids of revolution; forms range from spherical (owl, penguin, tortoise) through ellipsoidal (grebe, cormorant, pelican) and ovoid (hen) to blunt-pointed conical (guillemot, puffin, sandpiper, plover, curlew); prolate never oblate."
+        - "Thompson 1917 p. 654 footnote: Steiner's Cartesian oval r + m r' = c 'fails in such a case as the guillemot'."
+        - "Thompson 1917 p. 655 (5): the most unsymmetrical / tapered eggs are large relative to the parent bird (apteryx the exception, p. 656)."
+        - "Thompson 1917 pp. 657-659: cone-ended-cylinder balance p cos^2(theta) = p' cos^2(theta'); envelope equation p_n + T(1/r + 1/r') = P; spherical egg <=> uniform p_n."
+      reconstructed_in_script:
+        - "Preston (1953) four-parameter meridian family with Biggins et al. (2018) indices, closed-form polar asymmetry R_pole = p(+/-1)^2 and exact volume functional (Lean Laws 1-2)."
+        - "Thompson closure: pole / equator curvature constraints + equator position determine the Preston coefficients; mean-curvature (excess pressure) profile of every egg; pressure-asymmetry path sphere -> ellipsoid -> conical."
+        - "Computer-vision segmentation and Preston weighted least squares (Biggins Analysis.R estimator) on 12 eggs in 5 photographs; axisymmetry residual; Cartesian-oval and ellipsoid controls."
+        - "eta^2 / Kruskal-Wallis across 30 species and 15 orders, KS test, RMSE / breadth, Spearman asymmetry vs relative egg mass."
+      transfer_boundary:
+        - "The Preston family is a 1953 descriptor adopted as the quantitative reading of Thompson's 'definite family'; Thompson gave no algebraic family."
+        - "Biggins et al. (2018) eggs are auks and penguins (plus a 10-egg range set); order-level breadth comes only from Deeming's outline PCs; museum photographs are oblique-lit and bound the axisymmetry test from above."
+        - "The Thompson closure is a kinematic reading of his equilibrium equation (curvature <-> excess pressure), not a dynamic oviduct simulation; friction and tangential forces he mentions are not modelled."
+      does_not_claim:
+        - "That oviduct pressure is demonstrated to be the cause of the family; only the geometric claim and the internal consistency of Thompson's equation are tested."
+        - "Anything about eggshell microstructure, colour, or non-avian hard-shelled eggs beyond Thompson's mention."
+    summary: >-
+      Pass 2 (v2) evaluation of
+      `thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py`
+      (overall weighted score: 90.1/100, up from 56.1/100 in v1). The remediated script verifies the
+      13 pinned dataset files at runtime, inverts Thompson's envelope equation on every egg as the
+      excess-pressure profile (P - p_n)/T = 2H(x), closes the Preston family from four curvature
+      constraints (C126 recovered to 5.6e-16; sphere from uniform pressure), and drives a
+      sphere -> ovoid -> conical pressure path. It segments 12 eggs of Thompson's owl, grebe, plover
+      and guillemot classes from five photographs (axisymmetry residual 0.4 % on the back-lit C126
+      silhouette, museum median 4.2 %), re-fits the C126 photograph to c = (0.488, -0.245, 0.043, 0.117)
+      vs published (0.488, -0.246, 0.039, 0.121) (E 1.8616 vs 1.8607, profile r = 0.99999), and shows
+      Steiner's Cartesian oval 7.4x and the ellipsoid null 31x worse than Preston on the guillemot
+      (Thompson's own footnote). Species signal: eta^2 = 0.67 / 0.83 / 0.47 for elongation /
+      pointedness / polar asymmetry (p < 1e-92), order-level eta^2 0.38 / 0.57 (Deeming PC1 / PC2),
+      KS D = 0.96; prolate-never-oblate holds (min E = 1.035 over 1411 eggs); asymmetry rises with
+      relative egg mass (rho = 0.39, p = 7e-8). Verdict written to result.json: supported, with two
+      flagged details (King Penguin is not spherical; Thompson's pole-tension remark has the sign
+      reversed under his own equation).
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          Implements the Preston family, indices and exact volume (L110-184) matching Lean Laws 1-2,
+          and now exercises Thompson's own mechanics: the envelope equation inverted as 2H(x) =
+          (P - p_n)/T with exact pole limits (L186-210), the four-constraint Thompson closure that
+          recovers C126 and the sphere (L212-246), the empirical pressure-asymmetry path (L248-277)
+          and the cone-balance ratio (L279-286), all cross-referenced to the 5 Lean theorems. The
+          closure is kinematic (curvature <-> pressure) rather than a dynamic oviduct model with
+          friction, which Thompson himself invokes.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [110, 184], note: "Preston polynomial, analytic widest point, closed-form pole radius and volume, Biggins weighted LS estimator", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [186, 286], note: "Analytic derivatives, mean-curvature (excess pressure) profile, Thompson closure, pressure path, cone-balance ratio", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_034.lean, lines: [40, 191], note: "5 machine-checked theorems (pole asymmetry, volume + reflection invariance, envelope equation at poles, cone equilibrium, prolate-never-oblate), no admitted goals", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [248, 277], note: "Pressure path is a conditional-mean regression through the data, not a solved membrane dynamics problem", supports: false}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Segments all five vendored photographs (`_egg_candidates`, `segment_specimens`,
+          L392-511) into 12 eggs spanning Thompson's four named classes, tests the solid-of-
+          revolution property (C126 upper-vs-lower profile RMS 0.4 % of half-breadth; museum
+          median 4.2 %, max 11.9 % on a shadowed lapwing egg), reproduces the published C126
+          coefficients from the raw silhouette (profile r = 0.99999) and recovers the ordering
+          owl (E 1.27) < grebe (1.36-1.48) < guillemot (1.61 vs species mean 1.64). Polar
+          asymmetry from hull fits of speckled eggs is inflated (3-8), so specimen PA is reported
+          but not used for the verdict.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [392, 511], note: "Principal-axis profile extraction, adaptive threshold + scale-bar removal + convex hull + watershed segmentation, per-egg Preston fit, axisymmetry and RMSE", supports: true}
+          - {file: docs/media/t1917_034_on_the_shapes_of_eggs_and_of_c_comparison.png, lines: [0, 0], note: "Top row: four museum photographs with segmentation boxes and per-egg E / PA / axisymmetry; C126 silhouette outline vs published Preston fit vs Cartesian oval / ellipsoid", supports: true}
+          - {file: datasets/thompson_1917/t1917-034/result.json, lines: [1, 60], note: "Per-specimen table and C126 photo-vs-published coefficients", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [483, 504], note: "Speckled museum eggs give inflated polar asymmetry; museum axisymmetry includes shadow / tilt artefacts", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Spans 1389 eggs of 30 species, the 10-egg range set, 181 Deeming species and 12
+          photographed eggs; sweeps the pole pressure contrast from the sphere to the 99th
+          percentile (L248-277); exposes --pole-contrast, --equator-contrast, --x-star, --r-blunt,
+          --frames, --skip-gif, --verify-only and --seed (L999-1030). Thompson's 'cylindrical'
+          (megapode) class is represented only through the c2 sign, not by a dedicated specimen.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [248, 277], note: "Sphere -> symmetric ellipsoid -> conical pressure path with closure consistency check per frame", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [999, 1030], note: "CLI parameter overrides wired into the Thompson closure and rendering", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          `measure_morphoeval()` (L816-871) returns 17 reference-anchored measurements: min
+          elongation 1.035 (ref 1), axisymmetry 0.048 mean (ref 0), C126 photo E 1.8616 vs 1.8607
+          and PA 2.67 vs 2.63, profile r = 0.99999, Preston RMSE/B 0.0023 on C126 vs 0.0018 median,
+          Cartesian oval 0.0172 (7.4x) and ellipsoid 0.0731 (31x) negative controls, Baker ratio
+          35x, eta^2 0.67 (p = 2e-100), order eta^2 0.38 / 0.57, KS D = 0.96 (p = 1e-135), class
+          ordering, Spearman rho 0.39 (p = 7e-8), closure residual 5.6e-16, pressure-path r = 0.54
+          and CV of the pressure profile 0.32.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [816, 871], note: "17 measurements with reference values, p-values, RMSE, KS, eta^2, CV and negative-control ratios", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [559, 633], note: "analyse(): statistics, controls, closure and sweep computed once and shared by figure, measurements and result.json", supports: true}
+      source-traceability:
+        value: 93
+        rationale: >-
+          `verify_dataset_integrity()` (L83-105) re-hashes the 13 pinned data files from the
+          reference JSON at import of the analysis (and via --verify-only / self-test); Dryad DOIs,
+          file ids, upstream SHA-256 digests, Commons authors and licences are in
+          scout_manifest.json / reference JSON / README, and result.json repeats the dataset pins.
+          The README hash is pinned but excluded from the runtime check as prose.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [83, 105], note: "Runtime SHA-256 verification against datasets.files pins (13 files)", supports: true}
+          - {file: datasets/thompson_1917/t1917-034/t1917_034_on_the_shapes_of_eggs_and_of_c_reference.json, lines: [1, 440], note: "Equations, parameter tables, claim decomposition C1-C8, vendored and upstream SHA-256 pins, licences", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The module header maps each section to Thompson's pages (652, 654, 655, 657-659) and to
+          the five Lean theorems (L1-57); function docstrings cite Biggins Analysis.R (estimator,
+          fat.point), Lean law numbers and Thompson page numbers; the Math KG YAML links each law to
+          code loci and Lean loci (alignment and integrity gates pass).
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [1, 57], note: "Section-by-section equation-to-page and Lean-theorem traceability in the module header", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-034.yaml, lines: [1, 125], note: "5 laws with formula, lean_decl / lean_theorem / lean_locus and code_locus", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          20-assert `self_test()` (L956-996) covers dataset integrity, sphere / volume / reflection
+          identities, Thompson closure of the sphere and C126, mean curvature of the sphere, cone-
+          balance sign, specimen reproduction of C126, axisymmetry, the Cartesian-oval control and
+          two-run bitwise determinism; --verify-only and --skip-gif flags; deterministic (no RNG);
+          result.json written each run. Runtime is ~40 s because segmentation is recomputed per
+          process.
+        evidence:
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [956, 996], note: "Comprehensive self_test() with integrity, closure, CV and determinism assertions", supports: true}
+          - {file: thompson/claims/t1917-034_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [874, 954], note: "result.json writer with verdict by component, headline numbers and notes", supports: true}
+    remediation:
+      - "Replace the kinematic Thompson closure with a dynamic axisymmetric membrane in a peristaltic tube (wall friction + tangential tension gradient, Thompson pp. 657-659) so that the pressure-asymmetry path is solved rather than regressed."
+      - "Photograph or source back-lit silhouettes of owl, grebe and plover eggs so polar asymmetry and axisymmetry are measured under the same controlled conditions as C126."
