@@ -45,3 +45,23 @@ three-at-a-time at ~120 degrees and in other respects obey Plateau's laws of fil
 
 A-priori tolerance for "~120°": **±15°** (median |θ − 120°|), with ≥ 90 % three-fold vertices for Plateau's
 topological law. Both thresholds were fixed before any specimen was measured.
+
+## Result (Pass 2, `result.json`)
+
+| Specimen | vertices | three-fold f3 | chord median \|θ−120°\| | chord SD | within ±15° | best-fit ε |
+|---|---:|---:|---:|---:|---:|---:|
+| Human corneal endothelium (primary) | 215 | 1.000 | 7.2° [95 % CI 6.3, 7.7] | 12.5° | 0.81 | 0.0 (KS D = 0.045, p = 0.60 vs Plateau froth) |
+| *Allium cepa* epidermis | 68 | 1.000 | 15.4° | 22.8° | 0.47 | 0.2 |
+| Thompson Fig. 103 (maize parenchyma) | 13 | 1.000 | 2.3° | 3.1° | 1.00 | — |
+| Thompson Fig. 124 (Girardia epidermis) | 28 | 1.000 | 13.2° | 28.3° | 0.58 | 0.3 |
+| Equal-tension froth model (Γ = ε = 0, T1 on) | 192 | 1.000 | — | 9.9° | — | — |
+| Poisson–Voronoi null | 192 | 1.000 | — | 29.5° | — | — |
+
+**Verdict: `supported`.** Every detected vertex in every specimen is three-fold (Plateau's second law), and in the
+isotropic monolayer the junction-angle distribution is indistinguishable from the relaxed equal-tension froth
+(two-sample KS p = 0.60) and far from the Poisson–Voronoi null (KS D = 0.27). The anisotropic onion epidermis and
+Thompson's own Fig. 124 behave as he said they would (pp. 321–322): still three-fold, but spread by growth anisotropy
+(best-fit ε ≈ 0.2–0.3). Robustness: with the secondary branch estimator the cornea's median |θ−120°| is 15.9°, at the
+edge of the tolerance, so the angle half of the claim is estimator-sensitive at the ±1° level; the three-fold half is not.
+Note that a straight-sided froth cannot reach exactly 120° everywhere (a pentagon's angles sum to 540°), so the
+relaxed vertex model itself has an irreducible chord-angle SD ≈ 10°.
