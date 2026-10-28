@@ -975,7 +975,8 @@ def main():
         <p style="margin-top: 8px;">
           In Chapter XVII of <em>On Growth and Form</em> (1917), Thompson tested three crustacean groups (<strong>Figs. 367–368 Copepods</strong>, <strong>Fig. 369 Crab Carapaces</strong>, and <strong>Fig. 370 Amphipods</strong>) and formulated his <strong>Fig. 359 Radial-Cordate Law</strong> (p. 732) for how an ovate structure transforms into a heart-shaped (cordate) bilobed structure around an arrest node. Testing all four across modern 3D laser scans, Antscan (2026) synchrotron micro-CT meshes, and 634 multi-caste landmark configurations reveals the exact same law we found in fishes:
         </p>
-        <img class="step-img" src="../outreach_fig8_antscan_caste_allometry_hypotheses.png" alt="Antscan 2026 & Ant Caste Allometry Thompson Tests" />
+        <img class="step-img" src="../media/thompson_1917_arthropods_and_ant_castes_summary.gif" alt="Animated Summary of D'Arcy Thompson's Arthropod & Ant Caste Transformations" />
+        <img class="step-img" src="../outreach_fig8_antscan_caste_allometry_hypotheses.png" alt="Antscan 2026 & Ant Caste Allometry Thompson Tests" style="margin-top: 18px;" />
         <img class="step-img" src="../outreach_fig9_crab_carapace_paradox_resolution.png" alt="Resolving the Scholtz et al. 2020 Crab Carapace Paradox" style="margin-top: 18px;" />
         <img class="step-img" src="../outreach_fig10_complete_arthropod_atlas.png" alt="Complete 1917 Arthropod Atlas: Copepods, Crabs, Amphipods & Ants" style="margin-top: 18px;" />
       </div>
