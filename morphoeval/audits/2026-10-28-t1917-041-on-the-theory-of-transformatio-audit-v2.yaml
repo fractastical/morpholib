@@ -1,0 +1,85 @@
+# MorphoEval Pass 2 (v2) — Thompson (1917) T1917-041 leaf radial transformations (remediated)
+
+audit:
+  id: 2026-10-28-t1917-041-on-the-theory-of-transformatio-audit-v2
+  supersedes_audit_id: 2026-10-28-t1917-041-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: composer-2.5
+    label: "Composer 2.5 (MorphoEval Loop thompson1917-t1917-041 Pass 2 Remediation)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917_claim_validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    environment:
+      python: "3.12"
+    note: Pass 2 after Step 12 remediation (PASS2 enabled).
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D.W."
+    venue: "Cambridge University Press (1917), Ch. XVII, Figs. 359-360"
+    url: https://archive.org/details/ongrowthform1917thom
+
+simulations:
+  - id: thompson1917-t1917-041
+    name: "Thompson (1917) radial-cordate leaf transformation claim T1917-041 (Pass 2)"
+    organism: "Leaf outline morphometrics (lanceolate / ovate / cordate; Begonia instance)"
+    script: thompson/claims/t1917-041_on-the-theory-of-transformations.py
+    output: docs/media/t1917_041_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_041_on_the_theory_of_transformatio_growth.gif
+    status: evaluated
+    source_refs: [thompson1917]
+    summary: >-
+      Pass 2 adds k-regime sweeps, shuffle ablation, Begonia rex CV segmentation (r, RMSE, KS),
+      Thompson IA page ink digitization, and writes datasets/thompson_1917/t1917-041/result.json.
+      Synthetic pairwise R² remains high; real Begonia fit is moderate (~55% R²); crude figure
+      digitization is weak (~6% R²), yielding a mixed empirical verdict on the 1917 leaf claim.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Full 8p radial-cordate map with ablation and k sweep; Thompson plate vectorized from IA page 752.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [95, 120], note: "fit_radial_cordate_8p", supports: true}
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [243, 280], note: "digitize_thompson_figure_outline", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Segments Begonia rex Commons specimen and overlays radial fit; Thompson figure ink extracted.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [155, 195], note: "segment_begonia_outline excess-green CV", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Sweeps k across 9 values per pair; shuffle ablation collapses R² from ~99% to ~4%.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [205, 225], note: "run_pass2_sweep k_grid extension", supports: true}
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [228, 238], note: "ablation_control shuffle", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          measure_morphoeval exports median R², Begonia r/RMSE/KS, and Thompson digitized R².
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [310, 370], note: "list-based measure_morphoeval contract", supports: true}
+      source-traceability:
+        value: 90
+        rationale: Runtime SHA-256 verification against reference JSON for IA and Begonia assets.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [35, 45], note: "verify_pinned_assets", supports: true}
+      code-traceability:
+        value: 85
+        rationale: Lean module Thompson1917_T1917_041.lean linked via math_kg_loops yaml.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-041.yaml, lines: [1, 35], note: "equations with lean_theorem refs", supports: true}
+      repro-package:
+        value: 86
+        rationale: "--self-test checks ablation ordering and Begonia R² floor; PNG+GIF outputs pinned."
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [430, 445], note: "self_test Pass2 guards", supports: true}
+    remediation: []

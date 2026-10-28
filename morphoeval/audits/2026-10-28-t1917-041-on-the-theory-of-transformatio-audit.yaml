@@ -1,0 +1,92 @@
+# MorphoEval Pass 1 (v1) — Thompson (1917) T1917-041 leaf radial transformations
+
+audit:
+  id: 2026-10-28-t1917-041-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: composer-2.5
+    label: "Composer 2.5 (MorphoEval Autonomous Loop thompson1917-t1917-041 Pass 1)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917_claim_validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    environment:
+      python: "3.12"
+      numpy: "2.x"
+      matplotlib: "3.x"
+    note: Pass 1 baseline prior to Step 12 remediation.
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D.W."
+    venue: "Cambridge University Press (1917), Ch. XVII, Figs. 359-360"
+    url: https://archive.org/details/ongrowthform1917thom
+
+simulations:
+  - id: thompson1917-t1917-041
+    name: "Thompson (1917) radial-cordate leaf transformation claim T1917-041"
+    organism: "Leaf outline morphometrics (lanceolate / ovate / cordate; Begonia instance)"
+    script: thompson/claims/t1917-041_on-the-theory-of-transformations.py
+    output: docs/media/t1917_041_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_041_on_the_theory_of_transformatio_growth.gif
+    status: evaluated
+    source_refs: [thompson1917]
+    summary: >-
+      Pass 1 fits the 8p radial-cordate family on synthetic parametric leaf pairs with strong
+      in-sample R², but does not segment Thompson Fig. 359–360 ink outlines, perform Begonia
+      specimen CV validation, parameter-regime sweeps, ablation controls, or formal KS tests.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          Implements Thompson Fig. 359 radial-cordate 8p least squares and compares to box/affine
+          nulls on parametric outlines; Pass 1 does not digitize landmarks from the IA page plate.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [95, 120], note: "fit_radial_cordate_8p implements polar rho/phi map", supports: true}
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [300, 310], note: "Thompson page shown as raster only, not vectorized", supports: false}
+      specimen-match:
+        value: 48
+        rationale: >-
+          Vendors Begonia rex Commons JPEG and IA page 752, but Pass 1 does not segment or overlay
+          the real Begonia outline against the radial fit.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [240, 260], note: "begonia_vs_cordate_template empty when PASS2 false", supports: false}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Uses fixed k/y0 grids only; no sweep across lanceolate→cordate regimes or negative ablation.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [28, 28], note: "PASS2 = False disables sweep/ablation", supports: false}
+      morphometric-validation:
+        value: 58
+        rationale: >-
+          Reports median R² and RMSE on synthetic pairs but omits KS tests and Thompson-figure residuals.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [230, 245], note: "measure_morphoeval lacks KS statistic in Pass 1", supports: false}
+      source-traceability:
+        value: 82
+        rationale: >-
+          verify_pinned_assets checks SHA-256 against reference JSON for IA page and Begonia specimen.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [35, 45], note: "Runtime SHA-256 verification", supports: true}
+      code-traceability:
+        value: 70
+        rationale: >-
+          Docstring cites Thompson 1917 and links to Lean module path; lacks line-level theorem map in Pass 1.
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_041.lean, lines: [1, 60], note: "Standalone Lean proofs for arrest point and rho²", supports: true}
+      repro-package:
+        value: 68
+        rationale: >-
+          --self-test and deterministic PNG/GIF outputs; Pass 1 omits ablation self-checks and Begonia metrics.
+        evidence:
+          - {file: thompson/claims/t1917-041_on-the-theory-of-transformations.py, lines: [338, 348], note: "self_test skips ablation when PASS2 false", supports: false}
+    remediation:
+      - "Digitize / segment Thompson Fig. 359–360 leaf ink outlines from IA page 752 and fit radial vs null models on extracted boundaries."
+      - "Enable PASS2 parameter-regime k sweep, shuffle ablation control, and Begonia rex CV segmentation with RMSE/r/KS statistics."
+      - "Write result.json verdict using real-specimen + figure metrics, not synthetic-only R²."
