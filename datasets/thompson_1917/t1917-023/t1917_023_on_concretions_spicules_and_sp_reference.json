@@ -1,0 +1,249 @@
+{
+  "dataset_id": "thompson_1917_t1917_023_v1",
+  "claim_id": "T1917-023",
+  "date_made": "1917",
+  "title": "Thompson (1917) On Growth and Form, Ch. IX 'On Concretions, Spicules, and Spicular Skeletons' — radial deposition of calcospherites about a centre (Harting 1872 artificial concretions in egg albumen)",
+  "claim": "Concretions and calcospherites grow by radial deposition about a centre (Harting's artificial concretions in egg albumen mimic natural ones), giving concentric/spherical forms by physical deposition alone.",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge University Press, 1st ed., Ch. IX pp. 411-487, Figs. 194-235",
+    "ia_identifier": "ongrowthform1917thom",
+    "ia_url": "https://archive.org/details/ongrowthform1917thom",
+    "copyright": "NOT_IN_COPYRIGHT (public domain)",
+    "pages_used": [
+      420,
+      421,
+      422,
+      424,
+      425,
+      426,
+      427,
+      432,
+      437
+    ],
+    "figures_used": [
+      "195",
+      "196",
+      "197",
+      "198",
+      "201",
+      "202",
+      "203",
+      "208",
+      "209"
+    ]
+  },
+  "primary_experimental_source": {
+    "citation": "Harting, P. (1872) Recherches de morphologie synthétique sur la production artificielle de quelques formations calcaires organiques. Verh. K. Akad. Wet. Amsterdam 13:1-84",
+    "method_as_quoted_by_thompson_p421": "bring some soluble salt of lime, such as the chloride or nitrate, into solution within a colloid medium, such as gum, gelatine or albumin; and then to precipitate it out in the form of some insoluble compound, such as the carbonate or oxalate"
+  },
+  "state_variables": {
+    "R": "radius of the spherite front from its nucleus (length)",
+    "t": "time since nucleation",
+    "rho(theta,t)": "radial distance of the front in direction theta (2-D section); asphericity A = (max rho - min rho)/mean rho",
+    "a(r,t), b(r,t)": "concentrations of the inner (CaCl2 / AgNO3) and outer (Na2CO3 / K2Cr2O7) electrolytes in the colloid",
+    "p(r,t)": "precipitate (CaCO3 / Ag2CrO4) density; bands = local maxima of p(r) at the end of the run",
+    "r_n": "radius of the n-th concentric band (lamella) counted from the nucleus",
+    "phi(x,y)": "quasi-static Laplacian supply field around a growing 2-D cluster (dielectric-breakdown-model surrogate for diffusion-limited supply)",
+    "eta": "supply exponent of the dielectric-breakdown model: growth probability of a perimeter site is proportional to |grad phi|^eta (eta = 0 interface-controlled Eden growth, eta = 1 diffusion-limited aggregation, eta > 1 strongly supply-starved)"
+  },
+  "equations": {
+    "E1_interface_controlled_radial_deposition": {
+      "formula": "dR/dt = v  =>  R(t) = R_0 + v t;  lamella thickness delta_n = R_{n+1} - R_n = v*Delta t = const",
+      "source": "Thompson p. 421-422 & 437 (deposition 'about some minute point or centre'); Keith & Padden 1963 / Hoffman & Lauritzen 1961 linear spherulite growth",
+      "lean": "MathOfBiology.Loop_218.radius_lin / lamella_thickness_constant"
+    },
+    "E2_diffusion_limited_radial_deposition": {
+      "formula": "R dR/dt = D Omega (c_inf - c_eq) = kappa  =>  R(t)^2 = R_0^2 + 2 kappa t;  (R_{n+1}-R_n)(R_{n+1}+R_n) = 2 kappa Delta t  =>  lamellae thin outward",
+      "source": "Zener (1949) / Frank (1950) quasi-steady diffusion to a sphere; Mullins & Sekerka (1963)",
+      "lean": "MathOfBiology.Loop_218.parabolic_shell_identity / lamellae_thin_outward"
+    },
+    "E3_sphericity_stability_under_uniform_normal_deposition": {
+      "formula": "rho(theta,t) = rho_0(theta) + v t  =>  max rho - min rho = const,  A(t) = (max rho_0 - min rho_0)/(mean rho_0 + v t) -> 0",
+      "source": "Huygens/eikonal front propagation; Thompson p. 425-426 (rounded contours)",
+      "lean": "MathOfBiology.Loop_218.asphericity_nonincreasing"
+    },
+    "E4_equal_rate_impingement_plane": {
+      "formula": "|x - c_1|^2 - |x - c_2|^2 = 2 (c_2 - c_1) . x + |c_1|^2 - |c_2|^2  (affine in x)  =>  two spherites nucleated simultaneously and growing at equal rate meet on the perpendicular-bisector plane; N centres give a Voronoi mosaic with mean 6 neighbours in 2-D",
+      "source": "Thompson p. 422 (polyhedral, often regularly hexagonal outlines when crowded), p. 426 (contiguous soap-bubbles)",
+      "lean": "MathOfBiology.Loop_218.impingement_locus_is_affine"
+    },
+    "E5_liesegang_supersaturation_banding": {
+      "formula": "da/dt = D_a Lap_r a - Rp,  db/dt = D_b Lap_r b - Rp,  dp/dt = Rp;  Rp = k (ab - K_sp)_+ [H(p - 0) + H(ab - K_ss)];  Lap_r = r^-2 d/dr (r^2 d/dr);  bands at r_n with r_{n+1}/r_n -> P (Jablczynski spacing coefficient), r_n^2 ~ t_n",
+      "source": "Thompson p. 427 ('stand farther and farther apart, in logarithmic ratio, as they recede from the centre'); Ostwald (1897) supersaturation theory; Jablczynski (1923); Matalon & Packter (1955); Antal, Droz, Magnin, Racz & Zrinyi (1998)",
+      "lean": "MathOfBiology.Loop_218.geometric_band_gap_grows"
+    },
+    "E6_dielectric_breakdown_supply_sweep": {
+      "formula": "Lap phi = 0 outside cluster, phi = 0 on cluster, phi = 1 on far boundary;  P(grow at perimeter site i) = |grad phi_i|^eta / sum_j |grad phi_j|^eta",
+      "source": "Niemeyer, Pietronero & Wiesmann (1984); Witten & Sander (1981); Eden (1961); Thompson p. 424 (scanty supply -> spinous/digitiform outgrowths)",
+      "lean": null
+    }
+  },
+  "boundary_and_initial_conditions": {
+    "E1_E2": "R(0) = R_0 > 0; seed may be aspherical (rho_0(theta) = R_0 (1 + eps cos(m theta)) or a square nucleus)",
+    "E5": "a(r <= r_0, t) = a_0 (inner reservoir, Dirichlet); a(r_max,t) = 0 (far field); b(r,0) = b_0 for r > r_0; zero-flux for b at r = 0 and r = r_max; p(r,0) = 0",
+    "E6": "single seed site at the grid centre; phi = 1 on a circle of radius R_launch = R_cluster + 8 lattice units; growth stopped at N_sites"
+  },
+  "parameter_regimes": [
+    {
+      "regime_id": "interface_controlled_eden",
+      "eta": 0.0,
+      "expected": "compact, near-circular cluster, circularity > 0.8, mass-radius exponent ~ 2.0",
+      "thompson_text": "rounded concretions ... radiate and concentric (p. 421-422)"
+    },
+    {
+      "regime_id": "mixed_eta_0p5",
+      "eta": 0.5,
+      "expected": "compact with mild surface roughening"
+    },
+    {
+      "regime_id": "diffusion_limited_dla",
+      "eta": 1.0,
+      "expected": "branched aggregate, mass-radius exponent ~ 1.7, low circularity",
+      "thompson_text": "when the albumin was somewhat scanty ... spheroidal globules tended to become rough, by an outgrowth of spinous or digitiform projections (p. 424)"
+    },
+    {
+      "regime_id": "supply_starved_eta_1p5",
+      "eta": 1.5,
+      "expected": "sparse dendrite, exponent < 1.7"
+    },
+    {
+      "regime_id": "supply_starved_eta_2",
+      "eta": 2.0,
+      "expected": "few thick spines"
+    }
+  ],
+  "liesegang_parameters": {
+    "D_a": 1.0,
+    "D_b": 1.0,
+    "a_0": 10.0,
+    "b_0_sweep": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "K_sp": 0.01,
+    "K_ss_nucleation": 0.08,
+    "k_precip": 5.0,
+    "r_0": 2.0,
+    "r_max": 160.0,
+    "dr": 0.25,
+    "dt": 0.02,
+    "t_end": 2500.0,
+    "control_no_threshold": "K_ss = K_sp (no supersaturation gap) -> continuous deposit, no discrete bands"
+  },
+  "empirical_reference_values": [
+    {
+      "name": "jablczynski_spacing_coefficient_P",
+      "value_range": [
+        1.05,
+        1.4
+      ],
+      "typical": 1.15,
+      "source": "Jablczynski (1923) Bull. Soc. Chim. Fr. 33:1592; Henisch (1988) Crystals in Gels and Liesegang Rings; Antal et al. (1998) J. Chem. Phys. 109:9479",
+      "note": "r_{n+1}/r_n for Liesegang bands, system-dependent; approaches 1 for large a_0/b_0 (Matalon-Packter)"
+    },
+    {
+      "name": "dla_fractal_dimension_2d",
+      "value": 1.71,
+      "uncertainty": 0.02,
+      "source": "Witten & Sander (1981) Phys. Rev. Lett. 47:1400; Meakin (1983)"
+    },
+    {
+      "name": "eden_cluster_dimension_2d",
+      "value": 2.0,
+      "source": "Eden (1961); compact growth"
+    },
+    {
+      "name": "poisson_voronoi_mean_neighbours_2d",
+      "value": 6.0,
+      "source": "Euler characteristic of planar tessellations (Thompson 1917 Ch. VII; Weaire & Rivier 1984)"
+    },
+    {
+      "name": "poisson_voronoi_area_cv_2d",
+      "value": 0.529,
+      "source": "Ferenc & Neda (2007) Physica A 385:518 (gamma fit, k = 3.57 -> CV = 1/sqrt(3.57))"
+    },
+    {
+      "name": "carmel_ooid_scale_bar_mm",
+      "value": 0.5,
+      "source": "Wilson, M.A., Commons File:CarmelOoids.jpg"
+    },
+    {
+      "name": "spherulite_linear_growth_law",
+      "value": "R = R_0 + v t",
+      "source": "Hoffman & Lauritzen (1961) J. Res. NBS 65A:297; Keith & Padden (1963) J. Appl. Phys. 34:2409"
+    },
+    {
+      "name": "calcite_spherulite_fabric_lab",
+      "value": "radial-fibrous cortex around a nucleus, concentric growth zones, in Mg-clay/organic-acid solutions",
+      "source": "Mercedes-Martin et al. (2016) Sediment. Geol. 335:93-102, doi:10.1016/j.sedgeo.2016.02.008"
+    }
+  ],
+  "empirical_biological_claims_from_text": [
+    {
+      "id": "C1",
+      "page": "421-422",
+      "claim": "rounded concretions with a central nucleus, structure at once radiate and concentric; concentric lamellae alternately dark and clear",
+      "test": "CV of boundary radius about the centroid of Fig. 196 spherite; radial-profile ring count; radial fibre alignment in Carmel ooids"
+    },
+    {
+      "id": "C2",
+      "page": "422",
+      "claim": "crowded calcospherites assume polyhedral, often regularly hexagonal outlines",
+      "test": "neighbour count and area CV of segmented Fig. 197 mosaic vs equal-rate Voronoi simulation"
+    },
+    {
+      "id": "C3",
+      "page": "424",
+      "claim": "with scanty albumin / scanty supply the globules become rough with spinous or digitiform projections",
+      "test": "eta sweep: circularity and mass-radius exponent collapse from Eden (eta=0) to DLA (eta>=1)"
+    },
+    {
+      "id": "C4",
+      "page": "427",
+      "claim": "concentric zones stand farther and farther apart, in logarithmic ratio, as they recede from the centre (Liesegang)",
+      "test": "geometric vs arithmetic fit of band radii in the Liesegang specimen and in the E5 simulation; spacing coefficient P"
+    },
+    {
+      "id": "C5",
+      "page": "425",
+      "claim": "the structure of a calcospherite is that of a pearl / otolith",
+      "test": "ring count & concentricity on Fig. 209 plaice otoliths (qualitative, plate only)"
+    },
+    {
+      "id": "C6",
+      "page": "437",
+      "claim": "the rounded calcospherite is deposited about some minute point or centre of crystallisation",
+      "test": "all radial models seeded from a point nucleus; asphericity decay exponent ~ -1 vs R"
+    }
+  ],
+  "vendored_files": {
+    "carmel_ooids_thin_section_specimen.jpg": {
+      "sha256": "3f1e500de229723d37bedff3a975f9e26b9f4e01aafca5bca2a35f7009e792da",
+      "bytes": 366785
+    },
+    "liesegang_rings_silver_chromate_gelatine_specimen.jpg": {
+      "sha256": "2f41645ff68f600052f4e33e77e01dc1cb9f2ca8250c33ff1e86aca28b2723cd",
+      "bytes": 46771
+    },
+    "thompson_1917_p421_figs195-196_harting_calcospherites.jpg": {
+      "sha256": "f05b4d1f9ce006b8cdbf67c7bf922b5a58c6eff76449bc60d9a671c9f4f980cf",
+      "bytes": 651734
+    },
+    "thompson_1917_p422_fig197_aggregated_calcospherites.jpg": {
+      "sha256": "65eabed4733a09dd40e01d4f327525275e8ee8cc9e73d4fe3fdd6bc998707249",
+      "bytes": 740028
+    },
+    "thompson_1917_p432_fig208-209_spherocrystal_otoliths.jpg": {
+      "sha256": "cbfffad55d3f82b7a4c43bd649edb77044e24ec69b885be52f0ffa6a55aba613",
+      "bytes": 651924
+    }
+  },
+  "analogue_labels": {
+    "carmel_ooids_thin_section_specimen.jpg": "ANALOGUE (natural CaCO3 ooid, not Harting's albumen spherite)",
+    "liesegang_rings_silver_chromate_gelatine_specimen.jpg": "ANALOGUE (silver chromate in gelatine = Thompson p. 427 experiment, not CaCO3)"
+  },
+  "script": "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py",
+  "lean_module": "morphoeval/lean/loops/Thompson1917_T1917_023.lean",
+  "math_kg": "morphoeval/math_kg_loops/thompson1917-t1917-023.yaml"
+}

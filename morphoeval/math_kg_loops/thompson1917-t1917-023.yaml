@@ -1,0 +1,145 @@
+sim_id: thompson1917-t1917-023
+math_family: "mechanistic-geometric — radial deposition about a centre (Thompson 1917 Ch. IX claim T1917-023)"
+claim_id: T1917-023
+date_made: "1917"
+model_spec:
+  model: "Thompson (1917) On Growth and Form Ch. IX pp. 411-487 / Harting (1872) calcospherite radial deposition: interface-controlled (dR/dt = v) and diffusion-limited (R dR/dt = kappa) front growth about a nucleus, uniform-normal-deposition sphericity stability, equal-rate Voronoi impingement, Liesegang supersaturation banding in spherical geometry (r_{n+1}/r_n -> P), and a dielectric-breakdown supply sweep (eta = 0 Eden ... 2 supply-starved) for Thompson's 'scanty supply -> spinous' qualification"
+  seed: 1917
+  dbm_grid: 121
+  dbm_cluster_sites: 1200
+  dbm_eta_sweep: [0.0, 0.5, 1.0, 1.5, 2.0]
+  liesegang_D: 1.0
+  liesegang_a0: 10.0
+  liesegang_b0_sweep: [0.05, 0.1, 0.2]
+  liesegang_K_sp: 0.01
+  liesegang_K_ss: 0.08
+  liesegang_k_precip: 5.0
+  liesegang_r0: 2.0
+  liesegang_r_max: 160.0
+  liesegang_dr: 0.25
+  liesegang_dt: 0.02
+  liesegang_t_end: 2500.0
+  voronoi_centres: 60
+  inputs:
+    - datasets/thompson_1917/t1917-023/t1917_023_on_concretions_spicules_and_sp_reference.json
+    - datasets/thompson_1917/t1917-023/scout_manifest.json
+    - datasets/thompson_1917/t1917-023/paper_citations.bib
+    - datasets/thompson_1917/t1917-023/thompson_1917_p421_figs195-196_harting_calcospherites.jpg
+    - datasets/thompson_1917/t1917-023/thompson_1917_p422_fig197_aggregated_calcospherites.jpg
+    - datasets/thompson_1917/t1917-023/thompson_1917_p432_fig208-209_spherocrystal_otoliths.jpg
+    - datasets/thompson_1917/t1917-023/carmel_ooids_thin_section_specimen.jpg
+    - datasets/thompson_1917/t1917-023/liesegang_rings_silver_chromate_gelatine_specimen.jpg
+equations:
+  - id: thompson1917-t1917-023-1
+    law_name: "Interface-controlled radial deposition about a centre (constant lamella thickness, semigroup growth law)"
+    formula: "dR/dt = v  =>  R_n = R_0 + v n;  R_{n+1} - R_n = v;  R(R(R_0, n), m) = R(R_0, n + m)"
+    lean_decl: "MathOfBiology.Loop_218.radius_lin"
+    lean_theorem: "MathOfBiology.Loop_218.lamella_thickness_constant"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_218.radial_deposition_semigroup"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_023.lean#L32-L52"
+    lean_code: |
+      def radius_lin (R0 v n : Int) : Int :=
+        R0 + v * n
+      def lamella_lin (R0 v n : Int) : Int :=
+        radius_lin R0 v (n + 1) - radius_lin R0 v n
+      theorem lamella_thickness_constant (R0 v n : Int) :
+          lamella_lin R0 v n = v
+      theorem radial_deposition_semigroup (R0 v n m : Int) :
+          radius_lin (radius_lin R0 v n) v m = radius_lin R0 v (n + m)
+    variables: "R_n: radius of the spherite front after n deposition intervals; R_0: nucleus radius; v: normal deposition increment per interval (surface-reaction-limited)"
+    role: "Formalises Thompson's 'deposited about some minute point or centre of crystallisation' (p. 437): a point-seeded front advancing by equal normal increments produces equally spaced concentric shells, and the growth law composes in time"
+    source_citation: "Thompson (1917) Ch. IX pp. 421-422, 437; Hoffman & Lauritzen (1961); Keith & Padden (1963)"
+    code_locus: "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py (radial_growth_laws)"
+
+  - id: thompson1917-t1917-023-2
+    law_name: "Diffusion-limited radial deposition — lamellae thin outward"
+    formula: "R dR/dt = kappa  =>  R_n^2 = R_0^2 + 2 kappa n;  (R_{n+1} - R_n)(R_{n+1} + R_n) = 2 kappa;  R_1 < R_2 < R_3 with equal square increments  =>  R_3 - R_2 < R_2 - R_1"
+    lean_decl: "MathOfBiology.Loop_218.radius_sq_parabolic"
+    lean_theorem: "MathOfBiology.Loop_218.lamellae_thin_outward"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_218.parabolic_shell_identity"
+      - "MathOfBiology.Loop_218.sq_diff_factor"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_023.lean#L59-L100"
+    lean_code: |
+      def radius_sq_parabolic (R0 kappa n : Int) : Int :=
+        R0 * R0 + 2 * kappa * n
+      theorem parabolic_shell_identity (R0 kappa n : Int) :
+          radius_sq_parabolic R0 kappa (n + 1) - radius_sq_parabolic R0 kappa n = 2 * kappa
+      theorem lamellae_thin_outward (R1 R2 R3 c : Int)
+          (h0 : 0 < R1) (h12 : R1 < R2) (h23 : R2 < R3)
+          (hA : R2 * R2 - R1 * R1 = c) (hB : R3 * R3 - R2 * R2 = c) :
+          R3 - R2 < R2 - R1
+    variables: "kappa = D Omega (c_inf - c_eq): diffusive supply constant; R_n: radius at the n-th equal-time deposit"
+    role: "Shows that when the supply is diffusion-limited the concentric lamellae become strictly thinner outward — the alternative kinetic regime against which the constant-lamella law (Law 1) is tested on the digitised plates"
+    source_citation: "Zener (1949) J. Appl. Phys. 20:950; Frank (1950); Mullins & Sekerka (1963) J. Appl. Phys. 34:323"
+    code_locus: "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py (radial_growth_laws)"
+
+  - id: thompson1917-t1917-023-3
+    law_name: "Sphericity stability under uniform normal deposition"
+    formula: "rho_max(n) - rho_min(n) = R_max,0 - R_min,0  (conserved);  n <= m, 0 <= v  =>  (R_max,0 - R_min,0) rho_min(n) <= (R_max,0 - R_min,0) rho_min(m)  i.e.  A(m) <= A(n)"
+    lean_decl: "MathOfBiology.Loop_218.rho_min"
+    lean_theorem: "MathOfBiology.Loop_218.asphericity_nonincreasing"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_218.absolute_asphericity_conserved"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_023.lean#L106-L128"
+    lean_code: |
+      def rho_max (Rmax0 v n : Int) : Int := Rmax0 + v * n
+      def rho_min (Rmin0 v n : Int) : Int := Rmin0 + v * n
+      theorem absolute_asphericity_conserved (Rmax0 Rmin0 v n : Int) :
+          rho_max Rmax0 v n - rho_min Rmin0 v n = Rmax0 - Rmin0
+      theorem asphericity_nonincreasing (Rmax0 Rmin0 v n m : Int)
+          (hseed : Rmin0 ≤ Rmax0) (hv : 0 ≤ v) (hnm : n ≤ m) :
+          (Rmax0 - Rmin0) * rho_min Rmin0 v n ≤ (Rmax0 - Rmin0) * rho_min Rmin0 v m
+    variables: "rho_max, rho_min: largest / smallest radial extent of the front; A = (rho_max - rho_min)/rho_min: relative asphericity"
+    role: "Proves the geometric core of the claim: whatever the shape of the nucleus, equal radial deposition rounds the concretion off (A -> 0 as 1/R), so 'physical deposition alone' yields spherical forms in the interface-controlled regime"
+    source_citation: "Thompson (1917) Ch. IX pp. 425-426 (rounded contours); Huygens/eikonal front propagation"
+    code_locus: "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py (simulate_front_rounding)"
+
+  - id: thompson1917-t1917-023-4
+    law_name: "Equal-rate impingement plane / Voronoi mosaic of crowded calcospherites"
+    formula: "|x - c_1|^2 - |x - c_2|^2 = 2 (c_2 - c_1) . x + |c_1|^2 - |c_2|^2  (affine in x)  =>  the boundary of two equal spherites is the perpendicular-bisector plane; the midpoint (c_1 + c_2)/2 lies on it"
+    lean_decl: "MathOfBiology.Loop_218.sqdist"
+    lean_theorem: "MathOfBiology.Loop_218.impingement_locus_is_affine"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_218.midpoint_on_impingement_plane"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_023.lean#L134-L163"
+    lean_code: |
+      def sqdist (x y z a b c : Int) : Int :=
+        (x - a) * (x - a) + (y - b) * (y - b) + (z - c) * (z - c)
+      theorem impingement_locus_is_affine (x y z a1 b1 c1 a2 b2 c2 : Int) :
+          sqdist x y z a1 b1 c1 - sqdist x y z a2 b2 c2 =
+            2 * (a2 - a1) * x + 2 * (b2 - b1) * y + 2 * (c2 - c1) * z
+              + (a1 * a1 + b1 * b1 + c1 * c1) - (a2 * a2 + b2 * b2 + c2 * c2)
+      theorem midpoint_on_impingement_plane (a1 b1 c1 a2 b2 c2 : Int) :
+          sqdist (a1 + a2) (b1 + b2) (c1 + c2) (2 * a1) (2 * b1) (2 * c1) =
+            sqdist (a1 + a2) (b1 + b2) (c1 + c2) (2 * a2) (2 * b2) (2 * c2)
+    variables: "x = (x,y,z): a point of the common boundary; c_1, c_2: nuclei of two simultaneously nucleated, equal-rate spherites"
+    role: "Explains Thompson's observation that crowded calcospherites 'assume polyhedral, or often regularly hexagonal, outlines' (p. 422) and that pairs look like 'contiguous soap-bubbles' (p. 426): radial deposition from several centres partitions space into convex Voronoi cells with plane faces"
+    source_citation: "Thompson (1917) Ch. IX pp. 422, 426; Ch. VII (hexagonal close packing)"
+    code_locus: "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py (simulate_voronoi_impingement)"
+
+  - id: thompson1917-t1917-023-5
+    law_name: "Liesegang 'logarithmic ratio' band spacing (Jablczynski law)"
+    formula: "r_n = r_0 P^n;  r_{n+1} = P r_n;  gap_{n+1} = P gap_n;  P >= 1  =>  gap_n <= gap_{n+1}"
+    lean_decl: "MathOfBiology.Loop_218.band_radius"
+    lean_theorem: "MathOfBiology.Loop_218.geometric_band_gap_grows"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_218.band_ratio_constant"
+      - "MathOfBiology.Loop_218.band_gap_monotone"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_023.lean#L170-L195"
+    lean_code: |
+      def band_radius (r0 P : Nat) (n : Nat) : Nat :=
+        r0 * P ^ n
+      def band_gap (r0 P : Nat) (n : Nat) : Nat :=
+        band_radius r0 P (n + 1) - band_radius r0 P n
+      theorem band_ratio_constant (r0 P n : Nat) :
+          band_radius r0 P (n + 1) = P * band_radius r0 P n
+      theorem geometric_band_gap_grows (r0 P n : Nat) :
+          band_gap r0 P (n + 1) = P * band_gap r0 P n
+      theorem band_gap_monotone (r0 P n : Nat) (hP : 1 ≤ P) :
+          band_gap r0 P n ≤ band_gap r0 P (n + 1)
+    variables: "r_n: radius of the n-th concentric band; P: Jablczynski spacing coefficient (1.05-1.4 empirically); gap_n = r_{n+1} - r_n"
+    role: "Formalises Thompson's quantitative statement that Liesegang zones 'stand farther and farther apart, in logarithmic ratio, as they recede from the centre' (p. 427), which he offers as the cause of the concentric striation of calcospherites; the script tests the geometric law against the silver-chromate specimen and the E5 simulation"
+    source_citation: "Thompson (1917) Ch. IX p. 427; Jablczynski (1923) Bull. Soc. Chim. Fr. 33:1592; Antal et al. (1998) J. Chem. Phys. 109:9479"
+    code_locus: "thompson/claims/t1917-023_on-concretions-spicules-and-spicular-skeletons.py (simulate_liesegang_radial, measure_liesegang_specimen)"
