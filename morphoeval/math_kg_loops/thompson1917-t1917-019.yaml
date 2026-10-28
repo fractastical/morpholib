@@ -1,0 +1,147 @@
+sim_id: thompson1917-t1917-019
+math_family: "Planar Froth Topology (Euler trivalent side sum, mu2, Lewis & Aboav-Weaire laws) & Isoperimetric Honeycomb Bound (Hales 2001) — geometric"
+claim_id: T1917-019
+date_made: "1917"
+model_spec:
+  model: "Thompson (1917) On Growth and Form Ch. VII pp. 293-345 Figs. 120-127 — tissue cells tessellate approximately as hexagons / as a froth, the least-perimeter partition; tested on a segmented human corneal endothelium against a periodic Voronoi/Lloyd froth morphospace"
+  claim_decomposition: ["C1 mean six / froth", "C2 least perimeter (honeycomb bound)", "C3 approximately hexagons (p6 modal and >= 0.5)"]
+  n_cells: 400
+  delta_disorder_canonical: 0.35
+  delta_sweep: [0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.7, 1.0]
+  lloyd_iters_sweep: [0, 2, 5, 10, 20]
+  boundary: periodic torus (chi = 0)
+  specimen_segmentation: "alizarin-red ridge threshold -> distance-transform watershed -> interior-cell neighbour counts"
+  seed: 20261028
+  inputs:
+    - datasets/thompson_1917/t1917-019/t1917_019_the_forms_of_tissues_or_cell_a_reference.json
+    - datasets/thompson_1917/t1917-019/human_corneal_endothelium_specimen.jpg
+    - datasets/thompson_1917/t1917-019/elodea_canadensis_leaf_specimen.jpg
+    - datasets/thompson_1917/t1917-019/thompson_1917_p322_fig125_126_froth_elodea.jpg
+    - datasets/thompson_1917/t1917-019/scout_manifest.json
+    - datasets/thompson_1917/t1917-019/paper_citations.bib
+equations:
+  - law_name: "Euler Trivalent-Froth Side-Sum Law (Thompson's 'on the average hexagonal')"
+    formula: "3V = 2E,  Σ n_i = 2E,  V − E + F = χ  ⟹  Σ n_i = 6F − 6χ;   torus (χ=0): ⟨n⟩ = 6;   sphere (χ=2), 5/6/7-gons only: n₅ − n₇ = 12"
+    lean_decl: "MathOfBiology.Loop_214.trivalent_side_sum_rhs"
+    lean_theorem: "MathOfBiology.Loop_214.trivalent_side_sum"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L37-L68"
+    lean_code: |
+      def trivalent_side_sum_rhs (F chi : Int) : Int :=
+        6 * F - 6 * chi
+      theorem trivalent_side_sum (V E F chi sum_n : Int)
+          (h_trivalent : 3 * V = 2 * E)
+          (h_two_cells_per_edge : sum_n = 2 * E)
+          (h_euler : V - E + F = chi) :
+          sum_n = trivalent_side_sum_rhs F chi
+      theorem torus_mean_six (V E F sum_n : Int)
+          (h_trivalent : 3 * V = 2 * E) (h_two_cells_per_edge : sum_n = 2 * E)
+          (h_euler : V - E + F = 0) : sum_n = 6 * F
+      theorem sphere_pentagon_excess (n5 n6 n7 V E : Int)
+          (h_trivalent : 3 * V = 2 * E) (h_sides : 5 * n5 + 6 * n6 + 7 * n7 = 2 * E)
+          (h_euler : V - E + (n5 + n6 + n7) = 2) : n5 - n7 = 12
+    variables: "V vertices, E edges, F cells, n_i sides of cell i, χ Euler characteristic"
+    role: "Proves the froth half of the claim: any trivalent tissue has mean side number 6 independent of mechanics; the specimen's ⟨n⟩ is compared to 6"
+    source_citation: "Thompson (1917) pp. 309, 323, 325; Weaire & Rivier (1984) Contemp. Phys. 25:59 Sec. 2"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+  - law_name: "Second-Moment Honeycomb Criterion (mu2 = 0 iff all hexagons)"
+    formula: "F·μ₂ = Σ (n_i − 6)² = Σ n_i² − 36F  (when ⟨n⟩ = 6);  three-class: F·μ₂ = n₅ + n₇;  μ₂ = 0 ⟺ n₅ = n₇ = 0;  torus: n₅ = n₇ so F·μ₂ = 2n₅"
+    lean_decl: "MathOfBiology.Loop_214.second_moment_numerator"
+    lean_theorem: "MathOfBiology.Loop_214.honeycomb_iff_zero_second_moment"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L75-L105"
+    lean_code: |
+      def second_moment_numerator (n5 n7 : Nat) : Nat :=
+        n5 * 1 + n7 * 1
+      theorem second_moment_identity (n5 n6 n7 : Int)
+          (h_mean_six : 5 * n5 + 6 * n6 + 7 * n7 = 6 * (n5 + n6 + n7)) :
+          25 * n5 + 36 * n6 + 49 * n7 - 36 * (n5 + n6 + n7) = n5 + n7
+      theorem honeycomb_iff_zero_second_moment (n5 n7 : Nat) :
+          second_moment_numerator n5 n7 = 0 ↔ (n5 = 0 ∧ n7 = 0)
+      theorem torus_defect_pairs (n5 n6 n7 V E : Int)
+          (h_trivalent : 3 * V = 2 * E) (h_sides : 5 * n5 + 6 * n6 + 7 * n7 = 2 * E)
+          (h_euler : V - E + (n5 + n6 + n7) = 0) : n5 = n7 ∧ n5 + n7 = 2 * n5
+    variables: "n₅, n₆, n₇ class counts; μ₂ second moment of the side-number distribution"
+    role: "Separates Thompson's strict 'hexagons' reading (μ₂ = 0) from the froth reading (μ₂ > 0); the specimen's μ₂ locates it in the froth morphospace"
+    source_citation: "Weaire & Rivier (1984) Eq. 2.3; Gibson et al. (2006) Nature 442:1038"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+  - law_name: "Least-Perimeter Regular Tiling & Hales Honeycomb Constant"
+    formula: "P_n(A) = 2√(n A tan(π/n));  P₆⁴ = 192A² < P₄⁴ = 256A² < P₃⁴ = 432A²;  honeycomb wall length L = F·P₆/2 ⟹ 16L⁴ = 16·12·F⁴A², i.e. L/(F√A) = 12^{1/4} = 1.8612 (Hales 2001 lower bound)"
+    lean_decl: "MathOfBiology.Loop_214.fourth_power_perimeter_hexagon"
+    lean_theorem: "MathOfBiology.Loop_214.hexagon_least_fourth_power_perimeter"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L115-L148"
+    lean_code: |
+      def fourth_power_perimeter_triangle (A_sq : Nat) : Nat := 432 * A_sq
+      def fourth_power_perimeter_square (A_sq : Nat) : Nat := 256 * A_sq
+      def fourth_power_perimeter_hexagon (A_sq : Nat) : Nat := 192 * A_sq
+      theorem hexagon_least_fourth_power_perimeter (A_sq : Nat) (h_pos : 0 < A_sq) :
+          fourth_power_perimeter_hexagon A_sq < fourth_power_perimeter_square A_sq ∧
+          fourth_power_perimeter_square A_sq < fourth_power_perimeter_triangle A_sq ∧
+          fourth_power_perimeter_hexagon 1 = 192 ∧
+          fourth_power_perimeter_square 1 = 256 ∧
+          fourth_power_perimeter_triangle 1 = 432
+      def honeycomb_sixteen_L4 (F4 A_sq : Nat) : Nat :=
+        F4 * fourth_power_perimeter_hexagon A_sq
+      theorem honeycomb_edge_length_identity (F4 A_sq : Nat) :
+          honeycomb_sixteen_L4 F4 A_sq = 16 * (12 * (F4 * A_sq))
+    variables: "A cell area, P perimeter, L total wall length, F cell count"
+    role: "Proves the least-perimeter half of the claim for the three regular tilings and fixes the honeycomb constant used by the script's excess_perimeter = L_measured / L_honeycomb(same areas) − 1"
+    source_citation: "Thompson (1917) p. 330; Hales (2001) Discrete Comput. Geom. 25:1"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+  - law_name: "Lewis's Law Total-Area Invariance"
+    formula: "A_n = A₆ + k(n − 6);  Σ_i A_{n_i} = A₆F + k(Σn_i − 6F) = A₆F on a torus for every slope k;  Lewis slope A₆ = 4k: 4A₅ = 3A₆, 4A₇ = 5A₆, A₅ + A₇ = 2A₆"
+    lean_decl: "MathOfBiology.Loop_214.lewis_total_area"
+    lean_theorem: "MathOfBiology.Loop_214.lewis_total_area_invariance"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L158-L191"
+    lean_code: |
+      def lewis_total_area (A6 k F sum_n : Int) : Int :=
+        A6 * F + k * (sum_n - 6 * F)
+      theorem lewis_total_area_invariance (A6 k F sum_n : Int)
+          (h_torus : sum_n = 6 * F) :
+          lewis_total_area A6 k F sum_n = A6 * F
+      def lewis_class_area (A6 k n : Int) : Int :=
+        A6 + k * (n - 6)
+      theorem lewis_quarter_slope_classes (A6 k : Int) (h_slope : A6 = 4 * k) :
+          4 * lewis_class_area A6 k 5 = 3 * A6 ∧
+          4 * lewis_class_area A6 k 7 = 5 * A6 ∧
+          lewis_class_area A6 k 5 + lewis_class_area A6 k 7 = 2 * A6
+    variables: "A6 hexagon-class mean area, k Lewis slope, n side number, F cell count, sum_n = Σ n_i total side count"
+    role: "Shows the size-topology coupling measured on the specimen (Lewis fit slope) is a zero-sum redistribution around the hexagon; mean cell area is invariant"
+    source_citation: "Lewis (1928) Anat. Rec. 38:341"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+  - law_name: "Aboav-Weaire Sum Rule (a cancels)"
+    formula: "n·m(n) = (6 − a)n + (6a + μ₂);  Σ_i n_i m(n_i) = (6 − a)Σn_i + F(6a + μ₂) = F(36 + μ₂) when Σn_i = 6F;  honeycomb: 36F"
+    lean_decl: "MathOfBiology.Loop_214.aboav_weaire_sum"
+    lean_theorem: "MathOfBiology.Loop_214.aboav_weaire_sum_rule"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L199-L231"
+    lean_code: |
+      def aboav_weaire_sum (a mu2 F sum_n : Int) : Int :=
+        (6 - a) * sum_n + F * (6 * a + mu2)
+      theorem aboav_weaire_sum_rule (a mu2 F sum_n : Int)
+          (h_torus : sum_n = 6 * F) :
+          aboav_weaire_sum a mu2 F sum_n = F * (36 + mu2)
+      theorem aboav_weaire_honeycomb (a F : Int) :
+          aboav_weaire_sum a 0 F (6 * F) = 36 * F
+    variables: "m(n) mean side number of the neighbours of an n-gon, a Aboav parameter, mu2 second moment, F cell count, sum_n = Σ n_i total side count"
+    role: "Gives the consistency identity Σ n m(n)/F = 36 + μ₂ that the script checks on the segmented specimen's neighbour graph"
+    source_citation: "Aboav (1970) Metallography 3:383; Weaire & Rivier (1984)"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L159-L212"
+  - law_name: "Gibson Division-Topology Law (why growing epithelia are froths, not honeycombs)"
+    formula: "n-gon divides: daughters (k+3) + (n−2−k+3) = n + 4 sides, two cut neighbours +1 each ⟹ Σn → Σn + 6, F → F + 1, ⟨n⟩ = 6 preserved;  hexagon splitting symmetrically (k=2) → two pentagons, F·μ₂ = 2 > 0"
+    lean_decl: "MathOfBiology.Loop_214.daughter1_sides"
+    lean_theorem: "MathOfBiology.Loop_214.division_preserves_mean_six"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_019.lean#L244-L270"
+    lean_code: |
+      def daughter1_sides (k : Nat) : Nat := k + 3
+      def daughter2_sides (n k : Nat) : Nat := (n - 2 - k) + 3
+      theorem division_daughter_side_sum (n k : Nat) (h_k : k ≤ n - 2) (h_n : 2 ≤ n) :
+          daughter1_sides k + daughter2_sides n k = n + 4
+      def sides_after_division (sum_n n : Nat) : Nat := sum_n - n + (n + 4) + 2
+      theorem division_preserves_mean_six (F sum_n n : Nat)
+          (h_mean : sum_n = 6 * F) (h_n_le : n ≤ sum_n) :
+          sides_after_division sum_n n = 6 * (F + 1)
+      theorem hexagon_symmetric_division_gives_pentagons :
+          daughter1_sides 2 = 5 ∧ daughter2_sides 6 2 = 5 ∧
+          second_moment_numerator 2 0 = 2
+    variables: "n sides of the mother cell, k undivided sides inherited by daughter 1"
+    role: "Formalises the 2006 counterclaim mechanism: division keeps the froth mean at 6 but necessarily creates 5-gons, so Thompson's strict hexagonal optimum cannot hold in a dividing tissue"
+    source_citation: "Gibson et al. (2006) Nature 442:1038; Gibson et al. (2011) Cell 144:427"
+    code_locus: "thompson/claims/t1917-019_the-forms-of-tissues-or-cell-aggregates.py#L226-L276"
