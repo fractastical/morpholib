@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-040> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-040-repro-package> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-040-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Dürer/Camper facial grids — whole-grid deformation test on human profile landmarks (Pass 1) — Reproducibility package: 64/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Deterministic (seed 1917, no stochastic step), --self-test (<1 s) and full run (~4 s) documented in the docstring, outputs written to fixed paths, every input digest verified. Deductions: per-specimen processing annotations (ROI, deskew, k_sigma) live in the reference JSON and were tuned by the builder; dependency versions are not pinned in the script; no CLI switch to vary thresholds." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json (generated output, not in repo): specimens[*].roi / deskew_deg / bg_sample_box / k_sigma are builder-tuned annotations — datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json: rendered output of thompson/claims/t1917-040_on-the-theory-of-transformations.py at 7d216d80, application/json, 22001 B, artifact_sha256 a4d2db858ac2cfd969f0cc7f0060bc3e3554b44e32556862671ae3176131ff05 (sha256 a4d2db858ac2cfd969f0cc7f0060bc3e3554b44e32556862671ae3176131ff05), spec_fingerprint bf2c0ad03b62d78daf7290b9c4b6a8298b657d4806b6d9a98874151b2165a166" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-040-repro-package-1> ;
+        pk:hasScore "0.64"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-040-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-040_on-the-theory-of-transformations.py L772–L834" ;
+        dct:description "self_test + main with --self-test / --no-gif" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7d216d80/thompson/claims/t1917-040_on-the-theory-of-transformations.py#L772-L834> .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (builder-assessor, single-agent Pass 1; second assessor pending)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/hierinnsindbegri00dure>,
+            <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1186/1746-160X-10-54>,
+            <https://doi.org/10.5061/dryad.0zpc86746>,
+            <https://pubmed.ncbi.nlm.nih.gov/6932485/> .
+    <https://archive.org/details/hierinnsindbegri00dure> dct:date "1528"^^xsd:gYear ;
+        dct:title "Vier Bücher von menschlicher Proportion" .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form" .
+    <https://doi.org/10.1186/1746-160X-10-54> dct:date "2014"^^xsd:gYear ;
+        dct:title "Facial landmark localization by curvature maps and profile analysis" .
+    <https://doi.org/10.5061/dryad.0zpc86746> dct:date "2023"^^xsd:gYear ;
+        dct:title "Effect of the histone deacetylase inhibitor Trichostatin A on facial development in cichlid fishes" .
+    <https://pubmed.ncbi.nlm.nih.gov/6932485/> dct:date "1980"^^xsd:gYear ;
+        dct:title "Soft tissue cephalometric analysis for orthognathic surgery" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Dürer/Camper facial grids — whole-grid deformation test on human profile landmarks (Pass 1) — Reproducibility package 64/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T08:47:21Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-040-repro-package> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
