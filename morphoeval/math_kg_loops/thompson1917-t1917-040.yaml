@@ -1,0 +1,119 @@
+sim_id: thompson1917-t1917-040
+math_family: "Thompson (1917) Ch. XVII whole-grid coordinate deformations — Dürer/Camper facial-profile shear & stretch group (geometric)"
+model_spec:
+  model: "Thompson (1917) On Growth and Form Ch. XVII transformation types (1) proportional stretch, (3) simple shear / oblique net, and their affine closure, applied to Dürer's human-head grids (Figs. 364, 366) and Camper's facial angle (p. 742 footnote); tested on real human profile landmarks"
+  claim_id: T1917-040
+  date_made: "1917"
+  landmarks: [g, n, prn, cm, sn, ls, sto, li, sm, pg, me]
+  warp_families: {similarity: 4, anisotropic: 5, affine_durer_grid: 6}
+  shear_sweep_omega_deg: [50, 130]
+  stretch_sweep_c: [0.67, 1.5]
+  noise_floor_perturbations: [{rescale: 0.85}, {rescale: 1.15}, {blur_sigma_px: 1.0}]
+  seed: 1917
+  inputs:
+    - datasets/thompson_1917/t1917-040/t1917_040_on_the_theory_of_transformatio_reference.json
+    - datasets/thompson_1917/t1917-040/scout_manifest.json
+    - datasets/thompson_1917/t1917-040/paper_citations.bib
+    - datasets/thompson_1917/t1917-040/specimens/helen_keller_1904_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/romy_schneider_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/nell_walden_1905_profile.png
+    - datasets/thompson_1917/t1917-040/specimens/roberts_2013_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/nasta_rojc_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/winifred_odunoku_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/margaret_of_hesse_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/kubra_gumusay_2023_profile.jpg
+    - datasets/thompson_1917/t1917-040/specimens/beverly_sills_profile.jpg
+    - datasets/thompson_1917/t1917-040/thompson_1917_pages/ongrowthform1917thom_leaf759_p740.jpg
+    - datasets/thompson_1917/t1917-040/thompson_1917_pages/ongrowthform1917thom_leaf761_p742.jpg
+equations:
+  - law_name: "Thompson type-3 shear group law & area preservation (Dürer oblique net)"
+    formula: "S_k(x, y) = (x + k y, y),  k = -cot ω;  S_{k₂} ∘ S_{k₁} = S_{k₁+k₂};  S_{-k} ∘ S_k = id;  det [[1, k], [0, 1]] = 1"
+    lean_decl: "MathOfBiology.Loop_232.shearX"
+    lean_theorem: "MathOfBiology.Loop_232.shear_group_law"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L28-L57"
+    lean_code: |
+      def shearX (k x y : Int) : Int := x + k * y
+      def det2 (a b c d : Int) : Int := a * d - b * c
+      theorem shear_group_law (k₁ k₂ k x y : Int) :
+          shearX k₂ (shearX k₁ x y) y = shearX (k₁ + k₂) x y ∧
+          shearX (-k) (shearX k x y) y = x ∧
+          det2 1 k 0 1 = 1
+    variables: "k: shear coefficient (= -cot ω of Thompson's oblique axes); (x, y): landmark coordinates in the reference net"
+    role: "Thompson p. 730 type (3) 'simple shear' and Fig. 366 Dürer heads; one parameter indexes the whole family and every grid cell keeps its area"
+    source_citation: "Thompson (1917) On Growth and Form p. 730 (Fig. 357), p. 742 (Fig. 366)"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (shear, durer_grid)"
+
+  - law_name: "Shear is a whole-grid deformation: rows keep length, every vertical tilts by k·h"
+    formula: "S_k(x₁, y) − S_k(x₂, y) = (x₁ − x₂, 0);  S_k(x, y + h) − S_k(x, y) = (k h, h)"
+    lean_decl: "MathOfBiology.Loop_232.shearX"
+    lean_theorem: "MathOfBiology.Loop_232.shear_whole_grid"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L65-L71"
+    lean_code: |
+      theorem shear_whole_grid (k x x₁ x₂ y h : Int) :
+          shearX k x₁ y - shearX k x₂ y = x₁ - x₂ ∧
+          shearX k x (y + h) - shearX k x y = k * h
+    variables: "x₁, x₂: abscissae of two landmarks on one grid row; h: height of a vertical segment"
+    role: "What 'the form varies as a whole' means for a landmark set: the deformation is read off the net, not off independent parts"
+    source_citation: "Thompson (1917) pp. 729-731; Ch. XVII general thesis"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (durer_grid, positive_control)"
+
+  - law_name: "Camper facial angle as the index of a general deformation (tan additivity & monotonicity)"
+    formula: "run'(dx, dy) = dx + k dy  ⇒  run' − dx independent of dx;  k₁ < k₂, dy > 0 ⇒ run'(k₁) < run'(k₂);  tan φ' = tan φ + k"
+    lean_decl: "MathOfBiology.Loop_232.facialRun"
+    lean_theorem: "MathOfBiology.Loop_232.camper_facial_angle_index"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L41-L89"
+    lean_code: |
+      def facialRun (k dx dy : Int) : Int := dx + k * dy
+      theorem camper_facial_angle_index (k k₁ k₂ dx₁ dx₂ dy : Int)
+          (hk : k₁ < k₂) (hdy : 0 < dy) :
+          facialRun k dx₁ dy - dx₁ = facialRun k dx₂ dy - dx₂ ∧
+          facialRun k₁ dx₁ dy < facialRun k₂ dx₁ dy ∧
+          facialRun 0 dx₁ dy = dx₁
+    variables: "(dx, dy): direction of the facial line (glabella → labrale superius / pogonion); φ: soft-tissue facial angle; k: shear"
+    role: "Formalises Thompson's p. 742 footnote: 'the facial angle is the index to a general deformation' — under a pure shear the angle change is one number shared by every facial line, strictly monotone in k"
+    source_citation: "Thompson (1917) p. 742 footnote quoting Cogan's preface to Camper (1794)"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (facial_line_tan, shear_sweep)"
+
+  - law_name: "Thompson type-1 proportional stretch: circle → ellipse, multiplicative composition"
+    formula: "(x, y) ↦ (x, c y);  x² + y² = a² ↦ x₁² + c² y₁² = a²;  T_{c₁} ∘ T_{c₂} = T_{c₁ c₂};  ox → sheep cannon bone c = 3/2"
+    lean_decl: "MathOfBiology.Loop_232.stretchY"
+    lean_theorem: "MathOfBiology.Loop_232.stretch_circle_to_ellipse"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L31-L105"
+    lean_code: |
+      def stretchY (c y : Int) : Int := c * y
+      theorem stretch_circle_to_ellipse (x y₁ c c₁ c₂ : Int) :
+          x * x + stretchY c y₁ * stretchY c y₁ = x * x + (c * c) * (y₁ * y₁) ∧
+          stretchY c₁ (stretchY c₂ y₁) = stretchY (c₁ * c₂) y₁ ∧
+          stretchY 3 2 = 6
+    variables: "c: stretch factor along y (Dürer's Fig. 364 row-spacing changes); a: circle radius"
+    role: "Thompson's own worked identity on pp. 729-730 and the Fig. 364 proportion grids (relative magnitude of parts)"
+    source_citation: "Thompson (1917) pp. 729-730, Figs. 353-354, 364"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (stretch, stretch_sweep)"
+
+  - law_name: "Affine whole-grid family: landmark differences transform linearly; shear ∘ stretch closes"
+    formula: "A(X₁) − A(X₂) = A_lin (X₁ − X₂)  (translation drops out);  S_k ∘ diag(1, c) = [[1, k c], [0, c]]"
+    lean_decl: "MathOfBiology.Loop_232.affX"
+    lean_theorem: "MathOfBiology.Loop_232.affine_whole_grid_closure"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L37-L123"
+    lean_code: |
+      def affX (a b t x y : Int) : Int := a * x + b * y + t
+      theorem affine_whole_grid_closure (a b t k c x₁ y₁ x₂ y₂ : Int) :
+          affX a b t x₁ y₁ - affX a b t x₂ y₂ = a * (x₁ - x₂) + b * (y₁ - y₂) ∧
+          shearX k x₁ (stretchY c y₁) = affX 1 (k * c) 0 x₁ y₁
+    variables: "(a, b, t): first row of the affine map and its translation; k, c: Dürer shear and stretch"
+    role: "Justifies fitting one 6-dof affine map per head pair as the formal content of 'mutually transformable by coordinate deformation' (E4)"
+    source_citation: "Thompson (1917) Ch. XVII pp. 719-777 (general thesis); Figs. 364, 366"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (affine_fit, fit_pair)"
+
+  - law_name: "Thompson oblique transposition x = ξ − η cot ω, y = η cosec ω is invertible iff cosec ω ≠ 0"
+    formula: "det [[1, −cot ω], [0, cosec ω]] = cosec ω ≠ 0"
+    lean_decl: "MathOfBiology.Loop_232.det2"
+    lean_theorem: "MathOfBiology.Loop_232.oblique_transposition_invertible"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_040.lean#L34-L135"
+    lean_code: |
+      theorem oblique_transposition_invertible (ct cs : Int) (h : cs ≠ 0) :
+          det2 1 (-ct) 0 cs = cs ∧ det2 1 (-ct) 0 cs ≠ 0
+    variables: "ct = cot ω, cs = cosec ω (integer-scaled); ω: angle between the oblique axes"
+    role: "The comparison of related forms is two-way: Thompson's p. 730 transposition can be read back whenever the oblique axes are non-degenerate"
+    source_citation: "Thompson (1917) p. 730 (type 3, Fig. 357)"
+    code_locus: "thompson/claims/t1917-040_on-the-theory-of-transformations.py (oblique_to_shear)"

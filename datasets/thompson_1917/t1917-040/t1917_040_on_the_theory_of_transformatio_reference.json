@@ -1,0 +1,469 @@
+{
+ "claim_id": "T1917-040",
+ "sim_id": "thompson1917-t1917-040",
+ "date_made": "1917",
+ "source": {
+  "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge University Press. Ch. XVII 'On the Theory of Transformations, or the Comparison of Related Forms', pp. 719-777; transformation types pp. 729-731 (Figs. 353-358); Durer heads Fig. 364 (p. 740) and Fig. 366 (p. 742); Camper footnote p. 742.",
+  "ia_identifier": "ongrowthform1917thom",
+  "ia_url": "https://archive.org/details/ongrowthform1917thom",
+  "leaf_offset": "printed page = leaf - 19 (verified on leaves 759-761)",
+  "claim_text": "Human (and animal) heads/faces and proportions, in the Durer/Camper tradition, are mutually transformable by coordinate deformation; differences of facial angle/proportion are whole-grid deformations.",
+  "verbatim_support": [
+   "p. 729-730: 'we may alter the dimensions of our system, extending it along one or other axis, and so converting each little square into a corresponding and directly proportionate oblong (Fig. 353) ... for the original x and y we have substituted x1 and c*y1, and the equation to our original circle, x^2 + y^2 = a^2, becomes that of the ellipse, x1^2 + c^2 y1^2 = a^2.'",
+   "p. 730: '(2) ... the ordinate increases logarithmically, and for y we substitute eps^y ... x becoming eps^x, while y becomes eps^y.'",
+   "p. 730: '(3) Our third type is the \"simple shear,\" where the rectangular co-ordinates become \"oblique,\" their axes being inclined to one another at a certain angle omega ... x = xi - eta cot omega, y = eta cosec omega.'",
+   "p. 740-741: 'the manner in which the human figure, features, and facial expression are all transformed and modified by slight variations in the relative magnitude of the parts is admirably and copiously illustrated (Fig. 364).'",
+   "p. 742: 'Durer was acquainted with these oblique co-ordinates also, and I have copied two illustrative figures from his book (Fig. 366).'",
+   "p. 742 footnote: 'It was these very drawings of Durer's that gave to Peter Camper his notion of the \"facial angle.\" ... he saw clearly the essential fact, that the skull varies as a whole, and that the \"facial angle\" is the index to a general deformation.'"
+  ]
+ },
+ "mathematical_model": {
+  "state_variables": {
+   "(x, y)": "Cartesian coordinates of a landmark on the reference head (Thompson's 'original net')",
+   "(x', y')": "coordinates of the corresponding landmark in the deformed net",
+   "omega": "angle between the oblique axes (Thompson type 3); omega = 90 deg is the undeformed rectangular net",
+   "c": "anisotropic stretch factor along y (type 1)",
+   "eps": "base of the logarithmic stretch (type 2)",
+   "k = -cot(omega)": "horizontal shear coefficient equivalent to Thompson's oblique net",
+   "phi": "soft-tissue facial angle / profile inclination"
+  },
+  "equations": [
+   {
+    "id": "E1",
+    "name": "Type 1 proportional (anisotropic) stretch",
+    "formula": "x' = x,  y' = c*y   (circle x^2+y^2=a^2 -> ellipse x'^2 + (y'/c)^2 = a^2)",
+    "source": "p. 729-730, Fig. 353-354"
+   },
+   {
+    "id": "E2",
+    "name": "Type 2 logarithmic stretch",
+    "formula": "y' = eps^y  (optionally x' = eps^x)",
+    "source": "p. 730, Figs. 355-356"
+   },
+   {
+    "id": "E3",
+    "name": "Type 3 simple shear / oblique coordinates",
+    "formula": "x = xi - eta*cot(omega),  y = eta*cosec(omega);  equivalently (x', y') = (x + k*y, y) with k = -cot(omega) after rescaling y",
+    "source": "p. 730, Fig. 357; applied to Durer heads Fig. 366 p. 742"
+   },
+   {
+    "id": "E4",
+    "name": "Whole-grid (affine) deformation of a landmark configuration",
+    "formula": "X' = A X + t,  A = [[a11,a12],[a21,a22]] (det A > 0); types 1 and 3 are the sub-families diag(1,c) and shear(k); differences between heads are claimed to lie in this family",
+    "source": "Ch. XVII general thesis, pp. 719-777; Dürer Figs. 364/366"
+   },
+   {
+    "id": "E5",
+    "name": "Facial angle as index of a general deformation (Camper footnote)",
+    "formula": "for a facial line of direction (dx, dy): tan(phi') = (dx + k*dy)/dy = tan(phi) + k  — a shear k changes the inclination of EVERY vertical line by the same amount",
+    "source": "p. 742 footnote"
+   }
+  ],
+  "boundary_conditions": "Landmarks are 2-D points on the mid-sagittal soft-tissue profile; the transformation is global (one A, t per head pair); no local (landmark-specific) displacement is permitted under the claim.",
+  "parameter_regime": [
+   {
+    "parameter": "omega (deg)",
+    "range": [
+     50,
+     130
+    ],
+    "durer_fig366_estimate": "measured on the IA scan by Hough transform (see script, Pass 2)",
+    "note": "Thompson's tapir-toe example uses omega = 50 deg (p. 741); Durer's heads are milder"
+   },
+   {
+    "parameter": "c (y-stretch)",
+    "range": [
+     0.67,
+     1.5
+    ],
+    "note": "ox -> sheep cannon bone uses x' = 2x/3 (p. 730), i.e. c = 1.5 along the bone axis"
+   },
+   {
+    "parameter": "k = -cot(omega)",
+    "range": [
+     -0.84,
+     0.84
+    ],
+    "note": "shear coefficient equivalent"
+   },
+   {
+    "parameter": "eps",
+    "range": [
+     1.0,
+     1.05
+    ],
+    "note": "logarithmic stretch base (type 2), small values only"
+   }
+  ],
+  "test_statistics": {
+   "warp_family_fit": "per ordered specimen pair, least-squares similarity (4 dof), anisotropic (5 dof, rotation+two scales) and full affine / Durer grid (6 dof) fits of landmark set A onto B; residual RMSE in centroid-size units; LOO-CV residual",
+   "variance_explained": "R_affine = 1 - SS(affine)/SS(similarity): fraction of non-similarity shape difference captured by the whole-grid deformation",
+   "noise_floor": "landmark re-detection RMSE under image perturbation (rescale 0.85/1.15, blur sigma 1 px)",
+   "facial_angle_link": "Pearson r between fitted shear k_AB and the measured change in profile inclination / convexity angle (E5)"
+  }
+ },
+ "empirical_claims_to_test": [
+  {
+   "id": "C1",
+   "claim": "Inter-individual differences in human facial profile are captured by a single whole-grid (affine: stretch + shear) deformation",
+   "prediction_if_true": "affine residual RMSE <= ~1.5 x landmark noise floor for most pairs; R_affine high",
+   "prediction_if_false": "affine residual far above noise floor; local features (nose, lips, chin) need independent change"
+  },
+  {
+   "id": "C2",
+   "claim": "Facial angle differences are the index of the shear component of that deformation (Camper footnote)",
+   "prediction_if_true": "fitted k correlates tightly (|r| > 0.8) with measured inclination change, slope ~1 in tan units",
+   "prediction_if_false": "weak correlation; angle changes arise from local features"
+  },
+  {
+   "id": "C3",
+   "claim": "The affine family is not trivially satisfied: a scrambled-correspondence / local-perturbation control must fail",
+   "prediction_if_true": "controls show residuals >> real pairs"
+  }
+ ],
+ "specimens": [
+  {
+   "file": "specimens/helen_keller_1904_profile.jpg",
+   "commons_title": "File:Helen Keller1 (cropped).jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3AHelen_Keller1_%28cropped%29.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Helen_Keller1_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Helen_Keller1_%28cropped%29.jpg/960px-Helen_Keller1_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "vendored_width_px": 900,
+   "original_size_px": [
+    2183,
+    2727
+   ],
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Unknown authorUnknown author",
+   "credit": "This image  is available from the United States Library of Congress's Prints and Photographs division under the digital ID cph.3c12513.This tag does not indicate the copyright status of the attached w",
+   "date": "circa 1904date QS:P,+1904-00-00T00:00:00Z/9,P1480,Q5727902",
+   "facing": "right",
+   "sha256": "7fa2a48b647c3b0973aef5f723892d40b98fcf6530f40d3bd613063bd8b9cc72",
+   "bytes": 189614,
+   "roi": [
+    0.0,
+    0.0,
+    0.92,
+    0.8
+   ],
+   "deskew_deg": -28.0,
+   "bg_sample_box": [
+    0.78,
+    0.15,
+    0.92,
+    0.55
+   ],
+   "note": "head bowed ~28 deg; wall shadow at far right excluded by ROI"
+  },
+  {
+   "file": "specimens/romy_schneider_profile.jpg",
+   "commons_title": "File:Romy Schneider BW.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3ARomy_Schneider_BW.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Romy_Schneider_BW.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Romy_Schneider_BW.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_width_px": 555,
+   "original_size_px": [
+    555,
+    712
+   ],
+   "license": "CC BY-SA 3.0 de",
+   "license_url": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+   "artist": "Engelbert Reineke",
+   "credit": "Bundesarchiv_B_145_Bild-F034157-0009,_Bonn,_Bundeskanzler_Brandt_empfängt_Schauspieler.jpg",
+   "date": "2009-03-08 09:03",
+   "facing": "right",
+   "sha256": "0857743562b65c3a29516f778d21b6c0e4ac0bfa88b617ab14806716b09eb2ff",
+   "bytes": 113680,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.75
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "fringe covers glabella; dark studio background"
+  },
+  {
+   "file": "specimens/nell_walden_1905_profile.png",
+   "commons_title": "File:Nell Walden siebzehnjährig (1905).png",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3ANell_Walden_siebzehnj%C3%A4hrig_%281905%29.png",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Nell_Walden_siebzehnj%C3%A4hrig_%281905%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Nell_Walden_siebzehnj%C3%A4hrig_%281905%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_width_px": 306,
+   "original_size_px": [
+    306,
+    479
+   ],
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Photographer not credited",
+   "credit": "Nell Walden: Herwarth Walden: ein Lebensbild — Berlin, Mainz, 1963",
+   "date": "1905",
+   "facing": "left",
+   "sha256": "b1f49c57c7aeefeebf61ae949ea473ed2289d31dfaaec7de3e079945ac08722b",
+   "bytes": 230036,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    1.0
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "halftone reproduction (1905); chin at image bottom"
+  },
+  {
+   "file": "specimens/roberts_2013_profile.jpg",
+   "commons_title": "File:20130911 Roberts profil stor.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3A20130911_Roberts_profil_stor.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/20130911_Roberts_profil_stor.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/20130911_Roberts_profil_stor.jpg/960px-20130911_Roberts_profil_stor.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "vendored_width_px": 900,
+   "original_size_px": [
+    2000,
+    1869
+   ],
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "artist": "Robert Meyer",
+   "credit": "Author",
+   "date": "2013-09-11 12:18:04",
+   "facing": "right",
+   "sha256": "643f14a150df84e0c66cfca70bfe04852a60ca5dddc3bca9ec6c21da89f13459",
+   "bytes": 117919,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.9
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "spectacles add a small bump at the nasion; black background"
+  },
+  {
+   "file": "specimens/nasta_rojc_profile.jpg",
+   "commons_title": "File:Nasta Rojc by Ludwig Grillich, cropped.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3ANasta_Rojc_by_Ludwig_Grillich%2C_cropped.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Nasta_Rojc_by_Ludwig_Grillich%2C_cropped.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Nasta_Rojc_by_Ludwig_Grillich%2C_cropped.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_width_px": 601,
+   "original_size_px": [
+    601,
+    744
+   ],
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Ludwig Grillich",
+   "credit": "Nasta Rojc, DiZbi.HAZU | Digitalna zbirka i katalog Hrvatske akademije znanosti i umjetnosti (Digital collection and catalogue of the Croatian Academy of Sciences and Arts)",
+   "date": "1926-05-21",
+   "facing": "left",
+   "sha256": "4b5ed492fb19ec93da7084006f935b71cc79a8ddad4c8361ceb21438e26b8f02",
+   "bytes": 45469,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.8
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "faded studio print, light background"
+  },
+  {
+   "file": "specimens/winifred_odunoku_profile.jpg",
+   "commons_title": "File:Winifred Òdúnóku.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3AWinifred_%C3%92d%C3%BAn%C3%B3ku.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/2/22/Winifred_%C3%92d%C3%BAn%C3%B3ku.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://upload.wikimedia.org/wikipedia/commons/2/22/Winifred_%C3%92d%C3%BAn%C3%B3ku.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_width_px": 720,
+   "original_size_px": [
+    720,
+    919
+   ],
+   "license": "CC0",
+   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "artist": "Winifred Òdúnóku",
+   "credit": "Own work",
+   "date": "2019-10-06",
+   "facing": "right",
+   "sha256": "b48ece4b38e694685689fa06548d3caad2c49349c3fe5dee287ba3b1dd5057e4",
+   "bytes": 30618,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.65
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "smiling (open lips); grey wall background"
+  },
+  {
+   "file": "specimens/margaret_of_hesse_profile.jpg",
+   "commons_title": "File:Magaret, Princess of Hesse and by Rhine.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3AMagaret%2C_Princess_of_Hesse_and_by_Rhine.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/6/69/Magaret%2C_Princess_of_Hesse_and_by_Rhine.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Magaret%2C_Princess_of_Hesse_and_by_Rhine.jpg/960px-Magaret%2C_Princess_of_Hesse_and_by_Rhine.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "vendored_width_px": 900,
+   "original_size_px": [
+    962,
+    1334
+   ],
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Unknown authorUnknown author",
+   "credit": "Hessian State Archive Darmstadt",
+   "date": "1938",
+   "facing": "left",
+   "sha256": "1b38e84fc0eb1594fea7e663aa9fcadae6d32975caf9084441aa3ecdf4ad89c4",
+   "bytes": 192366,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.75
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "dark background; low-contrast dark hair region is posterior and does not affect the facial profile"
+  },
+  {
+   "file": "specimens/beverly_sills_profile.jpg",
+   "commons_title": "File:Beverly Sills by Van Vechten.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3ABeverly_Sills_by_Van_Vechten.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/0/04/Beverly_Sills_by_Van_Vechten.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://upload.wikimedia.org/wikipedia/commons/0/04/Beverly_Sills_by_Van_Vechten.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_width_px": 299,
+   "original_size_px": [
+    299,
+    410
+   ],
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Carl Van Vechten",
+   "credit": "This image  is available from the United States Library of Congress's Prints and Photographs division under the digital ID van.5a52634.This tag does not indicate the copyright status of the attached w",
+   "date": "Taken on 7 February 1956",
+   "facing": "right",
+   "sha256": "679a08ff1f45908979651e579671e79f2c5a30a1db6b6054ab1d0105f25899db",
+   "bytes": 69726,
+   "roi": [
+    0.0,
+    0.0,
+    1.0,
+    0.8
+   ],
+   "deskew_deg": 35.0,
+   "bg_sample_box": null,
+   "note": "head tilted back ~35 deg, textured background — likely to fail segmentation; kept as a stress-test specimen"
+  },
+  {
+   "file": "specimens/kubra_gumusay_2023_profile.jpg",
+   "commons_title": "File:Kübra Gümüşay - Republica 2023 02.jpg",
+   "commons_page": "https://commons.wikimedia.org/wiki/File%3AK%C3%BCbra_G%C3%BCm%C3%BC%C5%9Fay_-_Republica_2023_02.jpg",
+   "original_url": "https://upload.wikimedia.org/wikipedia/commons/8/89/K%C3%BCbra_G%C3%BCm%C3%BC%C5%9Fay_-_Republica_2023_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "vendored_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/K%C3%BCbra_G%C3%BCm%C3%BC%C5%9Fay_-_Republica_2023_02.jpg/960px-K%C3%BCbra_G%C3%BCm%C3%BC%C5%9Fay_-_Republica_2023_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "vendored_width_px": 900,
+   "original_size_px": [
+    5472,
+    3648
+   ],
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "artist": "Kritzolina",
+   "credit": "Own work",
+   "date": "2023-06-06 18:30:59",
+   "facing": "left",
+   "sha256": "aaa06c6f5c336da79c19e508bddd838d16b22b2ff168a07fe08414d816d1cb2b",
+   "bytes": 71115,
+   "roi": [
+    0.0,
+    0.0,
+    0.75,
+    1.0
+   ],
+   "deskew_deg": 0.0,
+   "bg_sample_box": null,
+   "note": "red stage backdrop with white lettering adjacent to the face — likely to fail segmentation; kept as a stress-test specimen"
+  }
+ ],
+ "thompson_1917_pages": [
+  {
+   "file": "thompson_1917_pages/ongrowthform1917thom_leaf748_p729.jpg",
+   "ia_identifier": "ongrowthform1917thom",
+   "leaf": 748,
+   "printed_page": 729,
+   "url": "https://archive.org/download/ongrowthform1917thom/page/n748_w1200.jpg",
+   "content": "Fig. 353 (stretched Cartesian net) - text of transformation types (1)",
+   "sha256": "8002460f1b0332267cb92b04212b6d7609de8ada1887afe3dbdbb420bc699daa",
+   "bytes": 489685
+  },
+  {
+   "file": "thompson_1917_pages/ongrowthform1917thom_leaf749_p730.jpg",
+   "ia_identifier": "ongrowthform1917thom",
+   "leaf": 749,
+   "printed_page": 730,
+   "url": "https://archive.org/download/ongrowthform1917thom/page/n749_w1200.jpg",
+   "content": "text: eqs. x1, c*y1; y -> eps^y; shear x = xi - eta cot w, y = eta cosec w; Figs. 354-357 refs",
+   "sha256": "e93cffb230bb6759beb2cab32282e54e004d5f7b1d0856d35c4019b7f129e687",
+   "bytes": 702183
+  },
+  {
+   "file": "thompson_1917_pages/ongrowthform1917thom_leaf750_p731.jpg",
+   "ia_identifier": "ongrowthform1917thom",
+   "leaf": 750,
+   "printed_page": 731,
+   "url": "https://archive.org/download/ongrowthform1917thom/page/n750_w1200.jpg",
+   "content": "Fig. 358 (radial coordinates / beam flexure)",
+   "sha256": "ada14143225028ffd1f395867d8e3d985705a66bd1be175ba33250997ffead6e",
+   "bytes": 468361
+  },
+  {
+   "file": "thompson_1917_pages/ongrowthform1917thom_leaf759_p740.jpg",
+   "ia_identifier": "ongrowthform1917thom",
+   "leaf": 759,
+   "printed_page": 740,
+   "url": "https://archive.org/download/ongrowthform1917thom/page/n759_w1200.jpg",
+   "content": "Fig. 364 (After Albert Durer): three heads in rectangular proportion grids",
+   "sha256": "9e583cdcbd5c7ced2eb5cf80309c26e5bcd5680c348d9915341b3d9e74592895",
+   "bytes": 518179
+  },
+  {
+   "file": "thompson_1917_pages/ongrowthform1917thom_leaf761_p742.jpg",
+   "ia_identifier": "ongrowthform1917thom",
+   "leaf": 761,
+   "printed_page": 742,
+   "url": "https://archive.org/download/ongrowthform1917thom/page/n761_w1200.jpg",
+   "content": "Fig. 366 (After Albert Durer): two heads in oblique (sheared) grids; Camper facial-angle footnote",
+   "sha256": "214db8a09bd3fdfe13c8b8270aeabd8ac914f23fd493e7b3e9a4191b5309e883",
+   "bytes": 539306
+  }
+ ],
+ "literature_norms": [
+  {
+   "name": "facial convexity angle G-Sn-Pg",
+   "value_deg": 12.0,
+   "sd_deg": 4.0,
+   "source": "Legan & Burstone 1980 J Oral Surg 38:744-751 (PMID 6932485)"
+  },
+  {
+   "name": "nasolabial angle Cm-Sn-Ls",
+   "value_deg": 102.0,
+   "sd_deg": 8.0,
+   "source": "Legan & Burstone 1980 J Oral Surg 38:744-751 (PMID 6932485)"
+  },
+  {
+   "name": "Ricketts E-line, lips posterior to Prn-Pg line",
+   "value": "upper lip -4 mm, lower lip -2 mm (adult)",
+   "source": "Ricketts 1968 Am J Orthod 54:272-289 (doi:10.1016/S0002-9416(68)90278-9)"
+  }
+ ],
+ "provenance": {
+  "vendored_by": "cloud agent loop thompson1917-t1917-040, 2026-10-28",
+  "commons_api": "https://commons.wikimedia.org/w/api.php",
+  "ia_api": "https://archive.org/download/ongrowthform1917thom/page/n<leaf>_w1200.jpg",
+  "sha256_algorithm": "sha256 over the vendored file bytes exactly as stored in this directory"
+ }
+}
