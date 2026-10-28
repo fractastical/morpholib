@@ -13,20 +13,20 @@ run:
 totals:
   steps_completed: 0
   steps_total: 12
-  wall_time_s: 1907.121
-  wall_time_min: 31.79
+  wall_time_s: 1977.684
+  wall_time_min: 32.96
   tier_a_wall_s: 1907.121
-  tier_b_wall_s: 0.0
+  tier_b_wall_s: 70.563
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   input_tokens: 0
-  output_tokens: 117591
+  output_tokens: 142093
   subagent_tokens: 0
-  total_llm_tokens: 117591
-  artifact_tokens: 117591
+  total_llm_tokens: 142093
+  artifact_tokens: 142093
   tier_a_llm_tokens: 117591
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 61.7
+  tier_b_llm_tokens: 24502
+  effective_tokens_per_s: 71.8
 steps:
 - num: 1
   slug: scout
@@ -254,122 +254,154 @@ steps:
   slug: audit
   tier: B
   title: 7  Dual-agent audit
-  actor: dual-assessors
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: cloud-agent
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:14:51.692Z'
+  ended_at: '2026-10-28T04:14:51.797Z'
+  duration_s: 0.105
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 5698
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 5698
+    artifact_tokens: 5698
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit.yaml
+    bytes: 22272
+    sha256: 080a6b9d5351a626c23a6b00c9f7d2d5bed186b49cfacc4169efe8749f2622a7
+    tokens: 5698
   commands: []
-  notes: null
+  notes: Pass 1; Pass 1 self-audit overall 62.45 (faith 57.1 / repro 75.0); 9 remediation
+    items R1-R9
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
-  actor: tool (measure_outputs.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: cloud-agent
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:14:51.901Z'
+  ended_at: '2026-10-28T04:15:00.942Z'
+  duration_s: 9.041
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 2202
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 2202
+    artifact_tokens: 2202
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/audits/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit.measurements.yaml
+    bytes: 7710
+    sha256: c72afa776026d96420febd1af141bc05bdb87a10bada165e68220a554d811942
+    tokens: 2202
   commands: []
-  notes: null
+  notes: 'Pass 1; Pass 1: 2 outputs fingerprinted, 11 measurements, quick_gate 100/100'
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
-  actor: tool (build_morphoeval_kg.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: cloud-agent
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:15:01.049Z'
+  ended_at: '2026-10-28T04:15:21.925Z'
+  duration_s: 20.876
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 7817
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 7817
+    artifact_tokens: 7817
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit/REPORT.md
+    bytes: 15142
+    sha256: 5cd631735c490ed559775ae2e6bec3b27745e2ec7098422b2d6716c2a7f76f4a
+    tokens: 4141
+  - file: morphoeval/kg/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit/thompson1917-t1917-029-overall.trig
+    bytes: 13125
+    sha256: bddc697b825acc3490da358ba66d8223ed3b7b3b42ce2b035a363979d1592879
+    tokens: 3676
   commands: []
-  notes: null
+  notes: 'Pass 1; Pass 1: 9 nanopubs, 551 triples, Delphi conformance OK, rubric reused
+    from bos-taurus v7'
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
-  actor: tool (sign_morphoeval.py + check_signed.mjs)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: cloud-agent
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:15:22.032Z'
+  ended_at: '2026-10-28T04:16:02.470Z'
+  duration_s: 40.438
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 4644
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 4644
+    artifact_tokens: 4644
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit/published.json
+    bytes: 1694
+    sha256: 35a3cc955533f2401819c80de502158b84fcecec7a6f8ebbe40bdae85c7f9a3e
+    tokens: 620
+  - file: morphoeval/kg/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit/signed/thompson1917-t1917-029-overall.trig
+    bytes: 14288
+    sha256: b1299e40889d75a1ac2a739289a4a3d15f04ea343892ed4abf2c07051122a3aa
+    tokens: 4024
   commands: []
-  notes: null
+  notes: 'Pass 1 sign-only; Pass 1: 9 nanopubs signed (ephemeral key, sign-only, unpublished);
+    @nanopub/sign verify 9 ok 0 failed'
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
-  actor: tool
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: cloud-agent
+  model: claude-fable-5-1
+  status: ok
+  started_at: '2026-10-28T04:16:02.575Z'
+  ended_at: '2026-10-28T04:16:02.678Z'
+  duration_s: 0.103
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 4141
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 4141
+    artifact_tokens: 4141
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/kg/2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit/REPORT.md
+    bytes: 15142
+    sha256: 5cd631735c490ed559775ae2e6bec3b27745e2ec7098422b2d6716c2a7f76f4a
+    tokens: 4141
   commands: []
-  notes: null
+  notes: 'Pass 1; Pass 1 REPORT.md verified: overall 62.5 mostly faithful; 9 remediation
+    items listed'
 - num: 12
   slug: remed
   tier: B->A

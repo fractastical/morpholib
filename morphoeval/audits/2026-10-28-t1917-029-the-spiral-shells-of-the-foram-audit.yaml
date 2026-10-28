@@ -1,0 +1,317 @@
+# MorphoEval Pass 1 audit — Thompson (1917) claim T1917-029 "The Spiral Shells of the Foraminifera"
+# Loop 223 (`thompson1917-t1917-029`), builder = assessor (closed-loop self-audit, Pass 1 of 2).
+#
+# What was read: morphoeval/rubric.yaml, morphoeval/schema.yaml, the v1 script in full, every file in
+# datasets/thompson_1917/t1917-029/, the regenerated PNG/GIF, t1917_029_metrics.json and result.json,
+# and the IA scan pages 591-605 of Thompson (1917) for the claim text and tables.
+#
+# Independent checks performed (2026-10-28, Linux, python 3.12.3 / numpy 2.5.4 / matplotlib 3.11.2 /
+# Pillow 13.0.0 / scipy 1.18.1):
+#   * `--self-test` passes (0.4 s); full run 2.4 s; outputs reproduced with identical SHA-256
+#     (PNG 3ac36d67..., GIF 71030d8c...).
+#   * Dryad files: SHA-256 equal to the digests served by the Dryad v2 API (f7bb3fe7..., b5ddc656...).
+#   * alpha(W=1.5) = 86.31 deg recomputed by hand from cot(alpha) = ln 1.5 / 2 pi = 0.06453 (Thompson p. 593
+#     says "about 86 degrees"); von Moller half-whorl refit 1.224 (Thompson 1.225); van Iterson refit 1.323.
+#   * The 14 two-magnification specimens (D drop > 15 %) were listed and the longest-segment rule checked
+#     on TPJ, SSG, PTI, SSR4 (segments are individually geometric).
+#   * Lean file compiled with Lean 4.35.0 (0 sorry) — 5 theorems match the script identities asserted in
+#     self_test() L602-L641.
+
+audit:
+  id: 2026-10-28-t1917-029-the-spiral-shells-of-the-foram-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 — builder self-audit, Pass 1 (role: builder_assessor)"
+    homepage: https://www.anthropic.com
+  role: builder_assessor
+  blinded: false
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  signing_note: >-
+    Nanopubs from this audit are sign-only (unpublished) with an ephemeral RSA key generated inside the
+    cloud-agent VM (`python3 -m nanopub setup --newkeys --no-publish`); re-sign with the registered key
+    before any registry publication.
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0eb517d23d79fca6826d903b09d425781dd017b4
+    note: >-
+      Pass 1 commit on branch cursor/t1917-029-foram-spiral-shells-eb42 (pushed); all cited loci exist at
+      this commit.
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+      lean: "4.35.0"
+      lockfile: requirements.lock.txt (NOT the versions used here — pip resolved newer numpy/matplotlib/Pillow)
+
+references:
+  thompson1917:
+    title: "On Growth and Form — Ch. XII The Spiral Shells of the Foraminifera (pp. 587-611, Figs. 308-317)"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), 1st ed."
+    url: https://archive.org/details/ongrowthform1917thom
+  vonmoller1878:
+    title: "Die spiral-gewundenen Foraminiferen des russischen Kohlenkalks"
+    authors: "von Moller V"
+    venue: "Mem. Acad. Imp. Sci. St-Petersbourg (7) 25(9) (1878) — quoted by Thompson p. 593"
+    url: https://archive.org/details/ongrowthform1917thom/page/n612
+  shi2021:
+    title: "Heterochronic origin of spherical fusulinid foraminifera in the late Paleozoic"
+    authors: "Shi Y"
+    venue: "Paleobiology 47(1):115-133 (2021; online 2020)"
+    doi: 10.1017/pab.2020.53
+  shi2020dryad:
+    title: "Data from: Heterochronic origin of spherical fusulinid foraminifera in the Late Paleozoic (Landmarks.dat, Table_1.csv)"
+    authors: "Shi Y"
+    venue: "Dryad (2020), CC0"
+    doi: 10.5061/dryad.sn02v6x26
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "J. Paleontol. 40(5):1178-1190 (1966)"
+    url: https://www.jstor.org/stable/1301992
+  specimen_fusulinid_commons:
+    title: "File:Fusulinid.jpg — fusulinid axial thin section (CC BY-SA 2.5, ja:User:NEON)"
+    authors: "NEON, via Wikimedia Commons"
+    url: https://commons.wikimedia.org/wiki/File:Fusulinid.jpg
+
+simulations:
+  - id: thompson1917-t1917-029
+    name: "Thompson (1917) T1917-029: logarithmic-spiral chamber succession with constant ratio vs Shi (2021) fusulinid half-whorl series"
+    organism: Fusulinida (Triticites, Pseudoschwagerina, Sphaeroschwagerina, Zellia, Robustoschwagerina); Thompson's figured genera via the generative model
+    script: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+    output: docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png
+    also:
+      - docs/media/t1917_029_the_spiral_shells_of_the_foram_growth.gif
+      - datasets/thompson_1917/t1917-029/t1917_029_metrics.json
+      - datasets/thompson_1917/t1917-029/result.json
+      - datasets/thompson_1917/t1917-029/t1917_029_the_spiral_shells_of_the_foram_reference.json
+      - datasets/thompson_1917/t1917-029/paper_citations.bib
+      - morphoeval/lean/loops/Thompson1917_T1917_029.lean
+    domain: morphogenesis
+    status: evaluated
+    source_refs:
+      - thompson1917
+      - vonmoller1878
+      - shi2021
+      - shi2020dryad
+      - raup1966
+      - specimen_fusulinid_commons
+    provenance:
+      artifact_sha256: 3ac36d67d48be41b7dd503a4b25e70dd907fd2b4e7d04fb54b22ffa833f905ba
+      input_dataset_sha256:
+        shi2020_dryad_sn02v6x26_Landmarks.dat: f7bb3fe73332d58c87499726ccf6eace4e8df60a668843543c8f11a0c55c1023
+        shi2020_dryad_sn02v6x26_Table_1.csv: b5ddc6561b74b26d6ac281a28a1862e9e98310cd90516ebfe34e0aa387d9a88d
+        fusulinid_axial_thin_section_commons_NEON.jpg: 39f54718bbc8afa2cb5610d0efeae1d70006b2784c59ab8568b40bb6bece3f7d
+        thompson1917_fig309_nummulina_antiquior_vonmoller_p591.jpg: e7e37b2c3ea0a6f37ec0010beab0a28894061dbc9c9773765104772a39dc74d1
+        t1917_029_the_spiral_shells_of_the_foram_growth.gif: 71030d8c3199fbae9b3c3f09235c937b96cf00c61515098ee69fba979462e751
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) pp. 591-598: chambers/whorls in continued proportion lie on a logarithmic spiral; von Moller's Fusulina whorls in ratio ~1.5 (half-whorl 1.225, alpha ~86 deg); van Iterson's Triloculina 1.323; Rhumbler's Pulvinulina ~1.187 with a 'small secondary fluctuation'; constant volume ratio from growth proportional to existing mass."
+        - "Thompson (1917) pp. 602-605: rotaline, Miliolid, Nodosarian, Textularian, Orbitolitid forms are all logarithmic-spiral cases differing in numerical coefficients and pass into one another by continuous gradations."
+      reconstructed_in_script:
+        - "A discrete similar-chamber generative model (centres on r = r0 rho^k at angle k d, radii a0 rho^k, optional translation) that Thompson describes verbally; chamber size a0 and overlap are free choices, not source parameters."
+        - "Per-specimen log-linear fits of test DIAMETER (perpendicular to the coiling axis, PCA frame from the mid-ontogeny outline) vs half-whorl stage on the Dryad outlines; BIC comparison with linear growth; CV and linear trend of successive ratios; a gap/overlap statistic for genus continuity; pre-registered pass/fail thresholds (r >= 0.98, 80 %, CV <= 0.15, +/-0.05, gap ratio <= 6)."
+        - "Longest-segment rule for the 14 specimens digitised at two magnifications."
+      transfer_boundary:
+        - "Dryad outlines are whorl-level axial sections in pixels of Late Paleozoic fusulinids; Thompson's chamber-level claims (septal chambers, Miliolidae, rotaline forms) are tested only via his own printed tables and the generative model, not via new specimen measurements."
+        - "The fusulinid thin-section photograph is displayed but not measured in v1."
+      does_not_claim:
+        - "Does not claim that the growth ratio is physiologically caused by mass-proportional growth (E4 is proved algebraically, not tested)."
+        - "Does not claim the verdict generalises to planktonic or miliolid foraminifera; n = 5 fusulinid genera, 106 specimens, one Dryad deposit."
+        - "The T4 'continuity' statistic is a heuristic with an arbitrary threshold; its FAIL in v1 (gap ratio 6.34 vs 6.0) is not evidence of discontinuity."
+    overall_score: 62.45
+    overall_note: "Weighted mean 20/25/10/15/10/8/12 of the seven scores below (faithfulness 57.1, reproducibility 75.0); no dimension not_applicable."
+    summary: >-
+      v1 implements Thompson's model faithfully as far as he states it (constant ratio, constant angle,
+      limiting cases, mass-proportional volume law) and tests the central quantitative claim on a
+      correctly matched public dataset: 106 fusulinid specimens give median r = 0.995 for ln D vs
+      half-whorl stage, the geometric law beats arithmetic growth in 100 % of specimens, and Triticites
+      reproduces von Moller's Fusulina ratio (1.239 +/- 0.021 vs 1.225 per half-whorl; 1.53 vs 1.5 per
+      whorl).  Weaknesses: (1) the real specimen photograph is shown but not segmented or measured, so
+      specimen-match rests on eyeballing; (2) no parameter sweep demonstrates that W, d, overlap and T
+      control the model's form monotonically — the four morphs are hand-picked points; (3) no negative
+      control (shuffled stages / synthetic arithmetic series / random-walk ratios) is run through the
+      verdict rules; (4) the panel-G finding that pseudoschwagerine ratios rise to ~1.45 and fall to
+      ~1.1 through ontogeny (systematic, not a 'small secondary fluctuation') is visible but untested —
+      T2 uses only a CV threshold, so the verdict machinery cannot register the most interesting
+      deviation from Thompson's law; (5) T4 threshold is uncalibrated (for n ~ 96 interior points the
+      expected max/median gap of a continuous distribution is ~6.6, so 6.34 is the null expectation);
+      (6) goodness-of-fit lacks KS/normality of residuals and confidence intervals; (7) the GIF model
+      shell uses an arbitrary a0 = 0.5 that does not resemble Nummulina; (8) environment versions differ
+      from requirements.lock.txt.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          E1-E5 are implemented exactly as Thompson states them and verified numerically against the Lean
+          theorems in self_test; the generative model (E6) is Thompson's verbal construction made
+          explicit and its limiting cases (d = 0 Nodosarian, rho = 1 Orbitolitid) are correct.  Docked
+          because chamber radius a0 and overlap are unconstrained free choices with no source value, the
+          Textularian translation T is implemented but never exercised or shown, and the Raup (1966)
+          W-D-T correspondence is asserted in a docstring rather than demonstrated.
+        evidence:
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [89, 140]
+            note: "log_spiral / whorl_ratio_from_alpha / alpha_from_whorl_ratio / chamber_series / thompson_volume_series — E1, E2, E5, E6, E4 as on pp. 593-598"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [602, 641]
+            note: "self_test asserts alpha(1.5) = 86.31, L_{n+2} = rho^2 L_n, cross-product invariance, V_{n+1}/V_n = 1+q, von Moller 0.088 slope — numerically mirrors Lean Theorems 1-5"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [109, 127]
+            note: "a0 = 0.6 default and translation parameter have no source value; T is never used in any figure"
+            supports: false
+      specimen-match:
+        value: 45
+        rationale: >-
+          Panel A's four morphs are recognisably Globigerina-like, Cyclammina-like (Fig. 313 style
+          20-degree chambers), Triloculina-like and an Orbitolitid ring, and are visually distinct from
+          one another (credited).  Panel E shows a genuine fusulinid axial section next to panel F's
+          Dryad outlines, and the two are the same kind of object (fusiform nested whorls).  But nothing
+          is overlaid or measured on the photograph, the model shells are never compared with Fig. 309
+          Nummulina or with the thin section, and the GIF's 'Nummulina-like' shell (a0 = 0.5, d = 24
+          degrees) is a thick ring of overlapping discs that does not resemble either specimen image.
+        evidence:
+          - file: docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png
+            lines: [0, 0]
+            note: "Regenerated 7-panel figure inspected: A morphs distinct; E photo shown raw; F outlines plausible; no overlay"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [429, 434]
+            note: "specimen image only imshow'd — no segmentation, no whorl-wall detection, no model overlay"
+            supports: false
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [491, 491]
+            note: "GIF model shell chamber_series(30, W, 24.0, r0=1.0, a0=0.5): arbitrary a0, visually unlike Nummulina (Fig. 309)"
+            supports: false
+      parameter-expressivity:
+        value: 50
+        rationale: >-
+          Only four hand-picked (W, d, a0) points are rendered; there is no sweep across W or d, no
+          morphometric read-out (coiling tightness, chamber overlap fraction, number of chambers per
+          whorl, aspect ratio) as a function of parameter, and so monotonic control is asserted (and
+          proven in Lean for size) but not shown for form.  The Nodosarian branch of chamber_series is
+          exercised only in self_test.
+        evidence:
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [367, 377]
+            note: "four fixed morph tuples; no sweep"
+            supports: false
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [633, 637]
+            note: "Nodosarian (d = 0) and Orbitolitid (W = 1) limits verified in self_test only"
+            supports: true
+      morphometric-validation:
+        value: 62
+        rationale: >-
+          Strong core: 106 specimens x ~13 stages, per-specimen r / RMSE / ratio CV / BIC vs arithmetic,
+          genus means with SD, and an explicit comparison with Thompson's printed 1.225 and 1.5 (T3
+          passes at 1.239 / 1.53).  Thompson's own tables are refitted and his stated ratios recovered.
+          Docked because: no confidence intervals or KS/normality test on residuals; T2 (CV <= 0.15)
+          cannot detect the systematic ontogenetic hump of the pseudoschwagerines seen in panel G; T4
+          uses an uncalibrated threshold whose null expectation (~6.6 for n ~ 96) exceeds the cut-off,
+          so the v1 FAIL is an artefact of the statistic, not of the data; no negative control.
+        evidence:
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [143, 175]
+            note: "fit_geometric: log-linear slope, r, RMSE (log10, relative), ratios, CV, trend, BIC geometric vs arithmetic"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [309, 339]
+            note: "verdict_from_metrics: T1-T4 rules; T2 is CV-only, T4 threshold 6.0 is arbitrary"
+            supports: false
+          - file: datasets/thompson_1917/t1917-029/result.json
+            lines: [0, 0]
+            note: "Triticites 1.2385 vs 1.225; pooled r 0.9953; frac geometric 1.0; gap ratio 6.342 -> MIXED 3/4"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [230, 241]
+            note: "longest-segment rule for the 14 two-magnification specimens; drops 32 outlines; documented in metrics"
+            supports: true
+      source-traceability:
+        value: 85
+        rationale: >-
+          Dryad DOI, Crossref-verified primary article (author list corrected to single author, Paleobiology
+          47(1):115-133), IA scan with verified leaf mapping, Commons file with SHA-1 and licence, SHA-256
+          for every vendored file in the reference JSON and scout manifest, .gitattributes protecting the
+          CRLF bytes of the Dryad files.  Docked because von Moller (1878) and van Iterson (1907) have no
+          resolvable identifiers (only Thompson's citation), and Przibram (1913) is cited without DOI.
+        evidence:
+          - file: datasets/thompson_1917/t1917-029/t1917_029_the_spiral_shells_of_the_foram_reference.json
+            lines: [85, 118]
+            note: "dataset block with DOI, licence, files + SHA-256 + dryad_digest_verified; specimen_images with Commons SHA-1 and SHA-256"
+            supports: true
+          - file: datasets/thompson_1917/t1917-029/paper_citations.bib
+            lines: [12, 40]
+            note: "vonmoller1878, vaniterson1907, przibram1913 entries — the last three lack DOIs/URLs"
+            supports: false
+          - file: datasets/thompson_1917/t1917-029/scout_manifest.json
+            lines: [1, 60]
+            note: "verification mode, Dryad digests, why-it-matches / limitations recorded"
+            supports: true
+      code-traceability:
+        value: 70
+        rationale: >-
+          Every model function cites the page / equation it implements (E1-E6), Thompson's tables are
+          constants with page comments, and the Lean file names the theorem for each law.  Docked because
+          the analysis-side choices (PCA frame from the mid-ontogeny outline, 0.85 scale-break threshold,
+          5-95 % interior trimming, thresholds in T1-T4) are documented in comments but not tied to any
+          source or pre-registration beyond the scout manifest's generic T1-T4 list.
+        evidence:
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [76, 83]
+            note: "Thompson's tables as constants with page loci"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [215, 229]
+            note: "specimen_axis_dims: PCA frame choice justified in docstring but not sourced"
+            supports: false
+      repro-package:
+        value: 70
+        rationale: >-
+          Deterministic (SEED only affects jitter in panel D), --self-test covers model identities, the
+          refits and the loader, the run takes 2.4 s and reproduced byte-identical outputs twice.  Docked
+          because the environment used (numpy 2.5.4 / matplotlib 3.11.2 / Pillow 13.0.0) is not the
+          lockfile's, scipy is imported nowhere yet listed in the README environment, and there is no
+          regression assertion on the headline numbers (a silent change of the longest-segment rule would
+          pass --self-test).
+        evidence:
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [602, 641]
+            note: "self_test: 20 assertions on model identities, Thompson refits and Dryad loader; none on headline metrics"
+            supports: true
+          - file: datasets/thompson_1917/t1917-029/README.md
+            lines: [46, 60]
+            note: "documented invocation and outputs"
+            supports: true
+          - file: thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py
+            lines: [644, 688]
+            note: "main writes metrics + result JSON; no --seed / --version flags, no environment stamp in the metrics"
+            supports: false
+    remediation:
+      - id: R1
+        item: "specimen-match / morphometric-validation (L429-L434): segment the fusulinid thin section — locate the proloculus, take sector-median radial intensity profiles along the minor axis, detect dark whorl walls, fit ln r_j vs j, and compare the resulting whorl ratio with the Dryad Triticites and Thompson's 1.5; overlay detected walls on panel E."
+      - id: R2
+        item: "parameter-expressivity (L367-L377): add a (W, d) sweep of the generative model with morphometric read-outs (chambers per whorl, chamber overlap fraction, coiling tightness r_last/r_first, aspect ratio) and show monotonic control; exercise the translation T (Textularian) branch."
+      - id: R3
+        item: "morphometric-validation (L309-L339): add a negative/ablation control — run the verdict rules on (a) within-specimen shuffled stage order, (b) synthetic arithmetic-growth series with matched noise, (c) random-walk ratios — and report that T1/T3 reject them."
+      - id: R4
+        item: "morphometric-validation (L318): replace the CV-only T2 with a test of systematic ratio drift (quadratic term in ln D vs k with its t-statistic / p-value per genus, plus the stage of maximum ratio) so the pseudoschwagerine inflation hump in panel G is scored, not just plotted."
+      - id: R5
+        item: "morphometric-validation (L329): calibrate T4 with a Monte-Carlo null — the largest interior gap of n samples from a continuous (normal / KDE) fit to the pooled ratios — and report a p-value instead of the fixed 6.0 threshold."
+      - id: R6
+        item: "morphometric-validation (L143-L175): add goodness-of-fit statistics — KS test of log residuals against normal, bootstrap 95 % CI of the genus mean ratios, RMSE in both spaces — and expose them in measure_morphoeval()."
+      - id: R7
+        item: "specimen-match (L491): choose GIF/figure model parameters from the data (W from the Triticites fit, d and a0 fitted to Fig. 309's visible chamber count per whorl) and draw the model section next to the Fig. 309 crop."
+      - id: R8
+        item: "repro-package (L644-L688): stamp numpy/matplotlib/Pillow versions and the script version into the metrics JSON; add headline-number regression assertions to --self-test; drop the unused scipy mention from the README environment list or use scipy for the KS test."
+      - id: R9
+        item: "source-traceability (paper_citations.bib L12-L40): add resolvable URLs (BHL / IA) for von Moller 1878 and van Iterson 1907, and a DOI or URL for Przibram 1913."

@@ -1,0 +1,84 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-029> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-029-overall-builder-assessor-claude-fable-5-1> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-029-overall-builder-assessor-claude-fable-5-1> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) T1917-029: logarithmic-spiral chamber succession with constant ratio vs Shi (2021) fusulinid half-whorl series — MorphoEval overall 62.5/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "v1 implements Thompson's model faithfully as far as he states it (constant ratio, constant angle, limiting cases, mass-proportional volume law) and tests the central quantitative claim on a correctly matched public dataset: 106 fusulinid specimens give median r = 0.995 for ln D vs half-whorl stage, the geometric law beats arithmetic growth in 100 % of specimens, and Triticites reproduces von Moller's Fusulina ratio (1.239 +/- 0.021 vs 1.225 per half-whorl; 1.53 vs 1.5 per whorl). Weaknesses: (1) the real specimen photograph is shown but not segmented or measured, so specimen-match rests on eyeballing; (2) no parameter sweep demonstrates that W, d, overlap and T control the model's form monotonically — the four morphs are hand-picked points; (3) no negative control (shuffled stages / synthetic arithmetic series / random-walk ratios) is run through the verdict rules; (4) the panel-G finding that pseudoschwagerine ratios rise to ~1.45 and fall to ~1.1 through ontogeny (systematic, not a 'small secondary fluctuation') is visible but untested — T2 uses only a CV threshold, so the verdict machinery cannot register the most interesting deviation from Thompson's law; (5) T4 threshold is uncalibrated (for n ~ 96 interior points the expected max/median gap of a continuous distribution is ~6.6, so 6.34 is the null expectation); (6) goodness-of-fit lacks KS/normality of residuals and confidence intervals; (7) the GIF model shell uses an arbitrary a0 = 0.5 that does not resemble Nummulina; (8) environment versions differ from requirements.lock.txt. Overall 62.5/100 (faithfulness 57.1, reproducibility 75.0); rubric morphoeval 0.1.0; checkpoint commit 0eb517d23d79fca6826d903b09d425781dd017b4; environment: python 3.12.3, numpy 2.5.4, matplotlib 3.11.2, Pillow 13.0.0, scipy 1.18.1, lean 4.35.0, lockfile requirements.lock.txt (NOT the versions used here — pip resolved newer numpy/matplotlib/Pillow). Dimension assessments: Model fidelity to source 72, Morphological realism / specimen match 45, Parameter expressivity 50, Morphometric validation 62, Source and data traceability 85, Code-to-model traceability 70, Reproducibility package 70. Output judged: docs/media/t1917_029_the_spiral_shells_of_the_foram_comparison.png: rendered output of thompson/claims/t1917-029_the-spiral-shells-of-the-foraminifera.py at 0eb517d23d79fca6826d903b09d425781dd017b4, image/png, 557632 B, 1760×1100 px, artifact_sha256 3ac36d67d48be41b7dd503a4b25e70dd907fd2b4e7d04fb54b22ffa833f905ba (sha256 3ac36d67d48be41b7dd503a4b25e70dd907fd2b4e7d04fb54b22ffa833f905ba), spec_fingerprint e8dfa9fdde138927298f774fce032da52edc892f40295eed80203fdda26888b1. Dual provenance: spec_fingerprint: e8dfa9fdde138927298f774fce032da52edc892f40295eed80203fdda26888b1; artifact_sha256: 3ac36d67d48be41b7dd503a4b25e70dd907fd2b4e7d04fb54b22ffa833f905ba; input_dataset_sha256: {fusulinid_axial_thin_section_commons_NEON.jpg=39f54718bbc8afa2..., shi2020_dryad_sn02v6x26_Landmarks.dat=f7bb3fe73332d58c..., shi2020_dryad_sn02v6x26_Table_1.csv=b5ddc6561b74b26d..., t1917_029_the_spiral_shells_of_the_foram_growth.gif=71030d8c3199fbae..., thompson1917_fig309_nummulina_antiquior_vonmoller_p591.jpg=e7e37b2c3ea0a6f3...}. Claim boundary: reported_in_source: Thompson (1917) pp. 591-598: chambers/whorls in continued proportion lie on a logarithmic spiral; von Moller's Fusulina whorls in ratio ~1.5 (half-whorl 1.225, alpha ~86 deg); van Iterson's Triloculina 1.323; Rhumbler's Pulvinulina ~1.187 with a 'small secondary fluctuation'; constant volume ratio from growth proportional to existing mass. | Thompson (1917) pp. 602-605: rotaline, Miliolid, Nodosarian, Textularian, Orbitolitid forms are all logarithmic-spiral cases differing in numerical coefficients and pass into one another by continuous gradations.; reconstructed_in_script: A discrete similar-chamber generative model (centres on r = r0 rho^k at angle k d, radii a0 rho^k, optional translation) that Thompson describes verbally; chamber size a0 and overlap are free choices, not source parameters. | Per-specimen log-linear fits of test DIAMETER (perpendicular to the coiling axis, PCA frame from the mid-ontogeny outline) vs half-whorl stage on the Dryad outlines; BIC comparison with linear growth; CV and linear trend of successive ratios; a gap/overlap statistic for genus continuity; pre-registered pass/fail thresholds (r >= 0.98, 80 %, CV <= 0.15, +/-0.05, gap ratio <= 6). | Longest-segment rule for the 14 specimens digitised at two magnifications.; transfer_boundary: Dryad outlines are whorl-level axial sections in pixels of Late Paleozoic fusulinids; Thompson's chamber-level claims (septal chambers, Miliolidae, rotaline forms) are tested only via his own printed tables and the generative model, not via new specimen measurements. | The fusulinid thin-section photograph is displayed but not measured in v1.; does_not_claim: Does not claim that the growth ratio is physiologically caused by mass-proportional growth (E4 is proved algebraically, not tested). | Does not claim the verdict generalises to planktonic or miliolid foraminifera; n = 5 fusulinid genera, 106 specimens, one Dryad deposit. | The T4 'continuity' statistic is a heuristic with an arbitrary threshold; its FAIL in v1 (gap ratio 6.34 vs 6.0) is not evidence of discontinuity.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': \"specimen-match / morphometric-validation (L429-L434): segment the fusulinid thin section — locate the proloculus, take sector-median radial intensity profiles along the minor axis, detect dark whorl walls, fit ln r_j vs j, and compare the resulting whorl ratio with the Dryad Triticites and Thompson's 1.5; overlay detected walls on panel E.\"}",
+            "remediation needed: {'id': 'R2', 'item': 'parameter-expressivity (L367-L377): add a (W, d) sweep of the generative model with morphometric read-outs (chambers per whorl, chamber overlap fraction, coiling tightness r_last/r_first, aspect ratio) and show monotonic control; exercise the translation T (Textularian) branch.'}",
+            "remediation needed: {'id': 'R3', 'item': 'morphometric-validation (L309-L339): add a negative/ablation control — run the verdict rules on (a) within-specimen shuffled stage order, (b) synthetic arithmetic-growth series with matched noise, (c) random-walk ratios — and report that T1/T3 reject them.'}",
+            "remediation needed: {'id': 'R4', 'item': 'morphometric-validation (L318): replace the CV-only T2 with a test of systematic ratio drift (quadratic term in ln D vs k with its t-statistic / p-value per genus, plus the stage of maximum ratio) so the pseudoschwagerine inflation hump in panel G is scored, not just plotted.'}",
+            "remediation needed: {'id': 'R5', 'item': 'morphometric-validation (L329): calibrate T4 with a Monte-Carlo null — the largest interior gap of n samples from a continuous (normal / KDE) fit to the pooled ratios — and report a p-value instead of the fixed 6.0 threshold.'}",
+            "remediation needed: {'id': 'R6', 'item': 'morphometric-validation (L143-L175): add goodness-of-fit statistics — KS test of log residuals against normal, bootstrap 95 % CI of the genus mean ratios, RMSE in both spaces — and expose them in measure_morphoeval().'}",
+            "remediation needed: {'id': 'R7', 'item': \"specimen-match (L491): choose GIF/figure model parameters from the data (W from the Triticites fit, d and a0 fitted to Fig. 309's visible chamber count per whorl) and draw the model section next to the Fig. 309 crop.\"}",
+            "remediation needed: {'id': 'R8', 'item': 'repro-package (L644-L688): stamp numpy/matplotlib/Pillow versions and the script version into the metrics JSON; add headline-number regression assertions to --self-test; drop the unused scipy mention from the README environment list or use scipy for the KS test.'}",
+            "remediation needed: {'id': 'R9', 'item': 'source-traceability (paper_citations.bib L12-L40): add resolvable URLs (BHL / IA) for von Moller 1878 and van Iterson 1907, and a DOI or URL for Przibram 1913.'}" ;
+        pk:hasScore "0.625"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 — builder self-audit, Pass 1 (role: builder_assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://archive.org/details/ongrowthform1917thom/page/n612>,
+            <https://commons.wikimedia.org/wiki/File:Fusulinid.jpg>,
+            <https://doi.org/10.1017/pab.2020.53>,
+            <https://doi.org/10.5061/dryad.sn02v6x26>,
+            <https://www.jstor.org/stable/1301992> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form — Ch. XII The Spiral Shells of the Foraminifera (pp. 587-611, Figs. 308-317)" .
+    <https://archive.org/details/ongrowthform1917thom/page/n612> dct:date "1878"^^xsd:gYear ;
+        dct:title "Die spiral-gewundenen Foraminiferen des russischen Kohlenkalks" .
+    <https://commons.wikimedia.org/wiki/File:Fusulinid.jpg> dct:title "File:Fusulinid.jpg — fusulinid axial thin section (CC BY-SA 2.5, ja:User:NEON)" .
+    <https://doi.org/10.1017/pab.2020.53> dct:date "2020"^^xsd:gYear ;
+        dct:title "Heterochronic origin of spherical fusulinid foraminifera in the late Paleozoic" .
+    <https://doi.org/10.5061/dryad.sn02v6x26> dct:date "2020"^^xsd:gYear ;
+        dct:title "Data from: Heterochronic origin of spherical fusulinid foraminifera in the Late Paleozoic (Landmarks.dat, Table_1.csv)" .
+    <https://www.jstor.org/stable/1301992> dct:date "1966"^^xsd:gYear ;
+        dct:title "Geometric analysis of shell coiling: general problems" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) T1917-029: logarithmic-spiral chamber succession with constant ratio vs Shi (2021) fusulinid half-whorl series — MorphoEval overall 62.5/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T04:15:11Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-029-overall-builder-assessor-claude-fable-5-1> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-029> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
