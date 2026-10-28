@@ -37,7 +37,7 @@ equations:
     variables: "a: coordinate of a point in the Archaeopteryx (Cartesian, Fig. 388) grid; b = phi(a): its image in the Apatornis grid (Fig. 389); k in 0..4: Thompson's stage (k/4); interp4: 4x the interpolated coordinate"
     role: "Operational meaning of 'three intermediate and equidistant co-ordinate systems' (p. 759): stage 0 is Archaeopteryx, stage 4 is Apatornis, consecutive stages differ by the same displacement, stage 2 is the exact midpoint"
     source_citation: "Thompson (1917) On Growth and Form, Ch. XVII p. 759 and Fig. 390"
-    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py (interp_stage)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L358-L361"
 
   - law_name: "Frame independence of the interpolated form — similarity equivariance (E2 under Procrustes superimposition)"
     formula: "interp4(k, c a + d, c b + d) = c interp4(k, a, b) + 4 d  for any scale c and translation d applied to both endpoint drawings"
@@ -54,7 +54,7 @@ equations:
     variables: "c: common scale factor; d: common translation; a, b, k as above"
     role: "Guarantees that the choice of drawing scale/position (or of the Procrustes frame used to compare with Fig. 393) cannot change which intermediate form the construction predicts"
     source_citation: "Thompson (1917) Ch. XVII pp. 727-733 (transformations compared up to similarity); Gower (1975) Psychometrika 40:33-51"
-    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py (procrustes_align, interp_stage)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L271-L288"
 
   - law_name: "No-fold property of interpolated grids — intermediate coordinate systems stay orientation-preserving (E1 at every stage, 1-D form)"
     formula: "a1 < a2 and b1 < b2 and 0 <= k <= 4  =>  interp4(k, a1, b1) < interp4(k, a2, b2);  a <= b => 4a <= interp4(k, a, b) <= 4b"
@@ -70,7 +70,7 @@ equations:
     variables: "a1 < a2: two grid coordinates in order in the Archaeopteryx grid; b1 < b2: their images in order in the Apatornis grid"
     role: "If both endpoint grids are unfolded along a coordinate line, every interpolated grid of Fig. 390 is unfolded too, so inscribing a pelvis in it is well-defined; the script's check_no_fold() tests the 2-D Jacobian analogue numerically"
     source_citation: "Thompson (1917) Ch. XVII p. 759 ('a complete co-ordinate diagram is drawn' from each interpolated system) and Fig. 390"
-    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py (check_no_fold)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L312-L331"
 
   - law_name: "Soundness of the best-fit stage statistic t* (E7)"
     formula: "4 D = interp4(k, A, B) (both coordinates)  =>  4 <D - A, B - A> = k |B - A|^2,  i.e. t* = <D - A, B - A>/|B - A|^2 = k/4"
@@ -85,7 +85,7 @@ equations:
     variables: "A = (Ax, Ay): Archaeopteryx landmark; B = (Bx, By): Apatornis landmark; D = (Dx, Dy): drawn intermediate landmark; k/4: nominal stage"
     role: "Shows that the projection statistic used to test Thompson's 'equidistant' claim returns exactly the nominal stage for a perfect interpolant, so the measured residual |t* - k/4| attributes to Heilmann's drawing (or to the digitisation), not to the statistic"
     source_citation: "this loop (test statistic); Thompson (1917) p. 759 for the equidistance claim under test"
-    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py (best_fit_t)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L363-L366"
 
   - law_name: "Interpolation of Thompson's 'simple' affine transformations — determinant endpoints, shear area-preservation and scaling orientation-preservation (E5)"
     formula: "M_k = (4 - k) I + k A;  det M_0 = 16, det M_4 = 16 det A;  A = [[1, s],[0, 1]] => det M_k = 16 for all k;  A = diag(p, q), p, q >= 1, k >= 0 => det M_k > 0"
@@ -106,4 +106,4 @@ equations:
     variables: "A = [[a11, a12],[a21, a22]]: linear part of the Archaeopteryx->Apatornis affine fit; s: shear; p, q: axis scalings; k: stage"
     role: "Thompson's own catalogue of transformations (shear, simple strain) interpolates without ever reversing orientation; the script's affine-only control implements M_t and compares it with the thin-plate-spline grid"
     source_citation: "Thompson (1917) Ch. XVII pp. 727-733 (shear, simple strain, oblique coordinates)"
-    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py (affine_interp_matrix)"
+    code_locus: "thompson/claims/t1917-054_on-the-theory-of-transformations.py#L339-L355"

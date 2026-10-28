@@ -692,7 +692,7 @@ def measure_morphoeval() -> list[dict]:
           note=f"mean residual {hl['equidistance_residual_mean']:.4f}; d(A,B) = {hl['procrustes_distance_archaeopteryx_apatornis']:.4f} so one stage = {hl['procrustes_distance_archaeopteryx_apatornis']/4:.4f} Procrustes units"),
         M("mean full Procrustes distance, interpolated grid prediction vs drawn intermediate", hl["pred_tps_vs_drawn_mean"], "Procrustes distance",
           "E2/E4: TPS phi_t applied to the Archaeopteryx configuration, full Procrustes fit onto the drawn stage, mean over stages 1-3",
-          reference=hl["nearest_endpoint_mean"], source="control: copy the nearest endpoint (same metric)",
+          reference=round(hl["nearest_endpoint_mean"], 4), source="control: copy the nearest endpoint (same metric)",
           note=f"affine-only interpolation control: {hl['pred_affine_vs_drawn_mean']:.4f}; ratio interpolated/endpoint = {hl['pred_tps_vs_drawn_mean']/hl['nearest_endpoint_mean']:.3f}"),
         M("Archaeopteryx -> Apatornis full Procrustes distance (Fig. 393 endpoints)", hl["procrustes_distance_archaeopteryx_apatornis"], "Procrustes distance",
           f"GPA of acetabulum + 4 x {res['n_semi']} semilandmarks, unit centroid size", derived_from="output"),
