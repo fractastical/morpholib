@@ -1,0 +1,43 @@
+sim_id: thompson1917-t1917-008
+math_family: quantitative-empirical relative growth / Huxley-Thompson allometry
+model_spec:
+  model: "Thompson (1917) Ch. III differential specific growth rates; Huxley (1932) y = b x^k"
+  differential_growth: "dy/dt = alpha * y, dx/dt = beta * x  =>  k = alpha/beta"
+  allometric_law: "y = b * x^k; log(y) = log(b) + k log(x)"
+  isometry_null: "k = 1"
+  parameters:
+    seed: 1917008
+    fit_method: "OLS in log-log space"
+  inputs:
+    - datasets/thompson_1917/t1917-008/t1917_008_the_rate_of_growth_reference.json
+    - datasets/thompson_1917/t1917-008/thompson_fig18_brain_body.csv
+    - datasets/thompson_1917/t1917-008/thompson_fig19_heart_body.csv
+    - datasets/thompson_1917/t1917-008/thompson_fig22_plaice_length_weight.csv
+    - datasets/thompson_1917/t1917-008/pheidole_caste_head_body.csv
+    - morphoeval/lean/loops/Thompson1917_T1917_008.lean
+equations:
+  - law_name: "Huxley allometric power law"
+    formula: "y = b * x^k"
+    lean_decl: "MathOfBiology.Loop_206.huxley"
+    lean_theorem: "MathOfBiology.Loop_206.huxley_brain_body_sample"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_008.lean"
+    code_locus: "thompson/claims/t1917-008_the-rate-of-growth.py"
+    variables: "x body size, y organ size, k allometric exponent, b scale"
+    role: "Relates organ mass to body mass under constant relative growth rates"
+    source_citation: "Thompson (1917) Ch. III; Huxley (1932) Problems of Relative Growth"
+  - law_name: "Specific growth rate ratio equals exponent k"
+    formula: "k = alpha / beta"
+    lean_decl: "MathOfBiology.Loop_206.specific_rate_ratio"
+    lean_theorem: "MathOfBiology.Loop_206.growth_rate_ratio_is_exponent"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_008.lean"
+    variables: "alpha organ specific rate, beta body specific rate"
+    role: "Links Thompson differential growth to Huxley exponent"
+    source_citation: "Thompson (1917) Ch. III pp. 50-155"
+  - law_name: "Isometry preserves organ:body ratio"
+    formula: "k = 1 => y/x = b"
+    lean_decl: "MathOfBiology.Loop_206.organ_body_ratio"
+    lean_theorem: "MathOfBiology.Loop_206.isometry_preserves_ratio"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_008.lean"
+    variables: "b constant ratio, x size"
+    role: "Null model for ablation when proportions do not change with size"
+    source_citation: "Thompson (1917) Fig. 18-22; Needham et al. (1950) Proc. R. Soc. B discussion"

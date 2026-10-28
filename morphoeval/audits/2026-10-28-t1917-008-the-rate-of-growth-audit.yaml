@@ -1,0 +1,103 @@
+# MorphoEval audit — Thompson (1917) Ch. III relative growth / allometry, Pass 1 (v1)
+
+audit:
+  id: 2026-10-28-t1917-008-the-rate-of-growth-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval loop 206 Pass 1)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: https://orcid.org/0000-0001-9184-8944
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917-claim-validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    note: Pass 1 baseline before Step 12 remediation (parameter sweep, CV overlay, KS statistics).
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson, D'Arcy W."
+    venue: "Cambridge University Press (1917), Ch. III"
+    url: https://archive.org/details/ongrowthform1917thom
+  huxley1932:
+    title: "Problems of Relative Growth"
+    authors: "Huxley, Julian S."
+    year: 1932
+    url: https://archive.org/details/problemsofrelati033044mbp
+
+simulations:
+  - id: thompson1917-t1917-008
+    name: "Thompson (1917) differential relative growth / Huxley allometry"
+    organism: "Mammals, plaice, Pheidole megacephala (analogue)"
+    script: thompson/claims/t1917-008_the-rate-of-growth.py
+    output: docs/media/t1917_008_the_rate_of_growth_comparison.png
+    extra_outputs:
+      - docs/media/t1917_008_the_rate_of_growth_growth.gif
+    status: evaluated
+    source_refs: [thompson1917, huxley1932]
+    summary: >-
+      Pass 1 baseline (54.2/100). Implements log-log OLS fits to digitised Thompson Figs 18–22 CSV tables
+      and a differential-growth animation, but omits parameter-regime sweeps, isometry ablation controls,
+      computer-vision segmentation overlays on vendored specimen photos, and formal KS / CV goodness-of-fit
+      reporting required for full MorphoEval biological-validation.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          Core Huxley law y = b x^k and exponential relative-growth trajectories are implemented with
+          Lean 4 mirror theorems, but the script does not yet expose CLI overrides or piecewise breakpoints
+          discussed in the 1950 Royal Society counterclaim.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [95, 110], note: "simulate_relative_growth implements y proportional to x^k", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_008.lean, lines: [1, 70], note: "Three allometry theorems, 0 sorry", supports: true}
+      specimen-match:
+        value: 38
+        rationale: >-
+          Specimen JPEGs are vendored but not drawn on the comparison figure; no visual overlay of
+          segmented head vs mesosoma on the Pheidole photograph.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [200, 240], note: "render_comparison lacks specimen inset / mask overlay", supports: false}
+      parameter-expressivity:
+        value: 45
+        rationale: >-
+          No sweep across allometric exponent k or beta regimes in Pass 1 outputs.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [1, 50], note: "parameter_regime_sweep not invoked in Pass 1 baseline", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          Reports fitted k and r per series but omits RMSE/KS ablation table and CV-derived head fraction
+          in measure_morphoeval Pass 1 hook.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [320, 350], note: "measure_morphoeval limited to k and log-RMSE only in Pass 1", supports: false}
+      source-traceability:
+        value: 72
+        rationale: >-
+          SHA-256-locked CSV tables and reference JSON; scout manifest documents IN_REPO verification.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-008/t1917_008_the_rate_of_growth_reference.json, lines: [1, 60], note: "sha256_digests block", supports: true}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Functions map to Huxley log-linear fit and Thompson figure CSVs; Math KG yaml links Lean theorems.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-008.yaml, lines: [1, 40], note: "equation registry", supports: true}
+      repro-package:
+        value: 55
+        rationale: >-
+          --self-test present but Pass 1 lacks documented CLI for ablation/sweep and environment pin in script header.
+        evidence:
+          - {file: thompson/claims/t1917-008_the-rate-of-growth.py, lines: [355, 375], note: "minimal self-test", supports: true}
+    remediation:
+      - "Add parameter_regime_sweep panel and isometry k=1 ablation RMSE deltas"
+      - "Run segment_ant_head_mask on pheidole_megacephala_minor_head.jpg and overlay on figure"
+      - "Report KS statistic on log residuals and expand measure_morphoeval"
+      - "Write superseding Pass 2 audit after Step 12"
