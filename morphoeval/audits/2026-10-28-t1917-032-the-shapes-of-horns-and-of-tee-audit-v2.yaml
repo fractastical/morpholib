@@ -1,0 +1,217 @@
+# MorphoEval audit — Thompson (1917) T1917-032 "Teeth and tusks grow by the same spiral/torsion
+# geometry (St Venant torsion curves)" — Pass 2 (v2), 2026-10-28
+#
+# Supersedes 2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit (Pass 1, 60.7/100).
+# Pass 2 evaluation of `thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py` (1338 lines)
+# after closing all five Pass 1 remediation items.  Weighted overall ~ 86.0 / 100 (+25.3).
+#
+# Key remediation verified in Pass 2:
+#   1. 3-D screw-accretion fits (E4-E6) Procrustes-aligned to the projected mammoth centreline in a 2 × 2 nested
+#      design {κ = Δ/w̄ constant width, κ = Δ/w(s) measured width} × {τ = 0 plane, τ free twisted}
+#      (`fit_screw_model`, `compare_screw_models`, L542-L611): RMSE 33.1 / 17.4 / 37.3 / 23.1 px.  Twist halves
+#      the residual (ΔAIC = 477 and 355) — Thompson's "curve of double curvature" is strongly supported; the
+#      accretion width-law κ ∝ 1/w(s) is NOT (constant-width helix fits better, width-law RMSE ratio 0.75).
+#   2. Parameter-regime sweep (`parameter_sweep`, L639-L700): 30 (λ, c) regimes, 5 τ values, 16 ψ regimes —
+#      S1 κ falls with taper, S2 constant width ⇒ constant curvature, S3 imposed τ recovered as Frenet torsion
+#      (≤ 2 %), S4 E5 prediction tan ψ = Δ/c_s vs fitted ψ: r = 1.000, RMSE 0.2°, S5 helix slope monotone in ρ.
+#   3. Controls: Archimedean spiral (RMSE 123.6 px vs log spiral 36.8 px), block-shuffled-width permutation
+#      (Spearman p = 0.80 — coupling not better than chance; sign is the wrong way, ρ = −0.18), τ = 0 ablation,
+#      circular-section St Venant null (max|u_z| = 0).
+#   4. Statistics: block-bootstrap 95 % CIs (ψ 34.7-40.1°, r 0.984-0.998, narwhal φ 26.3-33.0°), one-sample KS
+#      on standardised residuals (p < 0.001: systematic misfit, honestly reported), tan α vs 1/d regression
+#      along the narwhal shaft (slope −1766, 95 % CI −17847..−1079; confounded by camera obliquity, not scored).
+#   5. Width-scaled smoothing (σ = 0.65 × median width = 50 px), CLI overrides (--sigma-frac, --n-trials,
+#      --n-boot, --n-perm, --pass1), library versions and all parameters recorded in result.json.
+# Verdict on the claim: MIXED (6/10 components) — torsion / helical component and St Venant torsion curves
+# supported, narwhal groove angle 70.2° within 1 SD of Kiladze & Chernova (2018) 66.9 ± 3.3°, gnomonic
+# differential-accretion log spiral not supported on this single 2-D mammoth photograph.
+
+audit:
+  id: 2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit-v2
+  supersedes: 2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit
+  supersedes_audit_id: 2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 226 Pass 2 primary assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 second assessor, rubric cross-check)"
+    homepage: https://deepmind.google
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/pull/309
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3ae9ce99c
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scikit-image: "0.26.0"
+      lean: "4.35.0"
+    note: >-
+      Pass 2 rendered with `python3 thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py`
+      (full mode) after `--self-test` (17 deterministic measurements, two independent full runs compared equal).
+
+references:
+  thompson1917:
+    title: "On Growth and Form"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), Ch. XIII pp. 612-634, Figs. 318-324"
+    url: https://archive.org/details/ongrowthform1917thom
+  stvenant1856:
+    title: "Mémoire sur la torsion des prismes, avec des considérations sur leur flexion"
+    authors: "Barré de Saint-Venant AJC"
+    venue: "Mém. Savants Étrangers (Paris) 14:233-560 (1856)"
+    url: https://gallica.bnf.fr/ark:/12148/bpt6k99739w
+  kiladze2018:
+    title: "Data on the angular characteristics of the spiral structure of the narwhal tusk"
+    authors: "Kiladze AB, Chernova OF"
+    venue: "Data in Brief 21:1200-1202 (2018)"
+    doi: 10.1016/j.dib.2018.09.029
+  kingsley1988:
+    title: "The spiral in the tusk of the narwhal"
+    authors: "Kingsley MCS, Ramsay MA"
+    venue: "Arctic 41(3):236-238 (1988)"
+    doi: 10.14430/arctic1723
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    doi: 10.2307/1301992
+
+simulations:
+  - id: thompson1917-t1917-032
+    name: "Thompson (1917) T1917-032 — teeth & tusks: differential-accretion log spiral + St Venant torsion"
+    organism: "Mammuthus primigenius tusk (Museum Wiesbaden); Monodon monoceros tusk (torsion analogue)"
+    script: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py
+    output: docs/media/t1917_032_the_shapes_of_horns_and_of_tee_comparison.png
+    extra_outputs:
+      - docs/media/t1917_032_the_shapes_of_horns_and_of_tee_growth.gif
+      - datasets/thompson_1917/t1917-032/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-28-t1917-032-the-shapes-of-horns-and-of-tee-audit
+    source_refs: [thompson1917, stvenant1856, kiladze2018, kingsley1988, raup1966]
+    claim_boundary:
+      reported_in_source:
+        - "Thompson pp. 619, 633-634: constant growth-rate ratio across the basal zone yields a logarithmic spiral; tooth, tusk, beak, claw all follow it; elephant tusk tip ~ spiral pole; long tusks (mammoth, Babirussa) are curves of double curvature"
+        - "Thompson pp. 621-623 + Fig. 321: St Venant torsion warps non-circular prisms into anticlastic surfaces whose contour lines explain the sinuous growth lines of trihedral horns"
+      reconstructed_in_script:
+        - "Algebraic accretion law κ = (v_max − v_min)/(w v̄) = Δ/w and its gnomonic closure tan ψ = Δ/c_s (arc-length taper) ⇔ sin ψ = Δ/c_r (E4-E5), verified against the integrated ODE (r = 1.000)"
+        - "Screw-accretion frame update Ω = κ b + τ n generating circle / log spiral / helix / helico-spiral (E6), fitted in 3-D to the projected specimen centreline"
+        - "Kiladze chord ratio tan α = π/(2 tan φ) conversion from a locally measured groove inclination (E7)"
+      transfer_boundary:
+        - "The narwhal tusk is a labelled analogue for the torsion component; Thompson's 1917 chapter never names the narwhal"
+        - "A single 2-D museum photograph projects a 3-D helico-spiral tusk; the 3-D fit recovers view angles but the broken root inflates w(s) and the tip hook is foreshortened"
+      does_not_claim:
+        - "No growth-rate (v_max, v_min) or CT data: λ = 0.862 and Δ = 0.148 are inferred from the fitted geometry, not measured"
+        - "No handedness determination from the narwhal photograph (tip orientation unknown); along-shaft tan α trend is confounded by camera obliquity and not scored"
+    summary: >-
+      Pass 2 (v2) evaluation of `t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py` (overall ~86.0/100, up from
+      60.7 in v1). The remediated script fits the full 3-D screw-accretion model to the segmented mammoth tusk
+      (constant-width twisted helix RMSE 17.4 px vs plane 33.1 px, ΔAIC 477; measured-width law 23.1 vs 37.3 px,
+      ΔAIC 355), sweeps 30 (λ, c) + 5 τ + 16 ψ regimes confirming every Lean-proved monotonicity and the E5 closure
+      (r = 1.000, RMSE 0.2°), adds Archimedean / shuffled-width / τ = 0 / circular-section controls, block-bootstrap
+      CIs and a one-sample KS test, measures the narwhal groove angle (φ = 29.5°, 95% CI 26.3-33.0° → α ≡ 70.2° vs
+      66.9 ± 3.3° published, z = +1.00) and reproduces the six-sector St Venant torsion curves of Fig. 321. Verdict
+      MIXED: torsion / double curvature supported, gnomonic accretion log spiral not supported on this projection.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          E1-E3 (`log_spiral_r`, `whorl_expansion`, `gnomon_radius`, L146-L165), E4-E6 screw accretion with an
+          optional measured-width profile (`grow_tooth`, `implied_psi_deg`, L190-L235), E8-E9 St Venant warping
+          (L238-L277), E7 helix (L281-L296) are implemented as published; the twisted model Thompson invokes for
+          long tusks is now fitted to the specimen in a nested 2 × 2 design (`fit_screw_model`,
+          `compare_screw_models`, L542-L611) and the E5 closure is verified against the integrated accretion ODE
+          (`integrate_accretion_spiral`, S4: r = 1.000). 17 Lean theorems mirror the four laws (0 sorry).
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [146, 235], note: "E1-E6 equiangular spiral, gnomon, accretion curvature, screw growth with measured-width profile, E5 closure", supports: true}
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [508, 611], note: "Orthographic projection, Procrustes alignment, multi-start screw-model fits, 2x2 nested comparison with ΔAIC", supports: true}
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [238, 296], note: "E7-E9 St Venant warping field, helix slope and Kiladze conversions", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_032.lean, lines: [31, 215], note: "4 laws, 17 theorems, 0 sorry, core Lean 4 only (Lean 4.35.0)", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          HSV segmentation + skeleton longest path (`segment_mammoth_tusk`, `tusk_centreline_profile`, L300-L386)
+          recovers the SHA-256-locked mammoth centreline and width; the fitted twisted screw model tracks the
+          whole tusk including the reversed tip hook at RMSE 17.4 px (~1.1 % of the 1.5 kpx arc; overlay in panel
+          (a), growth GIF panel 3). The narwhal groove orientation field is extracted by structure tensor in the
+          low-foreshortening strip (L702-L745) and the computed St Venant contours are overlaid on Thompson's own
+          Fig. 321 crop. Deductions: the accretion width-law fit (23.1 px) is worse than the constant-width helix,
+          the root is broken (inflated w(s)), the narwhal is an analogue, and the 3-D form is judged in 2-D only.
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [300, 386], note: "HSV segmentation, skeleton longest path, width via distance transform, width-scaled curvature profile", supports: true}
+          - {file: docs/media/t1917_032_the_shapes_of_horns_and_of_tee_comparison.png, lines: [0, 0], note: "Panel (a) 3-D screw fit overlay RMSE 17.4 px; (d) narwhal band orientations; (e) St Venant contours vs Fig. 321; (g) 2x2 RMSE bars", supports: true}
+          - {file: datasets/thompson_1917/t1917-032/result.json, lines: [1, 530], note: "screw_best_model = const_width__twisted; measured-width law RMSE ratio 0.75 (< 1: accretion coupling not supported); kappa_sign_changes = 3", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          `parameter_sweep` (L639-L700) exercises 30 (λ, c) regimes, 5 twist rates and 16 (λ, c_s) spiral-angle
+          regimes: S1 curvature strictly falls with taper, S2 constant width gives constant curvature, S3 the
+          imposed τ is recovered as Frenet torsion within 2 %, S4 the E5 prediction tan ψ = Δ/c_s matches the
+          fitted ψ with r = 1.000 (RMSE 0.2°) from 14.7° to 85.7°, S5 helix slope rises monotonically with ρ;
+          CLI exposes --sigma-frac, --n-trials, --n-boot, --n-perm and --pass1 (L1315-L1334); five named
+          biological regimes (incisor, Mastodon, mammoth, mammoth + twist, Babirussa) rendered in panel (f).
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [613, 700], note: "Accretion-ODE integrator, Frenet torsion estimator and S1-S5 regime sweep", supports: true}
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [1315, 1334], note: "CLI parameter overrides wired into run_analysis", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` (L1223-L1249) returns 17 measurements: log-spiral r = 0.989 (bootstrap CI
+          0.984-0.998) and RMSE 36.8 px vs circle 41.8 px vs Archimedean 123.6 px; ψ = 36.9° (CI 34.7-40.1°);
+          Spearman ρ(|κ|, 1/w) = −0.18 with block-shuffled-width permutation p = 0.80 (accretion coupling rejected);
+          screw-fit RMSEs with ΔAIC for twist (477, 355) and the τ = 0 ablation ratio 1.62; narwhal α ≡ 70.2°
+          (z = +1.00 vs Kiladze & Chernova 2018 Table 1, inside the published 58.8-72.8° range), φ bootstrap CI,
+          tan α vs 1/d slope with CI; St Venant sector count = 6 (reference 6) with circular-section null = 0;
+          sweep S4 r = 1.000; one-sample KS normality p < 0.001 reported honestly as systematic misfit.
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [1223, 1249], note: "17 measurements with reference values, CIs, permutation and ablation notes", supports: true}
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [434, 506], note: "Archimedean control, block bootstrap, one-sample KS, Spearman + shuffled-width permutation control", supports: true}
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [747, 775], note: "Along-shaft tan α vs 1/d regression flagged as confounded by camera obliquity", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Reference JSON pins SHA-256 of 5 dataset files verified fail-closed at import (`load_reference`,
+          L114-L122), Commons licence/author/rendition metadata, IA leaf indices for Figs. 321-322 and p. 634,
+          DOIs for Kiladze 2018 (with PMC id and vendored Table 1 CSV), Kingsley 1988, Raup 1966 and the
+          St Venant 1856 memoir; result.json records every digest, library version and run parameter.
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [106, 142], note: "SHA-256 fail-closed verification, Kiladze Table 1 loader, environment versions", supports: true}
+          - {file: datasets/thompson_1917/t1917-032/t1917_032_the_shapes_of_horns_and_of_tee_reference.json, lines: [1, 290], note: "Equations E1-E9 (E5 in radial and arc-length form), regimes, dataset digests and licences", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >-
+          Module header maps E1-E9 to Thompson pages and to the four Lean laws and lists the Pass 2 additions;
+          every function docstring names its equation and, where applicable, the Lean declaration; KG yaml
+          code_locus / lean_locus pass `verify_integrity.py` and `check_lean_formula_alignment.py`.
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [1, 56], note: "Equation-to-page, Lean-law and Pass 2 remediation traceability in the module header", supports: true}
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-032.yaml, lines: [1, 105], note: "code_locus / lean_locus updated to v2 line ranges; integrity and alignment checks pass", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Fixed seed, `measure_morphoeval` asserted equal across two independent full runs, 25-assertion
+          `run_self_test` (L1251-L1313) covering every Lean law numerically, synthetic log-spiral and synthetic
+          twisted-tusk recovery (τ recovered within 0.0015/px), Procrustes exactness and the measured-width κ·w = Δ
+          identity; library versions and all run parameters written to result.json; documented invocations;
+          full run ~35 s. Deduction: Nelder-Mead restarts are seeded but the optimum is not proven global.
+        evidence:
+          - {file: thompson/claims/t1917-032_the-shapes-of-horns-and-of-teeth-or-tusks.py, lines: [1251, 1313], note: "Self-test suite incl. synthetic twisted-tusk recovery and two-run determinism", supports: true}
+          - {file: datasets/thompson_1917/t1917-032/result.json, lines: [1, 530], note: "environment versions, parameters, screw_model_comparison and regime_sweep tables recorded", supports: true}
+    remediation:
+      - "Acquire a second, intact mammoth or elephant tusk photograph (or a CT centreline) to test the accretion width-law κ ∝ 1/w(s) without the broken-root bias, and fit the screw model jointly to two views to resolve the 3-D helico-spiral directly."
+      - "Measure Kiladze-style chord angles on several narwhal tusks with known tip orientation to test the uniform-torsion prediction tan α ∝ 1/d free of camera obliquity, and record handedness."
