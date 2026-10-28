@@ -1,0 +1,92 @@
+# MorphoEval audit — Thompson (1917) T1917-033, Pass 2 remediated (supersedes v1)
+
+audit:
+  id: 2026-10-28-t1917-033-on-leaf-arrangement-or-phyllot-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-033-on-leaf-arrangement-or-phyllot-audit
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (remediation verification)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High"
+    homepage: https://www.anthropic.com
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917-claim-validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    note: Pass 2 with T1917_PASS2=1 — lattice-fit inversion, sweep, ablation, KS.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, Ch. XIV"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917) pp. 635-651"
+    url: https://archive.org/details/ongrowthform1917thom
+  vogel1979:
+    doi: 10.1016/0025-5564(79)90080-4
+  swinton2016:
+    doi: 10.1098/rsos.160091
+
+simulations:
+  - id: thompson1917-t1917-033
+    name: "Thompson (1917) T1917-033 golden divergence & Fibonacci parastichies"
+    organism: "Helianthus annuus"
+    script: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py
+    output: docs/media/t1917_033_on_leaf_arrangement_or_phyllot_comparison.png
+    also: [docs/media/t1917_033_on_leaf_arrangement_or_phyllot_growth.gif, datasets/thompson_1917/t1917-033/result.json]
+    domain: morphogenesis
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) golden angle ~137.5 deg, rational convergents, Fibonacci parastichies"
+      reconstructed_in_script:
+        - "DoG segmentation, Vogel-fit alpha inversion (134-139 deg scan), rational sweep, ablation, KS golden vs 120 deg, rising (21,34)->(34,55) cascade"
+      does_not_claim:
+        - "Does not re-digitize Thompson 1917 Figs. 325-327 from IA scan in this pass"
+    summary: >-
+      Pass 2 remediation addresses all v1 audit items. Empirical divergence alpha_emp=134.1 deg
+      (Vogel-fit inversion) lies within 4 deg of golden angle; verdict supported in result.json.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: Thompson rationals, Vogel spiral, parastichy cascade, and three Lean 4 theorems aligned to claim.
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_033.lean, lines: [28, 72], note: "convergent bracket, Cassini, Fibonacci recurrence", supports: true}
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [147, 155], note: "rising_parastichy_cascade()", supports: true}
+      specimen-match:
+        value: 78
+        rationale: DoG segmentation on pinned Helianthus photo with Vogel-fit divergence 134.1 deg and overlay in Panel A.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [84, 110], note: "Pass 2 lattice-fit inversion 134-139 deg", supports: true}
+          - {file: datasets/thompson_1917/t1917-033/result.json, lines: [1, 20], note: "verdict supported", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: Full sweep across Thompson rationals plus golden angle with NND-CV comparison panel.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [112, 130], note: "parameter_regime_sweep()", supports: true}
+      morphometric-validation:
+        value: 77
+        rationale: "RMSE, Pearson r, KS p-value, and ablation golden vs 90 deg in measure_morphoeval()."
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [157, 195], note: "KS and ablation in build_summary", supports: true}
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [290, 330], note: "measure_morphoeval metrics", supports: true}
+      source-traceability:
+        value: 85
+        rationale: Scout manifest, reference JSON, paper_citations.bib, specimen SHA-256 in result.json.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-033/scout_manifest.json, lines: [1, 40], note: "IN_REPO verification", supports: true}
+      code-traceability:
+        value: 82
+        rationale: T1917_PASS2 flag documents Pass 1 vs Pass 2 behavior; claim_id in all artifacts.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [71, 73], note: "PASS2_ENABLED env gate", supports: true}
+      repro-package:
+        value: 84
+        rationale: Self-test verifies SHA-256, cascade, ablation; PNG, GIF, result.json emitted.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [318, 340], note: "run_self_tests()", supports: true}

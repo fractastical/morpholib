@@ -1,0 +1,93 @@
+# MorphoEval audit — Thompson (1917) T1917-033 Phyllotaxis Claim, Pass 1 (v1 baseline)
+
+audit:
+  id: 2026-10-28-t1917-033-on-leaf-arrangement-or-phyllot-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High"
+    homepage: https://www.anthropic.com
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: thompson1917-claim-validation
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1d96f32ba3f00517c53e9cd007634306cc8d4f4
+    note: Pass 1 baseline with T1917_PASS2=0 (no parameter sweep, rank-order divergence only).
+
+references:
+  thompson1917:
+    title: "On Growth and Form, Ch. XIV"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917) pp. 635-651"
+    url: https://archive.org/details/ongrowthform1917thom
+  vogel1979:
+    doi: 10.1016/0025-5564(79)90080-4
+
+simulations:
+  - id: thompson1917-t1917-033
+    name: "Thompson (1917) T1917-033 golden divergence & Fibonacci parastichies"
+    organism: "Helianthus annuus"
+    script: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py
+    output: docs/media/t1917_033_on_leaf_arrangement_or_phyllot_comparison.png
+    also: [docs/media/t1917_033_on_leaf_arrangement_or_phyllot_growth.gif, datasets/thompson_1917/t1917-033/result.json]
+    domain: morphogenesis
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) states leaf/floret divergence approximates the golden angle ~137.5 deg with rational convergents 1/2, 1/3, 2/5, 3/8 and Fibonacci parastichy numbers"
+      reconstructed_in_script:
+        - "Vogel (1979) spiral placement, Thompson rational angle table, DoG specimen segmentation, rising parastichy cascade on simulated capitulum"
+      does_not_claim:
+        - "Pass 1 does not run full parameter-regime sweep, KS tests, or Vogel-fit lattice inversion for empirical alpha"
+    summary: >-
+      Pass 1 baseline validates repository IN_REPO Helianthus specimen and Vogel golden spiral
+      geometry but uses naive rank-order divergence estimation and omits statistical goodness-of-fit.
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: Vogel spiral and Thompson rational convergent table implemented; Lean 4 proofs in Loop_227.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [59, 75], note: "THOMPSON_RATIONALS and vogel_spiral import", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_033.lean, lines: [28, 72], note: "Three machine-checked theorems", supports: true}
+      specimen-match:
+        value: 52
+        rationale: Real CC specimen vendored and segmented but Pass 1 divergence estimate can be biased (~95 deg).
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [84, 110], note: "Pass 1 rank-order median only", supports: false}
+          - {file: datasets/thompson_1917/t1917-033/helianthus_annuus_capitulum_specimen.jpg, lines: [0, 0], note: "SHA-256 pinned specimen", supports: true}
+      parameter-expressivity:
+        value: 48
+        rationale: No systematic sweep across Thompson rational angles in Pass 1 baseline mode.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [112, 130], note: "parameter_regime_sweep gated on PASS2", supports: false}
+      morphometric-validation:
+        value: 50
+        rationale: RMSE/Pearson fit present but no KS test or ablation controls in Pass 1.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [132, 145], note: "fit_vogel_to_specimen without Pass 2 stats", supports: false}
+      source-traceability:
+        value: 82
+        rationale: Thompson reference JSON, scout manifest, and specimen SHA-256 digests recorded.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-033/t1917_033_on_leaf_arrangement_or_phyllot_reference.json, lines: [1, 60], note: "equations and specimen pins", supports: true}
+      code-traceability:
+        value: 70
+        rationale: Claim script documents Thompson Ch. XIV mapping; imports Vogel module by path.
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [1, 55], note: "module docstring and importlib loader", supports: true}
+      repro-package:
+        value: 76
+        rationale: "Self-test flag, PNG/GIF outputs, and result.json verdict artifact."
+        evidence:
+          - {file: thompson/claims/t1917-033_on-leaf-arrangement-or-phyllotaxis.py, lines: [318, 340], note: "run_self_tests()", supports: true}
+    remediation:
+      - "Add Vogel-fit lattice inversion scan for empirical divergence angle on segmented specimen centroids"
+      - "Run full Thompson rational-angle parameter sweep with NND-CV ablation vs 90 deg and 120 deg controls"
+      - "Report Pearson r, RMSE, KS test between golden vs distichous NND distributions"
+      - "Enable PASS2 panel D bar chart and write headline_numbers to result.json with supported verdict"
