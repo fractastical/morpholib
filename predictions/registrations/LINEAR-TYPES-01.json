@@ -1,0 +1,152 @@
+{
+  "registration_id": "LINEAR-TYPES-01",
+  "registered_on": "2026-10-29",
+  "registered_by": "Maintainer (Joel Dietz) with Cursor agent; spec in docs/LINEAR_TYPE_EXTENSION_SPEC.md",
+  "discipline": "Separate registration artifact. The locked predictions/prediction_registry.json is NOT edited. Each prediction below is a delphi:TestableHypothesis with a prior probability fixed BEFORE any of the proposed work beyond the prototype morphoeval/lean/LinearResource.lean was attempted. Priors are the registrant's subjective credence that the stated outcome will be achieved by the stated deadline using the linear-resource DSL in Lean 4 plus the proposed Project Delphi ontology terms; they are NOT probabilities that the underlying biology is true. Resolution: a later nanopublication per prediction citing the resolving commit, with outcome_verdict in {confirmed, refuted, unresolved-at-deadline}. No prior is edited after this file is committed; corrections are new registrations.",
+  "spec": "docs/LINEAR_TYPE_EXTENSION_SPEC.md",
+  "prototype": {
+    "module": "morphoeval/lean/LinearResource.lean",
+    "namespace": "MathOfBiology.Linear",
+    "soundness_theorem": "MathOfBiology.Linear.conserves",
+    "toolchain": "Lean (version 4.35.0)",
+    "status": "kernel-checked, 0 sorry, no additional axioms, at the registering commit"
+  },
+  "baseline_snapshot": {
+    "lean_loop_files": 136,
+    "lean_loop_template_stubs": 0,
+    "note": "The 3,000 overnight template stubs recorded in morphoeval/problem_scouts/lean_stub_census.json (issue #268) have since been deleted; all 136 remaining loop files are mechanism-specific. 'Re-formalised' below therefore means replacing an existing equational Int identity with a DSL instantiation, not replacing a stub."
+  },
+  "shared_definitions": {
+    "DSL_instantiation": "A Lean declaration in a morphoeval/lean module whose conservation statement is obtained by applying MathOfBiology.Linear.conserves (or a theorem that is itself derived from it) to a MathOfBiology.Linear.Prog built from the loop's governing law, rather than by a free-standing arithmetic identity.",
+    "cross_check": "A Python or Lean harness that runs the DSL-typed stepper and the existing repo reference implementation from identical initial conditions and compares the conserved total (or type-count multiset) at every step.",
+    "conservation_violation": "A relative drift |total_t - total_0| / max(1, |total_0|) > 1e-9 in a reference Python implementation at any step, including boundary nodes/cells, under the implementation's own default parameters."
+  },
+  "predictions": [
+    {
+      "prediction_id": "LT-01",
+      "title": "Linear-resource DSL soundness in core Lean 4",
+      "statement": "A core-Lean (no Mathlib) linear-resource DSL whose only constructors are skip/transfer/seq, with a once-proved soundness theorem that every well-scoped program preserves the ledger total, is merged to main and kernel-checks with 0 sorry and no additional axioms.",
+      "loops": ["morphoeval/lean/LinearResource.lean"],
+      "proposed_test": "lean morphoeval/lean/LinearResource.lean exits 0; `#print axioms MathOfBiology.Linear.conserves` lists only propext/Quot.sound/Classical.choice or fewer; file present on main.",
+      "falsifier": "Module absent from main, or kernel rejects it, or it depends on sorry/extra axioms.",
+      "prior_probability": 0.97,
+      "resolvability": 1.0,
+      "deadline": "2026-11-30",
+      "basis": "Prototype already compiles locally at registration time; residual risk is only merge/CI."
+    },
+    {
+      "prediction_id": "LT-02",
+      "title": "Auxin canalization class re-formalised as DSL instantiations",
+      "statement": "All five auxin canalization loops (Loop_032 auxin_pin1_phyllotaxis, Loop_034 auxin_canalization_leaf_veins, Loop_035 carrier_driven_canalization, Loop_038 root_auxin_reflux_fountain, Loop_0401 mus_musculus_flux_canalization) each carry at least one law whose conservation theorem is a DSL instantiation, and morphoeval/check_lean_formula_alignment.py passes on the paired math_kg_loops YAML.",
+      "loops": ["Loop_032", "Loop_034", "Loop_035", "Loop_038", "Loop_0401"],
+      "proposed_test": "Grep each listed .lean for a theorem whose proof term applies MathOfBiology.Linear.conserves; run check_lean_formula_alignment.py on each YAML; both must pass for all five.",
+      "falsifier": "Any of the five lacks a DSL instantiation at the deadline, or the alignment checker fails for it.",
+      "prior_probability": 0.75,
+      "resolvability": 0.95,
+      "deadline": "2027-01-31",
+      "basis": "Loop_032 L64 (jonsson_2006_intercellular_flux_conservation) and Loop_034 L98 (feugier_2005_polar_flux_conservation) are already edge-flux antisymmetry identities; the prototype instantiates Loop_032 directly. Loop_038 (reflux fountain, 2-D tissue with boundary) is the hardest."
+    },
+    {
+      "prediction_id": "LT-03",
+      "title": "Cell-sorting swap moves conserve the type multiset by typing",
+      "statement": "A Potts/GGH swap-move stepper is expressed in the DSL (or a uniqueness-typed Lean engine) so that cell-type-count conservation for arbitrary move sequences is a corollary of the soundness theorem, and a cross-check against models/1992-graner-cellular-potts-cell-sorting.py shows identical type counts over at least 1,000 Monte Carlo steps.",
+      "loops": ["Loop_041", "Loop_042", "Loop_044", "Loop_zhang_sorting_morphogenesis", "Loop_014 (ggh_sorting_swap_dH)"],
+      "proposed_test": "Cross-check harness committed under morphoeval/; report identical per-type counts at every MCS; Lean theorem present and kernel-checked.",
+      "falsifier": "No kernel-checked swap stepper by the deadline, or cross-check diverges.",
+      "prior_probability": 0.60,
+      "resolvability": 0.90,
+      "deadline": "2027-01-31",
+      "basis": "Swap = two transfers of one unit between label ledgers; the DSL covers it. Risk is engineering the lattice/neighbourhood bookkeeping in core Lean and matching the Python RNG stream."
+    },
+    {
+      "prediction_id": "LT-04",
+      "title": "Somitogenesis counting laws derived from one PSM consumption law",
+      "statement": "A single typed consumption law (PSM cells consumed by the wavefront at rate v, partitioned by the clock period T) is formalised in the DSL, and both dubrulle_2001_fgf8_bead_somite_pair_conservation (Loop_024 L83) and meinhardt_1986_half_somite_cleft_count (Loop_021 L154) are re-derived as corollaries of it.",
+      "loops": ["Loop_021", "Loop_024", "Loop_026", "Loop_028", "Loop_0301"],
+      "proposed_test": "Both named theorems' statements are proved from a shared Linear.Prog instance plus the existing arithmetic, with no free-standing restatement of the counting identity.",
+      "falsifier": "Either theorem still requires its own arithmetic identity unrelated to the consumption program at the deadline.",
+      "prior_probability": 0.50,
+      "resolvability": 0.85,
+      "deadline": "2027-02-28",
+      "basis": "The biology is a budget; the open question is whether the clock partition (period, not quantity) fits a quantity-ledger without a graded extension of the DSL."
+    },
+    {
+      "prediction_id": "LT-05",
+      "title": "A conservation violation exists in at least one current reference implementation",
+      "statement": "When the DSL-typed stepper is cross-checked against the repo's own Python reference implementations for Physarum (models/2010-tero-physarum-transport-network.py), auxin canalization (models/1997-mitchison-canalization-auxin-flux.py, models/2006-jonsson-auxin-pin1-meristem.py, models/2005-feugier-carrier-driven-canalization.py) and Potts sorting (models/1992-graner-cellular-potts-cell-sorting.py), at least one of these implementations exhibits a conservation_violation as defined above, most likely at boundary nodes or in source/sink handling.",
+      "loops": ["Loop_057", "Loop_032", "Loop_034", "Loop_035", "Loop_042"],
+      "proposed_test": "Run each reference implementation with default parameters, log the conserved total per step, apply the 1e-9 relative-drift threshold; publish the per-model drift table.",
+      "falsifier": "All five implementations hold the total to within 1e-9 relative drift at every step.",
+      "prior_probability": 0.55,
+      "resolvability": 0.95,
+      "deadline": "2026-12-31",
+      "basis": "Not inspected before registration. Open-boundary Physarum and reflux models commonly leak at sources/sinks by construction; Potts swaps are exact by design. The prediction is the operational payoff of the extension: it should find something."
+    },
+    {
+      "prediction_id": "LT-06",
+      "title": "Gap-junction charge transfer formalised as a linear transfer",
+      "statement": "The planarian H+/K+-ATPase and bioelectric loops get a DSL instantiation in which ion flux through a gap junction is a transfer between cell ledgers, so that total charge conservation across the gap-junction network is a corollary of the soundness theorem, with gj_voltage_gate_symmetry_and_isolation (Loop_081 L61) re-expressed as a property of the transfer amount.",
+      "loops": ["Loop_081", "Loop_082", "Loop_084", "Loop_0901"],
+      "proposed_test": "Kernel-checked instantiation present; cross-check against models/2011-beane-planarian-hk-atpase-anterior.py total-charge trace.",
+      "falsifier": "No instantiation by deadline, or the continuous Vmem dynamics cannot be matched by an integer/rational ledger within the cross-check tolerance.",
+      "prior_probability": 0.45,
+      "resolvability": 0.70,
+      "deadline": "2027-02-28",
+      "basis": "Transfer shape is identical to auxin, but the reference model is a continuous ODE in Vmem, not an explicit charge ledger; the ledger would need a rational or fixed-point carrier and a documented discretisation."
+    },
+    {
+      "prediction_id": "LT-07",
+      "title": "Project Delphi adopts an additive proof-kind term",
+      "statement": "fractastical/project-delphi-ontology releases a minor version (2.x) that adds a term equivalent to delphi:proofKind (controlled values including 'equational', 'conservation-by-typing', 'executable') and a toolchain-version term, and at least one signed nanopublication published to the production network uses them.",
+      "loops": [],
+      "proposed_test": "delphi.ttl on main declares the terms; a nanopub resolvable at a w3id.org/np/ trusty URI uses them.",
+      "falsifier": "No such release, or released but unused in any published nanopub, by the deadline.",
+      "prior_probability": 0.55,
+      "resolvability": 1.0,
+      "deadline": "2027-03-31",
+      "basis": "Additive and backward compatible, and the ontology's own editorialNote on delphi:leanVerified already asks for the toolchain. Risk is review bandwidth, not design."
+    },
+    {
+      "prediction_id": "LT-08",
+      "title": "Share of the morphoeval loop corpus that is a conservation/partition law",
+      "statement": "Of the 136 mechanism-specific Lean loop files, at least 40 contain at least one law expressible as a DSL instantiation without any additional arithmetic theorem beyond the soundness theorem, and at least 20 of those are actually re-formalised and emitted into the MorphoEval KG with proofKind 'conservation-by-typing'.",
+      "loops": ["all morphoeval/lean/loops/*.lean"],
+      "proposed_test": "A committed audit (extension of morphoeval/audit_lean_proofs.py) classifies every loop's laws; count of 'DSL-expressible' >= 40 and count of emitted 'conservation-by-typing' nodes >= 20.",
+      "falsifier": "Either count below threshold at the deadline.",
+      "prior_probability": 0.40,
+      "resolvability": 0.90,
+      "deadline": "2027-03-31",
+      "basis": "By loop name, roughly 35-45 loops are flux/partition/budget laws (auxin x5, sorting x5, somite x6, branching/transport x8, bioelectric x4, counting laws in feather/digit/ruga loops). The 20-emitted half is a labour prediction."
+    },
+    {
+      "prediction_id": "LT-09",
+      "title": "Negative control: elasticity and Turing-wavelength laws are NOT DSL-expressible",
+      "statement": "For the elastic-buckling and Turing-wavelength loop classes (e.g. Loop_094 bacillus_biofilm_wrinkling, Loop_0101 mus_musculus_turing_wavelength, cortical_gyrification_folding, venus_flytrap_snap_buckling, mollusc_shell_marginal_buckling), zero laws are expressible as DSL instantiations without an additional arithmetic theorem, so their KG proofKind remains 'equational'.",
+      "loops": ["Loop_094", "Loop_0101", "cortical_gyrification_folding", "venus_flytrap_snap_buckling", "mollusc_shell_marginal_buckling"],
+      "proposed_test": "Same audit as LT-08; the listed loops must be classified 'equational-only'.",
+      "falsifier": "Any listed loop acquires a genuine DSL instantiation (not a trivially wrapped identity).",
+      "prior_probability": 0.85,
+      "resolvability": 0.90,
+      "deadline": "2027-03-31",
+      "basis": "These laws are dispersion relations and scaling exponents, not conservation statements. Registering this bounds the extension's claimed scope."
+    },
+    {
+      "prediction_id": "LT-10",
+      "title": "Rule 30 left-bijectivity as a linear isomorphism in a uniqueness-typed stepper",
+      "statement": "A Lean CA stepper for Rule 30 is written so that the left-argument update is a typed bijection, and the backward reconstruction theorems (MathOfBiology.jen_1990_left_bijective L48, quadrant_pde_bwd_m0/m1 L72-78 and their inverse theorems) are obtained as the inverse direction of that typed map rather than by separate cases-rfl proofs; the stepper cross-checks bit-for-bit against models/1984-wolfram-conus-textile-rule30.py for 1,024 steps.",
+      "loops": ["MathOfBiology.lean L20-80", "Ruliobiology.lean"],
+      "proposed_test": "Kernel-checked module where the inverse theorems are projections of an Equiv/bijection structure; bit-identical centre column for 1,024 steps (compare to R30-OEIS-128-01 fixture).",
+      "falsifier": "Inverse theorems still proved independently, or cross-check mismatch.",
+      "prior_probability": 0.50,
+      "resolvability": 0.80,
+      "deadline": "2027-02-28",
+      "basis": "The mathematics is settled (Jen 1990); the uncertainty is whether core Lean without Mathlib's Equiv makes the bijection packaging worth it."
+    }
+  ],
+  "portfolio_summary": {
+    "n_predictions": 10,
+    "mean_prior": 0.612,
+    "expected_confirmations": 6.12,
+    "scoring": "Brier score over resolved predictions at 2027-03-31; unresolved-at-deadline scored as refuted for the Brier computation and reported separately."
+  }
+}
