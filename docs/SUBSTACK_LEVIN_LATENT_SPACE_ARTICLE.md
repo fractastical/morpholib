@@ -8,9 +8,9 @@
 
 For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a [historian of math](https://mitpress.mit.edu/author/joel-dietz-39191/), it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (e.g. guru traditions).
 
-![](https://fractastical.github.io/morpholib/guide_step1_1917_rubber_sheet.png)
+![](https://fractastical.github.io/morpholib/media/thompson_transformations.gif)
 
-*Plate I — Thompson’s rubber sheet. A parrotfish bent into an angelfish by curving the coordinate grid, redrawn from* On Growth and Form *(1917). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
+*Plate I — Thompson’s rubber sheet, moving. A real parrotfish outline is bent through four of his 1917 coordinate families: the 70° shear, the coaxial circles that turn Scarus into an angelfish, the bilinear fan, and the radial flare. Provenance: [`thompson/1917-thompson.py`](https://github.com/fractastical/morpholib/blob/main/thompson/1917-thompson.py).*
 
 ![](https://fractastical.github.io/morpholib/media/turing_morpho_closed_loop.gif)
 
@@ -159,7 +159,7 @@ The second major pillar Levin invokes for his latent space is **D’Arcy Wentwor
 
 ![](https://fractastical.github.io/morpholib/guide_step1_1917_rubber_sheet.png)
 
-*Plate XII — The same sheet as Plate I. Thompson’s coordinate families redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
+*Plate XII — The same four families as Plate I, as a still. Thompson’s coordinate grids redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
 
 For the last 30 years, evolutionary biologists tried to test Thompson’s idea on computer landmark databases—and concluded he was mostly wrong across fish families. **Why did their tests fail?**
 
