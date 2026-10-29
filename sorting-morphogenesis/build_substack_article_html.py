@@ -35,8 +35,24 @@ from pathlib import Path
 from markdown_it import MarkdownIt
 
 ROOT = Path(__file__).resolve().parents[1]
-MD = ROOT / "docs" / "SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md"
-HTML = ROOT / "docs" / "substack_levin_latent_space_article.html"
+PAGES = [
+    {
+        "md": ROOT / "docs" / "SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md",
+        "html": ROOT / "docs" / "substack_levin_latent_space_article.html",
+        "label": "Main article",
+        "peer_href": "substack_levin_latent_space_claims.html",
+        "peer_label": "Claims Walkthrough",
+        "src_href": "SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md",
+    },
+    {
+        "md": ROOT / "docs" / "SUBSTACK_LEVIN_LATENT_SPACE_CLAIMS.md",
+        "html": ROOT / "docs" / "substack_levin_latent_space_claims.html",
+        "label": "Claims walkthrough",
+        "peer_href": "substack_levin_latent_space_article.html",
+        "peer_label": "Main Article",
+        "src_href": "SUBSTACK_LEVIN_LATENT_SPACE_CLAIMS.md",
+    },
+]
 
 CSS = r"""
     :root {
@@ -251,6 +267,25 @@ SCRIPT = r"""
 """
 
 
+def slugify_heading(text: str) -> str:
+    plain = re.sub(r"<[^>]+>", "", text)
+    m = re.match(r"Claim (\d+)", plain)
+    if m:
+        return f"claim-{m.group(1)}"
+    if plain.startswith("Claims 5"):
+        return "claims-5-7"
+    slug = re.sub(r"[^a-z0-9]+", "-", plain.lower()).strip("-")
+    return slug or "section"
+
+
+def add_heading_ids(body: str) -> str:
+    def repl(match: re.Match[str]) -> str:
+        tag, inner = match.group(1), match.group(2)
+        return f'<{tag} id="{slugify_heading(inner)}">{inner}</{tag}>'
+
+    return re.sub(r"<(h[1-3])>(.*?)</\1>", repl, body, flags=re.S)
+
+
 def render_body(md_text: str) -> str:
     # Substack does not render inline LaTeX; show the one formula as code.
     md_text = re.sub(r"\$\\mathcal\{B\}_3 = \\\{L_1, D_1, D_2\\\}\$", "`B_3 = {L_1, D_1, D_2}`", md_text)
@@ -258,6 +293,7 @@ def render_body(md_text: str) -> str:
 
     md = MarkdownIt("commonmark", {"html": False, "typographer": False})
     body = md.render(md_text)
+    body = add_heading_ids(body)
 
     # External links open in a new tab.
     body = re.sub(r'<a href="(https?://[^"]+)">', r'<a href="\1" target="_blank" rel="noopener">', body)
@@ -316,8 +352,8 @@ def render_body(md_text: str) -> str:
     return body
 
 
-def main() -> None:
-    src = MD.read_text(encoding="utf-8")
+def write_page(page: dict) -> None:
+    src = page["md"].read_text(encoding="utf-8")
     body = render_body(src)
 
     h1 = re.search(r"^# (.+)$", src, flags=re.M).group(1)
@@ -333,10 +369,11 @@ def main() -> None:
 </head>
 <body>
   <div class="topbar">
-    <div><strong>Project Delphi</strong> · Substack Museum Edition — <em>{h1_plain}</em></div>
+    <div><strong>Project Delphi</strong> · {page["label"]} — <em>{h1_plain}</em></div>
     <div>
       <button class="copy-btn" onclick="copyForSubstack(this)">📋 Copy Entire Article for Substack</button>
-      <a href="SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md">Markdown Source</a>
+      <a href="{page["peer_href"]}">{page["peer_label"]}</a>
+      <a href="{page["src_href"]}">Markdown Source</a>
       <a href="thompson_1913_aristotle_as_a_biologist.html">1913 Aristotle Reader</a>
     </div>
   </div>
@@ -346,12 +383,17 @@ def main() -> None:
 </body>
 </html>
 """
-    HTML.write_text(doc, encoding="utf-8")
-    print(f"Saved {HTML} ({len(doc):,} bytes)")
+    page["html"].write_text(doc, encoding="utf-8")
+    print(f"Saved {page['html']} ({len(doc):,} bytes)")
     for token in ("**", "](http"):
         print(f"  leftover {token!r}: {body.count(token)}")
     print(f"  plates: {body.count('class=\"plate-figure\"')} figures / {body.count('class=\"plate-caption\"')} captions")
     print(f"  wall labels: {body.count('class=\"wall-label\"')}, curator cards: {body.count('class=\"curator-card\"')}")
+
+
+def main() -> None:
+    for page in PAGES:
+        write_page(page)
 
 
 if __name__ == "__main__":

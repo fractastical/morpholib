@@ -732,18 +732,15 @@ def render_fig7_final_scoreboard():
 def render_fig8_ai_vs_human_authorship_heatmap():
     """
     Illustrated Guide 8 (Appendix of the Substack article): Heatmap of Human vs.
-    AI-Agent Contribution Across All 12 Sections of the Article and 5 Workflow
+    AI-Agent Contribution Across the Main Article Sections and 5 Workflow
     Dimensions.
 
     The summary percentages printed on the figure (and quoted in the Substack article)
     are COMPUTED from `ai_matrix` below (unweighted mean across sections), so the
     figure can never disagree with its own cells. Run this function to print them.
 
-    Rows follow the museum order of `docs/SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md`.
-    Rows 9–12 were added when the article grew: the Curator’s Reply (Nathan Sweet)
-    was split out of the old "D vs. D+P & Conclusion" row, and On Dualism (human
-    draft of ~5,000 characters pasted into the agent, then copy-edited), the Exit /
-    Reading Room, and the `++` footnote + Problem Graph plate each got their own row.
+    Rows follow `docs/SUBSTACK_LEVIN_LATENT_SPACE_ARTICLE.md` after the claim-by-claim
+    walkthroughs were moved to the companion page. That companion is not a row here.
     """
     fig, axes = plt.subplots(1, 2, figsize=(14.4, 8.4), dpi=160, facecolor="#0b1325", gridspec_kw={"width_ratios": [1.55, 1.0]})
     fig.subplots_adjust(wspace=0.22, left=0.235, right=0.97, top=0.845, bottom=0.125)
@@ -754,18 +751,14 @@ def render_fig8_ai_vs_human_authorship_heatmap():
     )
 
     sections = [
-        "1. Intro: Galvani, Bach & Levin Orbit",
-        "2. Claim 1: Insertion L74–76 Code Audit",
-        "3. Claim 2: Two Rulers & Hoel CE 2.0",
-        "4. Claim 3: C=2 Anti-Clustering Wave",
-        "5. Claim 4: 10,303 Fishes & Blind Test",
-        "6. Claims 5–7: Planaria, Frogs & Biobots",
-        "7. The Score",
-        "8. How This Was Audited",
-        "9. Rationalism: Short and Sweet",
-        "10. On Dualism: Within/Without, AI Stack",
-        "11. Conclusion",
-        "12. Footnotes, the ++ & Problem Graph",
+        "1. Intro: Bach, Levin & the Tools",
+        "2. The Seven Claims (headers + GIF)",
+        "3. The Score",
+        "4. Rationalism: Short and Sweet",
+        "5. On Dualism: Within/Without",
+        "6. Conclusion",
+        "7. Footnotes, the ++ & Problem Graph",
+        "8. Appendix: How This Was Audited",
     ]
     dims = [
         "Hypothesis &\nDirection\n(% AI)",
@@ -777,23 +770,19 @@ def render_fig8_ai_vs_human_authorship_heatmap():
 
     # Matrix of % AI contribution (0% = Pure Human Joel Dietz, 100% = Autonomous AI Agent)
     ai_matrix = np.array([
-        [  5,   8,  15,  10,  20],  # 1. Intro (92% Human written verbatim!)
-        [ 25,  68,  92,  95,  88],  # 2. Claim 1 (Insertion L74-76)
-        [ 30,  72,  94,  96,  90],  # 3. Claim 2 (Two Rulers & Hoel CE 2.0)
-        [ 20,  70,  92,  94,  88],  # 4. Claim 3 (C=2 Anti-Clustering)
-        [ 15,  65,  88,  90,  85],  # 5. Claim 4 (10,303 Fishes, PI drove 17-dot & box tests!)
-        [ 35,  78,  94,  95,  92],  # 6. Claims 5-7 (Bioelectric & Xenobot Pass 3 PDEs)
-        [ 20,  60,  70,  60,  80],  # 7. Scoreboard Room (PI chose 3-pillar weights & D/P split; AI tallied)
-        [ 15,  62,  85,  88,  90],  # 8. Conservation Lab / Methods (NeuroEval -> BioEval -> MorphoEval)
-        [ 15,  58,  90,  92,  88],  # 9. Curator's Reply (Sweet critique chosen & Foresight paragraph by PI; walkthrough drafted by AI from locked audit files)
-        [ 10,  25,  40,  30,  60],  # 10. On Dualism (PI pasted ~5k-char draft + Deep Platonic AI Stack; AI copy-edited, added links/refs, drafted the closing loop paragraph)
-        [ 10,  40,  75,  80,  82],  # 11. Exit / Reading Room (Hellenic Tantra, Thompson 1913 / Aristotle psyche & conclusion by PI; scoreboard bullets by AI)
-        [ 15,  72,  90,  60,  80],  # 12. Footnotes, the ++ & Problem Graph (PI: "81.6++%" idea + GIF; AI drafted footnote 3, built animation)
+        [  5,   8,  15,  10,  20],  # 1. Intro
+        [ 10,  50,  80,  80,  85],  # 2. Seven Claims headers (walkthrough lives on the companion page)
+        [ 20,  60,  70,  60,  80],  # 3. The Score
+        [ 15,  58,  90,  92,  88],  # 4. Rationalism
+        [ 10,  25,  40,  30,  60],  # 5. On Dualism
+        [ 10,  40,  75,  80,  82],  # 6. Conclusion
+        [ 15,  72,  90,  60,  80],  # 7. Footnotes
+        [ 15,  62,  85,  88,  90],  # 8. Appendix
     ], dtype=float)
     assert ai_matrix.shape == (len(sections), len(dims))
 
     # Summary statistics derived from the matrix itself (unweighted mean over sections).
-    technical_rows = [1, 2, 3, 4, 5, 7, 8]  # Claims 1-7, Conservation Lab, Curator's Reply
+    technical_rows = [2, 3, 7]  # Score, Rationalism, Appendix — the remaining technical prose
     hyp_ai = float(ai_matrix[:, 0].mean())
     prose_ai = float(ai_matrix[:, 1].mean())
     tech_ai = float(ai_matrix[:, 2:5].mean())
