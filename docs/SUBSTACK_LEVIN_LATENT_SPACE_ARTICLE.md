@@ -34,41 +34,29 @@ Although we have briefly discussed these things in person, I do not know, at pre
 
 In both cases, **precise language of what is claimed is what is most important**, and, in a sea of definitions, a place where an internet philosopher who can code might be most useful. It also turns out that despite a bunch of folks who are "pro" and "against" on the internet, **all of the main claims can be validated with tools that everyone has at their fingertips.**
 
-The line-by-line walkthrough is [a separate page](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html). What follows is the header of each claim, the score it already earned, and one loop of the seven experiments. If you only want the number, skip ahead to **The Score**, and from there to **Conclusion**.
+The line-by-line walkthrough is [a separate page](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html). If you only want the ending, skip ahead to **Conclusion**.
 
 ---
 
-## The Seven Claims
+## The Score
 
 ![](https://fractastical.github.io/morpholib/media/substack_seven_claims_aggregation.gif)
 
-*Plate III — One tile per claim. Sorting, the two rulers, clustering, Thompson’s rubber sheet, the two-headed planarian, the Picasso tadpole, and the xenobot, then the unweighted mean `77.6%`. Each heading below opens the walkthrough. Provenance: [`docs/media/make_claim_aggregation.py`](https://github.com/fractastical/morpholib/blob/main/docs/media/make_claim_aggregation.py).*
+*Plate III — One tile per claim. Sorting, the two rulers, clustering, Thompson’s rubber sheet, the two-headed planarian, the Picasso tadpole, and the xenobot, then the unweighted mean `77.6%`. Each line below opens the walkthrough. Provenance: [`docs/media/make_claim_aggregation.py`](https://github.com/fractastical/morpholib/blob/main/docs/media/make_claim_aggregation.py).*
 
 1. **[Claim 1, `66.7%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-1).** Frozen cells. Bubble and Selection sort treat a frozen neighbor as a wall. Insertion sort rewrites its own test to see through that wall.
-2. **[Claim 2, `13.5%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-2).** Delayed gratification. Every swap goes downhill on the true energy. The paper’s neighbor ruler is what ticks up.
+2. **[Claim 2, `13.5%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-2).** Delayed gratification. Every swap goes downhill on the true energy. The paper’s neighbor ruler is what ticks up.¹
 3. **[Claim 3, `86.5%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-3).** Clustering. Two speeds of motion separate the mixture. No line of code looks at a neighbor’s type, and no ghost is required.
 4. **[Claim 4, `96.1%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-4).** Thompson’s morphospace. The body swims along his sheet. The head eats. The one hypothesis that lost is still in the record.
 5. **[Claim 5, `95.0%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-5).** The planarian. A two-headed voltage memory survives the drug and the next cut.
 6. **[Claim 6, `95.0%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-6).** The Picasso tadpole. A scrambled face finds the froglet layout along paths it was never shown.
 7. **[Claim 7, `90.1%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-7).** The xenobot. A C-shaped mouth of about `105°` sweeps loose cells into a daughter, then another.
 
-The `−2.2` points on Claims 5–7 are gaps in our reduced equations, not a finding that the worm, the tadpole, or the xenobot failed. The walkthrough is [here](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html).
-
----
-
-## The Score
+The `−2.2` points on Claims 5–7 are gaps in our reduced equations, not a finding that the worm, the tadpole, or the xenobot failed.
 
 ![](https://fractastical.github.io/morpholib/media/substack_final_scoreboard.png)
 
-*Plate IV — The scoreboard. Each of the seven claims counts once. Their unweighted mean is `77.6%`. Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py).*
-
-Plate IV is the point-by-point accounting. Each claim is counted once.
-
-* **Sorting cells, Claims 1–3: `18.5 / 33.3`, or 55.6%.** Bubble and Selection sort really do tolerate a frozen cell with nothing but a skip. Insertion sort does not: it rewrites its own test. The "delayed gratification" curve is the neighbor ruler going up while the true energy goes down on every swap. The clustering is real, and two algorithms moving at different speeds produce it. This is the lowest pillar, and it is the only one that checks published code line by line.¹
-* **Thompson’s morphospace, Claim 4: `32.0 / 33.3`, or 96.1%.** A century of failed tests came from measuring the skull. On whole-body outlines the coordinate grids win, the pre-registered blind test held (`p = 10⁻¹⁰³`), and the 1.3 points held back are the hypothesis that lost to "copy the nearest relative" by 4% (`p = 0.061`).
-* **Planarians, tadpoles, xenobots, Claims 5–7.** The laboratory results are valid, and each claim counts. Read one at a time they are `10.55 / 11.1 = 95.0%`, `10.55 / 11.1 = 95.0%`, and `10.0 / 11.1 = 90.1%`. The points not awarded are the gaps in our reduced equations — fixed channel kinetics, the viscoelastic coupling, the full 3D fluid acting on the tissue. They are not a finding that the worm, the tadpole, or the xenobot failed to do what the papers report.
-
-The sorting claims, read the same way, are `7.4 / 11.1 = 66.7%`, `1.5 / 11.1 = 13.5%`, and `9.6 / 11.1 = 86.5%`. Thompson is `96.1%`. All seven:
+*Plate IV — The same seven, as a card each. Their unweighted mean is `77.6%`. Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py).*
 
 **`(66.7% + 13.5% + 86.5% + 96.1% + 95.0% + 95.0% + 90.1%) / 7 = 77.6%`.**
 
@@ -247,6 +235,6 @@ Because our **Adversarial Epistemic Loop (AEL)** pairs human philosophical direc
 *Plate VIII — Methods transparency heatmap: AI-agent versus human PI (Joel Dietz) contribution across the 8 sections of this article and 5 workflow dimensions (Hypothesis & Direction, Prose Drafting, Simulation & Math Code, Lean 4 & Statistical Proofs, and Blinded Referee Auditing). Summary percentages are computed from the cells at render time. Provenance: `render_fig8_ai_vs_human_authorship_heatmap()` in [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py).*
 
 * **Hypothesis & Philosophical Direction (`87.5%` Human / `12.5%` AI):** The personal narrative (Joscha Bach at CIMC, the board member’s "woo science" question, Mike Levin’s reading list), the decision to move the claim walkthroughs off this page, the choice to answer Nathan Sweet in his own words, the within/without argument of *On Dualism*, and the `77.6++%` loop framing were driven by the human author (**Joel Dietz**, `85%–95%` human direction in Sections 1, 2, and 4–8).
-* **Article Prose (`53.1%` Direct Human Writing & Edits / `46.9%` AI-Assisted Technical Synthesis):** Section 1 (the personal introduction) is **`92%` verbatim human prose**, Section 5 (*On Dualism*) is **`75%` human prose**, and Section 6 (the conclusion: Hellenic Tantra, Thompson’s 1913 Aristotle lecture, and the nested psyche) is **`60%` human prose**. The seven claim headers (Section 2) are half human, half compressed from the locked audit. The score, *Rationalism: Short and Sweet*, the appendix, and footnote ³ (Sections 3, 4, 7, and 8) were still drafted by `gemini-4-argon` and `claude-fable-5-1` from locked JSON/YAML files and edited by the human author.
+* **Article Prose (`53.1%` Direct Human Writing & Edits / `46.9%` AI-Assisted Technical Synthesis):** Section 1 (the personal introduction) is **`92%` verbatim human prose**, Section 5 (*On Dualism*) is **`75%` human prose**, and Section 6 (the conclusion: Hellenic Tantra, Thompson’s 1913 Aristotle lecture, and the nested psyche) is **`60%` human prose**. The score (the seven headers and the mean, one section) is half human, half compressed from the locked audit. *Rationalism: Short and Sweet*, the appendix, and footnote ³ were still drafted by `gemini-4-argon` and `claude-fable-5-1` from locked JSON/YAML files and edited by the human author.
 * **Multi-Language Simulation Code, Lean 4 Proofs & Referee Audits (`67.9%` AI Agents / `32.1%` Human):** The ports, solvers, Lean 4 theorems, Problem Graph animation, and blinded referee audits remain mostly agent work. On this page the technical mean is `82.6%` AI (the score, *Rationalism*, and the appendix). The `~90%` figure *On Dualism* leans on is the walkthrough on the companion page, where the auditor of the code still cannot see "without."
 
