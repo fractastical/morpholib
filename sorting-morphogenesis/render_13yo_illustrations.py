@@ -574,12 +574,11 @@ def render_fig6_decisive_comparison_d_vs_dp():
 
 def render_fig7_final_scoreboard():
     """
-    Illustrated Guide 7: 'The Final Scoreboard: How Right Is Michael Levin?'
-    The per-claim points below are unchanged. Current reading (errata S17): the
-    unweighted mean of all seven claims is 77.6%. S16's 65.7% (Claims 1–4 only)
-    and the equal-pillar 81.6% (structural 93.4%) stay drawn, labelled superseded.
+    Illustrated Guide 7: the seven Ingressing Minds claims, each counted once.
+    The unweighted mean is 77.6%. Structural math on the same seven is 88.1%.
+    Dualist points awarded: 0.0%.
 
-    Historical 3-pillar split, kept so the superseded number recomputes:
+    The cards group as:
       - Pillar I   (33.3% weight) — Sorting Morphogenesis (Claims 1–3, 11.1% each):
           • Claim 1 (Error Tolerance):       7.4 / 11.1 pts (67%)
           • Claim 2 ('Delayed Gratification'): 1.5 / 11.1 pts (13%)
@@ -593,12 +592,8 @@ def render_fig7_final_scoreboard():
           • Claim 7 (Xenobot Self-Replication):  10.0 / 11.1 pts (90%)
           -> Pillar III Subtotal = 31.1 / 33.3 pts (93.3% of Pillar III)
       -------------------------------------------------------------------------
-      3-PILLAR TOTAL:  18.5 + 32.0 + 31.1 = 81.6 / 100 pts (81.6% Overall!)
-        • Missing 18.4 pts split: 12.6 dualist/overstated (3.7 Claim 1 Insertion + 7.4 Claim 2
-          barrier/gradient + 1.5 Claim 3 ghost clustering) + 5.8 ordinary modelling shortfalls
-          (2.2 rising E(v) in Claim 2, 1.3 failed H2 in Claim 4, 2.2 reduced-model biophysics in Claims 5–7)
-        • Empirical & Structural Math (D + P_structural): 93.4% Right (81.6 / 87.4 pts)
-        • Strong Dualist 'Non-Physical Ghosts' (P_dualist): 0.0% Needed (0.0 / 12.6 pts)
+      Points on the cards add to 18.5 + 32.0 + 31.1 = 81.6 of 100.
+      The headline is the unweighted mean of the seven percentages, 77.6%.
     """
     fig, ax = plt.subplots(figsize=(14.6, 8.8), dpi=160, facecolor="#0b1325")
     fig.subplots_adjust(left=0.02, right=0.98, top=0.87, bottom=0.03)
@@ -612,14 +607,9 @@ def render_fig7_final_scoreboard():
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.962
     )
     ax.text(
-        50, 103.6,
+        50, 102.0,
         "Ingressing Minds, seven claims, weighted equally:  (66.7 + 13.5 + 86.5 + 96.1 + 95.0 + 95.0 + 90.1) / 7  =  77.6%",
         color="#93c5fd", fontsize=8.2, fontweight="bold", ha="center", va="center"
-    )
-    ax.text(
-        50, 100.6,
-        "Superseded, kept visible:  equal pillars 81.6% (structural 93.4%)   ·   Claims 1–4 only 65.7% (structural 84.2%, errata S16)",
-        color="#facc15", fontsize=7.8, fontweight="bold", ha="center", va="center"
     )
 
     rows = [
@@ -685,11 +675,11 @@ def render_fig7_final_scoreboard():
         ax.add_patch(badge)
         ax.text(87.4, y_c, verdict, color=badge_fg, fontsize=8.4, fontweight="bold", ha="center", va="center", linespacing=1.25, zorder=4)
 
-    # Stacked percentage bar showing the 3 × 33.3% Pillars: 18.5 + 32.0 + 31.1 = 81.6 / 100
+    # Where the earned points sit. The headline is the unweighted mean above, not this sum.
     bar_y = 12.2
     bar_h = 5.4
-    ax.text(1.4, bar_y + bar_h / 2, "SUPERSEDED\n3-pillar sum = 81.6%",
-            color="#facc15", fontsize=7.6, fontweight="bold", ha="left", va="center")
+    ax.text(1.4, bar_y + bar_h / 2, "WHERE THE\nPOINTS SIT",
+            color="#93c5fd", fontsize=7.6, fontweight="bold", ha="left", va="center")
 
     seg_x = 24.5
     total_w = 74.0  # 100 pts mapped to 74.0 width units
@@ -707,21 +697,20 @@ def render_fig7_final_scoreboard():
         ax.text(cur_x + w / 2, bar_y + bar_h / 2, lbl, color="#ffffff", fontsize=7.4, fontweight="bold", ha="center", va="center", zorder=4)
         cur_x += w
 
-    # Bottom synthesis bar: 3 boxes (3-Pillar Total 81.6%, Structural Math 93.4%, Dualist Ghosts 0.0%)
     b1 = FancyBboxPatch((1.2, 0.8), 30.5, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#1e293b", edgecolor="#facc15", linewidth=2.0, zorder=2)
     ax.add_patch(b1)
-    ax.text(16.45, 4.9, "CURRENT READING: 77.6%\nmean of all seven claims, each once\n(81.6% and 65.7% both superseded)",
-            color="#fef08a", fontsize=7.4, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
+    ax.text(16.45, 4.9, "77.6%\nmean of the seven claims,\neach counted once",
+            color="#fef08a", fontsize=7.6, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
 
     b2 = FancyBboxPatch((33.2, 0.8), 33.0, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#052e16", edgecolor="#22c55e", linewidth=2.0, zorder=2)
     ax.add_patch(b2)
-    ax.text(49.7, 4.9, "✔ Structural, same seven claims: 88.1%\n(100+40.5+100+96.1+95.0+95.0+90.1) / 7\nsupersedes 84.2% and 93.4%",
+    ax.text(49.7, 4.9, "Structural, same seven: 88.1%\n(100+40.5+100+96.1+95.0+95.0+90.1) / 7\ndualist points out of each denominator",
             color="#dcfce7", fontsize=7.4, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
 
     b3 = FancyBboxPatch((67.6, 0.8), 31.2, 8.2, boxstyle="round,pad=0.3,rounding_size=1.0", facecolor="#450a0a", edgecolor="#ef4444", linewidth=2.0, zorder=2)
     ax.add_patch(b3)
-    ax.text(83.2, 4.9, "✖ Dualist points awarded: 0.0%\nunchanged — no test earned a ghost point\n(old pool 0.0 / 12.6 stays on the record)",
-            color="#fee2e2", fontsize=7.4, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
+    ax.text(83.2, 4.9, "Dualist points awarded: 0.0%\nnone of the seven claims\nearned a ghost point",
+            color="#fee2e2", fontsize=7.6, fontweight="bold", ha="center", va="center", linespacing=1.2, zorder=4)
 
     out = MEDIA / "substack_final_scoreboard.png"
     fig.savefig(out, dpi=160, facecolor=fig.get_facecolor())
