@@ -1,0 +1,72 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix delphi: <https://w3id.org/delphi/ontology/> .
+@prefix mlt: <https://w3id.org/morpholib/linear-types/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/morpholib/linear-types/np/prediction-lt-02/Head> {
+    <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/> a np:Nanopublication ;
+        np:hasAssertion <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/assertion> ;
+        np:hasProvenance <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/provenance> ;
+        np:hasPublicationInfo <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/pubinfo> .
+}
+
+<https://w3id.org/morpholib/linear-types/np/prediction-lt-02/pubinfo> {
+    <https://orcid.org/0009-0007-4948-9192> rdfs:label "Joel Dietz" .
+
+    <https://w3id.org/delphi/resource/domain/morphoeval> a delphi:Domain ;
+        rdfs:label "morphoeval" .
+
+    <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/> dcterms:conformsTo delphi:2.0 ;
+        dcterms:created "2026-10-29"^^xsd:date ;
+        dcterms:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dcterms:isPartOf <https://github.com/fractastical/morpholib/blob/main/docs/LINEAR_TYPE_EXTENSION_SPEC.md> ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        delphi:domain <https://w3id.org/delphi/resource/domain/morphoeval> .
+}
+
+<https://w3id.org/morpholib/linear-types/np/prediction-lt-02/provenance> {
+    <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/nanopubs/linear_types_predictions_to_nanopubs.py> a prov:SoftwareAgent ;
+        rdfs:label "morpholib LINEAR-TYPES-01 registration exporter (Project Delphi vocabulary, ontology 2.0)" .
+
+    <https://github.com/fractastical/morpholib/commit/f195168fa9cd437c5b93ce8502e6f1cc1f077212> a prov:Activity ;
+        rdfs:label "Pre-registration of LINEAR-TYPES-01 at morpholib commit f195168fa9cd" ;
+        prov:endedAtTime "2026-10-29"^^xsd:date ;
+        prov:used <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/predictions/registrations/LINEAR-TYPES-01.json> .
+
+    <https://w3id.org/morpholib/linear-types/np/prediction-lt-02/assertion> prov:wasAttributedTo <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/nanopubs/linear_types_predictions_to_nanopubs.py> ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/predictions/registrations/LINEAR-TYPES-01.json> ;
+        prov:wasGeneratedBy <https://github.com/fractastical/morpholib/commit/f195168fa9cd437c5b93ce8502e6f1cc1f077212> .
+
+    <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/predictions/registrations/LINEAR-TYPES-01.json> mlt:sha256 "1195a42fcc0e33f881898ba1d2055bc86bfc31eed45bc15bf4ce061515c4f0b5" .
+}
+
+<https://w3id.org/morpholib/linear-types/np/prediction-lt-02/assertion> {
+    <https://w3id.org/delphi/resource/hypothesis/morpholib-linear-types-lt-02> a delphi:TestableHypothesis ;
+        rdfs:label "LT-02: Auxin canalization class re-formalised as DSL instantiations"@en ;
+        dcterms:description "All five auxin canalization loops (Loop_032 auxin_pin1_phyllotaxis, Loop_034 auxin_canalization_leaf_veins, Loop_035 carrier_driven_canalization, Loop_038 root_auxin_reflux_fountain, Loop_0401 mus_musculus_flux_canalization) each carry at least one law whose conservation theorem is a DSL instantiation, and morphoeval/check_lean_formula_alignment.py passes on the paired math_kg_loops YAML."@en ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/docs/LINEAR_TYPE_EXTENSION_SPEC.md>,
+            <https://github.com/fractastical/morpholib/blob/f195168fa9cd437c5b93ce8502e6f1cc1f077212/morphoeval/lean/LinearResource.lean> ;
+        skos:broader <https://w3id.org/delphi/resource/hypothesis/morpholib-linear-types-portfolio> ;
+        schema:programmingLanguage "Lean 4" ;
+        delphi:context "Pre-registered capability prediction, registration LINEAR-TYPES-01. The prior is the registrant's credence that the formal-verification outcome is achieved by the deadline, not a probability about biology. Loops in scope: Loop_032, Loop_034, Loop_035, Loop_038, Loop_0401." ;
+        delphi:hasPriorProbability 0.75 ;
+        delphi:hasResolvability 0.95 ;
+        delphi:hypothesisType "formal-verification capability prediction (linear-resource DSL in Lean 4)" ;
+        delphi:proposedTest "Grep each listed .lean for a theorem whose proof term applies MathOfBiology.Linear.conserves; run check_lean_formula_alignment.py on each YAML; both must pass for all five." ;
+        mlt:basis "Loop_032 L64 (jonsson_2006_intercellular_flux_conservation) and Loop_034 L98 (feugier_2005_polar_flux_conservation) are already edge-flux antisymmetry identities; the prototype instantiates Loop_032 directly. Loop_038 (reflux fountain, 2-D tissue with boundary) is the hardest." ;
+        mlt:deadline "2027-01-31"^^xsd:date ;
+        mlt:falsifier "Any of the five lacks a DSL instantiation at the deadline, or the alignment checker fails for it." ;
+        mlt:inScopeLoop "Loop_032",
+            "Loop_034",
+            "Loop_035",
+            "Loop_038",
+            "Loop_0401" ;
+        mlt:predictionId "LT-02" ;
+        mlt:registrationId "LINEAR-TYPES-01" .
+}
+
