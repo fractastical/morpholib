@@ -28,6 +28,14 @@ from pathlib import Path
 from rdflib import Dataset, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, PROV, RDF, RDFS, SKOS, XSD
 
+
+def num(x) -> Literal:
+    """xsd:decimal with the registration's lexical form. NOTE: Delphi declares xsd:double for the probability
+    properties, but rdflib serialises doubles as 9.7e-01 and the nanopub registry's trusty-URI check then
+    rejects the artefact (422 'artifact code does not verify'); xsd:decimal round-trips (same workaround as
+    thompson_predictions_to_nanopubs.py). Flagged in the ontology review issue."""
+    return Literal(str(x), datatype=XSD.decimal)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 _spec = importlib.util.spec_from_file_location("tp", REPO_ROOT / "nanopubs" / "thompson_predictions_to_nanopubs.py")
 tp = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(tp)  # read_profile, nanopub_conf, git_commit
@@ -113,8 +121,8 @@ def prediction_nanopub(pred: dict, reg: dict, commit: str, today: str, orcid, na
     A.add((h, RDFS.label, Literal(f"{pid}: {pred['title']}", lang="en")))
     A.add((h, DCTERMS.description, Literal(pred["statement"], lang="en")))
     A.add((h, DELPHI.proposedTest, Literal(pred["proposed_test"])))
-    A.add((h, DELPHI.hasPriorProbability, Literal(float(pred["prior_probability"]), datatype=XSD.double)))
-    A.add((h, DELPHI.hasResolvability, Literal(float(pred["resolvability"]), datatype=XSD.double)))
+    A.add((h, DELPHI.hasPriorProbability, num(pred["prior_probability"])))
+    A.add((h, DELPHI.hasResolvability, num(pred["resolvability"])))
     A.add((h, DELPHI.hypothesisType, Literal("formal-verification capability prediction (linear-resource DSL in Lean 4)")))
     A.add((h, DELPHI.context, Literal(
         "Pre-registered capability prediction, registration LINEAR-TYPES-01. The prior is the registrant's credence that the "
@@ -146,11 +154,11 @@ def portfolio_nanopub(reg: dict, commit: str, today: str, orcid, name, reg_diges
     A.add((s, DCTERMS.description, Literal(reg["discipline"], lang="en")))
     ps = reg["portfolio_summary"]
     A.add((s, MLT.nPredictions, Literal(int(ps["n_predictions"]), datatype=XSD.integer)))
-    A.add((s, MLT.meanPrior, Literal(float(ps["mean_prior"]), datatype=XSD.double)))
-    A.add((s, MLT.expectedConfirmations, Literal(float(ps["expected_confirmations"]), datatype=XSD.double)))
+    A.add((s, MLT.meanPrior, num(ps["mean_prior"])))
+    A.add((s, MLT.expectedConfirmations, num(ps["expected_confirmations"])))
     A.add((s, MLT.scoringRule, Literal(ps["scoring"])))
-    A.add((s, DELPHI.hasPriorProbability, Literal(float(ps["mean_prior"]), datatype=XSD.double)))
-    A.add((s, DELPHI.hasResolvability, Literal(0.9, datatype=XSD.double)))
+    A.add((s, DELPHI.hasPriorProbability, num(ps["mean_prior"])))
+    A.add((s, DELPHI.hasResolvability, num("0.9")))
     A.add((s, DELPHI.proposedTest, Literal("Resolve each member prediction by its deadline with a resolution nanopub; compute the Brier score at 2027-03-31.")))
     A.add((s, DELPHI.hypothesisType, Literal("formal-verification capability prediction portfolio")))
     A.add((s, DELPHI.context, Literal(
@@ -161,7 +169,7 @@ def portfolio_nanopub(reg: dict, commit: str, today: str, orcid, name, reg_diges
         h = hypothesis_uri(pred["prediction_id"])
         A.add((s, SKOS.narrower, h))
         A.add((h, RDFS.label, Literal(f"{pred['prediction_id']}: {pred['title']}", lang="en")))
-        A.add((h, DELPHI.hasPriorProbability, Literal(float(pred["prior_probability"]), datatype=XSD.double)))
+        A.add((h, DELPHI.hasPriorProbability, num(pred["prior_probability"])))
     for label, path in [("registration", REGISTRATION), ("spec", SPEC_MD), ("lean-prototype", LEAN_PROTO)]:
         node = URIRef(f"{s}-locked-{label}")
         A.add((s, MLT.lockedFile, node))
