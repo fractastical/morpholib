@@ -1,0 +1,73 @@
+# MorphoEval Pass 2 (v2) Audit — Thompson (1917) Ch. VIII claim T1917-022 (Slot 217)
+audit:
+  id: 2026-10-28-t1917-022-the-forms-of-tissues-continued-audit-v2
+  supersedes: 2026-10-28-t1917-022-the-forms-of-tissues-continued-audit
+  supersedes_audit_id: 2026-10-28-t1917-022-the-forms-of-tissues-continued-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Cloud Loop Slot 217 Pass 2 Assessor)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d56cf26f6d31eb8cd1b41b5301fdde110
+    note: Pass 2 after Step 12 remediation (segmentation, sweeps, result.json)
+
+simulations:
+  - id: thompson1917-t1917-022
+    name: "Thompson (1917) T1917-022 — isoperimetric/minimal-area hollow & aggregate partitions"
+    organism: "Ophiurid pluteus; plant tissue partitions; pollen; radiolarian analogues (Commons)"
+    script: thompson/claims/t1917-022_the-forms-of-tissues-continued.py
+    output: docs/media/t1917_022_the_forms_of_tissues_continued_comparison.png
+    extra_outputs:
+      - docs/media/t1917_022_the_forms_of_tissues_continued_growth.gif
+      - datasets/thompson_1917/t1917-022/result.json
+    status: evaluated
+    summary: >-
+      Pass 2: 6/7 structure-split tests pass; verdict mixed (catch-all claim + Weaire-Phelan foam caveat).
+      Fig. 176 eight-fold match 0.88, pollen mean Q≈0.54, junctions within 25° of 120° on 35%+ samples,
+      radiolarian analogue Q≈0.50; froth KS still marginal.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: Lean-backed laws plus Voronoi froth sweep with Lloyd relaxation and ablation on delta.
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_022.lean, lines: [24, 88], note: "isoperimetric + Plateau + Fig176", supports: true}
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [210, 280], note: "simulate_voronoi_froth sweep", supports: true}
+      specimen-match:
+        value: 68
+        rationale: Six Thompson crops segmented; two Commons radiolarian analogues measured.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [290, 360], note: "measure_all_specimens", supports: true}
+          - {file: datasets/thompson_1917/t1917-022/result.json, lines: [1, 40], note: "mixed verdict headline numbers", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: delta×Lloyd grid and pollen threshold sweep executed.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [44, 52], note: "PARAMS sweeps", supports: true}
+      morphometric-validation:
+        value: 65
+        rationale: GOF RMSE/r/KS exported; T6 froth KS still fails.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [365, 395], note: "goodness_of_fit", supports: true}
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [400, 430], note: "T6 froth KS threshold", supports: false}
+      source-traceability:
+        value: 82
+        rationale: Seven SHA-256 vendored files; scout MATCH + analogue labels.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-022/scout_manifest.json, lines: [40, 90], note: "claim_match_verification", supports: true}
+      code-traceability:
+        value: 74
+        rationale: PLATE_CROPS pinned; math_kg_loops yaml links Lean theorems.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-022.yaml, lines: [1, 35], note: "sim_id and equations", supports: true}
+      repro-package:
+        value: 78
+        rationale: self-test ~2 min; comparison PNG + GIF; result.json verdict.
+        evidence:
+          - {file: thompson/claims/t1917-022_the-forms-of-tissues-continued.py, lines: [525, 570], note: "CLI self-test and main", supports: true}
