@@ -1,0 +1,62 @@
+{
+  "claim_id": "T1917-057",
+  "slot_id": "thompson1917-t1917-057",
+  "sim_id": "thompson1917-t1917-057",
+  "date_made": "1917",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge: Cambridge University Press. Ch. XVII, pp. 769, Fig. 403 (scapulae after Dwight).",
+    "internet_archive_item": "ongrowthform1917thom",
+    "url": "https://archive.org/details/ongrowthform1917thom",
+    "license": "public domain (author d. 1948; published 1917)"
+  },
+  "claim_text": "Human scapulae of differing form (after Dwight) are comparable/transformable by the coordinate method.",
+  "quotes": [
+    {"page": 769, "text": "Fig. 403. Human scapulae (after Dwight). A, Caucasian; B, Negro; C, North American Indian (from Kentucky Mountains)."},
+    {"page": 769, "text": "The regularity of the succession of 'transformations' is striking; but the differences are no greater than we may find between individuals of a single race."}
+  ],
+  "model": {
+    "name": "Thompson-Dwight coordinate method on human scapula outlines",
+    "math_family": "geometric",
+    "state_variables": {
+      "x": "reference coordinates on the Caucasian scapula (form A, Cartesian grid in Fig. 403)",
+      "phi(x)": "image coordinates of x on a second scapula form (B or C) under Dwight's deformed grid",
+      "t": "interpolation parameter along A -> target (1 = full coordinate warp to B or C)"
+    },
+    "equations": [
+      {"id": "E1", "formula": "phi : R^2 -> R^2 orientation-preserving, phi(grid_A) = grid_B", "source": "Thompson 1917 Ch. XVII"},
+      {"id": "E2", "formula": "phi_t(x) = (1 - t) x + t phi(x)", "source": "equidistant / linear morph along the transformation"},
+      {"id": "E4", "formula": "thin-plate spline realisation of phi (Bookstein 1989)", "source": "modern formalisation of Thompson grids"},
+      {"id": "E5", "formula": "affine special case phi(x) = A x + b", "source": "Thompson 'simple transformations'"}
+    ],
+    "boundary_conditions": {
+      "forms": "A Caucasian baseline Cartesian grid; B Negro; C North American Indian (Dwight)",
+      "view": "costal surface / outline as drawn in Fig. 403"
+    },
+    "parameter_regime": [
+      {"parameter": "n_semi", "range": "8..32", "controls": "arc-length semilandmarks per scapula border segment"},
+      {"parameter": "lambda", "range": "[0, 0.01]", "controls": "TPS bending-energy penalty"}
+    ],
+    "empirical_claims": [
+      {"id": "C1", "claim": "Forms B and C are obtainable from A by a coordinate transformation.", "testable": true, "test": "TPS warp of A matches drawn B/C better than copying A (Procrustes, IoU)"},
+      {"id": "C2", "claim": "Inter-racial differences are within individual variation of one race.", "testable": false, "reason": "requires population sample beyond Dwight's three panels; not pinned here"}
+    ]
+  },
+  "digitisation": {
+    "primary_surface": "Fig. 403 on p. 769 (leaf n788): three stacked scapula outlines with coordinate grids",
+    "crop_box_fraction_of_page": {"x0": 0.08, "y0": 0.14, "x1": 0.92, "y1": 0.58},
+    "segmentation": "grayscale, ink threshold < 140, morphological closing/opening, three largest components top-to-bottom = A, B, C"
+  },
+  "inputs_sha256": {
+    "ongrowthform1917thom_p769_leaf0788_fig403.jpg": "7c57adb9fe06c75c384fa6b5d761ccc2de0fd5c5e781e1e991f93ad435434b78",
+    "ongrowthform1917thom_p768_leaf0787.jpg": "6edf8a377983960dd229469a0b51d02c4694c295bfa8584861de7722cf192db6",
+    "human_scapula_sun_bleaching_commons.jpg": "51b289c81d1ce464bcfb81f59edac64e49d1debc1ac07f58e969d34d68dfe15c",
+    "dryad_gqnk98srz_kangaroo_rat_metadata.json": "4eaa54b47b7f58bcc569d6cf0885d2610189514d9eee787518ac5cc7206e52a3"
+  },
+  "specimen_photograph": {
+    "file": "human_scapula_sun_bleaching_commons.jpg",
+    "organism": "Homo sapiens (human scapula, archaeological specimen with sun bleaching)",
+    "source": "https://commons.wikimedia.org/wiki/File:Human_scapula_with_sun_bleaching_changes.jpg",
+    "license": "CC BY-SA (see Commons file page)",
+    "use": "descriptive bone-vs-background CV segmentation only; not used for the Fig. 403 verdict"
+  }
+}
