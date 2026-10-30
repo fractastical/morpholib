@@ -160,12 +160,12 @@ function initZoom(){
  const svg=$('graph');
  svg.addEventListener('wheel', e=>{ e.preventDefault(); const pt=svgPoint(e); zoomAt(pt.x, pt.y, Math.exp(-e.deltaY*0.0015)); }, {passive:false});
  const pointers=new Map(); let drag=null, pinchD=0;
- svg.addEventListener('pointerdown', e=>{ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); svg.setPointerCapture(e.pointerId);
+ svg.addEventListener('pointerdown', e=>{ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
    if(pointers.size===1) drag={x:e.clientX,y:e.clientY,moved:0};
-   if(pointers.size===2){ const [a,b]=[...pointers.values()]; pinchD=Math.hypot(a.x-b.x,a.y-b.y); drag=null; } });
+   if(pointers.size===2){ const [a,b]=[...pointers.values()]; pinchD=Math.hypot(a.x-b.x,a.y-b.y); drag=null; pointers.forEach((_,id)=>svg.setPointerCapture(id)); } });
  svg.addEventListener('pointermove', e=>{ if(!pointers.has(e.pointerId)) return; pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
    if(pointers.size===2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const r=svg.getBoundingClientRect(); const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; if(pinchD>0) zoomAt((mid.x-r.left)*SW()/r.width,(mid.y-r.top)*SH()/r.height, d/pinchD); pinchD=d; return; }
-   if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy); if(drag.moved>4) suppressClick=true;
+   if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy); if(drag.moved>4 && !suppressClick){ suppressClick=true; svg.setPointerCapture(e.pointerId); }
    const r=svg.getBoundingClientRect(); VIEW.tx+=dx*SW()/r.width; VIEW.ty+=dy*SH()/r.height; drag.x=e.clientX; drag.y=e.clientY; applyView(); });
  const end=e=>{ pointers.delete(e.pointerId); if(pointers.size<2) pinchD=0; if(pointers.size===0){ drag=null; setTimeout(()=>suppressClick=false, 50); } };
  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
