@@ -1,11 +1,5 @@
 # Why Michael Levin Is 77.6++% Validated on Platonic Ingress
 
-*The ghosts score `0.0%`. The `77.6%` covers only the seven claims in Ingressing Minds — sorting in §6.3, the Thompson morphospace, and the planarian, tadpole, and xenobot (`66.7%`, `13.5%`, `86.5%`, `96.1%`, `95.0%`, `95.0%`, `90.1%`) — and none of his other work. Structural math on those seven reads `88.1%`.*
-
-*Seven plates here; the claim-by-claim audit is [sixteen more](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html). Each caption names the script, dataset, or engraving it was built from.*
-
----
-
 For some time I have been participating actively in documenting the scientific potential of bioelectricity (which goes back to Galvani’s frog experiments; see [Bioelectricity Foundations](https://bioelectricity.net/bioelectricity-foundations)) and the various fascinating, though usually hypothetical, metaphysical concepts that often travel side by side with it ([bioelectricity.net](https://bioelectricity.net)). As a [historian of math](https://mitpress.mit.edu/author/joel-dietz-39191/), it doesn’t bother me that sci-fi concepts (such as *psi*) and real science can develop side by side—historically, Kepler’s astrophysics and Newton’s alchemy grew out of the same soil—but I’m equally aware that religious effects can take over and obliterate free critical thinking (e.g. guru traditions).
 
 ![](https://fractastical.github.io/morpholib/media/thompson_transformations.gif)
