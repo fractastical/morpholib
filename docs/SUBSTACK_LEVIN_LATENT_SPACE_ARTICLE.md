@@ -1,4 +1,4 @@
-# Why Michael Levin Is 77.6++% Right on Platonic Ingress
+# Why Michael Levin Is 77.6++% Validated on Platonic Ingress
 
 *The ghosts score `0.0%`. The `77.6%` covers only the seven claims in Ingressing Minds — sorting in §6.3, the Thompson morphospace, and the planarian, tadpole, and xenobot (`66.7%`, `13.5%`, `86.5%`, `96.1%`, `95.0%`, `95.0%`, `90.1%`) — and none of his other work. Structural math on those seven reads `88.1%`.*
 

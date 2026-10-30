@@ -603,7 +603,7 @@ def render_fig7_final_scoreboard():
     ax.axis("off")
 
     fig.suptitle(
-        "Why Michael Levin Is 77.6% Right on Platonic Ingress",
+        "Why Michael Levin Is 77.6% Validated on Platonic Ingress",
         color="#f8fafc", fontsize=14.2, fontweight="bold", y=0.962
     )
     ax.text(

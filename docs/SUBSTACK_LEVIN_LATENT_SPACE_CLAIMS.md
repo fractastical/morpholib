@@ -1,6 +1,6 @@
 # The Seven Claims, Walked Through
 
-*Companion to [Why Michael Levin Is 77.6++% Right on Platonic Ingress](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html). The scores are locked. This page is the audit that produced them.*
+*Companion to [Why Michael Levin Is 77.6++% Validated on Platonic Ingress](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html). The scores are locked. This page is the audit that produced them.*
 
 *Sixteen plates. Each caption names the script, dataset, or engraving it was built from. Return to the [main article](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html) for the score, the dualism essay, and the conclusion.*
 
