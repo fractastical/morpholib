@@ -1,0 +1,118 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-thompson1917-t1917-055> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-morphometric-validation> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson (1917) Figs. 394-400: rhinoceros and allied skulls by coordinate-grid transformation (Osborn) — Morphometric validation: 84/100" ;
+        dct:date "2026-10-28"^^xsd:date ;
+        dct:description "Primary pair reports Procrustes, IoU, Pearson r, RMSE/cs, chamfer/cs vs identity, affine, and shuffled-grid null; headline numbers pinned in result.json; secondary six pairs with the same compare_outlines block; sweep summarised in measure_morphoeval. Mixed verdict is explicit: TPS beats identity but not affine. Deductions: shuffled null is single-seed permutation not exhaustive; no KS test; part C3 rabbit/horse remain weak; no real 3D GM for part C4." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "datasets/thompson_1917/t1917-055/result.json L17–L21: Leporidae DATASET_MISMATCH — part C4 untestable with pinned data <https://github.com/fractastical/morpholib/blob/530b3b50c/datasets/thompson_1917/t1917-055/result.json#L17-L21>" ;
+        pk:hasEvidence <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-iou-filled-outlines-tps-vs-aceratherium>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-matched-grid-landmarks-hyrachyus-aceratherium>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-parameter-sweep-settings>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-procrustes-distance-tps-outline-vs-aceratherium>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-1>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-2>,
+            <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-3> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-iou-filled-outlines-tps-vs-aceratherium> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "IoU filled outlines, TPS vs Aceratherium = 0.5704 IoU" ;
+        schema:measurementTechnique "similarity-aligned dense boundaries, raster 400²" ;
+        schema:name "IoU filled outlines, TPS vs Aceratherium" ;
+        schema:unitText "IoU" ;
+        schema:value "0.5704" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-matched-grid-landmarks-hyrachyus-aceratherium> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "matched grid landmarks (Hyrachyus -> Aceratherium) = 40 count" ;
+        schema:measurementTechnique "normalized-bbox greedy NN, maxd=0.12" ;
+        schema:name "matched grid landmarks (Hyrachyus -> Aceratherium)" ;
+        schema:unitText "count" ;
+        schema:value "40" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-parameter-sweep-settings> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "parameter sweep settings = 36 count" ;
+        schema:measurementTechnique "maxd x lam x n_boundary grid" ;
+        schema:name "parameter sweep settings" ;
+        schema:unitText "count" ;
+        schema:value "36" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-measurement-procrustes-distance-tps-outline-vs-aceratherium> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Procrustes distance, TPS outline vs Aceratherium = 0.3702 Procrustes distance" ;
+        dct:description "identity control 0.3766" ;
+        schema:measurementTechnique "TPS on matched grids applied to Hyrachyus boundary" ;
+        schema:name "Procrustes distance, TPS outline vs Aceratherium" ;
+        schema:unitText "Procrustes distance" ;
+        schema:value "0.3702" .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-055_on-the-theory-of-transformations.py L264–L277" ;
+        dct:description "compare_outlines: Procrustes, pearson_r, rmse_cs, iou, chamfer_rmse_cs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/530b3b50c/thompson/claims/t1917-055_on-the-theory-of-transformations.py#L264-L277> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/claims/t1917-055_on-the-theory-of-transformations.py L458–L473" ;
+        dct:description "shuffled_grid_null via permuted Q; tps_beats_shuffled_procrustes flag" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/530b3b50c/thompson/claims/t1917-055_on-the-theory-of-transformations.py#L458-L473> .
+    <https://w3id.org/delphi/resource/evidence/morphoeval-thompson1917-t1917-055-morphometric-validation-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/thompson_1917/t1917-055/result.json L23–L40" ;
+        dct:description "verdict mixed; headline Procrustes/IoU/r/chamfer/min Jacobian" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/530b3b50c/datasets/thompson_1917/t1917-055/result.json#L23-L40> .
+    <https://w3id.org/delphi/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (builder-assessor, single-agent Pass 2; second assessor pending)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://ai.google.dev> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://archive.org/details/extinctrhinocero01osbo>,
+            <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://github.com/fractastical/morpholib/blob/main/thompson/portfolio/results/leporidae_skulls.json> .
+    <https://archive.org/details/extinctrhinocero01osbo> dct:date "1898"^^xsd:gYear ;
+        dct:title "The Extinct Rhinoceroses of North America" .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form (Ch. XVII, On the Theory of Transformations, pp. 760-764, Figs. 394-400, skulls after Osborn)" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://github.com/fractastical/morpholib/blob/main/thompson/portfolio/results/leporidae_skulls.json> dct:title "Modern Leporidae skull GM cache (portfolio JSON)" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson (1917) Figs. 394-400: rhinoceros and allied skulls by coordinate-grid transformation (Osborn) — Morphometric validation 84/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-28T18:23:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-thompson1917-t1917-055-morphometric-validation> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

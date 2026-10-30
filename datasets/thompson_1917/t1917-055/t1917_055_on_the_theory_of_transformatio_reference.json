@@ -1,0 +1,83 @@
+{
+  "claim_id": "T1917-055",
+  "slot_id": "thompson1917-t1917-055",
+  "sim_id": "thompson1917-t1917-055",
+  "date_made": "1917",
+  "source": {
+    "citation": "Thompson, D'Arcy W. (1917) On Growth and Form. Cambridge: Cambridge University Press. Ch. XVII, 'On the Theory of Transformations, or the Comparison of Related Forms', pp. 760-764, Figs. 394-400 (skulls after Henry Fairfield Osborn, 1898).",
+    "internet_archive_item": "ongrowthform1917thom",
+    "url": "https://archive.org/details/ongrowthform1917thom",
+    "license": "public domain (author d. 1948; published 1917; Osborn figures credited in text)"
+  },
+  "claim_text": "The skulls of rhinoceroses and their allies (Hyrachyus, Aceratherium, Titanotherium, tapir, horse, rabbit comparisons after Osborn) differ by coordinate transformation of a common skull diagram.",
+  "quotes": [
+    {"page": 760, "text": "Let us begin by choosing as our type the skull of Hyrachyus agrarius, Cope, from the Middle Eocene of North America, as figured by Osborn in his Monograph of the Extinct Rhinoceroses (Fig. 394)."},
+    {"page": 761, "text": "The co-ordinates of Aceratherium tridactylum, as shown in Fig. 395, indicate that the essential difference between this skull and the former one may be summed up by saying that the long axis of the skull of Aceratherium has undergone a slight double curvature, while the upper parts of the skull have at the same time been ..."},
+    {"page": 762, "text": "These differences are strikingly brought out by the series of conformal transformations which I have represented in Fig. 396."},
+    {"page": 763, "text": "We pass from the Perissodactyle skulls to that of the rabbit by a cognate and even simpler transformation, and this is a simple illustration of the undoubted affinity between the Rodentia, and more especially the Leporidae, and the more primitive Ungulates."}
+  ],
+  "model": {
+    "name": "Thompson-Osborn coordinate-grid deformation (method of transformations)",
+    "math_family": "geometric",
+    "state_variables": {
+      "x = (xi, eta)": "Cartesian coordinates on the Hyrachyus reference grid (Fig. 394): rectangular network inscribed on the skull lateral view",
+      "phi(x)": "position in the target skull grid (e.g. Aceratherium Fig. 395) of the anatomically corresponding grid point",
+      "Omega_A": "skull outline inscribed in the Hyrachyus grid",
+      "Omega_B": "target skull outline in its deformed grid"
+    },
+    "equations": [
+      {"id": "E1", "name": "coordinate transformation", "formula": "phi : R^2 -> R^2, phi(grid_A) = grid_B, det(D phi) > 0", "source": "Thompson 1917 Ch. XVII; Figs. 394-395"},
+      {"id": "E2", "name": "interpolated transformation", "formula": "phi_t(x) = (1 - t) x + t phi(x), t in [0, 1]", "source": "same construction as pelvis series (Ch. XVII)"},
+      {"id": "E3", "name": "carried outline", "formula": "boundary(Omega_B) approx phi(boundary(Omega_A)) when grids correspond", "source": "pp. 760-764"},
+      {"id": "E4", "name": "thin-plate spline phi", "formula": "Bookstein (1989) TPS on matched grid intersections", "source": "modern formalisation of Thompson grids"},
+      {"id": "E5", "name": "affine special case", "formula": "phi_t(x) = ((1-t)I + tA)x + tb", "source": "Thompson simple strains"},
+      {"id": "E6", "name": "corresponding landmarks", "formula": "phi_t(a_i) = (1-t)a_i + t b_i", "source": "E2 on grid nodes"},
+      {"id": "E7", "name": "best-fit stage", "formula": "t* = <D-A,B-A>/|B-A|^2", "source": "loop test statistic"}
+    ],
+    "boundary_conditions": {
+      "reference_type": "Hyrachyus agrarius lateral skull (Fig. 394) with rectangular Cartesian grid",
+      "targets": "Aceratherium (395), occipital Aceratherium variants (396), Titanotherium (397), tapir (398), horse (399), rabbit (400)",
+      "orientation": "lateral or occipital views as drawn by Osborn; same anatomical orientation within each panel"
+    },
+    "parameter_regime": [
+      {"parameter": "grid_match_maxd", "range": "[0.08, 0.15]", "nominal": 0.12, "controls": "normalized-bbox nearest-neighbour pairing of grid intersections"},
+      {"parameter": "TPS lambda", "range": "[0, 0.01]", "nominal": 0.0, "controls": "smoothness of phi"},
+      {"parameter": "n_boundary", "range": "[80, 160]", "nominal": 160, "controls": "arc-length semilandmarks on skull outline"}
+    ],
+    "empirical_claims": [
+      {"id": "C1", "claim": "Aceratherium skull differs from Hyrachyus by a smooth grid deformation phi.", "testable": true, "test": "TPS on matched grid nodes applied to Hyrachyus outline fits drawn Aceratherium better than identity and affine controls"},
+      {"id": "C2", "claim": "Occipital Aceratherium variants are related by conformal-like grid changes (Fig. 396).", "testable": true, "test": "bottom -> top panels, same metrics"},
+      {"id": "C3", "claim": "More distant taxa (titanothere, tapir, horse, rabbit) are still reachable from the Hyrachyus diagram by coordinate transformation.", "testable": "partial", "test": "same procedure; weaker fit expected for rabbit/horse; reported separately"},
+      {"id": "C4", "claim": "Modern 3D GM datasets replace Thompson's diagrams.", "testable": false, "reason": "pre-scouted Dryad hit empty at audit time; leporidae portfolio cache is Leporidae-only analogue (DATASET_MISMATCH for perissodactyl series)"}
+    ]
+  },
+  "digitisation": {
+    "leaf_to_page_rule": "printed page = Internet Archive leaf index - 20 (p. 761 = leaf n781 in download URL n780_w1200 — vendored filenames use printed page + leaf index as in sibling loops)",
+    "grid_detection": "percentile threshold on crop, binary opening, row/column projection peaks (vdist 14, hdist 12), keep intersections inside largest filled skull component",
+    "expected_matched_grid_pairs_primary": {"min": 40, "typical": 57, "pair": "hyrackyus_394 -> aceratherium_395"}
+  },
+  "inputs_sha256": {
+    "ongrowthform1917thom_p760_leaf0780_fig393_carryover.jpg": "0e73dc9e37ed7e64a51cefe2b29248f084ea471ee13c7d250ac8410490f40023",
+    "ongrowthform1917thom_p761_leaf0781_figs394-395.jpg": "978a7d9039629c4262c54ac9e2031fc87bc137dc64a538b0601fdf45888aad96",
+    "ongrowthform1917thom_p762_leaf0782_fig396.jpg": "7a8a1348147866203dcf1c77e6cada443d4ea30a99c9d972b4289712d0d2b070",
+    "ongrowthform1917thom_p763_leaf0783_figs397-398.jpg": "229d3074b7e141bfef9708ac99a6d61ba510d2a7035a3d528f356bde1b18df31",
+    "ongrowthform1917thom_p764_leaf0784_figs399-400.jpg": "5dcb998220348ea58ce93f766258cbc9d11f21d7af92ed7f1ef4717436a983fd",
+    "ceratotherium_simum_skull_mnhn_1400.jpg": "7ed8c3776d2ab62a5d9ebef0d822ef45e41153f465521838f77166f0a4c7df22"
+  },
+  "specimen_photograph": {
+    "file": "ceratotherium_simum_skull_mnhn_1400.jpg",
+    "organism": "Ceratotherium simum (white rhinoceros, female skull, MNHN Paris, since 1846)",
+    "source": "https://commons.wikimedia.org/wiki/File:Ceratotherium_simum_white_Rhinoceros_blanc_female_MNHN.jpg",
+    "author": "Jebulon",
+    "license": "CC0 1.0",
+    "use": "descriptive bone-vs-matrix segmentation on a real rhinoceros skull; not the Osborn diagram taxa; does not enter the verdict"
+  },
+  "empirical_reference_table": {
+    "rows": [
+      {"quantity": "reference skull type", "value": "Hyrachyus agrarius (Middle Eocene)", "source": "Thompson p. 760 / Osborn 1898"},
+      {"quantity": "primary target", "value": "Aceratherium tridactylum", "source": "Fig. 395"},
+      {"quantity": "Thompson figure panels tested", "value": 9, "source": "Figs 394-400 crops in script CROPS"},
+      {"quantity": "leporidae_skulls.json", "value": "modern rabbit GM analogue", "source": "thompson/portfolio — DATASET_MISMATCH (wrong clade)"}
+    ]
+  }
+}

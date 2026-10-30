@@ -1,0 +1,53 @@
+sim_id: thompson1917-t1917-055
+math_family: "geometric — Thompson (1917) method of transformations applied to Osborn rhinoceros-allied skull diagrams (Figs. 394-400)"
+claim_id: T1917-055
+model_spec:
+  model: "Thompson 1917 Ch. XVII pp. 760-764: phi_t(x) = (1 - t) x + t phi(x); phi realised as TPS on automatically matched grid intersections between Hyrachyus (Fig. 394) and target skull grids"
+  reference_type: "Hyrachyus agrarius lateral skull, rectangular Cartesian grid (Fig. 394)"
+  targets: [Aceratherium_tridactylum_395, Aceratherium_occipital_396, Titanotherium_397, tapir_398, horse_399, rabbit_400]
+  grid_matching: {method: normalized_bbox_nearest_neighbor, maxd_default: 0.12}
+  tps_regularisation_lambda_default: 0.0
+  boundary_points_default: 160
+  controls: [identity, affine_interpolation, shuffled_grid_null]
+  seed: 1917
+  inputs:
+    - datasets/thompson_1917/t1917-055/ongrowthform1917thom_p761_leaf0781_figs394-395.jpg
+    - datasets/thompson_1917/t1917-055/ongrowthform1917thom_p762_leaf0782_fig396.jpg
+    - datasets/thompson_1917/t1917-055/ongrowthform1917thom_p763_leaf0783_figs397-398.jpg
+    - datasets/thompson_1917/t1917-055/ongrowthform1917thom_p764_leaf0784_figs399-400.jpg
+    - datasets/thompson_1917/t1917-055/ceratotherium_simum_skull_mnhn_1400.jpg
+    - datasets/thompson_1917/t1917-055/t1917_055_on_the_theory_of_transformatio_reference.json
+equations:
+  - law_name: "Grid interpolation endpoints and equidistant stage steps (E2/E6)"
+    formula: "interp4(k,a,b) = (4-k)a + kb; interp4(0)=4a, interp4(4)=4b, interp4(k+1)-interp4(k)=b-a"
+    lean_decl: "MathOfBiology.Loop_244.interp4"
+    lean_theorem: "MathOfBiology.Loop_244.interp_endpoints_and_equidistant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_055.lean#L16-L37"
+    variables: "a: grid coordinate on Hyrachyus (Fig. 394); b=phi(a) on target skull grid; k in 0..4 stage index"
+    role: "Operational meaning of Thompson's interpolated coordinate systems between related skull diagrams"
+    source_citation: "Thompson (1917) Ch. XVII pp. 760-764"
+    code_locus: "thompson/claims/t1917-055_on-the-theory-of-transformations.py"
+  - law_name: "Similarity equivariance of interpolated coordinates (E2)"
+    formula: "interp4(k, c a + d, c b + d) = c interp4(k, a, b) + 4 d"
+    lean_theorem: "MathOfBiology.Loop_244.interp_similarity_equivariant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_055.lean#L39-L48"
+    variables: "c: scale; d: translation applied to both endpoint diagrams"
+    role: "Procrustes frame choice cannot change the predicted intermediate skull form"
+    source_citation: "Thompson (1917) Ch. XVII; Gower (1975) Procrustes analysis"
+    code_locus: "thompson/claims/t1917-055_on-the-theory-of-transformations.py"
+  - law_name: "No-fold along a grid coordinate line (E1, 1-D form)"
+    formula: "a1<a2, b1<b2, 0<=k<=4 => interp4(k,a1,b1) < interp4(k,a2,b2)"
+    lean_theorem: "MathOfBiology.Loop_244.interp_no_fold"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_055.lean#L50-L68"
+    variables: "ordered grid coordinates on reference and target nets"
+    role: "Intermediate grids stay orientation-preserving along each coordinate line"
+    source_citation: "Thompson (1917) Figs. 394-395"
+    code_locus: "thompson/claims/t1917-055_on-the-theory-of-transformations.py"
+  - law_name: "Affine shear interpolation preserves area (E5)"
+    formula: "interpDet(k,1,s,0,1) = 16 for all k"
+    lean_theorem: "MathOfBiology.Loop_244.shear_interp_preserves_area"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_055.lean#L90-L92"
+    variables: "s: shear parameter; k: interpolation stage"
+    role: "Thompson's simple shear strains remain area-preserving when interpolated"
+    source_citation: "Thompson (1917) Ch. XVII pp. 727-733"
+    code_locus: "thompson/claims/t1917-055_on-the-theory-of-transformations.py"
