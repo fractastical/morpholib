@@ -26,6 +26,7 @@ Then regenerate docs/scores:
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import sys
 from pathlib import Path
@@ -34,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "thompson" / "thompson_1917_claims.json"
 STATE = ROOT / "thompson" / "overnight" / "state.json"
 RESULTS = ROOT / "datasets" / "thompson_1917"
-RESOLVED_ON = "2026-10-28"
+RESOLVED_ON = dt.date.today().isoformat()
 # PR #295 (T1917-033) was unmergeable (unrelated file rewrites); its claim
 # files were salvaged verbatim into PR #314. Provenance must say so.
 SALVAGE = {"T1917-033": {"model": "composer-2.5",

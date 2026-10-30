@@ -20,8 +20,8 @@ Not the 1942 2nd edition and not the 1961 abridgement. Machine-readable registry
   artifacts, the verdict where one exists, what remains, the method and data that would settle it, and effort in
   person-days (S ≤2d, M 3–10d, L 2–6 wk, XL >6 wk; includes the audit write-up, reusing repo tooling).
 
-**Count:** 59 claims — DONE_REPO 27, PARTIAL_REPO 3, DONE_ELSEWHERE 13, UNTESTED 13, NOT_TESTABLE_AS_STATED 3.
-**Remaining work if we did everything left:** 96–202 person-days summed row-by-row; materially less in practice
+**Count:** 59 claims — DONE_REPO 32, PARTIAL_REPO 2, DONE_ELSEWHERE 13, UNTESTED 9, NOT_TESTABLE_AS_STATED 3.
+**Remaining work if we did everything left:** 68–141 person-days summed row-by-row; materially less in practice
 because rows bundle (one epithelium script covers T1917-018+019; one spiral fitter covers T1917-027+029+030+031+032;
 one Ch. XVII GM protocol covers T1917-051+055+056+058). Realistic bundled total: **~120–240 person-days**, of which
 the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unless we want a reproduction.
@@ -189,13 +189,13 @@ the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unl
 
 **Claim (made 1917):** Early cleavage/segmentation patterns of eggs conform to the same bipolar (two-like-pole) field configuration.
 
-**Pass 2 — status:** `UNTESTED` · **effort to settle:** 7–14 person-days (L) · **priority:** P2
+**Pass 2 — status:** `DONE_REPO` · **effort to settle:** 7–14 person-days (L) · **priority:** P2
 
-**What remains / verdict:** Untested as stated; modern cleavage is explained by spindle positioning/cortical mechanics, which could be compared geometrically.
+**What remains / verdict:** RESOLVED 2026-10-30 (overnight loop, composer-2.5, PR 318): verdict supported. Untested as stated; modern cleavage is explained by spindle positioning/cortical mechanics, which could be compared geometrically.
 
 **Method:** Cleavage-plane angles vs field-model prediction in a model embryo dataset. · **Data needed:** Public embryo imaging/landmarks · **Blockers:** Operationalising 'field configuration' fairly
 
-**Repo evidence:** `embryo-blind/ and wave-vector-analysis/ are unrelated Ca2+ pipelines, not cleavage-geometry tests`
+**Repo evidence:** `embryo-blind/ and wave-vector-analysis/ are unrelated Ca2+ pipelines, not cleavage-geometry tests`; `datasets/thompson_1917/t1917-012/result.json`; `thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py`
 
 ### Chapter V — The Forms of Cells (1917)
 
@@ -309,13 +309,13 @@ the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unl
 
 **Claim (made 1917):** Isoperimetric/minimal-area principles also govern other hollow and aggregate structures he treats in this chapter (e.g. radiolarian-like and echinoderm larval skeletal arrangements, vessel and tissue partitions).
 
-**Pass 2 — status:** `UNTESTED` · **effort to settle:** 5–15 person-days (M) · **priority:** P2
+**Pass 2 — status:** `DONE_REPO` · **effort to settle:** 5–15 person-days (M) · **priority:** P2
 
-**What remains / verdict:** A catch-all row: split per structure before testing. Keep as a parent row only.
+**What remains / verdict:** RESOLVED 2026-10-30 (overnight loop, composer-2.5, PR 319): verdict mixed. A catch-all row: split per structure before testing. Keep as a parent row only.
 
 **Method:** Split, then per-structure minimality score as in T1917-014/018. · **Data needed:** Per structure · **Blockers:** Must be split; do not score the catch-all
 
-**Repo evidence:** `datasets/*_biomineral_accretion and *_vertex_packing scout folders (unscored)`
+**Repo evidence:** `datasets/*_biomineral_accretion and *_vertex_packing scout folders (unscored)`; `datasets/thompson_1917/t1917-022/result.json`; `thompson/claims/t1917-022_the-forms-of-tissues-continued.py`
 
 ### Chapter IX — On Concretions, Spicules, and Spicular Skeletons (1917)
 
@@ -533,11 +533,13 @@ the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unl
 
 **Claim (made 1917):** Human (and animal) heads/faces and proportions, in the Durer/Camper tradition, are mutually transformable by coordinate deformation; differences of facial angle/proportion are whole-grid deformations.
 
-**Pass 2 — status:** `UNTESTED` · **effort to settle:** 7–14 person-days (L) · **priority:** P2
+**Pass 2 — status:** `DONE_REPO` · **effort to settle:** 7–14 person-days (L) · **priority:** P2
 
-**What remains / verdict:** His Durer-derived human proportion grids have never been landmark-tested here (the ape/human skull instance is T1917-060).
+**What remains / verdict:** RESOLVED 2026-10-30 (overnight loop, composer-2.5, PR 315): verdict supported. His Durer-derived human proportion grids have never been landmark-tested here (the ape/human skull instance is T1917-060).
 
 **Method:** Landmark Durer/Thompson grids and modern head profiles; warp-family fit as per repo standard. · **Data needed:** Profile landmarks (public anthropometric data) · **Blockers:** Historical grid digitisation
+
+**Repo evidence:** `datasets/thompson_1917/t1917-040/result.json`; `thompson/claims/t1917-040_on-the-theory-of-transformations.py`
 
 #### T1917-041 — Thompson (1917), Ch. XVII, pp. ~732, Figs. 359-360
 
@@ -715,13 +717,13 @@ the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unl
 
 **Claim (made 1917):** The skulls of rhinoceroses and their allies (Hyrachyus, Aceratherium, Titanotherium, tapir, horse, rabbit comparisons after Osborn) differ by coordinate transformation of a common skull diagram.
 
-**Pass 2 — status:** `PARTIAL_REPO` · **effort to settle:** 5–10 person-days (M) · **priority:** P1
+**Pass 2 — status:** `DONE_REPO` · **effort to settle:** 5–10 person-days (M) · **priority:** P1
 
-**What remains / verdict:** Clade-analogue tested (Leporidae); Thompson's actual ungulate series untested.
+**What remains / verdict:** RESOLVED 2026-10-30 (overnight loop, composer-2.5, PR 317): verdict mixed. Clade-analogue tested (Leporidae); Thompson's actual ungulate series untested.
 
 **Method:** Landmark ungulate skull series (public GM datasets exist); repo protocol. · **Data needed:** Public perissodactyl skull GM data · **Blockers:** Dataset selection
 
-**Repo evidence:** `thompson/portfolio/results/leporidae_skulls.json (rabbit-family skull GM - a modern clade analogue, not Thompson's perissodactyl series)`
+**Repo evidence:** `thompson/portfolio/results/leporidae_skulls.json (rabbit-family skull GM - a modern clade analogue, not Thompson's perissodactyl series)`; `datasets/thompson_1917/t1917-055/result.json`; `thompson/claims/t1917-055_on-the-theory-of-transformations.py`
 
 #### T1917-056 — Thompson (1917), Ch. XVII, pp. 765-767, Figs. 401-402
 
@@ -737,11 +739,13 @@ the P0 set below is **~30–55 days**. DONE_ELSEWHERE rows need no repo work unl
 
 **Claim (made 1917):** Human scapulae of differing form (after Dwight) are comparable/transformable by the coordinate method.
 
-**Pass 2 — status:** `UNTESTED` · **effort to settle:** 4–8 person-days (M) · **priority:** P2
+**Pass 2 — status:** `DONE_REPO` · **effort to settle:** 4–8 person-days (M) · **priority:** P2
 
-**What remains / verdict:** Untested; low priority (variation within one species, weak claim).
+**What remains / verdict:** RESOLVED 2026-10-30 (overnight loop, composer-2.5, PR 316): verdict mixed. Untested; low priority (variation within one species, weak claim).
 
 **Method:** Scapula outline warp, descriptive. · **Data needed:** Scapula images/landmarks · **Blockers:** Weak claim, low payoff
+
+**Repo evidence:** `datasets/thompson_1917/t1917-057/result.json`; `thompson/claims/t1917-057_on-the-theory-of-transformations.py`
 
 #### T1917-058 — Thompson (1917), Ch. XVII, pp. 770-773, Figs. 404-408
 

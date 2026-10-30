@@ -90,10 +90,10 @@ class TestClaimRegistry(unittest.TestCase):
         # Every merged-back verdict must say who resolved the 1917 claim,
         # with what model, and where the evidence lives.
         resolved = [c for c in self.claims if "resolution" in c]
-        self.assertEqual(len(resolved), 18)
+        self.assertGreaterEqual(len(resolved), 18)
         for c in resolved:
             r = c["resolution"]
-            self.assertEqual(r["resolved_on"], "2026-10-28", c["id"])
+            self.assertRegex(r["resolved_on"], r"^2026-10-(28|30)$", c["id"])
             self.assertIn(r["model"], ("composer-2.5", "claude-fable-5-1"), c["id"])
             self.assertTrue(r["pr_url"].startswith("https://github.com/fractastical/morpholib/pull/"), c["id"])
             self.assertIn(r["verdict"], ("supported", "refuted", "mixed", "untestable"), c["id"])

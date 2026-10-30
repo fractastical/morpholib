@@ -158,7 +158,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No direct literature test of Thompson's two-like-pole field reading of cleavage patterns. The modern mechanism (spindle position -> cleavage furrow) makes the field picture unnecessary, which is a supersession by neglect, not a refutation.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-013 — Thompson (1917), Ch. V, pp. 201-276, Figs. 60-68 — `PARTIALLY_REFUTED`
 
@@ -270,7 +270,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Quantitative margin:** Weaire-Phelan uses ~0.3% less surface area than Kelvin's cell (1994)
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-023 — Thompson (1917), Ch. IX, pp. 411-487, Figs. 194-235 — `NO_DIRECT_TEST`
 
@@ -462,7 +462,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No test of Thompson's Durer-derived human proportion grids as such. The general method critique (T1917-039) applies.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-041 — Thompson (1917), Ch. XVII, pp. ~732, Figs. 359-360 — `NO_DIRECT_TEST`
 
@@ -618,7 +618,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No direct test found. Open.
 
-**Repo 2026 (not literature):** status `PARTIAL_REPO` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-056 — Thompson (1917), Ch. XVII, pp. 765-767, Figs. 401-402 — `NO_DIRECT_TEST`
 
@@ -638,7 +638,7 @@ machine-readable: [`thompson/thompson_1917_counterclaims.json`](../thompson/thom
 
 **Counterclaim / verdict:** No literature test found. Weak claim, low payoff either way.
 
-**Repo 2026 (not literature):** status `UNTESTED` -- see claim inventory.
+**Repo 2026 (not literature):** status `DONE_REPO` -- see claim inventory.
 
 ### T1917-058 — Thompson (1917), Ch. XVII, pp. 770-773, Figs. 404-408 — `NO_DIRECT_TEST`
 
