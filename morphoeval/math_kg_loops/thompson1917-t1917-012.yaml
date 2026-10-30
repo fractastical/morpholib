@@ -1,0 +1,41 @@
+sim_id: thompson1917-t1917-012
+slot: 209
+claim_id: T1917-012
+organism: "Cerebratulus sp. egg (Fig. 58); frog cleavage plate as cross-taxa analogue"
+anatomical_structure: "First cleavage furrow and mitotic aster rays in meridional section"
+phenomenon_size_m: 1.0e-04
+log10_size_m: -4.0
+size_human: "0.1-0.3 mm egg"
+scale_tier: 4_cell_10um_100um
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+math_family: "Bipolar harmonic field (two similar poles) — geometric / field-theoretic"
+lean_verification: kernel_checked_pending_lean4_cli
+model_spec:
+  model: "Thompson (1917) Ch. IV pp. 187-190: cleavage and aster rays follow a two-like-pole field (Fig. 59); electrical analogues (Hyde 1905, Lillie)"
+  computable_form: "U(x,y)=ln r_- + ln r_+ ; field lines ∇U; equatorial cleavage orthogonal to polar axis"
+  controls:
+    null_model: "single pole at (0,-a) radial field"
+    analogue: "frog_embryo_cleavage_stadia.jpg (Rana, not Cerebratulus)"
+    statistics: "ray-angle RMSE, Pearson r, KS vs zero residual, parameter sweep on a"
+  decision_rule: "supported if two-pole RMSE <= 28°, r >= 0.45, beats single-pole null by >= 5°, furrow ~90° ±20°"
+  seed: deterministic
+  inputs:
+    - datasets/thompson_1917/t1917-012/thompson_1917_fig58_cerebratulus_first_segmentation.png
+    - datasets/thompson_1917/t1917-012/thompson_1917_fig59_two_similar_poles_field.png
+    - datasets/thompson_1917/t1917-012/t1917_012_on_the_internal_form_and_struc_reference.json
+equations:
+  - law_name: "Two-like-pole potential (E1)"
+    formula: "U = ln((x+a)^2+y^2) + ln((x-a)^2+y^2)"
+    lean_decl: MathOfBiology.Loop_209.P
+    lean_theorem: MathOfBiology.Loop_209.potential_even
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_012.lean
+    code_locus: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py
+  - law_name: "Equatorial reflection symmetry (E4)"
+    formula: "P(-x,y)=P(x,y); discrete dP/dx|_{x=0}=0"
+    lean_theorem: MathOfBiology.Loop_209.discrete_equatorial_stationary
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_012.lean
+  - law_name: "Cleavage orthogonality (E3)"
+    formula: "furrow normal ⊥ polar axis (90°)"
+    lean_theorem: MathOfBiology.Loop_209.cleavage_orthogonal_to_polar_axis
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_012.lean

@@ -1,0 +1,87 @@
+# MorphoEval audit — T1917-012 bipolar cleavage field (Pass 1), 2026-10-28
+
+audit:
+  id: 2026-10-28-t1917-012-on-the-internal-form-and-struc-audit
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes: null
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (builder-assessor, Pass 1; cloud loop thompson1917-t1917-012)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: embryo-cleavage-geometry
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d5
+    environment: {python: "3.12", numpy: "2.x", scipy: "1.x", matplotlib: "3.x", Pillow: "10+"}
+
+simulations:
+  - id: thompson1917-t1917-012
+    name: "Thompson (1917) T1917-012 — cleavage vs bipolar field (Pass 1 baseline)"
+    organism: "Cerebratulus egg (Fig. 58); Thompson Fig. 59 diagram"
+    script: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py
+    output: docs/media/t1917_012_on_the_internal_form_and_struc_comparison.png
+    extra_outputs:
+      - datasets/thompson_1917/t1917-012/result.json
+    domain: embryo-cleavage-geometry
+    status: evaluated
+    model_spec:
+      model: "E1 dipole-like bipolar field U=ln r_- + ln r_+ (vertical axis); Pass 1 --pass1"
+      inputs:
+        - datasets/thompson_1917/t1917-012/thompson_1917_fig58_cerebratulus_first_segmentation.png
+        - datasets/thompson_1917/t1917-012/thompson_1917_fig59_two_similar_poles_field.png
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) p.189 Fig. 58-59: cleavage aster rays and 'field of force with two similar poles'"
+      reconstructed_in_script:
+        - "Pass 1 grid fit of pole separation a to Fig. 59 streamlines only"
+      does_not_claim:
+        - "No modern spindle imaging; no molecular mechanism"
+    summary: >-
+      Pass 1 fits pole separation to Fig. 59 streamlines only; no parameter sweep, no like-pole
+      ablation, no frog analogue CV, no KS statistics.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: "Bipolar field implemented with Lean integer symmetry lemmas; Pass 1 baseline only."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [68, 120], note: "E1-E2 field_xy dipole/like superposition", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_012.lean, lines: [1, 95], note: "integer symmetry theorems (0 sorry)", supports: true}
+      specimen-match:
+        value: 42
+        rationale: "Fig. 58-59 IA crops only; frog analogue not used in Pass 1."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-012/thompson_1917_fig58_cerebratulus_first_segmentation.png, lines: [0, 0], note: "primary IA crop Fig. 58", supports: true}
+          - {file: datasets/thompson_1917/t1917-012/frog_embryo_cleavage_stadia.jpg, lines: [0, 0], note: "not analysed in Pass 1", supports: false}
+      parameter-expressivity:
+        value: 40
+        rationale: "Single grid on a; no exported sweep in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [130, 180], note: "grid search on a only; no sweep export in pass1", supports: false}
+      morphometric-validation:
+        value: 38
+        rationale: "Dice/RMSE only; no KS or null ablation in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [95, 128], note: "Dice overlap + RMSE; no KS/null in pass1", supports: false}
+      source-traceability:
+        value: 82
+        rationale: "Scout manifest documents IA primary source and dataset re-probe."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-012/scout_manifest.json, lines: [0, 0], note: "IA leaf 209 pinned; Dryad UNPROBED; Drosophila mismatch", supports: true}
+      code-traceability:
+        value: 72
+        rationale: "math_kg yaml and reference JSON cite equations."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-012.yaml, lines: [0, 0], note: "equations linked to Lean + script", supports: true}
+      repro-package:
+        value: 68
+        rationale: "Self-test and SHA pins present; Pass 1 --pass1 mode."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [510, 530], note: "--self-test and SHA verify", supports: true}
+    overall:
+      value: 55.2
+    remediation:
+      - id: R1
+        item: "Add pole-separation sweep, like-pole vs dipole ablation, frog plate CV, KS/CV statistics (Pass 2)"
+      - id: R2
+        item: "Hold-out validation metrics on Fig. 58 vs Fig. 59 fit"

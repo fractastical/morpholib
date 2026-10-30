@@ -1,0 +1,82 @@
+# MorphoEval audit — T1917-012 (Pass 2), supersedes Pass 1 audit
+
+audit:
+  id: 2026-10-28-t1917-012-on-the-internal-form-and-struc-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-28"
+  supersedes_audit_id: 2026-10-28-t1917-012-on-the-internal-form-and-struc-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 2 remediation; cloud loop thompson1917-t1917-012)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: embryo-cleavage-geometry
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a8bae15d5
+
+simulations:
+  - id: thompson1917-t1917-012
+    name: "Thompson (1917) T1917-012 — cleavage vs bipolar field (Pass 2)"
+    script: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py
+    output: docs/media/t1917_012_on_the_internal_form_and_struc_comparison.png
+    extra_outputs:
+      - docs/media/t1917_012_on_the_internal_form_and_struc_growth.gif
+      - datasets/thompson_1917/t1917-012/t1917_012_metrics.json
+      - datasets/thompson_1917/t1917-012/result.json
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) p.189 Figs. 58-59: cleavage aster and two-similar-pole field diagram"
+      reconstructed_in_script:
+        - "Vertical-axis dipole-like bipolar field U=ln r_- + ln r_+; streamline Dice vs Fig. 59; hold-out Fig. 58 rays"
+      does_not_claim:
+        - "No live embryo microscopy beyond historical plates; no spindle motor-protein mechanism"
+    summary: >-
+      Pass 2 adds streamline Dice vs Fig. 59 (≈0.15), pole-separation sweep, single-pole and
+      like-pole ablations, frog cleavage analogue furrow readout, KS on angular residuals.
+      Claim verdict in result.json: supported on diagram+furrow orthogonality; Fig. 58 hold-out
+      ray RMSE remains high (line-art limits).
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: "Dipole bipolar field E1-E2 with streamline Dice fit to Thompson Fig. 59; Lean symmetry theorems; like-pole ablation exported."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [130, 210], note: "streamline mask fit + dipole/like ablation", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_012.lean, lines: [32, 90], note: "potential_even, discrete_equatorial_stationary", supports: true}
+      specimen-match:
+        value: 58
+        rationale: "Primary IA Fig. 58-59 crops plus CC frog plate segmentation; Cerebratulus hold-out ray RMSE remains high on stipple art."
+        evidence:
+          - {file: docs/media/t1917_012_on_the_internal_form_and_struc_comparison.png, lines: [0, 0], note: "Fig 58/59 overlay panels", supports: true}
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [218, 235], note: "frog_embryo_cleavage_stadia segmentation", supports: true}
+      parameter-expressivity:
+        value: 62
+        rationale: "Pole-separation sweep on a/R tabulated in metrics JSON; GIF animates field; dipole vs like-pole regimes compared."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-012/t1917_012_metrics.json, lines: [22, 45], note: "a_grid sweep exported", supports: true}
+      morphometric-validation:
+        value: 55
+        rationale: "Dice, RMSE, KS p-value, CV of residuals, null RMSE; Fig. 58 hold-out weak; verdict supported on diagram+furrow."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-012/result.json, lines: [10, 17], note: "Dice, RMSE, KS, null RMSE", supports: true}
+          - {file: datasets/thompson_1917/t1917-012/t1917_012_metrics.json, lines: [11, 14], note: "Fig.58 hold-out RMSE still ~67°", supports: false}
+      source-traceability:
+        value: 84
+        rationale: "IA leaf 209 SHA-pinned; Dryad UNPROBED documented; Drosophila bicoid dataset flagged DATASET_MISMATCH; OpenAlex/Commons pinned."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-012/t1917_012_on_the_internal_form_and_struc_reference.json, lines: [0, 0], note: "equations E1-E5 + SHA pins", supports: true}
+      code-traceability:
+        value: 78
+        rationale: "Equation ids E1-E5 in reference JSON; math_kg_loops yaml links Lean theorems and script functions."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-012.yaml, lines: [0, 0], note: "law registry", supports: true}
+      repro-package:
+        value: 72
+        rationale: "Deterministic --self-test, SHA verify at load, measure_morphoeval hook; ~35s full run; no nanopub profile on VM."
+        evidence:
+          - {file: thompson/claims/t1917-012_on-the-internal-form-and-structure-of-the-cell.py, lines: [515, 550], note: "measure_morphoeval + self-test", supports: true}
+    overall:
+      value: 66.1
+    remediation: []
