@@ -12,12 +12,21 @@ Layout
 Row 1  1917 Fig. 369 silhouettes a–f (Scholtz, Knötel & Baum 2020, Fig. 1 row 3).
 Row 2  Matching 3D laser-scanned carapaces (Scholtz et al. 2020, Fig. 2)
        with extracted silhouettes (cyan) and 8 homologous landmarks (gold).
-Row 3  Archival 1917 engravings (Figs. 367–368 copepods; Fig. 370 amphipods)
-       plus AntWeb pinned-head photographs (Pheidole soldier caste, Fig. 359
-       cordate geometry) and Antscan (2026) synchrotron micro-CT renders
+Row 3  19th-century monograph lithographs of the copepods and amphipods
+       (Giesbrecht 1892 Taf. 4; Sars 1895 Pls. 52, 69, 2). Thompson gives no
+       source for Figs. 367–370, but his outlines match these habitus figures
+       in pose, facing and detail. Fetched from Wikimedia Commons (public
+       domain) and SHA-256 checked.
+Row 4  Thompson's 1917 engravings (Figs. 367–368; Fig. 370) plus AntWeb
+       pinned-head photographs (Pheidole soldier caste, Fig. 359 cordate
+       geometry) and Antscan (2026) synchrotron micro-CT renders
        (Acanthomyrmex minor / major).
 """
 
+import hashlib
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import matplotlib.gridspec as gridspec
@@ -29,7 +38,45 @@ from scipy.ndimage import binary_closing, binary_fill_holes, label
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CRAB_DIR = REPO_ROOT / ".thompson_cache" / "crabs"
 ANT_DIR = REPO_ROOT / ".thompson_cache" / "antscan"
+MONO_DIR = REPO_ROOT / ".thompson_cache" / "arthropod_plates"
 OUT_FIG = REPO_ROOT / "docs" / "thompson_1917_arthropod_museum_plates.png"
+
+COMMONS = "https://upload.wikimedia.org/wikipedia/commons/"
+MONOGRAPH_PLATES = {
+    "giesbrecht1892_taf4_oithona_sapphirina.jpg": (
+        COMMONS + "5/5e/Pelagischen_Copepoden_-_Fauna_und_flora_des_golfes_von_Neapel_%2819%29_-_"
+        "Von_Wilhelm_Giesbrecht_%281892%29_-_Taf._4_-_BioDivLibrary_page_39312118.jpg",
+        "b01aa055e6772c241023ecf590adfd420f286aaa3ff5e6147508ed4ca384bb5a",
+    ),
+    "sars1895_pl52_harpinia_plumosa.jpg": (
+        COMMONS + "7/71/An_account_of_the_Crustacea_of_Norway_%28Pl._52%29_%286812223079%29.jpg",
+        "4c70cef5ccff2f9c7015333b166ca0268b54c5445dd826f9f122db8eaa21a5ed",
+    ),
+    "sars1895_pl69_stegocephalus_inflatus.jpg": (
+        COMMONS + "9/96/An_account_of_the_Crustacea_of_Norway_%28Pl._69%29_%286812229921%29.jpg",
+        "945524a8840608494ccaef221f6b6b2dc7760ebfe7f6c4d9f2e8a67b924a6b45",
+    ),
+    "sars1895_pl2_hyperia_galba.jpg": (
+        COMMONS + "6/6e/An_account_of_the_Crustacea_of_Norway_%28Pl._2%29_%286812191767%29.jpg",
+        "1a8940277010a2788e0bf8785135d14b4413d69e605f685df3ba1e21eba52d46",
+    ),
+}
+
+# (plate file, crop box in original pixels, panel title)
+MONOGRAPH_CROPS = [
+    ("giesbrecht1892_taf4_oithona_sapphirina.jpg", (1228, 193, 1522, 479),
+     "Oithona nana (Fig. 367 source)\nGiesbrecht 1892, Taf. 4 fig. 8\nNaples monograph lithograph"),
+    ("giesbrecht1892_taf4_oithona_sapphirina.jpg", (252, 100, 496, 505),
+     "Sapphirina auronitens (Fig. 368)\nGiesbrecht 1892, Taf. 4 fig. 2\nNaples monograph lithograph"),
+    ("sars1895_pl52_harpinia_plumosa.jpg", (199, 169, 1054, 596),
+     "Harpinia plumosa (Fig. 370.1)\nSars 1895, Crustacea of Norway\nPl. 52 habitus"),
+    ("sars1895_pl69_stegocephalus_inflatus.jpg", (348, 189, 1064, 765),
+     "Stegocephalus inflatus (Fig. 370.2)\nSars 1895, Crustacea of Norway\nPl. 69 habitus"),
+    ("sars1895_pl2_hyperia_galba.jpg", (388, 189, 934, 656),
+     "Hyperia galba (Fig. 370.3)\nSars 1895, Crustacea of Norway\nPl. 2 habitus"),
+    ("giesbrecht1892_taf4_oithona_sapphirina.jpg", None,
+     "Giesbrecht 1892, Taf. 4 (full plate)\nFauna und Flora des Golfes\nvon Neapel 19"),
+]
 
 CRAB_SHORT = [
     ("a", "Geryon", "portunoid reference"),
@@ -58,6 +105,28 @@ INK = "#0f172a"
 
 def load_rgb(path: Path) -> np.ndarray:
     return np.asarray(Image.open(path).convert("RGB"))
+
+
+def fetch_monograph_plate(name: str) -> Path:
+    url, sha = MONOGRAPH_PLATES[name]
+    path = MONO_DIR / name
+    if not path.exists():
+        MONO_DIR.mkdir(parents=True, exist_ok=True)
+        req = urllib.request.Request(url, headers={"User-Agent": "morpholib/1.0 (research)"})
+        for attempt in range(6):
+            try:
+                path.write_bytes(urllib.request.urlopen(req).read())
+                break
+            except urllib.error.HTTPError as e:
+                if e.code != 429:
+                    raise
+                time.sleep(15 * (attempt + 1))
+        else:
+            raise RuntimeError(f"Wikimedia rate limit: {url}")
+    got = hashlib.sha256(path.read_bytes()).hexdigest()
+    if got != sha:
+        raise ValueError(f"SHA-256 mismatch for {name}: {got}")
+    return path
 
 
 def crop_col(arr: np.ndarray, y0: int, y1: int, col: int, n: int = 6, pad: int = 2) -> np.ndarray:
@@ -186,20 +255,20 @@ def main() -> None:
     photo_y0, photo_y1 = 8, 112
     sil_y0, sil_y1 = 114, 229
 
-    fig = plt.figure(figsize=(20.4, 13.6), dpi=220, facecolor="white")
+    fig = plt.figure(figsize=(20.4, 18.0), dpi=220, facecolor="white")
     gs = gridspec.GridSpec(
-        3, 6, figure=fig,
-        hspace=0.38, wspace=0.10,
-        top=0.88, bottom=0.075, left=0.045, right=0.985,
-        height_ratios=[1.0, 1.05, 1.18],
+        4, 6, figure=fig,
+        hspace=0.40, wspace=0.10,
+        top=0.905, bottom=0.06, left=0.045, right=0.985,
+        height_ratios=[1.0, 1.05, 1.15, 1.18],
     )
 
     fig.suptitle(
         "Archival Museum Plates & Specimen Photographs for Thompson's 1917 Arthropods\n"
         "Fig. 369 drawings paired with Scholtz et al. (2020) 3D laser scans  ·  "
-        "Figs. 367–370 Gutenberg engravings  ·  "
+        "Giesbrecht (1892) & Sars (1895) monograph lithographs  ·  "
         "AntWeb pinned heads & Antscan (2026) synchrotron micro-CT",
-        fontsize=13.4, fontweight="bold", color=INK, y=0.975,
+        fontsize=13.4, fontweight="bold", color=INK, y=0.978,
     )
 
     # --- Rows 1–2: crab drawing ↔ 3D scan photo-match ----------------------
@@ -226,8 +295,16 @@ def main() -> None:
             ax_p.scatter([], [], s=22, c=GOLD, edgecolors=INK, label="8 Scholtz landmarks")
             ax_p.legend(loc="lower left", fontsize=6.2, framealpha=0.92, facecolor="white")
 
-    # --- Row 3: copepods, amphipods, ant caste photographs -----------------
-    row3 = [
+    # --- Row 3: monograph lithographs Thompson redrew --------------------
+    for col, (name, box, title) in enumerate(MONOGRAPH_CROPS):
+        plate = Image.open(fetch_monograph_plate(name)).convert("RGB")
+        if box is not None:
+            plate = plate.crop(box)
+        ax = fig.add_subplot(gs[2, col])
+        show_plate(ax, np.asarray(plate), title, title_size=7.3)
+
+    # --- Row 4: Thompson's engravings, ant caste photographs ---------------
+    row4 = [
         (cope, "Figs. 367–368, p. 743\nOithona nana → Sapphirina\n1917 archival engraving",
          None, False),
         (amph, "Fig. 370, p. 746\nHarpinia → Stegocephalus → Hyperia\n1917 archival engraving",
@@ -241,31 +318,34 @@ def main() -> None:
         (ac_maj, "Acanthomyrmex major / soldier\nAntscan 2026 micro-CT\nGAGA-04-07 hyperallometric head",
          None, True),
     ]
-    for col, (rgb, title, seg_fn, crop_mesh) in enumerate(row3):
+    for col, (rgb, title, seg_fn, crop_mesh) in enumerate(row4):
         outline = None
         if crop_mesh:
             rgb = crop_to_mask(rgb, segment_ink_or_gray(rgb, 0.045), margin=0.10)
         elif seg_fn is not None:
             outline = boundary_xy(seg_fn(rgb))
-        ax = fig.add_subplot(gs[2, col])
+        ax = fig.add_subplot(gs[3, col])
         show_plate(ax, rgb, title, outline=outline, title_size=7.3)
 
-    fig.text(0.018, 0.78, "1917 Fig. 369\nSilhouettes", ha="center", va="center",
-             fontsize=8.0, fontweight="bold", color=INK, rotation=90)
-    fig.text(0.018, 0.50, "Scholtz 2020\n3D Laser Scans", ha="center", va="center",
-             fontsize=8.0, fontweight="bold", color=INK, rotation=90)
-    fig.text(0.018, 0.20, "Copepods · Amphipods\nAnt Castes", ha="center", va="center",
-             fontsize=8.0, fontweight="bold", color=INK, rotation=90)
+    for y, label_txt in [
+        (0.835, "1917 Fig. 369\nSilhouettes"),
+        (0.625, "Scholtz 2020\n3D Laser Scans"),
+        (0.395, "Giesbrecht 1892 · Sars 1895\nMonograph Lithographs"),
+        (0.155, "Thompson 1917 Engravings\nAnt Castes"),
+    ]:
+        fig.text(0.018, y, label_txt, ha="center", va="center",
+                 fontsize=8.0, fontweight="bold", color=INK, rotation=90)
 
     fig.text(
-        0.5, 0.018,
-        "Provenance  ·  Crab drawings & 3D carapaces: Scholtz, Knötel & Baum 2020, Zoomorphology 139:293–308, Figs. 1–2  "
-        "(Geryon, Corystes, Pisa, Lithodes maja, Portunus, Leptomithrax)   |   "
-        "Copepod & amphipod engravings: Thompson 1917, On Growth and Form, Project Gutenberg i743 / i746   |   "
+        0.5, 0.012,
+        "Provenance  ·  Crabs: Scholtz, Knötel & Baum 2020, Zoomorphology 139:293–308, Figs. 1–2   |   "
+        "Copepods: Giesbrecht 1892, Fauna u. Flora d. Golfes v. Neapel 19, Taf. 4   |   "
+        "Amphipods: G.O. Sars 1895, An Account of the Crustacea of Norway I, Pls. 2, 52, 69 (BHL / Wikimedia, public domain)   |   "
+        "1917 engravings: Project Gutenberg i743 / i746\n"
         "Ant heads: AntWeb pinned specimens of Pheidole aberrans   |   "
         "Micro-CT: Antscan 2026 (Nature Methods) Acanthomyrmex GAGA-04-06/07   |   "
         "[Cyan] extracted silhouette   [Gold] 8 homologous Type-I/II landmarks",
-        ha="center", va="bottom", fontsize=8.0, color=INK,
+        ha="center", va="bottom", fontsize=8.0, color=INK, linespacing=1.5,
         bbox=dict(boxstyle="round,pad=0.35", facecolor="#f8fafc", edgecolor="#cbd5e1", lw=1.0),
     )
 
