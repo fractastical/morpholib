@@ -123,7 +123,7 @@
     <div class="grid-2">
       <div class="card">
         <h3>Live Animated Frog Sciatic–Gastrocnemius &amp; Insect SETi/FETi Twitch Stage</h3>
-        <svg id="kinematicSvg" viewBox="0 0 540 250" width="100%" height="250" style="background:#070d19; border:1px solid var(--border); border-radius:8px;"></svg>
+        <svg id="kinematicSvg" viewBox="0 0 540 280" width="100%" height="280" style="background:#070d19; border:1px solid var(--border); border-radius:8px;"></svg>
       </div>
       <div class="card">
         <h3>Live Oscilloscope Trace: Muscle Force F(t) Across Make (10 ms) &amp; Break (65 ms)</h3>
@@ -533,53 +533,102 @@
       }
       document.getElementById("phaseBanner").textContent = banner;
 
-      const radF = (instFrogAngle * Math.PI) / 180;
-      const kx = 120 - 34 * Math.sin(radF * 0.45 + 0.35);
-      const ky = 142 - 22 * Math.sin(radF * 0.55);
-      const ax = kx + 42 * Math.sin(radF - 0.15);
-      const ay = ky + 44 * Math.cos(radF * 0.85) - 24 * Math.sin(radF);
-      const fx = ax - 24 * Math.cos(radF * 0.4);
-      const fy = ay + 14 * Math.cos(radF * 0.5);
-      const probeOff = arcClosed ? 0 : -18;
-      const apX = apProg >= 0 ? 120 * (1 - apProg) + kx * apProg : -50;
-      const apY = apProg >= 0 ? 104 * (1 - apProg) + ky * apProg : -50;
-
-      const bulge = 1.0 + Math.min(0.45, instFrogN * 0.22);
-      const dx1 = kx - 120, dy1 = ky - 104, len1 = Math.max(1, Math.hypot(dx1, dy1));
-      const nx1 = (-dy1 / len1) * 9.5 * bulge, ny1 = (dx1 / len1) * 9.5 * bulge;
-      const m1x = (120 + kx) * 0.5, m1y = (104 + ky) * 0.5;
-      const dx2 = ax - kx, dy2 = ay - ky, len2 = Math.max(1, Math.hypot(dx2, dy2));
-      const nx2 = (-dy2 / len2) * 8.5 * bulge, ny2 = (dx2 / len2) * 8.5 * bulge;
-      const m2x = (kx + ax) * 0.5, m2y = (ky + ay) * 0.5;
-      const fFill = instFrogN > 0.05 ? "#e11d48" : "#334155";
+      const cKick = Math.max(0, Math.min(1, instFrogAngle / 65));
+      const REST = {
+        atlas: [128, 42], sacrum: [128, 92], hipC: [128, 104],
+        hipL: [110, 100], hipR: [148, 98],
+        kneeL: [86, 128], kneeR: [170, 114],
+        ankleL: [90, 168], ankleR: [162, 154],
+        tarsL: [62, 180], tarsR: [188, 172],
+        toeL: [36, 186], toeR: [216, 180]
+      };
+      function rotAbout(p, origin, ang) {
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const dx = p[0] - origin[0], dy = p[1] - origin[1];
+        return [origin[0] + ca * dx - sa * dy, origin[1] + sa * dx + ca * dy];
+      }
+      function frogFK(c) {
+        const thH = -0.18 * c, thK = 0.30 * c, thA = 0.88 * c, thT = 0.30 * c;
+        const hip = REST.hipL;
+        const knee = rotAbout(REST.kneeL, hip, thH);
+        const ankle = [knee[0] + rotAbout([REST.ankleL[0] - REST.kneeL[0], REST.ankleL[1] - REST.kneeL[1]], [0, 0], thH + thK)[0],
+                       knee[1] + rotAbout([REST.ankleL[0] - REST.kneeL[0], REST.ankleL[1] - REST.kneeL[1]], [0, 0], thH + thK)[1]];
+        const tars = [ankle[0] + rotAbout([REST.tarsL[0] - REST.ankleL[0], REST.tarsL[1] - REST.ankleL[1]], [0, 0], thH + thK + thA)[0],
+                      ankle[1] + rotAbout([REST.tarsL[0] - REST.ankleL[0], REST.tarsL[1] - REST.ankleL[1]], [0, 0], thH + thK + thA)[1]];
+        const toe = [tars[0] + rotAbout([REST.toeL[0] - REST.tarsL[0], REST.toeL[1] - REST.tarsL[1]], [0, 0], thH + thK + thA + thT)[0],
+                     tars[1] + rotAbout([REST.toeL[0] - REST.tarsL[0], REST.toeL[1] - REST.tarsL[1]], [0, 0], thH + thK + thA + thT)[1]];
+        return { hip, knee, ankle, tars, toe };
+      }
+      function fusiform(A, B, hw) {
+        const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1;
+        const nx = -dy / L, ny = dx / L;
+        let d = `M ${A[0].toFixed(1)} ${A[1].toFixed(1)} `;
+        for (let i = 1; i < 10; i++) {
+          const s = i / 10, w = hw * Math.sin(Math.PI * s);
+          d += `L ${(A[0] + s * dx + w * nx).toFixed(1)} ${(A[1] + s * dy + w * ny).toFixed(1)} `;
+        }
+        d += `L ${B[0].toFixed(1)} ${B[1].toFixed(1)} `;
+        for (let i = 9; i > 0; i--) {
+          const s = i / 10, w = hw * Math.sin(Math.PI * s);
+          d += `L ${(A[0] + s * dx - w * nx).toFixed(1)} ${(A[1] + s * dy - w * ny).toFixed(1)} `;
+        }
+        return d + "Z";
+      }
+      const posed = frogFK(cKick);
+      const bulge = 1.0 + Math.min(0.40, instFrogN * 0.20);
+      const fFill = instFrogN > 0.05 ? "#e11d48" : "#1e293b";
       const fStrk = instFrogN > 0.05 ? "#fda4af" : "#94a3b8";
+      const bone = "#e2e8f0";
+      const gastMid = [(posed.knee[0] + posed.ankle[0]) * 0.5, (posed.knee[1] + posed.ankle[1]) * 0.5];
+      const probeOff = arcClosed ? 0 : -16;
+      const sciatic = [REST.sacrum, posed.hip, [(posed.hip[0] + posed.knee[0]) * 0.55, (posed.hip[1] + posed.knee[1]) * 0.55], posed.knee, gastMid];
+      const apIdx = Math.max(0, Math.min(1, apProg)) * (sciatic.length - 1);
+      const apI0 = Math.floor(apIdx), apI1 = Math.min(apI0 + 1, sciatic.length - 1), apF = apIdx - apI0;
+      const apX = sciatic[apI0][0] * (1 - apF) + sciatic[apI1][0] * apF;
+      const apY = sciatic[apI0][1] * (1 - apF) + sciatic[apI1][1] * apF;
 
       const radI = (instInsAngle * Math.PI) / 180;
       const tx = 395 + 72 * Math.sin(radI + 0.22);
-      const ty = 104 + 72 * Math.cos(radI + 0.22);
+      const ty = 118 + 72 * Math.cos(radI + 0.22);
 
       document.getElementById("kinematicSvg").innerHTML = `
-        <text x="16" y="24" fill="#38bdf8" font-size="12" font-weight="bold">A. Galvani Frog Leg (300+ ACh / Na+ Axons)</text>
-        <text x="16" y="40" fill="#94a3b8" font-size="10">Arc: ${arcClosed ? 'CLOSED (Make)' : 'OPEN'} · Force = ${instFrogN.toFixed(2)} N · Kick = ${instFrogAngle.toFixed(1)}°</text>
-        <line x1="34" y1="56" x2="34" y2="215" stroke="#64748b" stroke-width="5" />
-        <line x1="34" y1="56" x2="120" y2="56" stroke="#64748b" stroke-width="5" />
-        <line x1="90" y1="56" x2="120" y2="82" stroke="#facc15" stroke-width="3" />
-        <rect x="109" y="70" width="22" height="34" rx="4" fill="#e2e8f0" stroke="#475569" />
-        <path d="M 120 104 Q 100 116 ${kx} ${ky}" fill="none" stroke="#fde047" stroke-width="2.8" />
-        <path d="M 120 102 C 134 110, 144 124, 140 142 C 132 140, 124 124, 120 104 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
-        <path d="M 140 142 C 148 156, 146 176, 136 192 C 130 178, 130 158, 136 142 Z" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
-        <path d="M 136 192 L 152 202 M 136 192 L 148 206 M 136 192 L 141 208" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" />
-        <path d="M 120 104 Q ${m1x + nx1} ${m1y + ny1} ${kx} ${ky} Q ${m1x - nx1 * 0.75} ${m1y - ny1 * 0.75} 120 104 Z" fill="${fFill}" stroke="${fStrk}" stroke-width="1.8" />
-        <path d="M ${kx} ${ky} Q ${m2x + nx2} ${m2y + ny2} ${ax} ${ay} Q ${m2x - nx2 * 0.7} ${m2y - ny2 * 0.7} ${kx} ${ky} Z" fill="${fFill}" stroke="${fStrk}" stroke-width="1.8" />
-        <line x1="${ax}" y1="${ay}" x2="${fx}" y2="${fy}" stroke="${fStrk}" stroke-width="3" stroke-linecap="round" />
-        <line x1="${fx}" y1="${fy}" x2="${fx - 14}" y2="${fy + 6}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
-        <line x1="${fx}" y1="${fy}" x2="${fx - 11}" y2="${fy + 13}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
-        <line x1="${fx}" y1="${fy}" x2="${fx - 4}" y2="${fy + 16}" stroke="${fStrk}" stroke-width="2" stroke-linecap="round" />
-        <path d="M 34 155 Q 76 ${185 + probeOff} ${kx + probeOff} ${ky - probeOff * 0.5}" fill="none" stroke="${arcClosed ? '#38bdf8' : '#64748b'}" stroke-width="3" />
-        <circle cx="${kx + probeOff}" cy="${ky - probeOff * 0.5}" r="${arcClosed ? 5.5 : 3.5}" fill="${arcClosed ? '#38bdf8' : '#64748b'}" />
-        ${apProg >= 0 ? `<circle cx="${apX}" cy="${apY}" r="8" fill="${apBlocked ? '#f43f5e' : '#38bdf8'}" /><text x="${apX + 11}" y="${apY + 3}" fill="${apBlocked ? '#f43f5e' : '#38bdf8'}" font-size="9.5" font-weight="bold">${apBlocked ? 'ANODAL BLOCK!' : 'AP +35 mV'}</text>` : ''}
+        <text x="14" y="20" fill="#38bdf8" font-size="12" font-weight="bold">A. Pelophylax hindlimb — urostyle · femur · tibiofibula · tarsus</text>
+        <text x="14" y="36" fill="#94a3b8" font-size="10">Arc: ${arcClosed ? "CLOSED (Make)" : "OPEN"} · Force = ${instFrogN.toFixed(2)} N · Foot sweep = ${instFrogAngle.toFixed(1)}°</text>
+        <line x1="28" y1="50" x2="28" y2="250" stroke="#64748b" stroke-width="5" />
+        <line x1="28" y1="50" x2="128" y2="50" stroke="#64748b" stroke-width="5" />
+        <line x1="100" y1="50" x2="${REST.atlas[0]}" y2="${REST.atlas[1]}" stroke="#facc15" stroke-width="3" />
+        <circle cx="${REST.atlas[0]}" cy="${REST.atlas[1]}" r="5" fill="#fbbf24" stroke="#78350f" />
+        <line x1="${REST.atlas[0]}" y1="${REST.atlas[1]}" x2="${REST.sacrum[0]}" y2="${REST.sacrum[1]}" stroke="${bone}" stroke-width="3.2" />
+        <line x1="${REST.sacrum[0]}" y1="${REST.sacrum[1]}" x2="${REST.hipC[0]}" y2="${REST.hipC[1]}" stroke="${bone}" stroke-width="2.2" />
+        <line x1="${REST.hipC[0]}" y1="${REST.hipC[1]}" x2="${REST.hipL[0]}" y2="${REST.hipL[1]}" stroke="${bone}" stroke-width="2" />
+        <line x1="${REST.hipC[0]}" y1="${REST.hipC[1]}" x2="${REST.hipR[0]}" y2="${REST.hipR[1]}" stroke="${bone}" stroke-width="2" />
+        <line x1="${REST.hipR[0]}" y1="${REST.hipR[1]}" x2="${REST.kneeR[0]}" y2="${REST.kneeR[1]}" stroke="${bone}" stroke-width="1.8" opacity="0.7" />
+        <line x1="${REST.kneeR[0]}" y1="${REST.kneeR[1]}" x2="${REST.ankleR[0]}" y2="${REST.ankleR[1]}" stroke="${bone}" stroke-width="1.8" opacity="0.7" />
+        <line x1="${REST.ankleR[0]}" y1="${REST.ankleR[1]}" x2="${REST.tarsR[0]}" y2="${REST.tarsR[1]}" stroke="${bone}" stroke-width="1.5" opacity="0.7" />
+        <line x1="${REST.tarsR[0]}" y1="${REST.tarsR[1]}" x2="${REST.toeR[0]}" y2="${REST.toeR[1]}" stroke="${bone}" stroke-width="1.4" opacity="0.7" />
+        <path d="${fusiform(posed.hip, posed.knee, 8.5 * bulge)}" fill="${fFill}" stroke="${fStrk}" stroke-width="1.2" opacity="0.75" />
+        <path d="${fusiform(posed.knee, posed.tars, 9.5 * bulge)}" fill="${fFill}" stroke="${fStrk}" stroke-width="1.2" opacity="0.8" />
+        <line x1="${posed.hip[0]}" y1="${posed.hip[1]}" x2="${posed.knee[0]}" y2="${posed.knee[1]}" stroke="${bone}" stroke-width="2.6" />
+        <line x1="${posed.knee[0]}" y1="${posed.knee[1]}" x2="${posed.ankle[0]}" y2="${posed.ankle[1]}" stroke="${bone}" stroke-width="2.4" />
+        <line x1="${posed.ankle[0]}" y1="${posed.ankle[1]}" x2="${posed.tars[0]}" y2="${posed.tars[1]}" stroke="${bone}" stroke-width="2.1" />
+        <line x1="${posed.tars[0]}" y1="${posed.tars[1]}" x2="${posed.toe[0]}" y2="${posed.toe[1]}" stroke="${bone}" stroke-width="1.8" />
+        <line x1="${posed.toe[0]}" y1="${posed.toe[1]}" x2="${posed.toe[0] - 12}" y2="${posed.toe[1] + 5}" stroke="${fStrk}" stroke-width="1.6" />
+        <line x1="${posed.toe[0]}" y1="${posed.toe[1]}" x2="${posed.toe[0] - 9}" y2="${posed.toe[1] + 11}" stroke="${fStrk}" stroke-width="1.6" />
+        <line x1="${posed.toe[0]}" y1="${posed.toe[1]}" x2="${posed.toe[0] - 3}" y2="${posed.toe[1] + 13}" stroke="${fStrk}" stroke-width="1.6" />
+        <circle cx="${posed.hip[0]}" cy="${posed.hip[1]}" r="3.2" fill="#f8fafc" />
+        <circle cx="${posed.knee[0]}" cy="${posed.knee[1]}" r="3.2" fill="#f8fafc" />
+        <circle cx="${posed.ankle[0]}" cy="${posed.ankle[1]}" r="3.2" fill="#f8fafc" />
+        <path d="M ${REST.sacrum[0]} ${REST.sacrum[1]} L ${posed.hip[0]} ${posed.hip[1]} L ${posed.knee[0]} ${posed.knee[1]} L ${gastMid[0]} ${gastMid[1]}" fill="none" stroke="#fde047" stroke-width="2.4" />
+        <path d="M 28 168 Q 70 ${198 + probeOff} ${gastMid[0] + probeOff} ${gastMid[1] - probeOff * 0.4}" fill="none" stroke="${arcClosed ? "#38bdf8" : "#64748b"}" stroke-width="3" />
+        <circle cx="${gastMid[0] + probeOff}" cy="${gastMid[1] - probeOff * 0.4}" r="${arcClosed ? 5.2 : 3.4}" fill="${arcClosed ? "#38bdf8" : "#64748b"}" />
+        ${apProg >= 0 ? `<circle cx="${apX}" cy="${apY}" r="8" fill="${apBlocked ? "#f43f5e" : "#38bdf8"}" /><text x="${apX + 10}" y="${apY + 3}" fill="${apBlocked ? "#f43f5e" : "#38bdf8"}" font-size="9.5" font-weight="bold">${apBlocked ? "ANODAL BLOCK!" : "AP +35 mV"}</text>` : ""}
+        <text x="200" y="58" fill="#fde68a" font-size="9">urostyle</text>
+        <text x="14" y="118" fill="#fda4af" font-size="9">triceps femoris</text>
+        <text x="14" y="200" fill="#fda4af" font-size="9">gastrocnemius</text>
+        <text x="200" y="128" fill="#e2e8f0" font-size="9">femur</text>
+        <text x="200" y="168" fill="#e2e8f0" font-size="9">tibiofibula</text>
 
-        <line x1="268" y1="14" x2="268" y2="236" stroke="#334155" stroke-width="1" />
+        <line x1="268" y1="14" x2="268" y2="266" stroke="#334155" stroke-width="1" />
 
         <text x="284" y="24" fill="#fb923c" font-size="12" font-weight="bold">B. Insect Leg (SETi 1.2 μA, FETi 3.8 μA + CI)</text>
         <text x="284" y="40" fill="#94a3b8" font-size="10">${insMode} · Live Kick = ${instInsAngle.toFixed(1)}°</text>

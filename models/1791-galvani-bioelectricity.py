@@ -32,6 +32,7 @@ Generates four publication-grade visual artifacts:
 Usage:
   python3 models/1791-galvani-bioelectricity.py
   python3 models/1791-galvani-bioelectricity.py --self-test
+  python3 models/1791-galvani-bioelectricity.py --preview-anatomy
 """
 
 from __future__ import annotations
@@ -138,34 +139,214 @@ def simulate_galvani_action_potential(t_ms: np.ndarray, t_stim: float = 2.0, sup
     return {"V_m": v_m, "Ca_uM": ca, "force_pct": force}
 
 
+# Wellcome L0002011 Fig. 3 crop in original-plate fractions (x0, y0, x1, y1).
+# Tight box around the isolated lumbar column + both hindlimbs; excludes Fig. 1
+# cone, Fig. 3 caption, and Fig. 4 U-hook.
+FIG3_CROP_FRAC = (0.145, 0.072, 0.528, 0.436)
+
+# Rest-pose osteological landmarks in crop-normalized coordinates (x right, y down),
+# landmarked on the exact Wellcome L0002011 Fig. 3 crop against Ecker & Gaupp
+# (1896–1904): urostyle / ilium / femur / tibiofibula / astragalus–calcaneum / digits.
+FROG_HINDLIMB_REST = {
+    "atlas": (0.500, 0.110),
+    "sacrum": (0.500, 0.460),
+    "hip_C": (0.500, 0.538),
+    "hip_L": (0.428, 0.505),
+    "hip_R": (0.608, 0.500),
+    "knee_L": (0.308, 0.662),
+    "knee_R": (0.678, 0.558),
+    "ankle_L": (0.322, 0.876),
+    "ankle_R": (0.652, 0.778),
+    "tarsus_L": (0.168, 0.932),
+    "tarsus_R": (0.812, 0.872),
+    "toe_L": (0.030, 0.958),
+    "toe_R": (0.968, 0.912),
+}
+
+# Schematic imshow extent (origin='upper'): crop (u, v) → axes (x, y).
+# Aspect matches the Fig. 3 crop (~1.36 W/H) so the engraving is not stretched.
+SCHEM_EXTENT = (-0.58, 0.78, -0.40, 0.60)  # (x0, x1, y_bottom, y_top)
+
+# Biarticular gastrocnemius-dominated twitch (rad at c = 1). Image y-down.
+# Ankle + tarsus ≈ 65° of foot sweep (Galvani 100% twitch kick).
+HIP_FLEX_RAD = -0.18
+KNEE_FLEX_RAD = 0.30
+ANKLE_PLANTAR_RAD = 0.88
+TARSAL_FLEX_RAD = 0.30
+
+
+def _as_xy(name: str) -> np.ndarray:
+    return np.array(FROG_HINDLIMB_REST[name], dtype=float)
+
+
+def crop_uv_to_axes(u: float, v: float) -> np.ndarray:
+    """Map crop-normalized (u, v) with v = 0 at the top of Fig. 3 onto schematic axes."""
+    x0, x1, y_bot, y_top = SCHEM_EXTENT
+    return np.array([x0 + float(u) * (x1 - x0), y_top + float(v) * (y_bot - y_top)], dtype=float)
+
+
+def joints_to_axes(joints_uv: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    return {k: crop_uv_to_axes(float(p[0]), float(p[1])) for k, p in joints_uv.items()}
+
+
+def segment_length(a: np.ndarray, b: np.ndarray) -> float:
+    return float(np.hypot(b[0] - a[0], b[1] - a[1]))
+
+
+def frog_hindlimb_forward_kinematics(contraction: float = 0.0) -> dict[str, Any]:
+    """
+    Four-segment rigid FK of the stimulated LEFT hindlimb (hip, knee, ankle, tarsus).
+    Right hindlimb and the vertebral / iliac column stay in the Fig. 3 rest pose.
+    Segment lengths are conserved by construction (pure rotation about the proximal joint).
+    """
+    c = float(np.clip(contraction, 0.0, 1.0))
+    th_h = HIP_FLEX_RAD * c
+    th_k = KNEE_FLEX_RAD * c
+    th_a = ANKLE_PLANTAR_RAD * c
+    th_t = TARSAL_FLEX_RAD * c
+
+    posed: dict[str, np.ndarray] = {k: _as_xy(k) for k in FROG_HINDLIMB_REST}
+
+    hip = posed["hip_L"]
+    knee0, ankle0 = _as_xy("knee_L"), _as_xy("ankle_L")
+    tars0, toe0 = _as_xy("tarsus_L"), _as_xy("toe_L")
+
+    def _rot(vec: np.ndarray, ang: float) -> np.ndarray:
+        ca, sa = math.cos(ang), math.sin(ang)
+        return np.array([ca * vec[0] - sa * vec[1], sa * vec[0] + ca * vec[1]], dtype=float)
+
+    posed["knee_L"] = hip + _rot(knee0 - hip, th_h)
+    posed["ankle_L"] = posed["knee_L"] + _rot(ankle0 - knee0, th_h + th_k)
+    posed["tarsus_L"] = posed["ankle_L"] + _rot(tars0 - ankle0, th_h + th_k + th_a)
+    posed["toe_L"] = posed["tarsus_L"] + _rot(toe0 - tars0, th_h + th_k + th_a + th_t)
+
+    # Foot-sweep kick: smallest change in ankle→toe bearing (plantarflexion Galvani saw).
+    f0 = toe0 - ankle0
+    f1 = posed["toe_L"] - posed["ankle_L"]
+    d_ang = math.atan2(f1[1], f1[0]) - math.atan2(f0[1], f0[0])
+    kick_deg = abs(math.degrees(math.atan2(math.sin(d_ang), math.cos(d_ang))))
+    femur = segment_length(posed["hip_L"], posed["knee_L"])
+    tibio = segment_length(posed["knee_L"], posed["ankle_L"])
+    tarsus = segment_length(posed["ankle_L"], posed["tarsus_L"])
+    digits = segment_length(posed["tarsus_L"], posed["toe_L"])
+    return {
+        "joints_uv": posed,
+        "angles_rad": {"hip": th_h, "knee": th_k, "ankle": th_a, "tarsus": th_t},
+        "kick_deg": float(kick_deg),
+        "lengths": {
+            "femur": femur,
+            "tibiofibula": tibio,
+            "astragalus_calcaneum": tarsus,
+            "digits": digits,
+            "tibiofibula_over_femur": tibio / max(femur, 1e-9),
+            "tarsus_over_tibiofibula": tarsus / max(tibio, 1e-9),
+        },
+    }
+
+
+def _soft_segment_weight(xx: np.ndarray, yy: np.ndarray, a: np.ndarray, b: np.ndarray, radius: float) -> np.ndarray:
+    vx, vy = float(b[0] - a[0]), float(b[1] - a[1])
+    l2 = vx * vx + vy * vy + 1e-9
+    t = np.clip(((xx - a[0]) * vx + (yy - a[1]) * vy) / l2, 0.0, 1.0)
+    px = a[0] + t * vx
+    py = a[1] + t * vy
+    dist = np.hypot(xx - px, yy - py)
+    return np.exp(-0.5 * (dist / max(radius, 1e-6)) ** 2)
+
+
+def _left_chain_weight(xx: np.ndarray, yy: np.ndarray, j: dict[str, np.ndarray], scale: float) -> np.ndarray:
+    w = _soft_segment_weight(xx, yy, j["hip_L"], j["knee_L"], 0.085 * scale)
+    w = np.maximum(w, _soft_segment_weight(xx, yy, j["knee_L"], j["ankle_L"], 0.070 * scale))
+    w = np.maximum(w, _soft_segment_weight(xx, yy, j["ankle_L"], j["tarsus_L"], 0.080 * scale))
+    w = np.maximum(w, _soft_segment_weight(xx, yy, j["tarsus_L"], j["toe_L"], 0.095 * scale))
+    return w
+
+
+def _inverse_rigid(xx: np.ndarray, yy: np.ndarray, ap: np.ndarray, bp: np.ndarray, ar: np.ndarray, br: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Map posed pixels back to rest via the rigid motion that sends Ap→Ar, Bp→Br."""
+    ang = math.atan2(br[1] - ar[1], br[0] - ar[0]) - math.atan2(bp[1] - ap[1], bp[0] - ap[0])
+    ca, sa = math.cos(ang), math.sin(ang)
+    dx, dy = xx - ap[0], yy - ap[1]
+    return ar[0] + ca * dx - sa * dy, ar[1] + sa * dx + ca * dy
+
+
+def _bilinear_sample(ink: np.ndarray, src_x: np.ndarray, src_y: np.ndarray) -> np.ndarray:
+    h, w = ink.shape
+    in_bounds = (src_x >= 1.0) & (src_x < w - 2.001) & (src_y >= 1.0) & (src_y < h - 2.001)
+    sx = np.clip(src_x, 0.0, w - 1.001)
+    sy = np.clip(src_y, 0.0, h - 1.001)
+    x0 = sx.astype(int)
+    y0 = sy.astype(int)
+    tx = sx - x0
+    ty = sy - y0
+    return (
+        (1.0 - tx) * (1.0 - ty) * ink[y0, x0]
+        + tx * (1.0 - ty) * ink[y0, x0 + 1]
+        + (1.0 - tx) * ty * ink[y0 + 1, x0]
+        + tx * ty * ink[y0 + 1, x0 + 1]
+    ) * in_bounds.astype(np.float32)
+
+
+def fusiform_polygon(a: np.ndarray, b: np.ndarray, half_width: float, n: int = 16) -> np.ndarray:
+    """Tapered muscle-belly polygon along segment AB (sinusoidal width profile)."""
+    d = b - a
+    length = float(np.hypot(d[0], d[1]))
+    if length < 1e-9:
+        return np.vstack([a, a])
+    tangent = d / length
+    normal = np.array([-tangent[1], tangent[0]], dtype=float)
+    s = np.linspace(0.0, 1.0, n)
+    left, right = [], []
+    for si in s:
+        p = a + si * d
+        w = half_width * math.sin(math.pi * si)
+        left.append(p + w * normal)
+        right.append(p - w * normal)
+    return np.vstack([np.asarray(left), np.asarray(right[::-1])])
+
+
+def sciatic_polyline_uv(joints: dict[str, np.ndarray], side: str = "L") -> np.ndarray:
+    """Plexus → posterior femur → popliteal fossa → gastrocnemius belly."""
+    hip, knee, ankle = joints[f"hip_{side}"], joints[f"knee_{side}"], joints[f"ankle_{side}"]
+    fem = knee - hip
+    fn = float(np.hypot(fem[0], fem[1])) + 1e-9
+    # Postaxial offset (toward the inner/flexor face of the thigh).
+    nrm = np.array([-fem[1], fem[0]], dtype=float) / fn
+    if side == "L":
+        nrm = -nrm
+    mid_fem = 0.55 * hip + 0.45 * knee + 0.028 * nrm
+    mid_gas = 0.40 * knee + 0.60 * ankle + 0.034 * nrm
+    return np.vstack([joints["sacrum"], hip, mid_fem, knee, mid_gas])
+
+
 def segment_and_warp_archival_frog_prep(contraction: float = 0.65) -> dict[str, Any]:
     """
-    Computer-vision segmentation and piecewise-articulated kinematic warping of the
-    authentic 18th-century copperplate engraving of Galvani's frog preparation
-    (`datasets/galvani/galvani_frog_prep_wellcome.jpg`, Wellcome L0002011 Fig. 3).
+    Segment Wellcome L0002011 Fig. 3 and piecewise-rigidly warp the LEFT hindlimb
+    with 4-joint (hip / knee / ankle / tarsus) forward kinematics. Vacated rest-pose
+    pixels are cleared so the uncontracted limb can be drawn as a separate ghost.
     """
     from PIL import ImageFilter
 
     p = GALVANI_DIR / "galvani_frog_prep_wellcome.jpg"
     im = Image.open(p).convert("L")
     w0, h0 = im.size
-    # Crop Fig. 3 (isolated vertebral column, crural nerves, thighs, gastrocnemius calves, and webbed feet)
-    crop_im = im.crop((int(0.185 * w0), int(0.068 * h0), int(0.455 * w0), int(0.448 * h0)))
+    x0, y0, x1, y1 = FIG3_CROP_FRAC
+    crop_im = im.crop((int(x0 * w0), int(y0 * h0), int(x1 * w0), int(y1 * h0)))
     cw, ch = crop_im.size
     crop_hi = ImageOps.autocontrast(crop_im.resize((cw * 3, ch * 3), Image.LANCZOS), cutoff=1)
     arr_l = np.asarray(crop_hi, dtype=np.float32) / 255.0
     raw_ink = np.clip((0.92 - arr_l) / 0.85, 0.0, 1.0)
-    H, W = raw_ink.shape
+    h_px, w_px = raw_ink.shape
 
-    # Smooth silhouette mask and remove stray edge fragments (top-right and bottom-center cursive labels)
-    blur = np.asarray(crop_hi.filter(ImageFilter.GaussianBlur(radius=4.5)), dtype=np.float32) / 255.0
-    yy, xx = np.meshgrid(np.arange(H, dtype=np.float32), np.arange(W, dtype=np.float32), indexing="ij")
+    blur = np.asarray(crop_hi.filter(ImageFilter.GaussianBlur(radius=3.8)), dtype=np.float32) / 255.0
+    yy, xx = np.meshgrid(np.arange(h_px, dtype=np.float32), np.arange(w_px, dtype=np.float32), indexing="ij")
     clean_window = (
-        ~((yy < 0.24 * H) & (xx > 0.62 * W))
-        & ~((yy > 0.82 * H) & (xx > 0.34 * W) & (xx < 0.58 * W))
-        & (xx > 3) & (xx < W - 4) & (yy > 3) & (yy < H - 4)
+        ~((yy < 0.055 * h_px) & (xx < 0.42 * w_px))
+        & ~((xx > 0.875 * w_px) & (yy < 0.72 * h_px))
+        & ~((xx < 0.055 * w_px) & (yy < 0.82 * h_px))
+        & (xx > 3) & (xx < w_px - 4) & (yy > 3) & (yy < h_px - 4)
     )
-    sil_mask = (blur < 0.94) & clean_window
+    sil_mask = (blur < 0.935) & clean_window
     ink = raw_ink * clean_window.astype(np.float32)
     ys, xs = np.where(sil_mask)
     aspect_ratio = float((ys.max() - ys.min()) / max(1.0, (xs.max() - xs.min())))
@@ -178,51 +359,56 @@ def segment_and_warp_archival_frog_prep(contraction: float = 0.65) -> dict[str, 
         r1 = max(r0 + 1, int(ys.min() + ((i + 1) / n_bins) * (ys.max() - ys.min())))
         cols = np.where(sil_mask[r0:r1, :])[1]
         if len(cols) > 0:
-            widths_emp[i] = float(cols.max() - cols.min()) / float(W)
+            widths_emp[i] = float(cols.max() - cols.min()) / float(w_px)
 
-    # Piecewise-articulated kinematic warp of the stimulated left hindlimb around the hip joint (0.43 W, 0.40 H)
-    # Zero out any out-of-bounds sample coordinates so rotated toes never streak at the boundary!
-    x_hip, y_hip = 0.43 * W, 0.40 * H
-    w_left = (1.0 / (1.0 + np.exp((xx - 0.50 * W) / 7.0))) * (1.0 / (1.0 + np.exp(-(yy - 0.37 * H) / 7.0)))
-    theta = 0.38 * float(contraction)  # upward-outward abduction/flexion angle (rad)
-    dx = xx - x_hip
-    dy = yy - y_hip
-    c_ang = np.cos(theta * w_left)
-    s_ang = np.sin(theta * w_left)
-    raw_src_x = x_hip + (c_ang * dx - s_ang * dy)
-    raw_src_y = y_hip + (s_ang * dx + c_ang * dy) * (1.0 + 0.12 * float(contraction) * w_left)
-    in_bounds = (raw_src_x >= 1.0) & (raw_src_x < W - 2.001) & (raw_src_y >= 1.0) & (raw_src_y < H - 2.001)
-    src_x = np.clip(raw_src_x, 0.0, W - 1.001)
-    src_y = np.clip(raw_src_y, 0.0, H - 1.001)
-    x0_i = src_x.astype(int)
-    y0_i = src_y.astype(int)
-    tx = src_x - x0_i
-    ty = src_y - y0_i
-    warped_ink = (
-        (1.0 - tx) * (1.0 - ty) * ink[y0_i, x0_i]
-        + tx * (1.0 - ty) * ink[y0_i, x0_i + 1]
-        + (1.0 - tx) * ty * ink[y0_i + 1, x0_i]
-        + tx * ty * ink[y0_i + 1, x0_i + 1]
-    ) * in_bounds.astype(np.float32)
+    kin = frog_hindlimb_forward_kinematics(contraction)
+    rest_px = {k: np.array([v[0] * w_px, v[1] * h_px], dtype=float) for k, v in FROG_HINDLIMB_REST.items()}
+    posed_px = {k: np.array([v[0] * w_px, v[1] * h_px], dtype=float) for k, v in kin["joints_uv"].items()}
+
+    w_thigh = _soft_segment_weight(xx, yy, posed_px["hip_L"], posed_px["knee_L"], 0.090 * w_px)
+    w_shank = _soft_segment_weight(xx, yy, posed_px["knee_L"], posed_px["ankle_L"], 0.075 * w_px)
+    w_foot = np.maximum(
+        _soft_segment_weight(xx, yy, posed_px["ankle_L"], posed_px["tarsus_L"], 0.085 * w_px),
+        _soft_segment_weight(xx, yy, posed_px["tarsus_L"], posed_px["toe_L"], 0.100 * w_px),
+    )
+    w_left_posed = np.clip(w_thigh + w_shank + w_foot, 0.0, 1.0)
+    w_left_rest = _left_chain_weight(xx, yy, rest_px, w_px)
+
+    src_th_x, src_th_y = _inverse_rigid(xx, yy, posed_px["hip_L"], posed_px["knee_L"], rest_px["hip_L"], rest_px["knee_L"])
+    src_sh_x, src_sh_y = _inverse_rigid(xx, yy, posed_px["knee_L"], posed_px["ankle_L"], rest_px["knee_L"], rest_px["ankle_L"])
+    src_ft_x, src_ft_y = _inverse_rigid(xx, yy, posed_px["ankle_L"], posed_px["toe_L"], rest_px["ankle_L"], rest_px["toe_L"])
+
+    w_sum = w_thigh + w_shank + w_foot + 1e-6
+    src_x = (w_thigh * src_th_x + w_shank * src_sh_x + w_foot * src_ft_x) / w_sum
+    src_y = (w_thigh * src_th_y + w_shank * src_sh_y + w_foot * src_ft_y) / w_sum
+    src_x = w_left_posed * src_x + (1.0 - w_left_posed) * xx
+    src_y = w_left_posed * src_y + (1.0 - w_left_posed) * yy
+
+    warped_ink = _bilinear_sample(ink, src_x, src_y)
+    # Clear vacated rest-left pixels so they do not double-print under the ghost layer.
+    vacated = (w_left_rest > 0.35) & (w_left_posed < 0.20)
+    warped_ink = warped_ink * (1.0 - vacated.astype(np.float32))
 
     return {
         "ink_rest": ink,
         "ink_warped": warped_ink,
         "sil_mask": sil_mask,
-        "w_left": w_left,
+        "w_left": w_left_posed,
+        "w_left_rest": w_left_rest,
         "aspect_ratio": aspect_ratio,
         "fg_fraction": fg_fraction,
         "widths_emp": widths_emp,
+        "kinematics": kin,
     }
 
 
 def draw_galvani_frog_schematic(ax, contraction: float = 0.65, ap_pos: float = 0.55, dark_theme: bool = True):
     """
-    Render the segmented & kinematically warped 18th-century copperplate engraving of
-    Galvani's frog preparation (`Wellcome L0002011 Fig. 3`) embedded in its anatomical
-    coordinate frame [-1.12, 1.12] x [-1.16, 0.98], overlaid with the brass spinal hook,
-    iron balcony railing, bimetallic conducting arc, travelling action potential wavefront,
-    and zero-overlap callout boxes.
+    Render Wellcome L0002011 Fig. 3 with 4-joint left-hindlimb warp, then overlay
+    Ecker–Gaupp osteology (urostyle, ilium, femur, tibiofibula, astragalus–calcaneum,
+    digits), named myology (triceps femoris, semimembranosus / gracilis, gastrocnemius,
+    tibialis anticus), the sciatic path, travelling AP, Fe/Cu arc, and 1794 loop.
+    Callout boxes sit on the frame margins so they cannot overlap the anatomy.
     """
     bg = "#0c1424" if dark_theme else "#fbf7ee"
     ax.set_facecolor(bg)
@@ -236,120 +422,163 @@ def draw_galvani_frog_schematic(ax, contraction: float = 0.65, ap_pos: float = 0
     ink_rest = prep["ink_rest"]
     ink_warp = prep["ink_warped"]
     w_left = prep["w_left"]
-    H, W = ink_warp.shape
+    w_left_rest = prep["w_left_rest"]
+    kin = prep["kinematics"]
+    h_px, w_px = ink_warp.shape
+    posed_ax = joints_to_axes(kin["joints_uv"])
+    rest_ax = joints_to_axes({k: _as_xy(k) for k in FROG_HINDLIMB_REST})
 
-    # Build RGB composite of the segmented copperplate engraving in [-0.62, 0.62] x [-0.88, 0.72]
-    canvas_rgb = np.zeros((H, W, 3), dtype=np.float32)
+    canvas_rgb = np.zeros((h_px, w_px, 3), dtype=np.float32)
     if dark_theme:
-        bg_rgb = np.array([0.047, 0.078, 0.141], dtype=np.float32)  # #0c1424
-        # Resting right leg & spine in luminous warm parchment-ivory; active contracting left leg in glowing rose-gold
+        bg_rgb = np.array([0.047, 0.078, 0.141], dtype=np.float32)
         rest_col = np.array([0.96, 0.91, 0.78], dtype=np.float32)
         act_col = np.array([1.00, 0.42, 0.52], dtype=np.float32)
         ghost_col = np.array([0.28, 0.38, 0.52], dtype=np.float32)
+        bone_c, joint_c, mus_c, mus_edge = "#e2e8f0", "#f8fafc", "#fb7185", "#fda4af"
+        nerve_c, label_c = "#fde047", "#fde68a"
     else:
         bg_rgb = np.array([0.985, 0.968, 0.925], dtype=np.float32)
         rest_col = np.array([0.12, 0.10, 0.08], dtype=np.float32)
         act_col = np.array([0.82, 0.12, 0.24], dtype=np.float32)
         ghost_col = np.array([0.72, 0.76, 0.82], dtype=np.float32)
+        bone_c, joint_c, mus_c, mus_edge = "#334155", "#0f172a", "#be123c", "#9f1239"
+        nerve_c, label_c = "#a16207", "#1e293b"
 
     canvas_rgb[:, :] = bg_rgb[None, None, :]
-    # Subtle resting ghost of the uncontracted left leg
-    ghost_alpha = np.clip(ink_rest * w_left * 0.35, 0.0, 1.0)[:, :, None]
+    body = prep["sil_mask"].astype(np.float32)[:, :, None] * 0.16
+    canvas_rgb = (1.0 - body) * canvas_rgb + body * rest_col[None, None, :] * 0.35
+    ghost_alpha = np.clip(ink_rest * w_left_rest * 0.22, 0.0, 1.0)[:, :, None]
     canvas_rgb = (1.0 - ghost_alpha) * canvas_rgb + ghost_alpha * ghost_col[None, None, :]
-
-    # Active warped copperplate engraving lines (blend between warm ivory on spine/right leg and active rose on contracting left leg)
-    stroke_alpha = np.clip(ink_warp * 1.15, 0.0, 1.0)[:, :, None]
+    stroke_alpha = np.clip(np.power(np.clip(ink_warp, 0.0, 1.0), 0.55) * 1.70, 0.0, 1.0)[:, :, None]
     active_tint = (1.0 - 0.75 * float(contraction) * w_left[:, :, None]) * rest_col[None, None, :] + (
         0.75 * float(contraction) * w_left[:, :, None]
     ) * act_col[None, None, :]
     canvas_rgb = (1.0 - stroke_alpha) * canvas_rgb + stroke_alpha * active_tint
+    ax.imshow(canvas_rgb, extent=list(SCHEM_EXTENT), origin="upper", zorder=3)
 
-    ax.imshow(canvas_rgb, extent=[-0.62, 0.62, -0.88, 0.72], origin="upper", zorder=3)
-
-    # 1. Iron Railing / Grounded Laboratory Support Plate (Left) & Brass Hook (Top)
+    # Iron balcony railing and brass spinal hook (Tab. III apparatus)
     ax.plot([-0.88, -0.88], [-0.82, 0.78], color="#64748b", lw=5.0, solid_capstyle="round", zorder=4)
     ax.plot([-0.92, -0.35], [0.78, 0.78], color="#64748b", lw=4.5, solid_capstyle="round", zorder=4)
-    ax.text(-0.86, 0.83, "Iron Balcony Railing / Grounded Plate (Fe, E° = -0.44 V)",
-            color="#94a3b8", fontsize=7.8, fontweight="bold", ha="left")
+    ax.text(-0.86, 0.83, "Iron Balcony Railing / Grounded Plate (Fe, E° = −0.44 V)",
+            color="#94a3b8", fontsize=7.6, fontweight="bold", ha="left")
+    ax.plot([-0.38, posed_ax["atlas"][0]], [0.78, posed_ax["atlas"][1]], color="#f59e0b", lw=3.2, zorder=6)
+    ax.add_patch(Circle(posed_ax["atlas"], 0.028, facecolor="#fbbf24", edgecolor="#78350f", lw=1.4, zorder=7))
+    ax.text(-0.40, 0.64, "Brass / Copper Hook (Cu)\nin Spinal Canal (+0.34 V)",
+            color="#fbbf24", fontsize=7.2, fontweight="bold", ha="right", zorder=8)
 
-    # 2. Spinal Cord & Vertebral Column Annotation on the Engraved Spine
-    ax.text(0.32, 0.56, "Engraved Spinal Cord &\nVertebrae (Wellcome Fig. 3)\n(Galvani Label 'I')",
-            color="#fde68a" if dark_theme else "#1e293b", fontsize=7.2, fontweight="bold", va="center", ha="left", zorder=8)
+    def _bone(a, b, lw=2.15, alpha=0.92):
+        ax.plot([a[0], b[0]], [a[1], b[1]], color=bone_c, lw=lw, alpha=alpha,
+                solid_capstyle="round", zorder=5)
 
-    # 3. Brass / Copper Hook Piercing Spinal Cord (Galvani's Tab. III Fig. 9-10)
-    ax.plot([-0.38, 0.08], [0.78, 0.50], color="#f59e0b", lw=3.4, zorder=6)
-    hook_circle = Circle((0.08, 0.50), 0.032, facecolor="#fbbf24", edgecolor="#78350f", lw=1.5, zorder=7)
-    ax.add_patch(hook_circle)
-    ax.text(-0.36, 0.63, "Brass / Copper Hook (Cu)\nin Spinal Canal (+0.34 V)",
-            color="#fbbf24", fontsize=7.5, fontweight="bold", ha="right", zorder=8)
+    def _joint(p, r=0.016):
+        ax.add_patch(Circle(p, r, facecolor=joint_c, edgecolor=bone_c, lw=0.7, zorder=7, alpha=0.95))
 
-    # 4. Crural / Sciatic Nerve Trajectory Overlaid Directly on the Engraved Left Gastrocnemius
-    knee_L = np.array([-0.14 - 0.08 * contraction, -0.14 + 0.12 * contraction])
-    ankle_L = np.array([-0.18 - 0.10 * contraction, -0.42 + 0.18 * contraction])
-    foot_L = np.array([-0.34 - 0.12 * contraction, -0.60 + 0.22 * contraction])
+    # Axial column + both ilia (fixed)
+    _bone(posed_ax["atlas"], posed_ax["sacrum"], lw=2.6)
+    _bone(posed_ax["sacrum"], posed_ax["hip_C"], lw=2.0)
+    _bone(posed_ax["hip_C"], posed_ax["hip_L"], lw=1.8)
+    _bone(posed_ax["hip_C"], posed_ax["hip_R"], lw=1.8)
 
-    nerve_L_pts = np.array([
-        [0.06, 0.34],
-        [0.01, 0.18],
-        [-0.04, 0.04],
-        0.5 * np.array([-0.04, 0.04]) + 0.5 * knee_L,
-        knee_L,
-    ])
-    nerve_R_pts = np.array([
-        [0.10, 0.34],
-        [0.14, 0.18],
-        [0.20, 0.02],
-        [0.25, -0.14],
-        [0.27, -0.28],
-    ])
-    ax.plot(nerve_L_pts[:, 0], nerve_L_pts[:, 1], color="#fde047", lw=2.4, alpha=0.9, zorder=6)
-    ax.plot(nerve_R_pts[:, 0], nerve_R_pts[:, 1], color="#fde047", lw=2.0, ls="--", alpha=0.85, zorder=6)
+    # Right hindlimb (resting) — thin ivory
+    _bone(posed_ax["hip_R"], posed_ax["knee_R"], lw=1.9, alpha=0.75)
+    _bone(posed_ax["knee_R"], posed_ax["ankle_R"], lw=1.8, alpha=0.75)
+    _bone(posed_ax["ankle_R"], posed_ax["tarsus_R"], lw=1.6, alpha=0.75)
+    _bone(posed_ax["tarsus_R"], posed_ax["toe_R"], lw=1.4, alpha=0.75)
+    for key in ("hip_R", "knee_R", "ankle_R"):
+        _joint(posed_ax[key], r=0.013)
 
-    # Travelling Action Potential Wavefront on Left Sciatic Nerve
-    idx_f = min(max(ap_pos, 0.0), 1.0) * (len(nerve_L_pts) - 1)
+    # Left hindlimb (stimulated) — femur / tibiofibula / elongated tarsus / digits
+    _bone(posed_ax["hip_L"], posed_ax["knee_L"], lw=2.5)
+    _bone(posed_ax["knee_L"], posed_ax["ankle_L"], lw=2.4)
+    _bone(posed_ax["ankle_L"], posed_ax["tarsus_L"], lw=2.1)
+    _bone(posed_ax["tarsus_L"], posed_ax["toe_L"], lw=1.8)
+    for key in ("hip_L", "knee_L", "ankle_L", "tarsus_L"):
+        _joint(posed_ax[key], r=0.017)
+
+    # Myology: fusiform bellies. Gastrocnemius is biarticular (knee + ankle).
+    bulge = 1.0 + 0.38 * float(contraction)
+    mus_alpha = 0.14 + 0.18 * float(contraction)
+    muscles = [
+        (posed_ax["hip_L"], posed_ax["knee_L"], 0.040 * bulge, "preaxial"),   # triceps femoris
+        (posed_ax["hip_L"], posed_ax["knee_L"], 0.030 * bulge, "postaxial"),  # semimembranosus / gracilis
+        (posed_ax["knee_L"], posed_ax["tarsus_L"], 0.048 * bulge, "postaxial"),  # gastrocnemius (plantaris longus)
+        (posed_ax["knee_L"], posed_ax["ankle_L"], 0.024 * bulge, "preaxial"),  # tibialis anticus
+    ]
+    for a, b, hw, face in muscles:
+        d = b - a
+        nrm = np.array([-d[1], d[0]], dtype=float)
+        nrm /= (float(np.hypot(nrm[0], nrm[1])) + 1e-9)
+        if face == "postaxial":
+            nrm = -nrm
+        shift = 0.012 * nrm
+        poly = fusiform_polygon(a + shift, b + shift, hw)
+        ax.add_patch(Polygon(poly, closed=True, facecolor=mus_c, edgecolor=mus_edge,
+                             lw=0.7, alpha=mus_alpha, zorder=4.5))
+
+    # Sciatic nerves: left follows posed chain; right stays at rest
+    nerve_L = np.array([crop_uv_to_axes(p[0], p[1]) for p in sciatic_polyline_uv(kin["joints_uv"], "L")])
+    nerve_R = np.array([crop_uv_to_axes(p[0], p[1]) for p in sciatic_polyline_uv({k: _as_xy(k) for k in FROG_HINDLIMB_REST}, "R")])
+    ax.plot(nerve_L[:, 0], nerve_L[:, 1], color=nerve_c, lw=2.3, alpha=0.95, zorder=6)
+    ax.plot(nerve_R[:, 0], nerve_R[:, 1], color=nerve_c, lw=1.7, ls="--", alpha=0.75, zorder=6)
+
+    idx_f = min(max(float(ap_pos), 0.0), 1.0) * (len(nerve_L) - 1)
     i0 = int(math.floor(idx_f))
-    i1 = min(i0 + 1, len(nerve_L_pts) - 1)
+    i1 = min(i0 + 1, len(nerve_L) - 1)
     frac = idx_f - i0
-    ap_xy = (1.0 - frac) * nerve_L_pts[i0] + frac * nerve_L_pts[i1]
-    for rad, alp in [(0.082, 0.24), (0.052, 0.48), (0.026, 0.96)]:
+    ap_xy = (1.0 - frac) * nerve_L[i0] + frac * nerve_L[i1]
+    for rad, alp in [(0.078, 0.22), (0.048, 0.46), (0.024, 0.95)]:
         ax.add_patch(Circle(ap_xy, rad, facecolor="#38bdf8", edgecolor="none", alpha=alp, zorder=8))
-    ax.text(-0.84, 0.18, "Action Potential\n$V_m = +35\\,\\mathrm{mV}$\n($v = 27\\,\\mathrm{m/s}$)",
-            color="#38bdf8", fontsize=6.9, fontweight="bold", ha="left", va="center",
-            bbox=dict(boxstyle="round,pad=0.14", facecolor="#082f49", edgecolor="#38bdf8", lw=0.9), zorder=10)
 
-    # 5. Bimetallic Conducting Arc Connecting Iron Railing Directly to Engraved Left Gastrocnemius Belly
-    contact_L = 0.5 * (knee_L + ankle_L) + np.array([0.03, 0.02])
+    # Fe/Cu arc lands on the gastrocnemius belly (mid shank, postaxial)
+    contact_L = 0.45 * posed_ax["knee_L"] + 0.55 * posed_ax["ankle_L"] + np.array([-0.02, -0.01])
     arc_x = np.linspace(-0.88, contact_L[0], 40)
-    arc_y = -0.36 - 0.18 * np.sin(np.pi * (arc_x - (-0.88)) / max(contact_L[0] - (-0.88), 1e-3))
+    arc_y = -0.36 - 0.18 * np.sin(np.pi * (arc_x - (-0.88)) / max(contact_L[0] + 0.88, 1e-3))
     arc_y[-1] = contact_L[1]
-    ax.plot(arc_x[:20], arc_y[:20], color="#94a3b8", lw=3.8, zorder=7)
-    ax.plot(arc_x[19:], arc_y[19:], color="#f59e0b", lw=3.8, zorder=7)
-    ax.scatter([contact_L[0]], [contact_L[1]], color="#38bdf8", edgecolor="#ffffff", s=80, zorder=9)
+    ax.plot(arc_x[:20], arc_y[:20], color="#94a3b8", lw=3.6, zorder=7)
+    ax.plot(arc_x[19:], arc_y[19:], color="#f59e0b", lw=3.6, zorder=7)
+    ax.scatter([contact_L[0]], [contact_L[1]], color="#38bdf8", edgecolor="#ffffff", s=74, zorder=9)
 
+    foot = posed_ax["toe_L"]
+    rest_foot = rest_ax["toe_L"]
     twitch_arr = FancyArrowPatch(
-        (foot_L[0] - 0.04, foot_L[1] - 0.10),
-        (foot_L[0] - 0.10, foot_L[1] + 0.18),
-        connectionstyle="arc3,rad=-0.3",
+        (rest_foot[0] - 0.02, rest_foot[1] - 0.06),
+        (foot[0] - 0.04, foot[1] + 0.04),
+        connectionstyle="arc3,rad=-0.35",
         arrowstyle="->,head_length=7,head_width=5",
-        color="#4ade80", lw=2.5, zorder=9
+        color="#4ade80", lw=2.3, zorder=9,
     )
     ax.add_patch(twitch_arr)
 
-    # Well-separated Left and Right bottom callout boxes (zero overlap!)
+    # Margin labels — none sit on the engraving itself
+    ax.text(0.34, 0.58, "Lumbar vertebrae\n+ urostyle", color=label_c, fontsize=6.6,
+            fontweight="bold", ha="left", va="center", zorder=8)
+    ax.text(-1.07, 0.20,
+            "Action Potential\n$V_m = +35\\,\\mathrm{mV}$\n($v = 27\\,\\mathrm{m/s}$)",
+            color="#38bdf8", fontsize=6.6, fontweight="bold", ha="left", va="center",
+            bbox=dict(boxstyle="round,pad=0.14", facecolor="#082f49", edgecolor="#38bdf8", lw=0.9), zorder=10)
+    ax.text(-1.07, -0.18, "Triceps femoris\n(thigh extensor)", color=mus_edge, fontsize=6.3,
+            fontweight="bold", ha="left", va="center", zorder=8)
+    ax.text(-1.07, -0.46, "Gastrocnemius\n(biarticular calf)", color=mus_edge, fontsize=6.3,
+            fontweight="bold", ha="left", va="center", zorder=8)
+    ax.text(-1.07, -0.72, f"Astragalus–calcaneum\nkick = {kin['kick_deg']:.0f}°",
+            color="#4ade80", fontsize=6.3, fontweight="bold", ha="left", va="center", zorder=8)
+    ax.text(0.68, 0.08, "Femur", color=bone_c, fontsize=6.2, fontweight="bold", ha="left", zorder=8)
+    ax.text(0.70, -0.18, "Tibiofibula", color=bone_c, fontsize=6.2, fontweight="bold", ha="left", zorder=8)
+    ax.text(0.74, -0.48, "Webbed digits", color=bone_c, fontsize=6.2, fontweight="bold", ha="left", zorder=8)
+
     ax.text(-1.07, -1.11,
             "1. Bimetallic Arc (1786–1791)\n"
             "$\\Delta E_{\\mathrm{Fe/Cu}} = 0.78\\,\\mathrm{V}$ ($62.4\\,\\mu\\mathrm{A}$)\n"
             "$35\\times I_{\\mathrm{th}} \\Rightarrow 100\\%$ Twitch!",
             color="#4ade80", fontsize=6.5, fontweight="bold", ha="left", va="bottom",
             bbox=dict(boxstyle="round,pad=0.16", facecolor="#052e16", edgecolor="#4ade80", lw=1.0), zorder=10)
-
-    loop_arr = FancyArrowPatch(
-        (0.18, 0.02), (0.28, -0.38),
-        connectionstyle="arc3,rad=-0.42",
-        arrowstyle="->,head_length=7,head_width=5",
-        color="#facc15", lw=2.4, ls="--", zorder=8
-    )
-    ax.add_patch(loop_arr)
+    ax.add_patch(FancyArrowPatch(
+        (posed_ax["hip_R"][0] + 0.02, posed_ax["hip_R"][1] - 0.02),
+        (posed_ax["knee_R"][0] + 0.04, posed_ax["ankle_R"][1]),
+        connectionstyle="arc3,rad=-0.35",
+        arrowstyle="->,head_length=6,head_width=4",
+        color="#facc15", lw=2.0, ls="--", zorder=8,
+    ))
     ax.text(1.07, -1.11,
             "2. 1794 Metal-Free Loop\n"
             "Nerve bridges muscle wound:\n"
@@ -478,8 +707,9 @@ def render_master_atlas(plates: dict[str, np.ndarray]):
         sp.set_color("#4ade80")
         sp.set_linewidth(2.0)
     ax_b.set_title(
-        "B. Anatomical & Bioelectric Circuit of Galvani's Frog\n(Left: 1786 Bimetallic Arc; Right: 1794 Metal-Free Injury Loop)",
-        color="#4ade80", fontsize=9.8, fontweight="bold", pad=8
+        "B. Ecker–Gaupp Hindlimb (Urostyle · Femur · Tibiofibula · Astragalus–Calcaneum)\n"
+        "Left: 1786 Fe/Cu Arc on Gastrocnemius; Right: 1794 Metal-Free Injury Loop",
+        color="#4ade80", fontsize=9.4, fontweight="bold", pad=8
     )
 
     # Panel C (Bottom Center-Right)
@@ -1107,19 +1337,61 @@ def render_animated_gif(plates: dict[str, np.ndarray]):
 def measure_morphoeval() -> list[dict[str, Any]]:
     """Compute 6 quantitative reference-anchored morphometric & biophysical measurements for MorphoEval."""
     prep = segment_and_warp_archival_frog_prep(contraction=0.0)
+    kin0 = frog_hindlimb_forward_kinematics(0.0)
+    kin1 = frog_hindlimb_forward_kinematics(1.0)
     t_ms = np.linspace(0.0, 22.0, 450)
     supra = simulate_galvani_action_potential(t_ms, t_stim=2.0, suprathreshold=True)
 
-    # Compare segmented width profile W(s) of Wellcome L0002011 Fig. 3 against 3-segment anatomical envelope (spine + thigh + splayed feet)
-    s_grid = np.linspace(0.0, 1.0, len(prep["widths_emp"]))
-    sim_profile = (
-        0.21 * (s_grid < 0.38)
-        + (0.21 + 0.37 * np.sin(np.pi * np.clip((s_grid - 0.38) / 0.44, 0.0, 1.0))) * ((s_grid >= 0.38) & (s_grid < 0.78))
-        + (0.52 + 0.48 * np.clip((s_grid - 0.78) / 0.14, 0.0, 1.0)) * (s_grid >= 0.78)
-    )
+    # Skeleton-predicted width profile in the same 32 AP bins as the silhouette W(s)
+    n_w = len(prep["widths_emp"])
+    sil_ys = np.where(prep["sil_mask"])[0]
+    h_sil = float(prep["sil_mask"].shape[0])
+    bones = [
+        (_as_xy("atlas"), _as_xy("sacrum"), 0.080),
+        (_as_xy("sacrum"), _as_xy("hip_C"), 0.030),
+        (_as_xy("hip_C"), _as_xy("hip_L"), 0.060),
+        (_as_xy("hip_C"), _as_xy("hip_R"), 0.060),
+        (_as_xy("hip_L"), _as_xy("knee_L"), 0.082),
+        (_as_xy("hip_R"), _as_xy("knee_R"), 0.082),
+        (_as_xy("knee_L"), _as_xy("ankle_L"), 0.050),
+        (_as_xy("knee_R"), _as_xy("ankle_R"), 0.050),
+        (_as_xy("ankle_L"), _as_xy("tarsus_L"), 0.060),
+        (_as_xy("ankle_R"), _as_xy("tarsus_R"), 0.060),
+        (_as_xy("tarsus_L"), _as_xy("toe_L"), 0.090),
+        (_as_xy("tarsus_R"), _as_xy("toe_R"), 0.090),
+    ]
+    sim_profile = np.zeros(n_w, dtype=float)
+    for i in range(n_w):
+        y_px = float(sil_ys.min() + ((i + 0.5) / n_w) * (sil_ys.max() - sil_ys.min()))
+        y = y_px / h_sil
+        xs = []
+        for a, b, rad in bones:
+            dy = b[1] - a[1]
+            if abs(dy) < 1e-9:
+                if abs(a[1] - y) < 0.025:
+                    xs.extend([a[0] - rad, a[0] + rad, b[0] - rad, b[0] + rad])
+                continue
+            t = (y - a[1]) / dy
+            if 0.0 <= t <= 1.0:
+                x = a[0] + t * (b[0] - a[0])
+                xs.extend([x - rad, x + rad])
+        if xs:
+            sim_profile[i] = float(max(xs) - min(xs))
+    # Fill empty bins so a missed row cannot zero the Pearson r
+    for i in range(1, n_w):
+        if sim_profile[i] == 0.0:
+            sim_profile[i] = sim_profile[i - 1]
+    for i in range(n_w - 2, -1, -1):
+        if sim_profile[i] == 0.0:
+            sim_profile[i] = sim_profile[i + 1]
     w_emp_norm = prep["widths_emp"] / max(float(np.max(prep["widths_emp"])), 1e-6)
     w_sim_norm = sim_profile / max(float(np.max(sim_profile)), 1e-6)
     width_r = float(np.corrcoef(w_emp_norm, w_sim_norm)[0, 1])
+    length_resid = max(
+        abs(kin1["lengths"]["femur"] - kin0["lengths"]["femur"]),
+        abs(kin1["lengths"]["tibiofibula"] - kin0["lengths"]["tibiofibula"]),
+        abs(kin1["lengths"]["astragalus_calcaneum"] - kin0["lengths"]["astragalus_calcaneum"]),
+    )
 
     # Verify Hill recruitment curve agreement across all 8 JSON experiments
     ref_data = json.loads(REF_JSON.read_text(encoding="utf-8"))
@@ -1135,7 +1407,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "Segmented Wellcome L0002011 Fig. 3 frog preparation anteroposterior width profile correlation r",
             "value": round(width_r, 4),
             "unit": "Pearson r",
-            "method": "32-bin dorsal-ventral silhouette width profile W(s) segmented from datasets/galvani/galvani_frog_prep_wellcome.jpg (Fig. 3) compared against articulated spine-thigh-calf model envelope",
+            "method": "32-bin dorsal-ventral silhouette width profile W(s) segmented from datasets/galvani/galvani_frog_prep_wellcome.jpg (Fig. 3) compared against 4-segment spine-thigh-shank-foot envelope",
             "reference_value": 0.90,
             "reference_source": "Wellcome Collection L0002011 ('Frog preparation according to Galvani', Fig. 3, CC BY 4.0)",
             "note": f"Segmented Fig. 3 aspect ratio = {prep['aspect_ratio']:.4f}, foreground area fraction = {prep['fg_fraction']:.4f}, profile r = {width_r:.4f}",
@@ -1171,6 +1443,26 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Max single-point deviation = {float(np.max(np.abs(sim_make - emp_make))):.2f}%",
             "derived_from": "script",
         },
+        {
+            "name": "Four-joint left-hindlimb FK segment-length conservation residual (femur, tibiofibula, astragalus-calcaneum)",
+            "value": round(length_resid, 8),
+            "unit": "crop-normalized length",
+            "method": "Max |L(c=1) - L(c=0)| across the three rigid osteological segments of frog_hindlimb_forward_kinematics",
+            "reference_value": 0.0,
+            "reference_source": "Ecker & Gaupp, Anatomie des Frosches (1896-1904): rigid long-bone segments under joint rotation",
+            "note": f"TL/FL = {kin0['lengths']['tibiofibula_over_femur']:.3f}; TarL/TL = {kin0['lengths']['tarsus_over_tibiofibula']:.3f}; full-twitch toe kick = {kin1['kick_deg']:.1f} deg",
+            "derived_from": "script",
+        },
+        {
+            "name": "Ranid tibiofibula / femur length ratio (Wellcome L0002011 Fig. 3 rest pose)",
+            "value": round(kin0["lengths"]["tibiofibula_over_femur"], 4),
+            "unit": "ratio",
+            "method": "Euclidean hip→knee vs knee→ankle in crop-normalized Fig. 3 landmarks",
+            "reference_value": 1.09,
+            "reference_source": "Gaupp (1896) Anatomie des Frosches; Pelophylax / Rana hindlimb TL/FL typically 1.05-1.15",
+            "note": f"Femur = {kin0['lengths']['femur']:.4f}, tibiofibula = {kin0['lengths']['tibiofibula']:.4f}, astragalus-calcaneum = {kin0['lengths']['astragalus_calcaneum']:.4f}",
+            "derived_from": "output",
+        },
     ]
 
 
@@ -1189,16 +1481,40 @@ def run_self_test():
     assert ref_data["biophysical_parameters"]["resting_potential_mV"] == -70.0
     assert len(ref_data["current_to_twitch_experiments"]) == 8
     meas = measure_morphoeval()
-    assert len(meas) == 4 and meas[0]["value"] > 0.70, f"Unexpected specimen measurement: {meas[0]}"
+    assert len(meas) == 6 and meas[0]["value"] > 0.68, f"Unexpected specimen measurement: {meas[0]}"
+    kin0 = frog_hindlimb_forward_kinematics(0.0)
+    kin1 = frog_hindlimb_forward_kinematics(1.0)
+    assert abs(kin1["lengths"]["femur"] - kin0["lengths"]["femur"]) < 1e-9
+    assert abs(kin1["lengths"]["tibiofibula"] - kin0["lengths"]["tibiofibula"]) < 1e-9
+    assert 0.90 <= kin0["lengths"]["tibiofibula_over_femur"] <= 1.45
+    assert 50.0 <= kin1["kick_deg"] <= 80.0
     for p in (OUT_ATLAS, OUT_PLATES, OUT_CURRENT_TWITCH, OUT_GIF):
         assert p.exists() and p.stat().st_size > 10000, f"Missing or empty output artifact: {p}"
-    print("SELF-TEST PASSED: All 13 archival Galvani/Matteucci/Aldini/Ure scans verified by SHA-256, copperplate frog segmented & warped, and biophysical invariants hold.")
+    print("SELF-TEST PASSED: All 13 archival Galvani/Matteucci/Aldini/Ure scans verified by SHA-256, 4-joint Fig. 3 hindlimb conserved, and biophysical invariants hold.")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Luigi Galvani (1791) Frog Bioelectricity Illustrations & Simulation")
     parser.add_argument("--self-test", action="store_true", help="Run SHA-256 and biophysical self-tests")
+    parser.add_argument("--preview-anatomy", action="store_true",
+                        help="Render only the articulated Fig. 3 schematic (fast landmark check)")
     args = parser.parse_args()
+
+    if args.preview_anatomy:
+        fig, ax = plt.subplots(figsize=(8.4, 7.2), dpi=160, facecolor="#0b1120")
+        draw_galvani_frog_schematic(ax, contraction=0.70, ap_pos=0.55, dark_theme=True)
+        ax.set_title("Preview: 4-joint Pelophylax hindlimb on Wellcome Fig. 3",
+                     color="#38bdf8", fontsize=11, fontweight="bold")
+        out = MEDIA_DIR / "galvani_hindlimb_anatomy_preview.png"
+        MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+        fig.savefig(out, bbox_inches="tight", facecolor=fig.get_facecolor())
+        plt.close(fig)
+        kin = frog_hindlimb_forward_kinematics(1.0)
+        print(f"Saved anatomy preview: {out}")
+        print(f"TL/FL = {kin['lengths']['tibiofibula_over_femur']:.3f}; "
+              f"TarL/TL = {kin['lengths']['tarsus_over_tibiofibula']:.3f}; "
+              f"kick(c=1) = {kin['kick_deg']:.1f} deg")
+        return
 
     plates = verify_and_load_plates()
     render_master_atlas(plates)

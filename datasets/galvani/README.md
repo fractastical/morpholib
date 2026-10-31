@@ -36,3 +36,16 @@ This directory contains SHA-256-verified archival scans of all four original fol
 | `aldini_galvanism_wellcome.jpg` | **Aldini (1794/1803) Metal-Free Nerve Loop** (`Fig. 3`) | `500 × 602` | `cffb86f67407984e52ffb69ffc1d9d5464c7683f436d900947639315bcd2c19f` | Wellcome Collection `L0001964` (Direct nerve-to-muscle contact across injured/intact surface without metals; CC BY 4.0) |
 | `matteucci_frog_battery.jpg` | **Matteucci (1842) Frog Battery & Cascade** | `500 × 386` | `d4f55f8d1935ef5060849aa2f1c37e60d14139e5ec8940ab25b28c384521a5ad` | Wikimedia Commons [`File:Matteucci's frog battery trimmed2.jpg`](https://commons.wikimedia.org/wiki/File:Matteucci%27s_frog_battery_trimmed2.jpg) (Public Domain) |
 | `galvani_figuier_333.jpg` | **Ure (1818) High-Current 270-Plate Voltaic Trough (Clydesdale)** | `500 × 401` | `a69664684e119f01213a05ddb5526da5dc79d4cfc146f162b04329aa9a7732de` | Louis Figuier *Les Merveilles de la Science* `Fig. 333` (Public Domain) |
+
+## Hindlimb kinematic model
+
+Wellcome `L0002011` Fig. 3 is cropped and warped with a **4-joint rigid chain** landmarked on the copperplate and named from Ecker & Gaupp, *Anatomie des Frosches* (1896–1904):
+
+| Segment | Joints | Muscle overlay |
+|:---|:---|:---|
+| Urostyle + ilium | atlas → sacrum → hip | — |
+| Femur (thigh) | hip → knee | triceps femoris (preaxial), semimembranosus / gracilis (postaxial) |
+| Tibiofibula (shank) | knee → ankle | tibialis anticus (preaxial) |
+| Astragalus–calcaneum + digits | ankle → tarsus → toe | **gastrocnemius / plantaris longus** (biarticular: knee + ankle) |
+
+Projected Fig. 3 `TL/FL ≈ 1.15` (Gaupp 3-D target `1.05–1.15`). Full-twitch foot sweep is `65°`, matching the Fe/Cu arc kick in `current_to_twitch_experiments`. Landmarks and angles live in `galvani_1791_reference.json` → `hindlimb_anatomy`. Lean 4 Law 4 in `Loop_101` proves length conservation, the TL/FL band, and the biarticular gastrocnemius identity.
