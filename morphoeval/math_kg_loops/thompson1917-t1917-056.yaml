@@ -1,0 +1,34 @@
+sim_id: thompson1917-t1917-056
+math_family: geometric morphometrics / Thompson coordinate deformation
+model_spec:
+  model: "Thompson (1917) Ch. XVII Fig. 401-402 Eohippus→Equus equid skull transformation"
+  claim: "The skull of Eohippus (Hyracotherium) is transformed into that of Equus by coordinate deformation, with actual and hypothetical intermediates (after Heilmann) lying on the transformation."
+  empirical_data: "Dryad doi:10.5061/dryad.crjdfn3g3 (Wisniewski & Slater 2026 equid GM; fetch blocked in cloud VM); Thompson Fig. 401-402 digitised landmarks; gallery specimen photos."
+  inputs:
+    - datasets/thompson_1917/t1917-056/thompson_fig401_402_landmarks.json
+    - datasets/thompson_1917/t1917-056/scout_manifest.json
+equations:
+  - law_name: Procrustes rotation distance invariance
+    formula: "‖R p - R q‖² = ‖p - q‖² for orthogonal R"
+    lean_decl: MathOfBiology.Loop_245.sq_dist
+    lean_theorem: MathOfBiology.Loop_245.procrustes_rotation_preserves_sq_dist
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_056.lean
+    role: GPA superimposition before Thompson-style warps
+    variables: "R: 2×2 rotation; p,q: landmark coordinates in ℝ²"
+    source_citation: "Thompson (1917) Ch. XVII; Bookstein (1989) TPS"
+  - law_name: Equidistant stage interpolation endpoints (E2/E6)
+    formula: "phi_t with t=k/4: endpoints at k=0,4; uniform step b-a"
+    lean_decl: MathOfBiology.Loop_245.interp4
+    lean_theorem: MathOfBiology.Loop_245.interp_endpoints_and_equidistant
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_056.lean
+    role: Heilmann intermediate stages on the Thompson grid
+    variables: "k: stage index 0..4; a,b: corresponding landmarks"
+    source_citation: "Thompson (1917) pp. 765-767, Figs. 401-402"
+  - law_name: Similarity scale multiplies squared distances by k²
+    formula: "‖k p - k q‖² = k² ‖p - q‖²"
+    lean_decl: MathOfBiology.Loop_245.similarity_scale_sq_dist
+    lean_theorem: MathOfBiology.Loop_245.similarity_scale_sq_dist
+    lean_locus: morphoeval/lean/loops/Thompson1917_T1917_056.lean
+    role: Uniform scaling in Thompson rectilinear grids
+    variables: "k: uniform scale; p,q: landmarks"
+    source_citation: "Thompson (1917) coordinate deformation"
