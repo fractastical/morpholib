@@ -1,0 +1,88 @@
+# MorphoEval audit — T1917-030 unilocular Lagena Delaunay fit (Pass 1), 2026-10-31
+
+audit:
+  id: 2026-10-31-t1917-030-the-spiral-shells-of-the-foram-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  supersedes: null
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline; cloud loop thompson1917-t1917-030)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: foraminifera-surface-tension-geometry
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 35d30f4cf
+    environment: {python: "3.12", numpy: "2.x", scipy: "1.x", matplotlib: "3.x", Pillow: "10+"}
+
+simulations:
+  - id: thompson1917-t1917-030
+    name: "Thompson (1917) T1917-030 — unilocular Lagena vs Ch. V Delaunay catalogue (Pass 1)"
+    organism: "Lagena spp. and monothalamic Foraminifera (Fissurina, Oolina, Procerolagena)"
+    script: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py
+    output: docs/media/t1917_030_the_spiral_shells_of_the_foram_comparison.png
+    extra_outputs:
+      - datasets/thompson_1917/t1917-030/result.json
+    domain: foraminifera-surface-tension-geometry
+    status: evaluated
+    model_spec:
+      model: "Kenmotsu Delaunay flask/bead E7-E8; Pass 1 --pass1 fixed 0.06 nRMSE gate"
+      inputs:
+        - datasets/thompson_1917/t1917-030/thompson_1917_fig84_lagena_after_brady.png
+        - datasets/thompson_1917/t1917-030/kireenko_2022_bdj_e87457_fig19.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) Ch. XII with Ch. V: monothalamic Lagena as unduloid/flask surfaces before spiral coiling"
+      reconstructed_in_script:
+        - "Pass 1 meridian fit to Fig. 84 + Fig. 19 only; fixed RMSE gate"
+      does_not_claim:
+        - "No spiral-coiling chamber series fit; no molecular biomineralisation mechanism"
+    summary: >-
+      Pass 1 implements the Delaunay catalogue fitter with Fig. 84 and Kireenko Fig. 19 but uses a
+      fixed 0.06 gate only (no free-form floor, ablation, or full sweep export).
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "E3-E8 Kenmotsu/Delaunay composites match Ch. V equations; Lean Loop_224 theorems present."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [150, 235], note: "kenmotsu_profile, flask_profile E7", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_030.lean, lines: [32, 120], note: "roots_product, kenmotsu_envelope", supports: true}
+      specimen-match:
+        value: 58
+        rationale: "Fig. 84 Brady plate + CC Fig. 19 Lagena panels segmented; Ch. XII page vendored as context."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-030/scout_manifest.json, lines: [1, 40], note: "Fig 19 MATCH vetting", supports: true}
+          - {file: docs/media/t1917_030_the_spiral_shells_of_the_foram_comparison.png, lines: [0, 0], note: "comparison mosaic", supports: true}
+      parameter-expressivity:
+        value: 38
+        rationale: "Pass 1 skips exported B/t sweep panel and GIF regime table."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [528, 540], note: "parameter_sweep skipped when pass1", supports: false}
+      morphometric-validation:
+        value: 44
+        rationale: "nRMSE and Pearson r computed; Pass 1 lacks adaptive free-form gate and full KS/CV reporting in audit."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [395, 470], note: "fit_all statistics", supports: true}
+          - {file: datasets/thompson_1917/t1917-030/result.json, lines: [36, 50], note: "Pass 2 metrics overwrite Pass 1 run", supports: false}
+      source-traceability:
+        value: 86
+        rationale: "Scout manifest, reference JSON SHA pins, OpenAlex + IA + Commons URLs recorded."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-030/t1917_030_the_spiral_shells_of_the_foram_reference.json, lines: [1, 30], note: "equations + pins", supports: true}
+      code-traceability:
+        value: 74
+        rationale: "math_kg_loops yaml links Lean theorems to script."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-030.yaml, lines: [1, 30], note: "sim_id and equations", supports: true}
+      repro-package:
+        value: 70
+        rationale: "--self-test and SHA verify; --pass1 mode documented."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [900, 990], note: "self_test + CLI", supports: true}
+    overall:
+      value: 58.9
+    remediation:
+      - id: R1
+        item: "Pass 2: adaptive free-form floor gate, ellipsoid/sphere-cylinder ablation, full parameter sweep, Fig. 8 controls, KS/CV export"
+      - id: R2
+        item: "Document Pass 1 vs Pass 2 metrics separately in audit measurements"
