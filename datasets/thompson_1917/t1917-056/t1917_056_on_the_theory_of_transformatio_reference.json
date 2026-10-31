@@ -1,0 +1,40 @@
+{
+  "claim_id": "T1917-056",
+  "citation": "Thompson (1917), Ch. XVII, pp. 765-767, Figs. 401-402",
+  "claim_text": "The skull of Eohippus (Hyracotherium) is transformed into that of Equus by coordinate deformation, with actual and hypothetical intermediates (after Heilmann) lying on the transformation.",
+  "state_variables": {
+    "landmarks": "18 homologous lateral skull landmarks (Cardini 2019-style face/braincase scheme, Table S2 analogue)",
+    "stages": ["eohippus", "intermediate_1", "intermediate_2", "intermediate_3", "equus"],
+    "stage_parameter": "t = k/4 for k in {0,1,2,3,4}"
+  },
+  "equations": [
+    {"id": "E1", "formula": "phi: R^2 -> R^2 smooth, det(D phi) > 0", "role": "Thompson coordinate map carrying Eohippus grid to Equus"},
+    {"id": "E2", "formula": "phi_t(x) = (1 - t) x + t phi(x)", "role": "Equidistant intermediate grids (Heilmann)"},
+    {"id": "E3", "formula": "Omega_t = phi_t(Omega_A)", "role": "Predicted intermediate skull outlines"},
+    {"id": "E4", "formula": "TPS thin-plate spline (Bookstein 1989)", "role": "Numerical phi from landmark correspondences"},
+    {"id": "E5", "formula": "M_t = (1 - t) I + t A (affine)", "role": "Thompson rectilinear strain baseline"},
+    {"id": "E6", "formula": "phi_t(a_i) = (1 - t) a_i + t b_i", "role": "Landmark interpolation along transformation"},
+    {"id": "E7", "formula": "t*_k = argmin_t ||D_k - phi_t(A)||; residual |t*_k - k/4|", "role": "Equidistance of drawn intermediates"}
+  ],
+  "boundary_conditions": [
+    "Endpoints fixed: phi_0 = Eohippus configuration, phi_1 = Equus configuration",
+    "Intermediate stages at t in {1/4, 1/2, 3/4} on the same correspondence"
+  ],
+  "parameter_regime": [
+    {"name": "TPS lambda", "range": [0.0, 0.5], "default": 0.0},
+    {"name": "stage_count", "value": 4, "note": "three Heilmann intermediates between endpoints"},
+    {"name": "dryad_gm", "status": "blocked_fetch", "doi": "10.5061/dryad.crjdfn3g3"}
+  ],
+  "empirical_claims": [
+    "Heilmann intermediates lie on the Eohippus→Equus coordinate transformation (diagrammatic)",
+    "Modern equid skull evolution may deviate from pervasive CREA pattern (Wisniewski & Slater 2026; not a direct Thompson test)"
+  ],
+  "inputs_sha256": {
+    "thompson_fig401_402_landmarks.json": "e2d755701d463a2ef47f559ffb2653877bc0ee32583e4f634e1ab221297543c6",
+    "eohippus_specimen_gallery.jpg": "4f492b7fff0d285dc090002b29f9aca4a757bad6f4c08a8f5dd93b8a1bcfc0bf",
+    "equus_specimen_gallery.jpg": "b734dc3b533ffe889dee9f205dae9015580b4b3537a05743c602408063b17ca8",
+    "scout_manifest.json": "cb62934529ec73bd226de51def07a83cbfc3a0e962d429e0911c63b04706b984"
+  },
+  "lean_locus": "morphoeval/lean/loops/Thompson1917_T1917_056.lean",
+  "math_kg": "morphoeval/math_kg_loops/thompson1917-t1917-056.yaml"
+}
