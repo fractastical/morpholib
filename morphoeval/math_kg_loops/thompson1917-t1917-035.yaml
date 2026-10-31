@@ -1,0 +1,43 @@
+sim_id: thompson1917-t1917-035
+math_family: "Mechanistic-geometric: axisymmetric thin shell / membrane meridian under Thompson (1917) envelope pressure and tension"
+claim_id: T1917-035
+claim: "Certain hollow structures (e.g. sea-urchin tests diagrammed in Fig. 328, skulls and other shells) take forms explicable as membranes/shells under pressure and tension."
+source_citation: "Thompson, D.W. (1917) On Growth and Form, Ch. XV, pp. 652-669, Figs. 328"
+model_spec:
+  model: "Sea-urchin test meridian y(x) = (c0 + c1 x + c2 x^2 + c3 x^3) sqrt(1 - x^2); Thompson envelope p_n + T (1/r + 1/r') = P; pole equilibrium P R = 2 T"
+  normalisation: "half-length = 1; axis = vertical profile direction"
+  datasets:
+    - "Wikimedia Commons CC BY 2.0 (primary + panel); Dryad dn160 excluded (MISMATCH)"
+  seed: 1917035
+  inputs:
+    - datasets/thompson_1917/t1917-035/t1917_035_on_the_shapes_of_eggs_and_of_c_reference.json
+    - datasets/thompson_1917/t1917-035/commons_sea_urchin_test_structure_8340336761.jpg
+    - datasets/thompson_1917/t1917-035/commons_sea_urchin_tests_7_77.jpg
+    - datasets/thompson_1917/t1917-035/echinoid_test_literature_ratios.csv
+equations:
+  - law_name: "Preston meridian pole radii and reflection invariance (hollow shell profile)"
+    formula: "R_pole = p(±1)^2; p(1)-p(-1)=2(c1+c3)"
+    lean_decl: "MathOfBiology.Loop_229.prestonPoly"
+    lean_theorem: "MathOfBiology.Loop_229.preston_pole_symmetry_and_sphere"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_035.lean"
+    code_locus: "thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py"
+    variables: "c0..c3 Preston coefficients; R_pole osculating radius at poles"
+    role: "Defines axisymmetric meridian of hollow urchin test and pole-radius symmetry for symmetric ends"
+    source_citation: "Thompson (1917) Ch. XV Fig. 328; Preston (1953) meridian family"
+  - law_name: "Solid-of-revolution volume functional"
+    formula: "315 V / (4 pi (L/2)^3) = prestonVolume315(c)"
+    lean_decl: "MathOfBiology.Loop_229.prestonVolume315"
+    lean_theorem: "MathOfBiology.Loop_229.preston_volume_sphere_scaling"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_035.lean"
+    variables: "V volume; L length; c0..c3"
+    role: "Quantifies enclosed volume of the membrane-bounded shell"
+    source_citation: "Thompson (1917) p. 652 solid of revolution"
+  - law_name: "Thompson envelope pole equilibrium P R = 2 T"
+    formula: "laplaceResidual = p_n r r' + T (r + r') - P r r'"
+    lean_decl: "MathOfBiology.Loop_229.laplaceResidual"
+    lean_theorem: "MathOfBiology.Loop_229.thompson_envelope_pole_equilibrium"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_035.lean"
+    code_locus: "thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py"
+    variables: "p_n normal pressure; T tension; r,r' principal radii; P internal pressure"
+    role: "Thompson pressure/tension closure used in thompson_closure and mean curvature profile"
+    source_citation: "Thompson (1917) pp. 658-659 envelope equation"
