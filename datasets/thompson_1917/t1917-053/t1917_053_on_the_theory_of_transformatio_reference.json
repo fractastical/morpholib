@@ -1,0 +1,54 @@
+{
+  "claim_id": "T1917-053",
+  "slot": 242,
+  "slot_id": "thompson1917-t1917-053",
+  "citation": "Thompson, D.W. (1917) On Growth and Form, Ch. XVII, p. 756, Fig. 387",
+  "claim_text": "The skulls of Dimorphodon and Pteranodon are related by coordinate transformation.",
+  "quote_printed": "In Fig. 387, a, we have the skull of Dimorphodon, and in Fig. 387, b, that of Pteranodon. ... The two co-ordinate systems are superposed in Fig. 387, b; and it is seen that the transformation of the one into the other is of a simple kind.",
+  "equations": {
+    "E0": "All vendored inputs SHA-256 pinned in inputs_sha256; script fails closed on mismatch",
+    "E1": "phi : R^2 -> R^2 orientation-preserving (det D phi > 0 on the form domain)",
+    "E2": "phi_t(x) = (1 - t) x + t phi(x), homotopy from identity to the Dimorphodon->Pteranodon grid map",
+    "E4": "Thin-plate spline (Bookstein 1989) fitted on cranial landmarks + semilandmarks: phi(P_dim) = P_pte",
+    "E5": "Affine least-squares control: Q ~ [1 P] M",
+    "E7": "t* = <D - A, B - A> / |B - A|^2 for best-fit stage along the warp segment"
+  },
+  "state_variables": {
+    "P_dim": "Landmark configuration on Dimorphodon skull outline (Fig. 387a, Cartesian grid)",
+    "P_pte": "Corresponding landmarks on Pteranodon skull (Fig. 387b, oblique grid)",
+    "phi": "Coordinate transformation (TPS or affine realisation)",
+    "t": "Homotopy parameter in [0, 1]"
+  },
+  "boundary_conditions": {
+    "grid_a": "8 x 4 Cartesian grid on Dimorphodon (Thompson Fig. 387a)",
+    "grid_b": "Oblique converging-ray grid on Pteranodon (Fig. 387b)",
+    "correspondence": "Orbit + four cranial process tips + equal arc-length semilandmarks between tips"
+  },
+  "parameter_regime": [
+    {"n_semi": 8, "lambda": 0.0, "role": "coarse semilandmarks, exact TPS at anchors"},
+    {"n_semi": 20, "lambda": 0.0, "role": "default Pass 2"},
+    {"n_semi": 24, "lambda": 0.01, "role": "regularised TPS ablation"},
+    {"n_semi": 32, "lambda": 0.1, "role": "strong smoothing ablation"}
+  ],
+  "inputs_sha256": {
+    "ongrowthform1917thom_p756_leaf0775_fig387.jpg": "faf3c2cff141abad187606ad3c48129c0f1a265fd9f5c7dc2388ce98a47501f3",
+    "dryad_4nr4cf37_metadata.json": "2b2c64fd9aacd5b1800e5701470565df53401fac1be33866bbaa4295644f8459",
+    "nie1905_dimorphodon_pteranodon_comparison.png": "18604cc23a3c76352b2005da7d246d59cbaa27cb76ef4d9b7d6d10825de361b7",
+    "pteranodon_longiceps_ypm1177_vendored.jpg": "5f3272484ee1b584dc21a269c8869472696f05c8fbcdf2cd4a682004e8748158"
+  },
+  "pre_scouted_dryad": {
+    "identifier": "doi:10.5061/dryad.4nr4cf37",
+    "title": "Foth et al. (2012) Pterosauria cranial geometric morphometrics (MorphoJ)",
+    "matches_claim_species": "partial — clade-wide pterosaur skull landmarks; Dimorphodon and Pteranodon may appear but pair n=2 is not the dataset design",
+    "matches_claim_variables": true,
+    "file_status": "NOT RETRIEVED — Dryad /api/v2/files/95729/download returns 401 without OAuth; labelled clade-frame analogue only, not used for verdict",
+    "verdict_on_dataset": "SPECIES_OK_VARIABLES_OK_FILE_BLOCKED"
+  },
+  "ia_provenance": {
+    "item": "ongrowthform1917thom",
+    "url": "https://archive.org/details/ongrowthform1917thom",
+    "printed_page": 756,
+    "leaf_rule": "printed page = leaf - 20; p.756 = leaf 775 = IA page index n774 (0-based URL n775_w1200.jpg)",
+    "figure": "387 — Dimorphodon (a) and Pteranodon (b) with superposed coordinate systems"
+  }
+}
