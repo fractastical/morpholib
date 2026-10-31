@@ -1,0 +1,76 @@
+# MorphoEval audit — T1917-053 Dimorphodon ↔ Pteranodon skull (Fig. 387), Pass 1 (v1)
+audit:
+  id: 2026-10-31-t1917-053-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (builder-assessor, Pass 1)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 35d30f4cf
+    environment:
+      python: "3.12"
+  note: Pass 1 baseline (--pass1); no sweep, null, specimen CV, or Jacobian check.
+
+simulations:
+  - id: thompson1917-t1917-053
+    name: "Thompson (1917) Fig. 387: Dimorphodon -> Pteranodon skull coordinate transformation"
+    organism: "Dimorphodon macronyx and Pteranodon longiceps (lateral skull, Thompson line drawings)"
+    script: thompson/claims/t1917-053_on-the-theory-of-transformations.py
+    output: docs/media/t1917_053_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_053_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-053/result.json
+    status: evaluated
+    summary: >-
+      Pass 1 segments Fig. 387a/b skull outlines (Otsu), places orbit + 4 tip landmarks + semilandmarks,
+      fits TPS Dimorphodon->Pteranodon. Dense-outline Procrustes reported; no null/sweep/CV yet.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: "TPS/affine/interp_stage implemented; Lean mirror present; Thompson oblique grid not digitised; no Jacobian in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [318, 360], note: "tps_fit/tps_apply, affine_fit, interp_stage", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_053.lean, lines: [1, 120], note: "5 theorems, 0 sorry", supports: true}
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [1, 1], note: "Thompson oblique grid not digitised line-by-line; no Jacobian check in Pass 1", supports: false}
+      specimen-match:
+        value: 58
+        rationale: "Comparison PNG from Fig. 387 segmentation; real Pteranodon photo not analysed in Pass 1."
+        evidence:
+          - {file: docs/media/t1917_053_on_the_theory_of_transformatio_comparison.png, lines: [0, 0], note: "three-panel dim / warp / pte comparison", supports: true}
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [1, 1], note: "Pteranodon photograph vendored but not segmented in Pass 1", supports: false}
+      parameter-expressivity:
+        value: 40
+        rationale: "GIF over phi_t; no parameter sweep in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [400, 430], note: "growth GIF over phi_t", supports: true}
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [520, 540], note: "--pass1 skips parameter_sweep", supports: false}
+      morphometric-validation:
+        value: 48
+        rationale: "Dense-outline Procrustes and controls; no null or KS in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [250, 290], note: "Procrustes on resampled dense outlines; similarity/affine/copy controls", supports: true}
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [1, 1], note: "no shuffled-null, KS, or sweep in Pass 1", supports: false}
+      source-traceability:
+        value: 86
+        rationale: "SHA-256 pins, IA page, Dryad metadata, OpenAlex logged in scout manifest."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-053/t1917_053_on_the_theory_of_transformatio_reference.json, lines: [1, 60], note: "SHA-256 pins + Dryad metadata record", supports: true}
+      code-traceability:
+        value: 78
+        rationale: "Docstring + math_kg_loops YAML link equations to Lean."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-053.yaml, lines: [1, 40], note: "equations linked to Lean", supports: true}
+      repro-package:
+        value: 74
+        rationale: "self_test, pinned hashes, --pass1 CLI; PNG git-ignored by policy."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [490, 510], note: "self_test hash + warp checks", supports: true}
+    remediation:
+      - {id: R1, item: "Parameter sweep n_semi x lambda; shuffled-landmark null; KS on residuals"}
+      - {id: R2, item: "Specimen CV on pteranodon_longiceps_ypm1177_vendored.jpg; Jacobian no-fold on grid"}
+      - {id: R3, item: "Score dense outlines (landmark-exact TPS is tautological on anchors)"}
