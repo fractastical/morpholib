@@ -24,7 +24,7 @@ This document provides a technical deep-dive into the primary biological, morpho
 
 ## Table of Contents
 
-1. [**Discovery I — Resolving the 109-Year Paradox in D'Arcy Thompson's 1917 Fish Transformations**](#discovery-i--resolving-the-109-year-paradox-in-darcy-thompsons-1917-fish-transformations)
+1. [**Discovery I — Why 17-landmark and 600-point outline fits of Thompson's 1917 fish pairs disagree, and which one his grids pass**](#discovery-i--why-17-landmark-and-600-point-outline-fits-of-thompsons-1917-fish-pairs-disagree-and-which-one-his-grids-pass)
    - [1.1 The 17-Landmark Skeletal Wireframe vs. 600-Semilandmark Whole-Body Outline Discrepancy](#11-the-17-landmark-skeletal-wireframe-vs-600-semilandmark-whole-body-outline-discrepancy)
    - [1.2 Direct 600-Semilandmark Outline Fitting (Anchored on Bookstein's Baseline) Recovers All Six 1917 Pairs](#12-direct-600-semilandmark-outline-fitting-anchored-on-booksteins-baseline-recovers-all-six-1917-pairs)
    - [1.3 The ~45–50 Myr Evolutionary Disparity Transition & Craniofacial-vs.-Fin Modularity Across 791 Species (4,334 Dated Pairs)](#13-the-4550-myr-evolutionary-disparity-transition--craniofacial-vs-fin-modularity-across-791-species-4334-dated-pairs)
@@ -39,7 +39,7 @@ This document provides a technical deep-dive into the primary biological, morpho
    - [1.12 Pre-Registered Blind Test Against 5,180 Never-Seen Species (FishShapes v1): What Held and What Did Not](#112-pre-registered-blind-test-against-5180-never-seen-species-fishshapes-v1-what-held-and-what-did-not)
    - [1.13 Methods, Models Used, Knowledge-Graph Queries & Repository Code Provenance (`docs/THOMPSON_METHODS.md`)](#113-methods-models-used-knowledge-graph-queries--repository-code-provenance)
    - [1.14 Referee-Audited Synthesis of Thompson's 1917 Arthropods (Figs. 367–370), Scholtz et al. (2020) Crab Carapaces, Antscan (2026) Soldier Castes (Fig. 359), and Turing Open Problems TOP-03 & TOP-07](#114-referee-audited-synthesis-of-thompsons-1917-arthropods-figs-367370-scholtz-et-al-2020-crab-carapaces-antscan-2026-soldier-castes-fig-359-and-turing-open-problems-top-03--top-07)
-2. [**Discovery II — Genuine Mathematical & Biological Discoveries in Wolfram's Rule 30 and *Conus textile* Shell Morphogenesis**](#discovery-ii--genuine-mathematical--biological-discoveries-in-wolframs-rule-30-and-conus-textile-shell-morphogenesis)
+2. [**Discovery II — Results on Wolfram's Rule 30 and *Conus textile* Shell Morphogenesis**](#discovery-ii--results-on-wolframs-rule-30-and-conus-textile-shell-morphogenesis)
    - [2.1 Closed-Form Kogge–Stone Carry-Lookahead Cycle Operator $\mathcal{T}_P$ (Theorem 1–2)](#21-closed-form-koggestone-carry-lookahead-cycle-operator-mathcalt_p-theorem-12)
    - [2.2 Unconditional Non-Cycling & Infinite Period-Doubling $\lim_{k\to\infty} P_k = \infty$ for All $P = 2^m$ (Theorem 4)](#22-unconditional-non-cycling--infinite-period-doubling-lim_ktoinfty-p_k--infty-for-all-p--2m-theorem-4)
    - [2.3 Discovery of the First Even-Parity Silent Barrier ($k = 53,208$), the 16-Leaf Binary Barrier Tree on $P = 16$, and Exact Resolution of $k_5 = 87,867$ (Theorem 3 & Proposition 1)](#23-discovery-of-the-first-even-parity-silent-barrier-k--53208-the-16-leaf-binary-barrier-tree-on-p--16-and-exact-resolution-of-k_5--87867-theorem-3--proposition-1)
@@ -51,7 +51,9 @@ This document provides a technical deep-dive into the primary biological, morpho
 
 ---
 
-## Discovery I — Resolving the 109-Year Paradox in D'Arcy Thompson's 1917 Fish Transformations
+## Discovery I — Why 17-landmark and 600-point outline fits of Thompson's 1917 fish pairs disagree, and which one his grids pass
+
+*Status (2026-11-04): the numbers below are computed and reproducible; no outside reviewer has yet confirmed that the comparison criteria are fair. The dataset's author (Wainwright) set the two benchmarks in §1.5–1.6 and has not reviewed their outcome. Until he or another morphometrician does, read "discovery" as "result".*
 
 **Manuscript PDF:** [`docs/thompson_1917_fish_transformations_manuscript.pdf`](./thompson_1917_fish_transformations_manuscript.pdf) ([LaTeX source](./thompson_1917_fish_transformations_manuscript.tex)) · **Full Discovery Chat Log:** [`docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`](./THOMPSON_1917_DISCOVERY_CHAT_LOG.md) ([JSONL](./thompson_1917_discovery_chat_log.jsonl))  
 **Executable Scripts:** [`thompson/1917-thompson-four-families-atlas.py`](../thompson/1917-thompson-four-families-atlas.py) $\cdot$ [`thompson/1917-thompson-silhouette-area-paradox.py`](../thompson/1917-thompson-silhouette-area-paradox.py) $\cdot$ [`thompson/run_rigor_stress_tests.py`](../thompson/run_rigor_stress_tests.py) $\cdot$ [`thompson/run_wainwright_600pt_and_convergence_tests.py`](../thompson/run_wainwright_600pt_and_convergence_tests.py) $\cdot$ [`thompson/generate_summary_animation_gif.py`](../thompson/generate_summary_animation_gif.py)  
@@ -72,7 +74,7 @@ We formalized all four of Thompson's 1917 fish coordinate families as explicit 5
 When we evaluated these four coordinate laws on both the **standard 17 homologous skeletal landmarks** and the **continuous 600-semilandmark whole-body outlines**, we uncovered a fundamental methodological discrepancy:
 
 - In the standard 17-landmark reef-fish protocol (Claverie & Wainwright 2014), **9 of the 17 landmarks ($53\%$ of the ordinary least-squares weight) lie in the craniofacial partition** (snout, jaws, eye, and opercle: $\mathrm{LM}\,1\text{–}2, 11\text{–}17$), while the remaining **8 landmarks mark only the basal fin-ray insertions along the body wall** ($\mathrm{LM}\,3\text{–}10$). **Zero landmarks ($0\%$) sample the distal margins of the dorsal fin, anal fin, caudal fin, or ventral body profile.**
-- Consequently, when a 5- to 8-parameter coordinate grid (or even an exact 34-parameter Thin-Plate Spline!) is fitted to the 17 landmarks of an interfamily pair such as *Scarus ghobban* $\to$ *Pomacanthus semicirculatus* and the real 600-semilandmark fish outline is carried along with the grid, **the 17-landmark fit actively degrades the whole-body silhouette compared to no non-rigid deformation at all**:
+- Consequently, when a 5- to 8-parameter coordinate grid (or an exact 34-parameter thin-plate spline) is fitted to the 17 landmarks of an interfamily pair such as *Scarus ghobban* $\to$ *Pomacanthus semicirculatus* and the real 600-semilandmark fish outline is carried along with the grid, **the 17-landmark fit actively degrades the whole-body silhouette compared to no non-rigid deformation at all**:
   - On *Scarus* $\to$ *Pomacanthus* (Figs. 375–376), the symmetric non-overlapping area $|\Omega_A \Delta \Omega_B| = |\Omega_B \setminus \Omega_A| + |\Omega_A \setminus \Omega_B|$ **worsens from $40.6\%$ (unwarped 4p Procrustes similarity) to $56.2\%$ of target fish area** (creating a $47.2\%$ posterior blue overhang; $\mathrm{IoU}$ drops from $0.662 \to 0.618$, and drops to $0.629$ even under an exact 34p TPS).
   - On *Scorpaena* $\to$ *Antigonia* (Figs. 379–380), 17-landmark fitting worsens $|\Omega_A \Delta \Omega_B|$ from **$102.2\%$ (unwarped) to $143.7\%$** ($\mathrm{IoU}: 0.417 \to 0.389$).
   - On *Argyropelecus* $\to$ *Sternoptyx* (Figs. 373–374), 17-landmark fitting worsens $|\Omega_A \Delta \Omega_B|$ from **$58.4\%$ (unwarped) to $63.0\%$**.
@@ -186,9 +188,9 @@ Running that exact comparison across all six of Thompson's 1917 pairs (`thompson
 
 1. **The "Box-Stretch Illusion" on Unlabeled 600-Point Silhouettes (Panel A):**
    When the 600-point silhouette is treated as an **unlabeled black shadow** (anchored only at the snout and tail base via nearest-neighbor Chamfer distance), a trivial **4-parameter Rectangular Box Stretch ($x' = a x + t_x,\; y' = d y + t_y$, zero skew, zero curve)** already accounts for **$81\%$ to $100\%$ of the silhouette overlap gain on 5 of the 6 pairs**:
-   - *Pristigenys* $\to$ *Scorpaena*: Unwarped $120.1\% \to$ **4p Box Stretch $35.2\%$** vs. 8p Fan $35.5\%$ (**$100\%$ of shadow gain is Box Scaling!**)
-   - *Scorpaena* $\to$ *Antigonia*: Unwarped $102.2\% \to$ **4p Box Stretch $57.6\%$** vs. 8p Fan $57.6\%$ (**$100\%$ of shadow gain is Box Scaling!**)
-   - *Diodon* $\to$ *Mola mola*: Unwarped $70.8\% \to$ **4p Box Stretch $32.8\%$** ($2.98\times$ vertical stretch) vs. 8p Radial $34.2\%$ (**$100\%$ of shadow gain is Box Scaling!**)
+   - *Pristigenys* $\to$ *Scorpaena*: Unwarped $120.1\% \to$ **4p Box Stretch $35.2\%$** vs. 8p Fan $35.5\%$ (all of the shadow gain is box scaling)
+   - *Scorpaena* $\to$ *Antigonia*: Unwarped $102.2\% \to$ **4p Box Stretch $57.6\%$** vs. 8p Fan $57.6\%$ (all of the shadow gain is box scaling)
+   - *Diodon* $\to$ *Mola mola*: Unwarped $70.8\% \to$ **4p Box Stretch $32.8\%$** ($2.98\times$ vertical stretch) vs. 8p Radial $34.2\%$ (all of the shadow gain is box scaling)
    - *Polyprion* $\to$ *Pristigenys*: Unwarped $33.2\% \to$ **4p Box Stretch $18.4\%$** vs. 8p Fan $17.2\%$ (**$92.6\%$ is Box Scaling; Fan adds $-1.2$ pts**).
    - *Scarus* $\to$ *Pomacanthus*: Unwarped $40.6\% \to$ **4p Box Stretch $26.4\%$** vs. 8p Coaxial $23.0\%$ (**$81.0\%$ is Box Scaling; Coaxial curvature adds $-3.4$ pts**).
    - **Only on Pair 1 (*Argyropelecus* $\to$ *Sternoptyx*, Figs. 373–374)** does non-rectangular skewing substantially improve the unlabeled shadow itself: **4p Box Stretch fails ($55.4\%$), and Thompson's Oblique Shear cuts $|\Omega_A \Delta \Omega_B|$ by $-9.9\text{ to }-12.2$ percentage points ($45.6\% / 43.2\%$)** (whereas the 17-landmark fit recovered almost zero shear: $87.0^\circ \approx 90^\circ$ vertical!).
@@ -201,11 +203,11 @@ Running that exact comparison across all six of Thompson's 1917 pairs (`thompson
 | 1917 Species Pair & Thompson's Claim | Unlabeled 600-pt Shadow $|A\Delta B|$ (`4p Box` $\to$ `Thompson`) | **8 Homologous Perimeter Fin-Bases ($\mathrm{LM}\,1\text{–}8$, No Skull):**<br>`4p Box (No Skew/Curve)` $\to$ **`Thompson Warp`** (`Gain`) | **12 Homologous Perimeter + Fin-Apex Landmarks:**<br>`4p Box (No Skew/Curve)` $\to$ **`Thompson Warp`** (`Gain`) |
 | :--- | :---: | :---: | :---: |
 | **1. *Argyropelecus* $\to$ *Sternoptyx*** (`Shear`) | $55.4\% \to \mathbf{45.6\%}$ (**$-9.9$ pts**) | $76.7\% \to \mathbf{89.9\%}$ (**$+13.2\%$**) | $23.7\% \to \mathbf{31.6\%\text{–}71.8\%}$ (**$+7.9\%\text{ to }+48.0\%$**) |
-| **2. *Scarus* $\to$ *Pomacanthus*** (`Coaxial`) | $26.4\% \to \mathbf{23.0\%}$ (**$-3.4$ pts**) | $39.6\% \to \mathbf{43.2\%\text{–}70.7\%}$ (**$+3.6\%\text{ to }+31.1\%$**) | **$2.4\%$** *(Box fails!)* $\to \mathbf{30.7\%\text{–}35.3\%}$ (**$+28.4\%\text{ to }+32.9\%$**) |
+| **2. *Scarus* $\to$ *Pomacanthus*** (`Coaxial`) | $26.4\% \to \mathbf{23.0\%}$ (**$-3.4$ pts**) | $39.6\% \to \mathbf{43.2\%\text{–}70.7\%}$ (**$+3.6\%\text{ to }+31.1\%$**) | **$2.4\%$** *(box stretch fails)* $\to \mathbf{30.7\%\text{–}35.3\%}$ (**$+28.4\%\text{ to }+32.9\%$**) |
 | **3. *Polyprion* $\to$ *Pristigenys*** (`Fan`) | $18.4\% \to \mathbf{17.2\%}$ (**$-1.2$ pts**) | $59.2\% \to \mathbf{73.7\%\text{–}81.6\%}$ (**$+14.5\%\text{ to }+22.3\%$**) | $71.2\% \to \mathbf{72.1\%\text{–}73.7\%}$ (**$+0.9\%\text{ to }+2.5\%$**) |
 | **4. *Pristigenys* $\to$ *Scorpaena*** (`Fan`) | $35.2\% \to 35.5\%$ ($0.0$ pts) | $81.1\% \to \mathbf{84.5\%\text{–}94.0\%}$ (**$+3.4\%\text{ to }+12.9\%$**) | $54.7\% \to \mathbf{62.0\%\text{–}90.7\%}$ (**$+7.4\%\text{ to }+36.0\%$**) |
-| **5. *Scorpaena* $\to$ *Antigonia*** (`Fan`) | $57.6\% \to 57.6\%$ ($0.0$ pts) | $37.2\% \to \mathbf{67.1\%\text{–}67.5\%}$ (**$+29.9\%\text{ to }+30.3\%$**) | $42.2\% \to \mathbf{53.2\%}$ (**$+11.0\%$**, `Fan` #1!) |
-| **6. *Diodon* $\to$ *Mola mola*** (`Radial`) | $32.8\% \to 34.2\%$ ($0.0$ pts) | $56.0\% \to \mathbf{97.2\%}$ (**$+41.2\%$**, `Radial` #1!) | $52.0\% \to \mathbf{65.6\%\text{–}74.7\%}$ (**$+13.6\%\text{ to }+22.7\%$**) |
+| **5. *Scorpaena* $\to$ *Antigonia*** (`Fan`) | $57.6\% \to 57.6\%$ ($0.0$ pts) | $37.2\% \to \mathbf{67.1\%\text{–}67.5\%}$ (**$+29.9\%\text{ to }+30.3\%$**) | $42.2\% \to \mathbf{53.2\%}$ (**$+11.0\%$**, `Fan` best) |
+| **6. *Diodon* $\to$ *Mola mola*** (`Radial`) | $32.8\% \to 34.2\%$ ($0.0$ pts) | $56.0\% \to \mathbf{97.2\%}$ (**$+41.2\%$**, `Radial` best) | $52.0\% \to \mathbf{65.6\%\text{–}74.7\%}$ (**$+13.6\%\text{ to }+22.7\%$**) |
 
 ![Deconfounding 600 Points vs 17 Points: Box Scaling vs True Thompson Warping](./outreach_fig7_box_stretch_vs_true_thompson_warping.png)
 
@@ -229,7 +231,7 @@ Running that exact comparison across all six of Thompson's 1917 pairs (`thompson
 
 Decomposing every species into its **Global 8p Thompson Coordinate Field** ($\Delta Y_i^{\text{Thompson}}$) plus its **Local Modular Residual** ($\boldsymbol{\varepsilon}_i^{\text{Modular}}$) resolves four major downstream problems in phylogenetic comparative biology (`geomorph`, `mvMORPH`, `phytools`, `OUwie`):
 
-1. **Resolving Harmon et al.'s (2010) "Rare Early Burst" Paradox (Removing Sympatric Tip-Rate Inflation):**
+1. **A possible contribution to Harmon et al.'s (2010) rare-early-burst problem (removing sympatric tip-rate inflation), on this dataset only:**
    Why do empirical morphometric datasets almost never show Simpson's (1944) "Early Burst" of macroevolutionary disparity, instead favoring single-stationary-peak Ornstein–Uhlenbeck (OU) or "Late Burst" models with elevated rates near the tips of the tree (Harmon et al. 2010, *Evolution* 64:2385)? Across our 4,334 dated pairs (Panel A below), the apparent evolutionary rate $\sigma^2(t) = d_P^2 / t$ of the **Local Craniofacial/Jaw Module spikes by $5.37\times$ in young congeneric tip divergences** (`0–10 Myr`: $1.58 \times 10^{-5}\text{ Proc}^2/\text{Myr}$ vs. `25–50 Myr`: $0.30 \times 10^{-5}$), driven by sympatric trophic competition. Because standard 17-landmark schemes put $53\%$ of landmarks in the head, unseparated PCA mixes this $5.37\times$ sympatric jaw tip-spike into `PC1/PC2`, masking the deep-time macroevolutionary radiation (`50–110 Myr`) where the **Global 8p Thompson Body Rate exceeds the jaw rate by up to $2.17\times$** ($0.73\text{–}1.22 \times 10^{-5}$ vs. $0.34\text{–}0.83 \times 10^{-5}$).
 2. **$4.5\times$ Higher Phylogenetic-to-Tip Signal Ratio for Systematics & Paleobiology:**
    Across 10,303 species (`440` families, `987` genera; Panel B), axial body and fin-insertion traits (`PPL` $86.3\%$, `PDL` $85.4\%$, `BD` $78.7\%$ between-family variance vs. only $6.3\%\text{–}7.5\%$ within-genus variance) achieve a **$10.5\times\text{ to }13.6\times$ Phylogenetic-to-Tip Signal Ratio**, whereas craniofacial snout and eye traits (`POL` $59.0\%$, `ED` $58.5\%$ between-family vs. $19.1\%\text{–}19.4\%$ within-genus) drop **$4.5\times$** to just **$3.04\times\text{–}3.07\times$**.
@@ -336,15 +338,17 @@ To document how this investigation was conducted end-to-end, [`docs/THOMPSON_MET
 
 ![Empirical Tests of D'Arcy Thompson's Coordinate Laws & Modular Allometry in Ant Castes](./outreach_fig8_antscan_caste_allometry_hypotheses.png)
 
-3. **Empirical Resolution of Turing Open Problems `TOP-03` (`OP-14`) and `TOP-07` (`OP-12`):**
+3. **Empirical verdicts on Turing open problems `TOP-03` (`OP-14`) and `TOP-07` (`OP-12`), under the stated reductions:**
    - **`TOP-03` (3-Node vs. 2-Node Turing Parameter-Space Volume & Local Uncertainty Retention — CONFIRMED):** Using an exact 1D scalar steady-state reduction and multilinear determinant filter on the 6-species dimensionless PDE model of Tica et al. (2024, *Cell Systems* 15:1123–1132, Zenodo `10.5281/zenodo.13912813`) across $N = 400,000$ Latin-hypercube samples, the 3-node immobile-node topology achieves **`0.0160%`** stationary Turing I patterning (vs. `0.022%` in Tica et al. and `0.008%` in Scholes et al. 2019 `#3954`), outperforming the classical 2-node competitive Hill circuit (**`0.0025%`**) by **`6.40×`**, while local Gaussian parameter-uncertainty retention around the experimentally fitted Turing I solution (`Table S6, Fig. 2D.3`, $\lambda_c = 3.59\text{ mm}$) reproduces Tica et al.'s `Fig. S24` almost identically: **`35.6%` vs. `33.5%` at `1%` noise** and **`4.5%` vs. `5.0%` at `5%` noise**.
    - **`TOP-07` (Meinhardt Mantle PDE vs. Lean-Proved Rule 30 Neural Gate — REFUTED BY $\mathrm{O}(2)$ REFLECTION SYMMETRY):** Extracting the empirical 3-neighborhood transducer table $P(a_{t+1,i}=1 \mid l, c, r)$ from the Meinhardt–Klingler *Conus* PDE (`models/1984-wolfram-conus-textile-rule30.py`) yields **`49.68%` agreement with Rule 30** (indistinguishable from a `50.0%` coin flip and `50.01%` for symmetric Rule 90) and best-fit symmetric persistence **Rule 236 (`96.9%` at $\mathrm{d}t=1$) / Rule 254 (`85.2%` at $\mathrm{d}t=5$)**. Because the 1D Laplacian $\partial^2/\partial x^2$ is reflection-symmetric ($x \mapsto -x$), any isotropic reaction–diffusion PDE enforces $P(1 \mid 0,1,1) = P(1 \mid 1,1,0)$ (`0.737` vs. `0.747`, $|\Delta_{\text{chiral}}| = 0.0094$), whereas Rule 30 requires a **`100%` chiral split** ($011 \mapsto 1$ vs. $110 \mapsto 0$, $|\Delta_{\text{chiral}}| = 1.0000$)—proving that generating Rule 30 on a mollusk shell requires explicit spatial parity breaking, as in the Lean-proved Ermentrout–Oster neural gate $E(l,c,r) = 2l + (c \lor r) \in [1, 2]$ ($w_L = 2 \ne w_R = 1$).
 
-![Empirical Resolution of Turing Open Problems TOP-03 and TOP-07](./outreach_fig11_turing_top03_top07_verdicts.png)
+![Empirical verdicts on Turing open problems TOP-03 and TOP-07 under the stated reductions](./outreach_fig11_turing_top03_top07_verdicts.png)
 
 ---
 
-## Discovery II — Genuine Mathematical & Biological Discoveries in Wolfram's Rule 30 and *Conus textile* Shell Morphogenesis
+## Discovery II — Results on Wolfram's Rule 30 and *Conus textile* Shell Morphogenesis
+
+*Which of these are unconditionally proved, which are conditional and which are open is stated in §2.7; nothing above §2.7 should be read as stronger than its tier there.*
 
 **Proof Manuscript & Audit Reports:** [`docs/RULE30_PRIZE_SUBMISSION.md`](./RULE30_PRIZE_SUBMISSION.md) $\cdot$ [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md) $\cdot$ [`docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md`](./RULE30_DEFECT_FRONTS_MATH_REVIEW.md) $\cdot$ [`docs/RULE30_BAYESIAN_DELPHI_ASSESSMENT.md`](./RULE30_BAYESIAN_DELPHI_ASSESSMENT.md)  
 **Executable Script:** [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py) (`python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only`)  
