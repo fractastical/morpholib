@@ -156,7 +156,7 @@ To connect Thompson's transformations directly to standard evolutionary morphosp
 
 A foundational test in evolutionary quantitative genetics (Lande 1979; Schluter 1996, *"Adaptive radiation along genetic lines of least resistance"*) asks whether long-term macroevolutionary diversification ($\mathbf{R}$, the between-clade covariance matrix across $\sim 150\text{ Myr}$) is channeled along the principal axis of within-taxon variation ($\mathbf{G}$, the pooled within-genus covariance matrix across $n = 518$ congeneric species in 62 multi-species genera).
 
-When we ran Schluter's $\mathbf{g}_{\max}$ vs. $\mathbf{r}_{\max}$ alignment test across the 791-species dataset—first in **raw 34D Procrustes landmark space**, and then after orthogonally decomposing every species into its **Global 8p Thompson Coordinate Field** ($\Delta Y_i^{\text{Thompson}}$) plus its **Local Modular Residual** ($\boldsymbol{\varepsilon}_i^{\text{Modular}} = Y_i - Y_i^{\text{Thompson}}$)—we uncovered a striking separation between **generative morphospace constraints** and **sympatric competitive character displacement**:
+When we ran Schluter's $\mathbf{g}_{\max}$ vs. $\mathbf{r}_{\max}$ alignment test across the 791-species dataset—first in **raw 34D Procrustes landmark space**, and then after orthogonally decomposing every species into its **Global 8p Thompson Coordinate Field** ($\Delta Y_i^{\text{Thompson}}$) plus its **Local Modular Residual** ($\boldsymbol{\varepsilon}_i^{\text{Modular}} = Y_i - Y_i^{\text{Thompson}}$)—we found a separation between **generative morphospace constraints** and **sympatric competitive character displacement**:
 
 1. **Why Schluter's Test Appears to Fail in Raw 34D Landmark Space ($\theta = 64.6^\circ$, $|\cos\theta| = 0.429$):**
    In unseparated 34D landmark space, the principal axis of within-genus variation $\mathbf{g}_{\max}$ and the principal axis of between-clade macroevolution $\mathbf{r}_{\max}$ diverge by **$64.6^\circ$** ($|\cos\theta| = 0.429$). Partitioning the eigenvector energy landmark-by-landmark reveals why:
@@ -356,7 +356,7 @@ To document how this investigation was conducted end-to-end, [`docs/THOMPSON_MET
 
 ![Animated 47-Milestone Progress Dashboard: Theorems 1–48 Toward the Wolfram Rule 30 Prize](./media/rule30_prize_progress.gif)
 
-While investigating Elementary Cellular Automaton **Rule 30** ($a_{t+1,i} = a_{t,i-1} \oplus (a_{t,i} \lor a_{t,i+1})$) both as a biological model of *Conus textile* shell pigmentation (Wolfram 1984; Ermentrout, Campbell & Oster 1986; Meinhardt & Klingler 1987) and in relation to Stephen Wolfram's 2019 Rule 30 Prize problems, we proved a suite of genuinely new algebraic theorems and computational results, while rigorously auditing the exact mathematical gap that still separates humanity from the full single-seed center-column prizes.
+While investigating Elementary Cellular Automaton **Rule 30** ($a_{t+1,i} = a_{t,i-1} \oplus (a_{t,i} \lor a_{t,i+1})$) both as a biological model of *Conus textile* shell pigmentation (Wolfram 1984; Ermentrout, Campbell & Oster 1986; Meinhardt & Klingler 1987) and in relation to Stephen Wolfram's 2019 Rule 30 Prize problems, we proved a set of algebraic theorems and obtained computational results that we have not found in the prior literature (searches logged in docs/RULE30_PRIZE_COVER_LETTER.md), while rigorously auditing the exact mathematical gap that still separates humanity from the full single-seed center-column prizes.
 
 ### 2.1 Closed-Form Kogge–Stone Carry-Lookahead Cycle Operator $\mathcal{T}_P$ (Theorem 1–2)
 
