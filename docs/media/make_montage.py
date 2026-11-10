@@ -42,15 +42,6 @@ CLIPS = [
 ]
 # scored scripts that have no tile of their own (their output is a still, or another tile of the same paper stands for them)
 SCORED_ONLY = {"thompson/1917-thompson-scarus-pomacanthus.py": ("1917", "Thompson fish")}
-# CLIPS script paths whose MorphoEval audit is keyed under a different script
-# path (Pass N+1, 2026-10-25: the Zhang audit is keyed on the validation
-# script, and the Thompson transformations tile is scored via the
-# Scarus->Pomacanthus real-outline audit, thompson/1917-thompson.py itself
-# being unevaluated).
-SCRIPT_ALIASES = {
-    "sorting-morphogenesis/sorting_morphogenesis.py": "sorting-morphogenesis/validate_kymograph_and_paper.py",
-    "thompson/1917-thompson.py": "thompson/1917-thompson-scarus-pomacanthus.py",
-}
 BG, FG, DIM, ACCENT = (250, 250, 248), (30, 41, 59), (100, 116, 139), (23, 190, 207)
 
 
@@ -66,11 +57,7 @@ def scores() -> dict[str, float]:
     import yaml
     rubric = yaml.safe_load(open(br.RUBRIC))
     latest = br.collect(br.load_audits(), rubric)[0]
-    sc = {r["script"]: r["overall"] for r in latest}
-    for clip_script, audit_script in SCRIPT_ALIASES.items():
-        if clip_script not in sc and audit_script in sc:
-            sc[clip_script] = sc[audit_script]
-    return sc
+    return {r["script"]: r["overall"] for r in latest}
 
 
 def resample(path: Path, n: int) -> list[Image.Image]:
@@ -153,7 +140,7 @@ def main(argv=None):
         canvas = Image.new("RGB", (W, H), (226, 232, 240))
         dh = ImageDraw.Draw(canvas)
         dh.rectangle([0, 0, W, header_h], fill=FG)
-        dh.text((10, 6), f"Project Delphi — {len(CLIPS)} reproductions of published models of biological form (1917–2026), scored by MorphoEval",
+        dh.text((10, 6), f"Infinite Morphospace — {len(CLIPS)} reproductions of published models of biological form (1917–2026), scored by MorphoEval",
                 font=font(11, True), fill=(255, 255, 255))
         for t in range(n_tiles):
             r, c = divmod(t, args.cols)
