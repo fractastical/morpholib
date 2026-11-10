@@ -356,8 +356,8 @@ def main():
                     body_parts.append(
                         '<figure class="plate-figure" data-layer="student">'
                         '<img src="./media/thompson_1913_fig5_nested_soul_museum.png" '
-                        'alt="Figure 5 — Nested Capacities of the Soul in Aristotle De Anima II.2-3 framed by Vatican Manuscript and 1579 Scala Naturae" loading="lazy" />'
-                        '<p class="plate-caption"><em>Figure 5 (Student Reader Edition) — Nested capacities in the account Thompson presents: a human retains nutritive and sensitive capacities while also possessing rational capacities (“as a triangle within a square,” De Anima II.2–3), framed by the medieval Vatican manuscript of De Anima and Valades’s 1579 Scala Naturae copperplate.</em></p>'
+                        'alt="Figure 5 — The grades of soul drawn as nested figures, triangle in square in pentagon (De Anima II.3, 414b), beside Valadés 1579 Scala Naturae" loading="lazy" />'
+                        '<p class="plate-caption"><em>Figure 5 (Student Reader Edition) — Aristotle’s own image for the grades of soul, drawn literally: the nutritive triangle inside the sensitive square inside the rational pentagon, each lower grade potentially present in the higher (“as a triangle within a square,” De Anima II.3, 414b29–32), beside Valadés’s 1579 Scala Naturae copperplate, the Renaissance picture of the same graded scale.</em></p>'
                         "</figure>"
                     )
                 elif c_num == "12":

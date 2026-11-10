@@ -85,94 +85,92 @@ def copy_standalone_museum_assets():
             shutil.copy2(src, dst)
 
 
+def _regular_polygon(n: int, cx: float, cy: float, r: float, rot_deg: float = 90.0) -> np.ndarray:
+    ang = np.deg2rad(rot_deg) + 2 * np.pi * np.arange(n) / n
+    return np.column_stack([cx + r * np.cos(ang), cy + r * np.sin(ang)])
+
+
 def build_museum_fig5_nested_soul():
     """
-    Replace the modern flat green Figure 5 from the .docx with a museum-grade
-    classical Renaissance woodcut/manuscript plate pairing the Vatican De Anima
-    manuscript leaf and Valades's 1579 Scala Naturae with the nested capacities diagram.
+    Figure 5 as a two-panel diptych. Left: Aristotle's own image for the grades of
+    soul, drawn literally as nested regular polygons (De Anima II.3, 414b29-32:
+    the earlier figure is potentially present in the later, 'as the triangle in
+    the square'). Right: Valades's 1579 Scala Naturae copperplate at full height,
+    the Renaissance picture of the same graded scale.
     """
-    fig = plt.figure(figsize=(14.5, 5.8), dpi=200, facecolor=PARCHMENT_BG)
-    gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios=[0.85, 1.35, 0.85], wspace=0.16, left=0.03, right=0.97, top=0.84, bottom=0.10)
+    fig = plt.figure(figsize=(13.0, 7.5), dpi=200, facecolor=PARCHMENT_BG)
+    gs = gridspec.GridSpec(1, 2, figure=fig, width_ratios=[1.3, 0.72], wspace=0.08,
+                           left=0.035, right=0.965, top=0.88, bottom=0.09)
 
     fig.suptitle(
-        "Figure 5 — Nested Capacities of the Soul in Aristotle’s De Anima II.2–3 (‘As a Triangle Within a Square’)\n"
-        "Framed by the Medieval Illuminated Manuscript of De Anima (Vat. Pal. lat. 1033) & Valades’s 1579 Scala Naturae Copperplate",
-        fontsize=11.6, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.95
+        "Figure 5 — The Grades of Soul as Nested Figures: ‘As a Triangle Within a Square’ (De Anima II.3, 414b)\n"
+        "beside Valadés’s 1579 Scala Naturae, the Renaissance picture of the same graded scale",
+        fontsize=12.4, fontweight="bold", fontfamily="serif", color=INK_DARK, y=0.975
     )
 
-    # Left: Vatican De Anima Manuscript
-    ax_l = fig.add_subplot(gs[0, 0])
-    img_ms = open_fitted(CACHE_1913 / "aristotle_de_anima_manuscript.jpg", (400, 480), crop_frac=(0.05, 0.02, 0.95, 0.95))
-    ax_l.imshow(img_ms)
-    style_museum_ax(
-        ax_l,
-        "A. Aristotle’s De Anima Manuscript",
-        "Vaticanus Palatinus latinus 1033;\nOn the Soul (De Anima) [E9, E20]"
-    )
+    # ---- Left: the geometry, drawn as Aristotle states it -------------------------
+    ax = fig.add_subplot(gs[0, 0])
+    ax.set_facecolor(CARD_BG)
+    ax.set_xlim(0, 13)
+    ax.set_ylim(0, 10)
+    ax.set_aspect("equal")
+    ax.add_patch(mpatches.Rectangle((0.18, 0.18), 12.64, 9.64, fill=False, edgecolor=INK_DARK, lw=1.3))
+    ax.add_patch(mpatches.Rectangle((0.32, 0.32), 12.36, 9.36, fill=False, edgecolor=BORDER_GOLD, lw=0.8))
 
-    # Center: Museum Parchment Engraving of the Nested Capacities (exact text of Figure 5 from .docx)
-    ax_c = fig.add_subplot(gs[0, 1])
-    ax_c.set_facecolor(CARD_BG)
-    ax_c.set_xlim(0, 10)
-    ax_c.set_ylim(0, 10)
+    cx, cy = 4.55, 5.45
+    grades = [
+        # n, circumradius, fill, Greek, English, bearers, faculty
+        (5, 3.55, "#efe7d4", "ἡ διανοητικὴ ψυχή · νοῦς", "RATIONAL", "man", "understanding and reasoning"),
+        (4, 2.62, "#e3d9bf", "ἡ αἰσθητικὴ ψυχή", "SENSITIVE", "animals and man", "perception; in some, locomotion"),
+        (3, 1.78, "#d3c6a6", "ἡ θρεπτικὴ ψυχή", "NUTRITIVE", "plants, animals, man", "nourishment, growth, reproduction"),
+    ]
+    for n, r, fill, *_ in grades:
+        pts = _regular_polygon(n, cx, cy, r, rot_deg=45.0 if n == 4 else 90.0)
+        ax.add_patch(mpatches.Polygon(pts, closed=True, facecolor=fill, edgecolor=INK_DARK, lw=1.7, joinstyle="miter"))
+    # faint construction circles, as in a geometry plate
+    for n, r, *_ in grades:
+        ax.add_patch(mpatches.Circle((cx, cy), r, fill=False, edgecolor=INK_MUTED, lw=0.45, ls=(0, (1.5, 2.5))))
+    ax.plot([cx], [cy], marker="o", ms=2.6, color=INK_DARK)
 
-    # Double classical border
-    ax_c.add_patch(mpatches.Rectangle((0.25, 0.25), 9.5, 9.5, fill=False, edgecolor=INK_DARK, lw=1.4))
-    ax_c.add_patch(mpatches.Rectangle((0.40, 0.40), 9.2, 9.2, fill=False, edgecolor=BORDER_GOLD, lw=0.9))
+    # keyed labels with leader lines, engraving-plate style
+    key_x = 8.35
+    rows_y = [8.35, 5.45, 2.55]
+    anchor_angles = [18.0, 0.0, -30.0]  # where each leader meets its polygon's circumcircle
+    for (n, r, _fill, greek, english, bearers, faculty), ky, ang in zip(grades, rows_y, anchor_angles):
+        a = np.deg2rad(ang)
+        # point on polygon boundary along angle a: use circumradius scaled to the edge
+        k = np.pi / n
+        theta = (a - np.deg2rad(45.0 if n == 4 else 90.0)) % (2 * k)
+        edge_r = r * np.cos(k) / np.cos(theta - k)
+        px, py = cx + edge_r * np.cos(a), cy + edge_r * np.sin(a)
+        ax.plot([px, key_x - 0.25], [py, ky], color=INK_MUTED, lw=0.7)
+        ax.plot([px], [py], marker="o", ms=2.4, color=INK_DARK)
+        ax.text(key_x, ky + 0.52, english, fontsize=11.2, fontweight="bold", fontfamily="serif", color=INK_DARK, va="center")
+        ax.text(key_x, ky + 0.02, greek, fontsize=10.2, fontfamily="serif", color=INK_DARK, va="center")
+        ax.text(key_x, ky - 0.46, bearers, fontsize=9.0, fontfamily="serif", style="italic", color=INK_MUTED, va="center")
+        ax.text(key_x, ky - 0.90, faculty, fontsize=8.8, fontfamily="serif", color=INK_MUTED, va="center")
 
-    # Outer Box: NUTRITIVE
-    ax_c.add_patch(mpatches.FancyBboxPatch(
-        (0.75, 1.45), 8.5, 7.75,
-        boxstyle="round,pad=0.08,rounding_size=0.18", facecolor="#f3ede0", edgecolor=INK_DARK, lw=1.8
-    ))
-    ax_c.text(5.0, 8.65, "NUTRITIVE  (ἡ πρώτη / θρεπτικὴ ψυχή)", ha="center", va="center",
-              fontsize=10.5, fontfamily="serif", fontweight="bold", color=INK_DARK)
-    ax_c.text(5.0, 8.05, "Plants, animals, humans", ha="center", va="center",
-              fontsize=9.2, fontfamily="serif", style="italic", color=INK_MUTED)
-    ax_c.text(5.0, 7.50, "Nourishment  ·  growth  ·  reproduction", ha="center", va="center",
-              fontsize=9.0, fontfamily="serif", color=INK_DARK)
-
-    # Middle Box: SENSITIVE
-    ax_c.add_patch(mpatches.FancyBboxPatch(
-        (1.45, 1.85), 7.1, 5.05,
-        boxstyle="round,pad=0.08,rounding_size=0.18", facecolor="#e6dec8", edgecolor=INK_DARK, lw=1.6
-    ))
-    ax_c.text(5.0, 6.35, "SENSITIVE  (ἡ αἰσθητικὴ ψυχή)", ha="center", va="center",
-              fontsize=10.2, fontfamily="serif", fontweight="bold", color=INK_DARK)
-    ax_c.text(5.0, 5.75, "Animals and humans", ha="center", va="center",
-              fontsize=9.0, fontfamily="serif", style="italic", color=INK_MUTED)
-    ax_c.text(5.0, 5.20, "Perception and associated capacities", ha="center", va="center",
-              fontsize=8.8, fontfamily="serif", color=INK_DARK)
-
-    # Inner Box: RATIONAL
-    ax_c.add_patch(mpatches.FancyBboxPatch(
-        (2.25, 2.25), 5.5, 2.35,
-        boxstyle="round,pad=0.08,rounding_size=0.18", facecolor="#d6cbb1", edgecolor=INK_DARK, lw=1.6
-    ))
-    ax_c.text(5.0, 4.02, "RATIONAL  (ἡ διανοητικὴ ψυχή / νοῦς)", ha="center", va="center",
-              fontsize=10.0, fontfamily="serif", fontweight="bold", color=INK_DARK)
-    ax_c.text(5.0, 3.42, "Humans", ha="center", va="center",
-              fontsize=8.9, fontfamily="serif", style="italic", color=INK_MUTED)
-    ax_c.text(5.0, 2.82, "Understanding and reasoning", ha="center", va="center",
-              fontsize=8.8, fontfamily="serif", color=INK_DARK)
-
-    ax_c.text(5.0, 0.88, "Locomotion belongs to some animals; it is not required of every animal. (De Anima II.2–3)",
-              ha="center", va="center", fontsize=8.3, fontfamily="serif", style="italic", color=INK_MUTED)
+    ax.text(6.5, 1.02,
+            "ἀεὶ γὰρ ἐν τῷ ἐφεξῆς ὑπάρχει δυνάμει τὸ πρότερον … οἷον ἐν τετραγώνῳ μὲν τρίγωνον, ἐν αἰσθητικῷ δὲ τὸ θρεπτικόν.",
+            ha="center", va="center", fontsize=7.9, fontfamily="serif", color=INK_DARK)
+    ax.text(6.5, 0.55,
+            "‘The earlier is always potentially in the later: the triangle in the square, the nutritive in the sensitive.’  De Anima II.3, 414b29–32",
+            ha="center", va="center", fontsize=7.7, fontfamily="serif", style="italic", color=INK_MUTED)
 
     style_museum_ax(
-        ax_c,
-        "B. Inclusive Hierarchy of Capacities (Reader Notes 18 & 20)",
-        "‘Just as we may discern a triangle within a square, so is each lower grade of ψυχή implicit in the higher’ (p. 27)"
+        ax,
+        "A. Aristotle’s figure for the soul: each lower grade implicit in the higher",
+        "‘Just as we may discern a triangle within a square, so is each lower grade of ψυχή implicit in the higher.’  Thompson (1913), p. 27"
     )
 
-    # Right: Valades 1579 Scala Naturae
-    ax_r = fig.add_subplot(gs[0, 2])
-    img_sc = open_fitted(CACHE_1913 / "scala_naturae_bonnet_or_bovillus.jpg", (400, 480), crop_frac=(0.06, 0.03, 0.94, 0.97))
+    # ---- Right: Valadés 1579 Scala Naturae, full height ---------------------------
+    ax_r = fig.add_subplot(gs[0, 1])
+    img_sc = open_fitted(CACHE_1913 / "scala_naturae_bonnet_or_bovillus.jpg", (900, 1300), crop_frac=(0.02, 0.01, 0.98, 0.99))
     ax_r.imshow(img_sc)
     style_museum_ax(
         ax_r,
-        "C. Scala Naturae (Valades, 1579)",
-        "Renaissance copperplate of the graded\nscale of nature (Reader Note 22)"
+        "B. Scala Naturae (Valadés, Rhetorica Christiana, 1579)",
+        "Elements, plants, animals, man, the heavens: one graded chain,\nread upward. Copperplate; public domain (Reader Note 22)"
     )
 
     out_path = MEDIA_DIR / "thompson_1913_fig5_nested_soul_museum.png"
