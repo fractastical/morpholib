@@ -24,7 +24,8 @@ Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeleton sp
 
 3. **`scout_manifest.json`**
    - Step 1 (`01_scout`) OpenAlex + Wikimedia Commons discovery dossier for Slot 012.
-   - SHA-256: `7f3605aa11f5e07752820298d27a4a8fc3a8d0508e2863a03046f6b858115262`.
+   - Pass 3 correction (fix-004): `territory.seed_doi` was a transposed-digit typo pointing at an unrelated *Science* article; corrected to Newman & Frisch (1979) `10.1126/science.462174` (see `pass3_correction` in the JSON).
+   - SHA-256: `71ab73feedf8dbfd5009fe9cf32fa10e2007c32a76f54c26993c1e7ca3598453`.
 
 4. **`paper_citations.bib`**
    - BibTeX citations for Newman & Frisch (1979), Saunders (1948), Summerbell et al. (1973), Hentschel et al. (2004), and Stewart et al. (2017).
