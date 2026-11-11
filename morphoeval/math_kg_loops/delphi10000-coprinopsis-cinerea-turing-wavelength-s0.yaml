@@ -1,0 +1,57 @@
+sim_id: delphi10000-coprinopsis-cinerea-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+organism: Coprinopsis cinerea
+scale_m: 7.744e-05
+scale_nominal_um: 77
+log10_m: -4.111
+age_Ma: 0.0
+tier: 4_cellular_10um
+chronoseries: "1/1"
+model_spec:
+  model: "Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber k_c^2 = γ sqrt(det J / (Du Dv))"
+  lambda_m: 7.744e-05
+  age_Ma: 0.0
+  a: 0.10
+  b: 0.90
+  Du: 1.0
+  Dv: 16.0
+  grid_resolution: [96, 96]
+  pixels_per_wave: 12
+  dt: 0.008
+  steps: 5600
+  seed: 3154
+  inputs:
+    - datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_specimen.jpg
+    - datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_turing_wavelength_s0_reference.json
+    - datasets/coprinopsis_cinerea_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing critical wavenumber
+    formula: "k_c^2 = γ * sqrt(det(J) / (D_u * D_v)); λ_c = 2π / k_c = 7.744e-05 m"
+    lean_decl: MathOfBiology.Loop_3154.traceMargin
+    lean_theorem: MathOfBiology.Loop_3154.operating_trace_positive
+    lean_locus: morphoeval/lean/loops/Loop_3154_coprinopsis_cinerea_turing_wavelength_s0.lean#L14-L18
+    lean_code: "def traceMargin (Dv Du fuNum fuDen gvNum : Int) : Int := Dv * fuNum + Du * gvNum * fuDen\n\ntheorem operating_trace_positive : traceMargin 16 1 4 5 (-1) > 0 := by decide"
+    variables: "Dv=16, Du=1, fu=4/5, gv=-1 at the Holocene 77.44 µm operating point"
+    role: Necessary trace condition for a Turing band at this slot's diffusion ratio
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: "D_v = D_u implies D_v f_u + D_u g_v < 0 for these kinetics, so σ(k) < 0 for every k"
+    lean_decl: MathOfBiology.Loop_3154.traceMargin
+    lean_theorem: MathOfBiology.Loop_3154.equal_diffusion_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3154_coprinopsis_cinerea_turing_wavelength_s0.lean#L20-L23
+    lean_code: "theorem equal_diffusion_trace_negative : traceMargin 1 1 4 5 (-1) < 0 := by decide"
+    variables: "Dv=Du=1, same Jacobian"
+    role: Negative control that wavelength selection requires differential diffusion
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py
+  - law_name: Detail-variant scale contrast at 0 Ma
+    formula: "7 * 10 µm < 77.44 µm < 8 * 10 µm; chronoseries 1/1 has successor count 0"
+    lean_decl: MathOfBiology.Loop_3154.detail_variant_between_seven_and_eight_floors
+    lean_theorem: MathOfBiology.Loop_3154.holocene_terminus_has_no_successor
+    lean_locus: morphoeval/lean/loops/Loop_3154_coprinopsis_cinerea_turing_wavelength_s0.lean#L25-L35
+    lean_code: "theorem detail_variant_between_seven_and_eight_floors : 7 * 1000 < 7744 ∧ 7744 < 8 * 1000 := by decide"
+    variables: "λ encoded in hundredths of a micrometre (7744 = 77.44 µm); tier floor 1000 = 10.00 µm; age 0 Ma"
+    role: What changes at this scale versus the tier floor, given a 1/1 Holocene chronoseries
+    source_citation: "Kües (2000) DOI:10.1128/MMBR.64.2.316-353.2000"
+    code_locus: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py

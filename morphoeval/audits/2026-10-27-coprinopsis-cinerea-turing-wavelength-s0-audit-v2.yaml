@@ -1,0 +1,156 @@
+# MorphoEval Pass 2 — closes the four Pass-1 remediation items.
+# Supersedes 2026-10-27-coprinopsis-cinerea-turing-wavelength-s0-audit.
+# Dispersion Pearson r = 0.9999, γ-sweep Pearson r = 0.9932, RMSE = 0.0155,
+# KS = 0.095. On-band mode 8 grows ×2.72; off-band mode 2 decays ×0.61;
+# equal diffusion decays ×0.31. Gill-disc circularity 0.231 versus a perfect
+# disc of 1. Saturated radial peak is 68.84 µm, short of the linear 77.44 µm.
+audit:
+  id: 2026-10-27-coprinopsis-cinerea-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-coprinopsis-cinerea-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-coprinopsis-cinerea-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f8754f57e6c8e5814e6ac3fcf8739bbd60d4b1bb
+    note: "Pass 2 accepts the sweep, ablations, specimen segmentation, and dispersion fit recorded at this commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(79)90042-0"
+  kues2000:
+    title: "Life history and developmental processes in the basidiomycete Coprinus cinereus"
+    authors: "Kües, U."
+    venue: "Microbiology and Molecular Biology Reviews"
+    doi: "10.1128/MMBR.64.2.316-353.2000"
+  stajich2010:
+    title: "Insights into evolution of multicellular fungi from the assembled chromosomes of the mushroom Coprinopsis cinerea"
+    authors: "Stajich, J. E. et al."
+    venue: "Proceedings of the National Academy of Sciences"
+    doi: "10.1073/pnas.1003391107"
+simulations:
+  - id: delphi10000-coprinopsis-cinerea-turing-wavelength-s0
+    name: "Coprinopsis cinerea Schnakenberg wavelength selection at 77 µm (Pass 2)"
+    organism: "Coprinopsis cinerea"
+    domain: morphogenesis
+    script: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py
+    output: docs/media/coprinopsis_cinerea_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-coprinopsis-cinerea-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, kues2000, stajich2010]
+    summary: >-
+      Pass 2 accepts the quantitative record. Dispersion Pearson r = 0.9999
+      (RMSE 0.0155, KS 0.095) between analytic σ(k²_disc) and the Euler run.
+      Across eight values of γ the fastest-mode index tracks the analytic
+      k_c ∝ sqrt(γ) with Pearson r = 0.9932. Mode 8 (12 px = 77.44 µm) grows
+      by ×2.72 in 500 steps; mode 2 decays to ×0.61; D_v = D_u decays to ×0.31.
+      The gill disc on Mushroom Observer 593470 has circularity 0.231 (reference
+      1.0) and cap coherency 0.633 versus frame coherency 0.614. The saturated
+      radial peak sits at 68.84 µm, an 11% nonlinear shift off the linear k_c.
+      CV similarity of the 12-frame 640×480 GIF against the photograph is 87.2.
+    provenance:
+      spec_fingerprint: "8cece9ff3e72ac6167b2cefe87dfebbabd188f728a6d9a47d37e0816ea971637"
+      artifact_sha256: "33a851aefaf099fbe394d9bd6baf3a142f5addcbb329d968fe57f1875d69da74"
+      input_dataset_sha256:
+        datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_specimen.jpg: "f5905e9c02019fc55d651c22742ce29a53541673e37355631a29a5076046b06b"
+        datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_turing_wavelength_s0_reference.json: "d4e14ac29c4347af38a29adc32af2e575a23f16fb17d36cb4c4f89b48a587115"
+        datasets/coprinopsis_cinerea_turing_wavelength_s0/paper_citations.bib: "7cc51cdbd29c1950bdb9fad288313e1a7e867f7ef21abfa55f80791e508cf476"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 critical wavenumber from linear stability of a two-species reaction-diffusion system"
+        - "Schnakenberg 1979 kinetics f = a - u + u^2 v, g = b - u^2 v"
+        - "Kües 2000 developmental account of the gilled Coprinus cinereus fruiting body"
+        - "Stajich et al. 2010 Coprinopsis cinerea genome"
+      reconstructed_in_script:
+        - "γ calibrated so λ_c = 7.744e-05 m; eight-point γ sweep of the fastest mode"
+        - "Equal-diffusion and off-band (mode 2) ablations against on-band mode 8"
+        - "Brown-gill segmentation, circularity, and structure-tensor coherency on the 2015 photograph"
+        - "Pearson, RMSE, and KS between analytic and Euler dispersion curves"
+        - "GIF palette is a gill-brown ramp; the photograph's pixels are not copied into the frames"
+      transfer_boundary:
+        - "77 µm is the assigned atlas scale. The photograph has no scale bar, so it cannot confirm 77.44 µm"
+        - "Schnakenberg (a, b, D) are not a biochemical fit to Coprinopsis"
+        - "Mature gill spacing on the fruiting body is a millimetre-scale readout; the simulation is an 8-wavelength, 619.52 µm cuticle patch"
+        - "Nonlinear saturation shifts the radial FFT peak from 77.44 µm to 68.84 µm"
+      does_not_claim:
+        - "That 77.44 µm was measured on Mushroom Observer image 593470"
+        - "That the spot field reproduces the radial lamellae"
+        - "A post-Holocene successor or a fossil predecessor in this 1/1 chronoseries"
+        - "A second assessor's score"
+    remediation:
+      - id: R1
+        item: "Closed. γ sweep Pearson r = 0.9932 between analytic and numeric fastest-mode wavelength."
+        status: resolved
+      - id: R2
+        item: "Closed. On-band ×2.72, off-band ×0.61, equal-diffusion ×0.31."
+        status: resolved
+      - id: R3
+        item: "Closed. Gill-disc circularity 0.231 versus 1.0; cap coherency 0.633 versus frame coherency 0.614; cap fraction 0.099 versus a 0.5 prior."
+        status: resolved
+      - id: R4
+        item: "Closed. Dispersion Pearson r = 0.9999, RMSE = 0.0155, KS = 0.095."
+        status: resolved
+      - id: R5
+        item: "Open. Single assessor. A second provider has not scored this audit."
+      - id: R6
+        item: "Open. The 77.44 µm length is the atlas assignment. A scale-barred micrograph of pileus pigment would replace it. The saturated peak at 68.84 µm is reported, not forced onto 77.44."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Schnakenberg kinetics, Jacobian, discrete-Laplacian dispersion, and the Turing wavenumber are implemented as published and calibrated to 7.744e-05 m. The equal-diffusion ablation fails the trace condition, as required. Ten points are withheld because the kinetics are not a measured Coprinopsis pigment circuit and because saturation shifts the selected peak off the linear k_c."
+        evidence:
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [105, 193], note: "Jacobian, k_c, discrete k², dispersion_sigma", supports: true}
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [365, 384], note: "ablation_controls: mode 8, mode 2, equal diffusion", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3154_coprinopsis_cinerea_turing_wavelength_s0.lean, lines: [16, 23], note: "operating trace positive; equal diffusion negative", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The photograph of the gilled cap is shown with the segmented outline, and the animation is a gill-brown ocellus field at the critical wavelength. Computer-vision similarity of the 12-frame GIF against the photograph is 87.2. The field does not reproduce radial lamellae, and the mask also catches brown debris, so this is not a photographic match."
+        evidence:
+          - {file: docs/media/coprinopsis_cinerea_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Photograph, activator, dispersion, γ sweep", supports: true}
+          - {file: docs/media/coprinopsis_cinerea_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, gill-brown ramp", supports: true}
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [387, 448], note: "segment_specimen and gill-brown colorize_field", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Eight reaction rates move the fastest mode with Pearson r = 0.9932 against k_c ∝ sqrt(γ). Turning diffusion equal abolishes growth. The long-wavelength end of the sweep sits slightly off the identity line, which is why this is 90 rather than a perfect score."
+        evidence:
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [270, 322], note: "selected_mode_index and gamma_sweep", supports: true}
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "gamma_sweep_mode_pearson_r = 0.9932", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: "Analytic versus Euler dispersion: Pearson r = 0.9999, RMSE = 0.0155, KS = 0.095. Specimen metrics are not self-copies: cap circularity 0.231 versus 1.0, cap coherency 0.633 versus frame coherency 0.614, saturated wavelength 68.84 µm versus the 77.44 µm linear target. The nonlinear shift is the reason this is not higher."
+        evidence:
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [239, 268], note: "dispersion_goodness_of_fit Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [543, 690], note: "build_measurements with references distinct from values", supports: true}
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "dispersion_pearson_r 0.9999; simulated_stripe_wavelength_um 68.84 versus 77.44", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOIs were confirmed on Crossref. The specimen file is the Wikimedia thumbnail of Mushroom Observer 593470 (Igor, CC BY-SA 3.0) and is SHA-256 pinned. The scout note records that a naive OpenAlex search on 'cinerea' was contaminated by Botrytis and was not used."
+        evidence:
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/paper_citations.bib, lines: [1, 63], note: "Six BibTeX entries with DOIs", supports: true}
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Collision check and Crossref-verified DOIs", supports: true}
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/README.md, lines: [1, 40], note: "Scale 7.744e-05 m and age 0 Ma stated in the dataset README", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Each modelling step maps to a named function and to a Lean statement: trace margin, equal-diffusion failure, and the 77.44 µm versus 10 µm floor. The docstring states the claim boundary the code does not cross."
+        evidence:
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [1, 48], note: "Equation block and claim limits", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3154_coprinopsis_cinerea_turing_wavelength_s0.lean, lines: [14, 48], note: "Five theorems, no sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-coprinopsis-cinerea-turing-wavelength-s0.yaml, lines: [1, 40], note: "sim_id, model_spec, equation loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: "Seed 3154, pinned specimen digest checked at runtime, --self-test, and a metrics JSON written by the same run that rendered the GIF. No nanopub profile is present on this machine, so signing is not claimed."
+        evidence:
+          - {file: models/2026-delphi10000-coprinopsis-cinerea-turing-wavelength-s0.py, lines: [780, 820], note: "self_test and CLI", supports: true}
+          - {file: datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "Run record of r, RMSE, KS, controls, CV", supports: true}
