@@ -1,0 +1,74 @@
+sim_id: delphi10000-cloudina-hartmannae-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 2.397e-06
+log10_size_m: -5.620
+size_human: "2.4 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Cloudina hartmannae (2.4 µm, detail scale)
+geological_age_ma: 549.0
+geological_period: Terminal Ediacaran (Nama Group, 549 Ma)
+fossil_lineage_group: Ediacaran-Cambrian Bodyplan Fossil Series
+chronoseries: "1/1"
+predecessor_scale_m: 0.0001042
+predecessor_note: "Slot 1252 funnel rung at 104.2 µm. This 2.397 µm rung selects the wall-normal organic lamella (Yang et al. 2020, 0.5–5 µm), not that funnel repeat. Diffusivity factor (2.397/104.2)^2 = 5.292e-4 at fixed rates."
+model_spec:
+  model: "Schnakenberg 1979 kinetics with Turing 1952 wavenumber k_c locked to 2.397 µm on a periodic wall-normal lamella stack"
+  parameters:
+    a: 0.0642
+    b: 0.9915
+    diffusivity_ratio: 8.65
+    lambda_um: 2.397
+    domain_um: 19.176
+    grid_ny: 192
+    seed: 3149
+    age_ma: 549.0
+  inputs:
+    - datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_specimen.jpg
+    - datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_reference.json
+    - datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_corumba_cc_by_2.jpg
+equations:
+  - law_name: Lamella wavelength inside the Yang band
+    formula: "500 nm < 2397 nm < 5000 nm"
+    lean_decl: MathOfBiology.Loop_3149.lambdaS0Nm
+    lean_theorem: MathOfBiology.Loop_3149.lamella_wavelength_inside_yang_band
+    lean_locus: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean#L30-L32
+    variables: "lambda_s0 = 2.397 µm; Yang et al. 2020 Namibia band 0.5–5 µm"
+    role: "Places this detail rung inside the published organic-lamella thickness band"
+    source_citation: "Yang et al. 2020 DOI:10.1038/s41598-019-56317-x"
+    code_locus: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+  - law_name: Eight-lamella stack inside a Grant shell layer
+    formula: "8000 nm < 8 * 2397 nm < 50000 nm"
+    lean_decl: MathOfBiology.Loop_3149.stackThicknessNm
+    lean_theorem: MathOfBiology.Loop_3149.eight_lamella_stack_inside_grant_layer
+    lean_locus: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean#L35-L37
+    variables: "N = 8 (Yang maximum); stack = 19.176 µm; Grant 1990 layers 8–50 µm"
+    role: "Shows the lamella stack fits one shell layer, unlike the 104.2 µm funnel rung"
+    source_citation: "Grant 1990 Am. J. Sci. 290-A:261-294; Yang et al. 2020"
+    code_locus: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+  - law_name: Detail rung versus 104.2 µm funnel rung
+    formula: "43 * 2397 nm < 104200 nm < 44 * 2397 nm"
+    lean_decl: MathOfBiology.Loop_3149.lambdaFunnelNm
+    lean_theorem: MathOfBiology.Loop_3149.detail_scale_packs_between_43_and_44_funnel_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean#L40-L42
+    variables: "lambda_funnel = 104.2 µm (slot 1252); lambda_s0 = 2.397 µm"
+    role: "Quantifies the scale change at this rung versus its predecessor"
+    source_citation: "Morphospace predecessor rung; Grant 1990 layer thicknesses are the anatomical contrast"
+    code_locus: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+  - law_name: Diffusion rescaling preserves the Turing discriminant
+    formula: "disc(s Du, s Dv) = s^2 disc(Du, Dv); sign unchanged for s > 0"
+    lean_decl: MathOfBiology.Loop_3149.discScaled
+    lean_theorem: MathOfBiology.Loop_3149.diffusion_rescaling_preserves_turing_discriminant
+    lean_locus: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean#L50-L54
+    variables: "s > 0; at fixed rates the 2.397 µm diffusivities are (2.397/104.2)^2 times a 104.2 µm pair"
+    role: "Why crossing from the funnel rung to this lamella rung rescales D without leaving the Turing regime"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+  - law_name: Critical wavenumber balance
+    formula: "k_c^2 = (Dv fu + Du gv) / (2 Du Dv)"
+    lean_decl: MathOfBiology.Loop_3149.wavenumberBalance
+    lean_theorem: MathOfBiology.Loop_3149.critical_wavenumber_balance_is_exact
+    lean_locus: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean#L62-L67
+    variables: "Du, Dv, fu, gv, kc2"
+    role: "Integer form of the Turing wavenumber used to lock lambda_c at 2.397 µm"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
