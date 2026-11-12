@@ -1,0 +1,189 @@
+# MorphoEval audit v2 — Euperipatoides rowelli Turing wavelength, Pass 2.
+# Supersedes the Pass 1 audit (overall 83.3). Rubric weighted overall = 87.2.
+# Scale 1.12e-06 m, age 0 Ma. R1 (second assessor) stays open.
+audit:
+  id: 2026-10-27-euperipatoides-rowelli-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-euperipatoides-rowelli-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-euperipatoides-rowelli-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor still not run)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 working tree. Signing was not performed: ~/.nanopub/profile.yml is absent, so trusty URIs were not minted."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+    url: "https://doi.org/10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+    url: "https://doi.org/10.1016/0022-5193(79)90042-0"
+  mayer2006:
+    title: "Structure and development of onychophoran eyes"
+    authors: "Mayer, G."
+    venue: "Arthropod Structure & Development"
+    doi: "10.1016/j.asd.2006.06.003"
+    url: "https://doi.org/10.1016/j.asd.2006.06.003"
+  kirwan2018:
+    title: "Low-resolution vision in a velvet worm (Onychophora)"
+    authors: "Kirwan, J. D., Graf, J., Smolka, J., Mayer, G., Henze, M. J., Nilsson, D.-E."
+    venue: "J. Exp. Biol."
+    doi: "10.1242/jeb.175802"
+    url: "https://doi.org/10.1242/jeb.175802"
+  ljungholm2021:
+    title: "Modelling the visual world of a velvet worm"
+    authors: "Ljungholm, M. and Nilsson, D.-E."
+    venue: "PLOS Computational Biology"
+    doi: "10.1371/journal.pcbi.1008808"
+    url: "https://doi.org/10.1371/journal.pcbi.1008808"
+simulations:
+  - id: delphi10000-euperipatoides-rowelli-turing-wavelength-s0
+    name: "Schnakenberg k_sigma at 1.12 µm in the E. rowelli ocellus (Holocene, 0 Ma)"
+    organism: "Euperipatoides rowelli"
+    domain: morphogenesis
+    script: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py
+    output: docs/media/euperipatoides_rowelli_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/euperipatoides_rowelli_turing_wavelength_s0_growth.gif
+      - datasets/euperipatoides_rowelli_turing_wavelength_s0/euperipatoides_rowelli_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-euperipatoides-rowelli-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, mayer2006, kirwan2018, ljungholm2021]
+    summary: >-
+      Pass 2 keeps the same Schnakenberg calibration (a=0.12, b=0.88, Du=1,
+      Dv=22, γ=34122.25342711872, seed 3223, λ=1.12 µm, age 0 Ma). Dispersion
+      Pearson r stays 0.9915 (RMSE 1171, KS 0.069). The saturated wavenumber
+      is now a parabolic sub-bin DCT peak at 14.072 cycles, so λ_2d = 1.114 µm
+      (0.5% under 1.12 µm; Pass 1's integer ring said 1.100 µm). In-band
+      controls separate: full mode +8571, equal diffusion −5662, reversed
+      ratio −22114. Specimen-versus-last-frame 12-bin orientation L1 is 0.0134,
+      not zero. GIF unchanged at 12 frames and 640×480; CV similarity 96.0.
+    provenance:
+      spec_fingerprint: "345373ab42e0e02cf6b6faa2dc71e527f6cadf8f798b162c003fe87164eb8759"
+      artifact_sha256: "c75a57997907af22c3bddaa161e2ae336cea5da5d5b7a7a25f24ba4e4453800e"
+      input_dataset_sha256:
+        datasets/euperipatoides_rowelli_turing_wavelength_s0/euperipatoides_rowelli_specimen.jpg: "29166a767a52ae559d35f372036be33ffc983492061877933038a6a5fe1af988"
+        datasets/euperipatoides_rowelli_turing_wavelength_s0/euperipatoides_rowelli_turing_wavelength_s0_reference.json: "953c4f019dafd397a14a299b71b1274298fe226ebf6529023af94df0db8f911b"
+        datasets/euperipatoides_rowelli_turing_wavelength_s0/paper_citations.bib: "4bc7e5b005ed9e1ad3c29382c9a1585e085e1d57bfd1e1e2e9570c0411aae9fb"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation for a two-species reaction-diffusion system."
+        - "Schnakenberg 1979 kinetics du/dt = a − u + u²v, dv/dt = b − u²v."
+        - "E. rowelli ocelli are about 100 µm across, with screening pigment and a rhabdom of microvilli (Mayer 2006; Kirwan 2018; Ljungholm & Nilsson 2021)."
+        - "Photoreceptor centres are about 2.5 µm apart. Kirwan 2018 figures microvilli with a 1 µm scale bar."
+      reconstructed_in_script:
+        - "γ is solved so argmax σ(k) = 2π × 14. Sub-bin DCT power peaks at 14.072 cycles (1.114 µm)."
+        - "In-band max Re σ is +8571 (full), −5662 (Du = Dv), and −22114 (Dv < Du)."
+        - "Orientation-histogram L1 between the Couch photograph and the GIF last frame is 0.0134."
+        - "N = 89 detail wavelengths across a 100 µm eye at 0 Ma, versus N = 0 below a 10 µm Cambrian floor."
+      transfer_boundary:
+        - "1.12 µm is the assigned detail scale, not a Turing wavelength measured by those papers."
+        - "The 15.68 µm patch is magnified onto the body mask for display. Macroscopic annuli are not assigned period 1.12 µm."
+      does_not_claim:
+        - "That the 0.5% residual between 1.114 µm and 1.12 µm is zero."
+        - "That the Couch photograph is an electron micrograph at 1.12 µm."
+        - "A successor chronospecies, or a second assessor."
+        - "Cryptographic nanopub signatures (no local nanopub profile)."
+    needs:
+      - id: R1
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Still one assessor. No second provider was available in this run."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: R2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Sub-bin DCT peak reports 14.072 cycles and 1.114 µm."
+        status: resolved
+        novelty_n: 2
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+      - id: R3
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "12-bin Sobel orientation L1 between specimen and GIF last frame is 0.0134."
+        status: resolved
+        novelty_n: 2
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+      - id: R4
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "In-band controls are +8571, −5662, and −22114 rather than one shared k=0 eigenvalue."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 1
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The PDE, Jacobian, Neumann integrator, and dispersion calibration are unchanged and still match Schnakenberg/Turing. Pass 2 replaces the half-step ring with a parabolic sub-bin peak: 14.072 cycles, 1.114 µm, 0.5% under the calibrated 1.12 µm. The kinetics remain a transfer into the ocellus, not a published onychophoran RD fit."
+        evidence:
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [60, 80], note: "Jacobian of Schnakenberg kinetics", supports: true}
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [249, 263], note: "Parabolic sub-bin DCT peak", supports: true}
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [215, 247], note: "Semi-implicit Neumann integrator", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "Last-frame CV similarity to the CC BY Couch photograph is 96.0 on a 12-frame 640×480 GIF. Orientation L1 is 0.0134, so the frame is not a byte-identical copy, but the 0.16 body gain is still a visualization of a whole animal rather than a 1.12 µm micrograph."
+        evidence:
+          - {file: docs/media/euperipatoides_rowelli_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480", supports: true}
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [310, 324], note: "orientation_histogram_l1", supports: true}
+          - {file: docs/media/euperipatoides_rowelli_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, masked frame, and raw activator", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Wavelength still falls monotonically as γ increases. In-band max Re σ is now +8571 (full), −5662 (equal diffusion), and −22114 (reversed ratio), so the two stable controls are no longer the same number."
+        evidence:
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [195, 212], note: "gamma sweep", supports: true}
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [162, 167], note: "In-band equal-diffusion and reversed-ratio maxima", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r = 0.9915, RMSE = 1171, KS = 0.069 on the dispersion curves. Saturated wavelength 1.114 µm versus the 1.12 µm calibration and versus the 2.5 µm receptor pitch. Body aspect 0.610 versus a circular null of 1. Orientation L1 0.0134 versus an identical-histogram null of 0. Still one specimen, and the growth-rate RMSE is large on an absolute scale."
+        evidence:
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [102, 192], note: "Dispersion Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [486, 554], note: "measure_morphoeval, including orientation L1 and the 2.5 µm pitch contrast", supports: true}
+          - {file: datasets/euperipatoides_rowelli_turing_wavelength_s0/euperipatoides_rowelli_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "lambda_2d_um 1.114, orientation L1 0.0134", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Same five checked DOIs and the SHA-256-pinned CC BY 2.0 Couch photograph as Pass 1. No new source was required for the numerical remediation."
+        evidence:
+          - {file: datasets/euperipatoides_rowelli_turing_wavelength_s0/paper_citations.bib, lines: [1, 54], note: "Five DOIs", supports: true}
+          - {file: datasets/euperipatoides_rowelli_turing_wavelength_s0/euperipatoides_rowelli_turing_wavelength_s0_reference.json, lines: [1, 40], note: "1.12e-06 m and 0 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Pass 2 comments mark the in-band control and the sub-bin peak in place. The docstring still states the PDE and the scale transfer. Lean theorems still pin 1120 nm < 2500 nm and N = 89."
+        evidence:
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [1, 30], note: "Docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3223_euperipatoides_rowelli_turing_wavelength_s0.lean, lines: [31, 52], note: "Theorems, zero sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test now also requires the reversed-ratio control to be strictly more stable in-band than equal diffusion, λ_2d within 2% of 1.12 µm, and a non-zero orientation L1. Seed, γ, and the specimen hash are unchanged. Deterministic re-run."
+        evidence:
+          - {file: models/2026-delphi10000-euperipatoides-rowelli-turing-wavelength-s0.py, lines: [568, 584], note: "Pass 2 self-test assertions", supports: true}
+          - {file: datasets/euperipatoides_rowelli_turing_wavelength_s0/README.md, lines: [1, 29], note: "1.1 µm, 0 Ma, invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Independent second assessor — still open. This run had only the builder-assessor."
+      - id: R2
+        item: "Resolved: sub-bin peak is 14.072 cycles, λ = 1.114 µm."
+      - id: R3
+        item: "Resolved: orientation-histogram L1 = 0.0134 against a null of 0."
+      - id: R4
+        item: "Resolved: in-band controls are +8571, −5662, and −22114."
