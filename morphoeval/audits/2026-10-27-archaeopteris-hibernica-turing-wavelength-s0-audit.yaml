@@ -1,0 +1,131 @@
+audit:
+  id: 2026-10-27-archaeopteris-hibernica-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 1)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree on slot 3119. New paths are not in this parent commit."
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+references:
+  turing1952:
+    title: "Turing (1952) The chemical basis of morphogenesis"
+    authors: "A. M. Turing"
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Schnakenberg (1979) Simple chemical reaction systems with limit cycle behaviour"
+    authors: "J. Schnakenberg"
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(79)90042-0"
+  meyer1999:
+    title: "Meyer-Berthaud, Scheckler and Wendt (1999) Archaeopteris is the earliest known modern tree"
+    authors: "B. Meyer-Berthaud; S. E. Scheckler; J. Wendt"
+    venue: "Nature"
+    doi: "10.1038/19516"
+  boyce2002:
+    title: "Boyce and Knoll (2002) Evolution of developmental potential and the multiple independent origins of leaves"
+    authors: "C. K. Boyce; A. H. Knoll"
+    venue: "Paleobiology"
+    doi: "10.1666/0094-8373(2002)028%3C0070:EODPAT%3E2.0.CO;2"
+  beck1957:
+    title: "Beck (1957) Tetraxylopteris schmidtii"
+    authors: "C. B. Beck"
+    venue: "American Journal of Botany"
+    doi: "10.1002/j.1537-2197.1957.tb10551.x"
+  rothwell1989:
+    title: "Rothwell, Scheckler and Gillespie (1989) Elkinsia, a Late Devonian gymnosperm with cupulate ovules"
+    authors: "G. W. Rothwell; S. E. Scheckler; W. H. Gillespie"
+    venue: "Botanical Gazette"
+    doi: "10.1086/337763"
+simulations:
+  - id: delphi10000-archaeopteris-hibernica-turing-wavelength-s0
+    name: "Archaeopteris hibernica Famennian epidermal Turing wavelength (31 µm, 370 Ma)"
+    organism: "Archaeopteris hibernica"
+    script: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py
+    output: docs/media/archaeopteris_hibernica_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, meyer1999, boyce2002, beck1957, rothwell1989]
+    summary: >-
+      Pass 1. Schnakenberg kinetics on a periodic 186 µm square. gamma is solved
+      so argmax sigma(k) is 31 µm. Seeded steady state locks that mode
+      (numerical wavelength 31.0 µm). Dispersion Pearson r = 0.9865, RMSE = 0.0375.
+      Equal-diffusion control does not form a pattern (amplitude ratio 0.669) but
+      the decay is shallow. An unseeded run at the same gamma selects 26.6 µm,
+      one Fourier bin off. Gamma sweep from 0.25x to 4x shortens both the
+      analytical and the noise-selected wavelength. The growth GIF is the NMNH
+      frond veiled by the activator (CV similarity 96, 12 frames, 630x720).
+    claim_boundary:
+      reported_in_source:
+        - "Meyer-Berthaud, Scheckler and Wendt (1999) establish a planated megaphyll and modern tree habit for Archaeopteris by the Famennian."
+        - "Turing (1952) gives a diffusion-driven instability at a critical wavenumber."
+        - "Schnakenberg (1979) supplies the two-species kinetics used here."
+        - "Boyce and Knoll (2002) treat planation as the step that makes a laminate leaf."
+      reconstructed_in_script:
+        - "gamma = 0.6636 so that argmax sigma(k) = 2*pi/31 per micrometre on this Jacobian."
+        - "Thickness scaling lambda(h) = 31*(h/12.4)^0.62 gives 66 µm (Tetraxylopteris) and 21 µm (Elkinsia)."
+        - "The GIF multiplies the museum frond by a resized activator veil. The photograph does not resolve 31 µm cells."
+      transfer_boundary:
+        - "An animal pigment Turing pattern is being used as the kinetics for a fossil epidermis whose original chemistry is not preserved."
+      does_not_claim:
+        - "That 31 µm was measured on the Smithsonian slab or in the 1999 Nature paper."
+        - "That the predecessor and successor wavelengths are direct fossil measurements."
+        - "That nanopublications were signed. No ~/.nanopub/profile.yml is present."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The script integrates Schnakenberg kinetics with a pseudospectral step and defines k_c as argmax sigma(k), kept distinct from the textbook band center. gamma is solved for a 31 µm fastest mode. The equal-diffusion control is only a partial decay (ratio 0.669), so the negative control is not yet sharp."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [87, 122], note: "turing_margin and sigma_of_k", supports: true}
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [136, 144], note: "explicit reaction plus exact diffusion", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "The comparison figure places the NMNH frond beside a 31 µm ocellus lattice, and the GIF last frame scores CV similarity 96 against that photograph. The cellular panel is a spot field, not a drawing of the slab, and the photograph cannot show 31 µm structure."
+        evidence:
+          - {file: docs/media/archaeopteris_hibernica_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "frond, activator, dispersion, chronoseries, sweep", supports: true}
+          - {file: docs/media/archaeopteris_hibernica_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame frond growth, 630x720", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "Raising gamma from 0.25x to 4x shortens analytical wavelength from 62 µm to 15.5 µm and the noise-selected wavelength from 62 µm to 13.3 µm. At the Famennian gamma the unseeded run selects 26.6 µm rather than the seeded 31 µm mode, so the operating point is still seed-dependent."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [310, 352], note: "parameter_sweep over gamma, noise selects the mode", supports: true}
+          - {file: datasets/archaeopteris_hibernica_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "sweep rows", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: "Linear dispersion matches measured growth rates at Pearson r = 0.9865 and RMSE = 0.0375. Specimen segmentation reports coherency 0.671, foreground fraction 0.621, orientation KS 0.25, and radial-spectrum RMSE 0.257 against the GIF. The chronoseries thicknesses are reconstructions, and the ablation ratio is not yet a clear collapse."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [232, 289], note: "linear_dispersion_fit", supports: true}
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [444, 468], note: "specimen_goodness_of_fit", supports: true}
+          - {file: datasets/archaeopteris_hibernica_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "r, RMSE, KS, ablation ratio", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Six Crossref-checked DOIs, a public-domain NMNH photograph with SHA-256 pin, and Wikimedia source URL are in the dataset README and reference JSON. OpenAlex returned no hits for the exact scout query; Crossref was used instead."
+        evidence:
+          - {file: datasets/archaeopteris_hibernica_turing_wavelength_s0/paper_citations.bib, lines: [1, 63], note: "Turing, Schnakenberg, Meyer-Berthaud, Boyce, Beck, Rothwell", supports: true}
+          - {file: datasets/archaeopteris_hibernica_turing_wavelength_s0/archaeopteris_hibernica_turing_wavelength_s0_reference.json, lines: [1, 40], note: "31 µm, 370 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Jacobian, dispersion, sweep, ablation, and the thickness law are separate functions. Lean theorems pin 6*31 = 186, the 21 < 31 < 66 chronoseries, and Dv/Du = 24. The band-center formula is not the quantity gamma was solved for, and the module says so."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [77, 84], note: "jacobian at steady state", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3119_archaeopteris_hibernica_turing_wavelength_s0.lean, lines: [14, 42], note: "four theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3119, --self-test checks r > 0.98, the 31 µm mode, ablation decay, monotone sweep, and the chronoseries order. Specimen bytes are SHA-pinned. Pass 1 has not yet driven the ablation ratio down or recorded the finite-amplitude shift as its own metric."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [538, 546], note: "verify_specimen_pin", supports: true}
+          - {file: models/2026-delphi10000-archaeopteris-hibernica-turing-wavelength-s0.py, lines: [728, 761], note: "self_test assertions", supports: true}
+    remediation:
+      - "Drive the equal-diffusion ablation ratio below 0.3 with a longer, still-stable control, and record that ratio."
+      - "Quantify the finite-amplitude shift between the seeded 31.0 µm mode and the unseeded 26.6 µm mode in metrics.json and on the comparison figure."
+      - "Keep the specimen KS, radial Pearson, and radial RMSE beside the dispersion goodness-of-fit so the frond comparison is not only the CV scalar."
