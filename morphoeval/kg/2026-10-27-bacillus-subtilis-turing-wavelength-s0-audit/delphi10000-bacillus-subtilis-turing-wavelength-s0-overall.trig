@@ -1,0 +1,79 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-bacillus-subtilis-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-bacillus-subtilis-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-bacillus-subtilis-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Bacillus subtilis Turing wavenumber at 16 µm (Holocene detail scale) — MorphoEval overall 84.4/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 implements the Schnakenberg dispersion and calibrates the linear wavenumber to 16.02 µm (target 16 µm) at age 0 Ma. Pearson r of early-time mode slopes against the discrete Laplacian dispersion is 0.985. The bulk field is still near the noise floor (std 0.017) and its radial peak is 17.45 µm. The ocellus GIF matches the specimen at CV 91.9 but the branches are faint regular rays, and the specimen angular detector peaks at harmonic 20 rather than the model count 72. Equal-diffusion ablation suppresses growth. Signing was not available (no ~/.nanopub/profile.yml). Overall 84.4/100 (faithfulness 82.9, reproducibility 88.1); rubric morphoeval 0.1.0; checkpoint commit e9fd00d16157d4244d56076d8b43ea8013dc6dec; environment: python 3.12. Dimension assessments: Model fidelity to source 84, Morphological realism / specimen match 86, Parameter expressivity 86, Morphometric validation 74, Source and data traceability 90, Code-to-model traceability 86, Reproducibility package 88. Output judged: docs/media/bacillus_subtilis_turing_wavelength_s0_growth.gif: rendered output of models/2026-delphi10000-bacillus-subtilis-turing-wavelength-s0.py at e9fd00d16157d4244d56076d8b43ea8013dc6dec, image/gif, 1616817 B, 520×520 px, 12 frames, artifact_sha256 af51b19a9d998054a70649a9a615c599b8c74bdb83e37cb0b0399351e0133163 (sha256 af51b19a9d998054a70649a9a615c599b8c74bdb83e37cb0b0399351e0133163), spec_fingerprint 8c9e9022c4aac6bcf41bc35b63530ab7c52c0841a7764224d5403753680be47b. Dual provenance: spec_fingerprint: 8c9e9022c4aac6bcf41bc35b63530ab7c52c0841a7764224d5403753680be47b; artifact_sha256: af51b19a9d998054a70649a9a615c599b8c74bdb83e37cb0b0399351e0133163; input_dataset_sha256: {datasets/bacillus_subtilis_turing_wavelength_s0/bacillus_subtilis_ocellus_specimen.jpg=94a0bad84960d16e..., datasets/bacillus_subtilis_turing_wavelength_s0/bacillus_subtilis_turing_wavelength_s0_reference.json=4cb53436d064578e...}. Claim boundary: reported_in_source: Turing 1952 selects a finite critical wavenumber from a two-species reaction-diffusion system. | Kawasaki 1997, Golding 1998, and Ben-Jacob 2000 model Bacillus subtilis colony branches with reaction-diffusion at colony scale. | The Korinna 2019 micrograph is an eye-shaped B. subtilis colony and carries no scale bar.; reconstructed_in_script: Schnakenberg kinetics a=0.084, b=0.916, diffusion ratio 9.20, calibrated so argmax sigma_plus is 16.02 µm. | A kinematic circular front with m=round(2 pi R / 16 µm)=72 at R=183.3 µm, which is a reconstruction, not a measured radius.; transfer_boundary: Colony-scale branching papers are used as the organism's reaction-diffusion context. They are not a measurement of a 16 µm wavelength.; does_not_claim: Does not claim that any cited paper measured a 16 µm pigment stripe in B. subtilis. | Does not claim the faint bulk field in pass 1 has reached a nonlinear Turing pattern.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Integrate the bulk Schnakenberg field into the nonlinear regime so the dominant radial wavelength locks to the linearly most unstable mode near 16 µm (pass 1 std(u)=0.017, lambda_meas=17.45 µm).",
+            "remediation needed: Replace the specimen angular-FFT harmonic (peak 20, an envelope mode) with a band-passed ridge count in the branch annulus, and darken the reconstructed rays so they read as colony branches rather than faint pinstripes.",
+            "remediation needed: Restrict the dispersion goodness-of-fit to modes with a real eigenvalue. Mode n=6 (deeply stable) inflates RMSE to 0.108 while the Turing band itself agrees to about 1 percent." ;
+        pk:hasScore "0.844"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (loop 3130 pass 1 primary assessor)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://commons.wikimedia.org/wiki/File:Eye_shaped_Bacillus_subtilis_bacteria_colony_under_the_microscope.jpg>,
+            <https://doi.org/10.1006/jtbi.1997.0462>,
+            <https://doi.org/10.1016/S0378-4371(98)00345-8>,
+            <https://doi.org/10.1080/000187300405228>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.1179047> .
+    <https://commons.wikimedia.org/wiki/File:Eye_shaped_Bacillus_subtilis_bacteria_colony_under_the_microscope.jpg> dct:date "2019"^^xsd:gYear ;
+        dct:title "Eye shaped Bacillus subtilis bacteria colony under the microscope" .
+    <https://doi.org/10.1006/jtbi.1997.0462> dct:date "1997"^^xsd:gYear ;
+        dct:title "Modeling spatio-temporal patterns generated by Bacillus subtilis" .
+    <https://doi.org/10.1016/S0378-4371(98)00345-8> dct:date "1998"^^xsd:gYear ;
+        dct:title "Studies of bacterial branching growth using reaction-diffusion models for colonial development" .
+    <https://doi.org/10.1080/000187300405228> dct:date "2000"^^xsd:gYear ;
+        dct:title "Cooperative self-organization of microorganisms" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.1179047> dct:date "2010"^^xsd:gYear ;
+        dct:title "Reaction-diffusion model as a framework for understanding biological pattern formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bacillus subtilis Turing wavenumber at 16 µm (Holocene detail scale) — MorphoEval overall 84.4/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:28:18Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-bacillus-subtilis-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-bacillus-subtilis-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/protista-monera> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/protista-monera> rdfs:label "protista-monera" .
+}
