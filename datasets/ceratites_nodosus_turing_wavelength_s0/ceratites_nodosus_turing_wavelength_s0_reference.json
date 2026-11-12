@@ -1,0 +1,104 @@
+{
+  "slot": 3142,
+  "sim_id": "delphi10000-ceratites-nodosus-turing-wavelength-s0",
+  "organism": "Ceratites nodosus",
+  "common_name": "Middle Triassic Muschelkalk Ammonoid (Serrated Lobes, D_f=1.34)",
+  "aristotelian_taxonomy": "II. Anaima (Invertebrata) -> Ostrakoderma (Mollusca & Echinodermata) -> Ceratites",
+  "cohort": "Turing Reaction-Diffusion Wavelength Selection (1. Chemical Turing / RD)",
+  "form": "Stripes, Spots & Ocelli",
+  "quantitative_law": "Turing wavenumber k_c",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.56e-05,
+    "size_human": "26 µm",
+    "log10_size_m": -4.592,
+    "scale_tier": "4_cellular_10um",
+    "detail_variant": "s0",
+    "note": "26 µm label; stored size 2.56e-05 m = 25.6 µm so that 32 mm / 25.6 µm = 1250 wavelengths exactly."
+  },
+  "paleobiology": {
+    "geological_age_ma": 240.0,
+    "geological_period": "Middle Triassic (Ladinian, 240 Ma)",
+    "fossil_lineage_group": "Cephalopod Fractal Suture Fossil Series",
+    "chronoseries": "Ceratites 1/1",
+    "chronoseries_note": "Single Ladinian horizon in this slot. Predecessor and successor are the neighbouring suture-series taxa, not additional Ceratites chronospecies."
+  },
+  "state_variables": [
+    {"symbol": "u", "role": "activator / pigment precursor on the mantle epithelium"},
+    {"symbol": "v", "role": "inhibitor, longer range than u"}
+  ],
+  "equations": {
+    "kinetics": "Schnakenberg (1979): f = a - u + u^2 v, g = b - u^2 v",
+    "pde": [
+      "du/dt = Du * laplacian(u) + a - u + u^2 v",
+      "dv/dt = Dv * laplacian(v) + b - u^2 v"
+    ],
+    "homogeneous_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "fu = -1 + 2 u0 v0, fv = u0^2, gu = -2 u0 v0, gv = -u0^2",
+    "turing_wavenumber": "k_c^2 = (det J / (Du Dv))^(1/2), with det J = fu gv - fv gu",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "onset_ratio": "Dv/Du at onset solves Dv fu + Du gv = 2 sqrt(Du Dv det J)",
+    "dispersion": "sigma(k) = largest eigenvalue of J - k^2 diag(Du, Dv)"
+  },
+  "boundary_conditions": {
+    "mantle_patch": "periodic",
+    "reason": "The k_c derivation expands perturbations as Fourier modes e^{ikx} on a periodic or infinite domain."
+  },
+  "parameters": {
+    "a": 0.062,
+    "b": 1.140,
+    "gamma_factor_above_onset": 1.15,
+    "lambda_c_m": 2.56e-05,
+    "domain_wavelengths": 8,
+    "grid": [96, 96],
+    "seed": 3142,
+    "note": "Du and Dv are solved from k_c and the onset ratio. They are not copied from the 1.088 mm sibling slot."
+  },
+  "empirical_claims": [
+    "At the operating ratio 1.15 times onset, the 2D Schnakenberg field on an 8-wavelength patch selects lambda = 26 µm (2.56e-05 m).",
+    "Equal diffusion (Dv = Du) is below onset: the largest linear growth rate is negative and a perturbation decays.",
+    "Raising the inhibitor/activator diffusion ratio at fixed Du lengthens the selected wavelength.",
+    "A 32 mm Ceratites nodosus shell spans 1250 wavelengths of 25.6 µm; the 1.088 mm organ-scale rib spans 42 of those wavelengths.",
+    "The vendored shell photograph supports segmentation of coiling and nodes. It does not resolve 26 µm pigment."
+  ],
+  "chronoseries_comparison": {
+    "wavelength_held_fixed_m": 2.56e-05,
+    "predecessor": {
+      "taxon": "Goniatites crenistria",
+      "age_ma": 333.0,
+      "shell_m": 0.018,
+      "suture_descriptor_Df": 1.18,
+      "n_cellular_wavelengths": 703
+    },
+    "this_horizon": {
+      "taxon": "Ceratites nodosus",
+      "age_ma": 240.0,
+      "shell_m": 0.032,
+      "suture_descriptor_Df": 1.34,
+      "n_cellular_wavelengths": 1250
+    },
+    "successor": {
+      "taxon": "Dactylioceras commune",
+      "age_ma": 181.0,
+      "shell_m": 0.042,
+      "suture_descriptor_Df": 1.55,
+      "n_cellular_wavelengths": 1641
+    },
+    "same_species_organ_scale_m": 0.001088,
+    "cellular_waves_per_organ_wave": 42
+  },
+  "specimen": {
+    "file": "ceratites_nodosus_specimen.jpg",
+    "sha256": "3c37b42ed1bd3fdedd3bbdb0eeef8244f5d9c6fffd9f8fa40804afed5dbc58f0",
+    "copied_from": "datasets/species_gallery/II_Anaima_Invertebrata/Ceratites_nodosus.jpg",
+    "width": 650,
+    "height": 720
+  },
+  "sources": [
+    {"id": "turing1952", "doi": "10.1098/rstb.1952.0012"},
+    {"id": "schnakenberg1979", "doi": "10.1016/0022-5193(79)90042-0"},
+    {"id": "gierer1972", "doi": "10.1007/BF00289234"},
+    {"id": "meinhardt1987", "doi": "10.1016/s0022-5193(87)80101-7"},
+    {"id": "boyajian1992", "doi": "10.1130/0091-7613(1992)020<0983:EOBCAI>2.3.CO;2"},
+    {"id": "ball2015", "doi": "10.1098/rstb.2014.0218"}
+  ]
+}
