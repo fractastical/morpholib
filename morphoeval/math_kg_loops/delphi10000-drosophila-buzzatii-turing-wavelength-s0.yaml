@@ -1,0 +1,73 @@
+sim_id: delphi10000-drosophila-buzzatii-turing-wavelength-s0
+slot: 3179
+organism: Drosophila buzzatii
+phenomenon_size_m: 2.908e-06
+log10_size_m: -5.536
+size_human: "2.9 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila buzzatii (2.9 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Subgenus Drosophila virilis–repleta–guttifera Radiation"
+predecessor: {species: Drosophila bipectinata, slot: 2851, lambda_um: 85.92}
+successor: {species: Drosophila cyrtoloma, slot: 3061, lambda_um: 207.6}
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+parameters:
+  a: 0.12
+  b: 0.85
+  D_u_um2: 0.040
+  D_v_um2: 1.160
+  diffusion_ratio: 29
+  lambda_c_um: 2.908
+  gamma: 0.5186191067572579
+  grid: [80, 80]
+  seed: 3179
+equations:
+- law_name: Critical wavelength at the buzzatii detail scale
+  formula: "k_c^2 = gamma (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c = 2.908 um"
+  lean_decl: MathOfBiology.Loop_3179.lambdaBuzzatiiNm
+  lean_theorem: MathOfBiology.Loop_3179.buzzatii_shorter_than_bipectinata
+  lean_locus: morphoeval/lean/loops/Loop_3179_drosophila_buzzatii_turing_wavelength_s0.lean#L28-L29
+  variables: "lambda_buzzatii = 2908 nm; lambda_bipectinata = 85920 nm; age = 0 Ma"
+  role: "At 0 Ma the 2.908 µm buzzatii wavenumber is shorter than the predecessor 85.92 µm scale."
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py#L98-L114
+- law_name: Subcellular diffusion ratio
+  formula: "D_v / D_u = 29 and (D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"
+  lean_decl: MathOfBiology.Loop_3179.DvMilli
+  lean_theorem: MathOfBiology.Loop_3179.diffusion_ratio_is_twenty_nine
+  lean_locus: morphoeval/lean/loops/Loop_3179_drosophila_buzzatii_turing_wavelength_s0.lean#L38-L39
+  variables: "D_u = 0.040 um^2/time; D_v = 1.160 um^2/time"
+  role: "Vesicle-limited activator; equal diffusion is the negative control."
+  source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py#L117-L120
+- law_name: Wing-chord mode count versus successor
+  formula: "N = floor(L / lambda_c); N(2.908 um) > N(85.92 um) > N(207.6 um) on L = 1.70 mm"
+  lean_decl: MathOfBiology.Loop_3179.wingChordNm
+  lean_theorem: MathOfBiology.Loop_3179.more_modes_than_predecessor_and_successor
+  lean_locus: morphoeval/lean/loops/Loop_3179_drosophila_buzzatii_turing_wavelength_s0.lean#L42-L44
+  variables: "L = 1.70 mm; N_buzzatii = 584; N_bipectinata = 19; N_cyrtoloma = 8"
+  role: "Organ allometry changes mode count, not the 2.908 µm wavenumber."
+  source_citation: "Norry, Vilardi & Hasson 1997 DOI:10.1038/sj.hdy.6882540"
+  code_locus: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py#L320-L333
+model_spec:
+  model: "Schnakenberg 1979 kinetics with Turing 1952 critical wavenumber, gamma solved for lambda_c = 2.908 um"
+  a: 0.12
+  b: 0.85
+  Du: 0.040
+  Dv: 1.160
+  gamma: 0.5186191067572579
+  grid_resolution: [80, 80]
+  steps: 1800
+  dt: 0.035
+  seed: 3179
+  inputs:
+  - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_reference.json
+  - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_specimen.jpg

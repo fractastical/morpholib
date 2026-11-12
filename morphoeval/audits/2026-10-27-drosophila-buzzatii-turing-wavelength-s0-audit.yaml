@@ -1,0 +1,129 @@
+# MorphoEval Pass 1 — Drosophila buzzatii, 2.908 µm Turing wavelength, slot 3179.
+# Dispersion core, growth GIF, and chronoseries ordering are in place.
+# Full biological-validation credit is withheld until Pass 2 re-scores the
+# segmentation, KS, ablation panel, and nonlinear-versus-linear RMSE.
+audit:
+  id: 2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; Pass 1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 00782eec
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+    note: "Checkpoint 00782eec is the loop commit that adds these slot files. The checkout origin URL carries an access token, so the builder's same-repo locus check does not run."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  norry1997:
+    title: "Correlations among size-related traits are affected by chromosome inversions in an adaptive polymorphism in Drosophila buzzatii"
+    authors: "Norry, F. M., Vilardi, J. C. and Hasson, E."
+    year: 1997
+    venue: "Heredity"
+    doi: "10.1038/sj.hdy.6882540"
+simulations:
+  - id: delphi10000-drosophila-buzzatii-turing-wavelength-s0
+    name: "Schnakenberg–Turing wavelength at 2.908 µm in Drosophila buzzatii (Pass 1)"
+    organism: "Drosophila buzzatii"
+    script: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py
+    output: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, norry1997]
+    model_spec:
+      model: "Schnakenberg 1979 / Turing 1952, gamma solved for lambda_c = 2.908 um"
+      a: 0.12
+      b: 0.85
+      Du: 0.040
+      Dv: 1.160
+      gamma: 0.5186191067572579
+      grid_resolution: [80, 80]
+      steps: 1800
+      dt: 0.035
+      seed: 3179
+      inputs:
+        - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_reference.json
+        - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_specimen.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a homogeneous field can be unstable at a finite critical wavenumber."
+        - "Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v."
+        - "Norry, Vilardi & Hasson 1997: inversion-sensitive correlations among size traits in D. buzzatii."
+      reconstructed_in_script:
+        - "gamma is solved so lambda_c = 2.908 um on this Jacobian, with D_v/D_u = 29."
+        - "Discrete-mode lambda across 14 gamma scales is correlated with the closed form."
+      transfer_boundary:
+        - "Norry's wing/thorax allometry is used only as the statement that organ length changes mode count N = L/lambda, not lambda itself."
+      does_not_claim:
+        - "That Norry measured a 2.9 µm pigment wavelength."
+        - "That the species card is a wing micrograph."
+    summary: >-
+      Pass 1 implements the Schnakenberg PDE and the closed-form wavenumber,
+      renders a 12-frame growth GIF at 720×540, and orders buzzatii (2.908 µm, 584 modes)
+      against bipectinata (85.92 µm, 19 modes) and cyrtoloma (207.6 µm, 8 modes) at 0 Ma.
+      Morphometric credit is partial until the KS, segmentation, and ablation panel are re-scored.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The PDE, Jacobian, and k_c formula are the published Schnakenberg/Turing objects, and gamma is solved for 2.908 µm rather than copied from the 102 µm sibling."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [86, 114], note: "jacobian, gamma_for_target, analytical_wavelength_um", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "The GIF grows spots on the canonical card and the pure field is a spot lattice, but Pass 1 does not yet treat the segmentation contour as a scored specimen metric."
+        evidence:
+          - {file: docs/media/drosophila_buzzatii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 720×540", supports: true}
+          - {file: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "six-panel comparison", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "The gamma sweep moves lambda monotonically. The equal-diffusion control is computed, and Pass 1 does not yet give it full figure credit."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [152, 179], note: "gamma_sweep and ablation_max_growth", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: "Pearson r of analytical versus discrete lambda is 0.99995. Pass 1 withholds the rest of this dimension until KS, segmentation, and the nonlinear RMSE are in the measurement sidecar."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [152, 173], note: "gamma_sweep pearsonr", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Turing, Schnakenberg, and Norry DOIs are in the bib and the reference JSON. The specimen is the gallery fallback, SHA-256 pinned, because no CC adult bitmap was found."
+        evidence:
+          - {file: datasets/drosophila_buzzatii_turing_wavelength_s0/paper_citations.bib, lines: [1, 31], note: "Turing, Schnakenberg, Norry 1997 DOIs", supports: true}
+          - {file: datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.908e-06 m and age 0 Ma", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Each modelling step is a named function mapped to k_c or to the chronoseries. Pass 1 has not yet pinned the measurement block."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [1, 45], note: "module docstring states the PDE, the 2.908 µm target, and the chronospecies", supports: true}
+      repro-package:
+        value: 86
+        rationale: "--self-test checks lambda, the diffusion ratio, Pearson r > 0.98, negative ablation growth, mode order, and the specimen hash. Seed 3179."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [630, 658], note: "run_checks", supports: true}
+    remediation:
+      - id: R1
+        item: "Put the two-sample KS distance between the species-card radial spectrum and the pure Schnakenberg field into the measurement sidecar (value must differ from 0)."
+      - id: R2
+        item: "Segment the canonical card and report foreground fraction, circularity, and structure-tensor coherency against a reference that is not the measured value."
+      - id: R3
+        item: "Show the equal-diffusion ablation on the comparison figure, not only inside --self-test."
+      - id: R4
+        item: "Report the saturated-field wavelength separately from the linear 2.908 µm target so the coarsening offset is a measured residual, not a hidden mismatch."

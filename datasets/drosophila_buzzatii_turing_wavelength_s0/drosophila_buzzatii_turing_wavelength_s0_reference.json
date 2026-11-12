@@ -1,0 +1,79 @@
+{
+  "schema_version": "morphoeval-reference-2.2-drosophila-detail",
+  "slot": 3179,
+  "sim_id": "delphi10000-drosophila-buzzatii-turing-wavelength-s0",
+  "organism": "Drosophila buzzatii",
+  "common_name": "Prickly-Pear Opuntia Cactophilic Fly (Wing Length & Thorax Allometric Plasticity)",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.908e-06,
+    "log10_size_m": -5.536,
+    "size_human": "2.9 µm",
+    "scale_tier": "3_subcellular_um",
+    "scale_tier_num": 3,
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila buzzatii (2.9 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "fossil_lineage_group": "Subgenus Drosophila virilis–repleta–guttifera Radiation",
+    "chronoseries": "Drosophila 8/41",
+    "predecessor": {"species": "Drosophila bipectinata", "slot": 2851, "lambda_m": 8.592e-05, "size_human": "85.92 µm"},
+    "successor": {"species": "Drosophila cyrtoloma", "slot": 3061, "lambda_m": 0.0002076, "size_human": "207.6 µm"}
+  },
+  "state_variables": {
+    "u": "activator (vesicle-limited pigment precursor) concentration",
+    "v": "inhibitor concentration"
+  },
+  "boundary_conditions": "Periodic on a square pupal-cuticle patch (Turing's ring, extended to a 2-torus). No-flux is not used: the patch is a repeating detail window, not a whole-wing domain.",
+  "equations": {
+    "kinetics": "Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v",
+    "pde": "du/dt = gamma f + D_u lap u; dv/dt = gamma g + D_v lap v",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 b / u0, f_v = u0^2, g_u = -2 b / u0, g_v = -u0^2",
+    "critical_wavenumber": "k_c^2 = gamma (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "turing_conditions": ["trace(J) < 0", "det(J) > 0", "D_v f_u + D_u g_v > 0", "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"]
+  },
+  "parameters": {
+    "a": 0.12,
+    "b": 0.85,
+    "D_u_um2_per_time": 0.040,
+    "D_v_um2_per_time": 1.160,
+    "diffusion_ratio": 29,
+    "lambda_c_um": 2.908,
+    "lambda_c_m": 2.908e-06,
+    "domain_wavelengths": 16,
+    "grid_n": 80,
+    "seed": 3179,
+    "note": "Not the slot-2991 coefficients alpha_scale=1.405, beta_offset=0.284. Those belong to the 102 µm power-law stub."
+  },
+  "empirical_claims": {
+    "reported_in_source": [
+      "Norry, Vilardi & Hasson 1997 (Heredity 79:575): in D. buzzatii, correlations among size-related traits are rearranged by chromosome inversions in an adaptive polymorphism.",
+      "Norry, Vilardi & Hasson 1997 (Genetica 101:131): wing and thorax size traits have genetic and phenotypic correlations, with heritability that differs between body parts.",
+      "Cortese, Norry, Piccinali & Hasson 2002 (Evolution 56:2541): artificial selection on developmental time and wing length produces direct and correlated responses; the two traits are positively correlated.",
+      "Turing 1952: a homogeneous morphogen field can be unstable at a finite critical wavenumber k_c.",
+      "Schnakenberg 1979: the two-species kinetics f = a - u + u^2 v, g = b - u^2 v."
+    ],
+    "reconstructed_in_script": [
+      "gamma is solved so the Schnakenberg critical wavelength on this Jacobian equals 2.908 µm.",
+      "A 16-wavelength periodic patch (46.528 µm) is integrated explicitly; the linear discrete dispersion peak is compared with the closed-form lambda across a gamma sweep.",
+      "Equal diffusion (D_u = D_v) is the negative control and must have max Re(sigma) < 0.",
+      "Mode count on a representative 1.70 mm wing chord is N = L / lambda. Allometry changes N, not lambda_c."
+    ],
+    "does_not_claim": [
+      "That Norry or Cortese measured a 2.9 µm Turing wavelength.",
+      "That the species-card image is a wing or abdominal micrograph.",
+      "That D. bipectinata and D. cyrtoloma wavelengths were re-fit in this script; they are the predecessor (85.92 µm) and successor (207.6 µm) registry scales used only as the chronoseries contrast.",
+      "That the modulated species card is a pixel-level photograph of micro-ocelli."
+    ]
+  },
+  "specimen_image": {
+    "filename": "drosophila_buzzatii_turing_wavelength_s0_specimen.jpg",
+    "sha256": "21d216f74bbb27351f7455fa27e4496514b9adc5b31a51f85c6fcd9a283d39a4",
+    "source": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_buzzatii.jpg",
+    "license_note": "Repository species-card fallback. Commons, iNaturalist, and GBIF had no CC bitmap of a live D. buzzatii adult on 2026-10-27.",
+    "bytes": 98469
+  }
+}
