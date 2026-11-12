@@ -1,0 +1,77 @@
+sim_id: delphi10000-drosophila-simulans-turing-wavelength-s0
+slot: 3205
+organism: Drosophila simulans
+phenomenon_size_m: 1.92e-6
+log10_size_m: -5.717
+size_human: "1.9 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila simulans (1.9 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora melanogaster Subgroup Radiation (0–12 Ma)"
+chronoseries: "Drosophila 34/41"
+predecessor: Drosophila silvestris
+successor: Drosophila subobscura
+math_family: Schnakenberg reaction-diffusion / Turing wavenumber k_c
+model_spec:
+  model: "Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber k_c^2 = γ (Dv fu + Du gv) / (2 Du Dv), λ_c = 2π/k_c = 1.92 µm"
+  a: 0.10
+  b: 0.90
+  Du_um2: 0.05
+  Dv_um2: 1.00
+  lambda_simulans_um: 1.92
+  lambda_silvestris_um: 2.64
+  lambda_subobscura_um: 1.60
+  arc_window_um: 96.0
+  radial_grid_n: 180
+  seed: 3205
+  inputs:
+    - datasets/drosophila_simulans_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_simulans_turing_wavelength_s0/drosophila_simulans_turing_wavelength_s0_reference.json
+    - datasets/drosophila_simulans_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_simulans_turing_wavelength_s0/drosophila_simulans_turing_wavelength_s0_specimen.jpg
+    - datasets/drosophila_simulans_turing_wavelength_s0/Drosophila_simulans_female_wikimedia.jpg
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Critical wavenumber at 1.92 µm
+    formula: "k_c^2 = γ (D_v f_u + D_u g_v) / (2 D_u D_v),  λ_c = 2π/k_c"
+    lean_decl: MathOfBiology.Loop_3205.diffusion_drive_positive
+    lean_theorem: MathOfBiology.Loop_3205.turing_discriminant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3205_drosophila_simulans_turing_wavelength_s0.lean#L62-L72
+    variables: "Du, Dv, fu, gv, γ; focal λ_c = 1.92 µm at 0 Ma"
+    role: "Selects the detail-scale pigment-granule wavelength on the simulans posterior lobe"
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012; Schnakenberg 1979 doi:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py#L97-L111
+  - law_name: Chronoseries wavelength order at fixed kinetics
+    formula: "λ_subobscura = 1.60 µm < λ_simulans = 1.92 µm < λ_silvestris = 2.64 µm; N(96 µm) = 60, 50, 36"
+    lean_decl: MathOfBiology.Loop_3205.modeCount
+    lean_theorem: MathOfBiology.Loop_3205.mode_count_orders_the_chronoseries
+    lean_locus: morphoeval/lean/loops/Loop_3205_drosophila_simulans_turing_wavelength_s0.lean#L30-L37
+    variables: "γ retuned as 1/λ^2; Du and Dv held fixed"
+    role: "What changes versus the predecessor silvestris and the successor subobscura at this scale"
+    source_citation: "Glassford 2015 doi:10.1016/j.devcel.2015.08.005; Edwards 2007 doi:10.1371/journal.pone.0000487; Huey 2000 doi:10.1126/science.287.5451.308"
+    code_locus: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py#L378-L402
+  - law_name: Equal diffusivity blocks wavelength selection
+    formula: "Du = Dv implies h = Du (f_u + g_v) < 0 when trace(J) < 0"
+    lean_decl: MathOfBiology.Loop_3205.diffusionless_trace_is_stable
+    lean_theorem: MathOfBiology.Loop_3205.equal_diffusivity_blocks_wavelength_selection
+    lean_locus: morphoeval/lean/loops/Loop_3205_drosophila_simulans_turing_wavelength_s0.lean#L74-L78
+    variables: "integer Jacobian fu=4, gv=-5, Du=Dv=20"
+    role: "Negative control for the detail-scale Turing instability"
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py#L419-L442
+  - law_name: Posterior lobe is absent in both chronoseries neighbours
+    formula: "posteriorLobe(silvestris)=0, posteriorLobe(simulans)=1, posteriorLobe(subobscura)=0"
+    lean_decl: MathOfBiology.Loop_3205.posteriorLobePresent
+    lean_theorem: MathOfBiology.Loop_3205.posterior_lobe_is_simulans_novelty
+    lean_locus: morphoeval/lean/loops/Loop_3205_drosophila_simulans_turing_wavelength_s0.lean#L41-L48
+    variables: "species index 0, 1, 2"
+    role: "The 1.92 µm carrier is expressed on a structure the neighbours do not have"
+    source_citation: "Glassford 2015 doi:10.1016/j.devcel.2015.08.005; Hagen 2020 doi:10.1093/molbev/msaa232"
+    code_locus: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py#L54-L66
