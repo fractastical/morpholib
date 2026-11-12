@@ -1,0 +1,125 @@
+audit:
+  id: 2026-10-27-drosophila-subobscura-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-subobscura-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-subobscura-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2)"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a89be184699d71a03a1673e1f49d8998944a483a
+    note: "Pass 2 closes R1–R4 on the default path: Du sweep, equal-diffusion ablation, specimen-mask composite, and non-circular specimen metrics."
+references:
+  huey2000:
+    title: "Rapid Evolution of a Geographic Cline in Size in an Introduced Fly"
+    authors: "Huey RB, Gilchrist GW, Carlson ML, Berrigan D, Serra L"
+    venue: "Science 287(5451):308-309 (2000)"
+    doi: 10.1126/science.287.5451.308
+  gilchrist2001:
+    title: "Rapid evolution of wing size clines in Drosophila subobscura"
+    authors: "Gilchrist GW, Huey RB, Serra L"
+    venue: "Genetica 112-113(1):273-286 (2001)"
+    doi: "10.1023/a:1013358931816"
+  gilchrist2004:
+    title: "A time series of evolution in action: a latitudinal cline in wing size in South American Drosophila subobscura"
+    authors: "Gilchrist GW, Huey RB, Balanyà J, Pascual M, Serra L"
+    venue: "Evolution 58(4):768-780 (2004)"
+    doi: 10.1111/j.0014-3820.2004.tb00410.x
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini PK, Painter KJ, Chau HNP"
+    venue: "Journal of the Chemical Society, Faraday Transactions 93(20):3601-3610 (1997)"
+    doi: 10.1039/a702602a
+simulations:
+  - id: delphi10000-drosophila-subobscura-turing-wavelength-s0
+    name: "Drosophila subobscura Turing wavelength at 3.0 µm (Pass 2)"
+    organism: "Drosophila subobscura"
+    script: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py
+    output: docs/media/drosophila_subobscura_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [huey2000, gilchrist2001, gilchrist2004, turing1952, schnakenberg1979, maini1997]
+    summary: >-
+      Pass 2 keeps the Schnakenberg field at λ_c = 2.97 µm (3.0 µm detail
+      scale, Holocene, 0 Ma) and closes the Pass 1 gaps. Du at fixed Dv/Du
+      lengthens λ_c monotonically and in proportion to sqrt(Du) (Pearson r = 1
+      on five values). Setting Dv = Du makes the maximum growth rate -0.233
+      and the seeded field decays to std 7.7e-9, against a patterned std of
+      0.100. The 720×480, 12-frame GIF ends on the Cooper 2015 collage with the
+      activator as a 14% pigment modulation inside a border-contrast mask.
+      PDE growth versus the discrete eigenvalue has Pearson r = 0.999998,
+      RMSE = 0.000495, and KS statistic 0.083 (12 modes). Otsu foreground
+      fraction is 0.465 against a border-contrast fraction of 0.771.
+      Wavenumber ratios are 27.80 versus Drosophila simulans and 33.15 versus
+      Drosophila suzukii. The wing-size cline remains a natural-history
+      citation, not a measured 3 µm lattice.
+    claim_boundary:
+      reported_in_source:
+        - "Huey et al. (2000) and Gilchrist et al. (2001, 2004) measured latitudinal wing-size clines in introduced D. subobscura. They did not report a pigment wavelength."
+        - "Turing (1952) selects a finite critical wavenumber. The Schnakenberg reaction and its use in spatial patterning are from Schnakenberg (1979) and Maini, Painter and Chau (1997)."
+      reconstructed_in_script:
+        - "k_c for a=0.085, b=1.06, Du=0.041, Dv=0.530, scaled so λ_c = 2.97e-6 m. The nonlinear spot field, the Du sweep, the equal-diffusion ablation, and the specimen-masked render are reconstructions."
+        - "Chronospecies contrast uses the predecessor wavelength 8.256e-5 m and the successor wavelength 9.845e-5 m as comparison lengths only. Their kinetics are not copied."
+      transfer_boundary:
+        - "A 14% modulation inside the photographic mask makes the GIF resemble the fly because the photograph is in the frame. It does not mean the reaction-diffusion field generated the wing veins, the eye, or the collage layout."
+        - "The comparison applies only at this detail scale and age. It does not re-score the 124 µm primordium slot for the same species."
+      does_not_claim:
+        - "Does not claim Huey et al. (2000) measured a 3.0 µm Turing wavelength."
+        - "Does not claim the spot lattice is a histological section of subobscura pigment granules."
+        - "Does not claim nanopublications were signed. No ~/.nanopub/profile.yml was present."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Schnakenberg steady state, Jacobian, dispersion determinant, and k_c are implemented as published and checked by --self-test (trace < 0, det > 0, discriminant > 0, σ(k_c) = 0.0879). The ablation shows the band requires Dv > Du."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [71, 99], note: "steady state, Jacobian, and k_c", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [290, 299], note: "equal-diffusion ablation, σ_max < 0", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "The comparison figure places the Cooper collage beside the spot field and beside the masked pigment composite. The GIF's last frame is that composite, so the silhouette matches the photograph by construction of the mask. The reaction-diffusion panel is a spot lattice at the pinned wavelength, not a redrawing of the wing veins. Score reflects that distinction."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [415, 422], note: "Pass 2 crossfade ends on the masked specimen", supports: true}
+          - {file: docs/media/drosophila_subobscura_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×480", supports: true}
+          - {file: docs/media/drosophila_subobscura_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, activator, overlay, dispersion", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Five Du values at fixed Dv/Du give λ_c = 1.451, 1.777, 2.077, 2.406, 2.809. The sequence is strictly increasing and correlates with sqrt(Du) at r = 1. σ(k_c) stays 0.0879, so the sweep changes wavelength rather than merely rescaling time."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [302, 323], note: "Du sweep and Pearson r against sqrt(Du)", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "PDE versus discrete growth: r = 0.999998, RMSE = 0.000495, KS = 0.083, n = 12. Ablation σ_max = -0.233 versus σ(k_c) = 0.088. Otsu foreground 0.465 versus border-contrast 0.771. Coherency at sigma 1.6 is 0.662 versus the fitness script's sigma-2.5 value 0.682. FFT wavelength 2.97 µm versus the 3.0 µm tier label."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [553, 648], note: "measure_morphoeval records r, RMSE, KS, ablation, and specimen fractions with value != reference", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [343, 376], note: "Otsu and border-contrast segmentations", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Six DOIs, the Wikimedia file URL, Martin Cooper as creator, CC BY 2.0, and SHA-256 5366640b506b531749072d3e4097e68630b8132fd433df786b50e2e16c89711d. Scout recorded that slot 3206 does not collide with the 124 µm sibling."
+        evidence:
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/paper_citations.bib, lines: [1, 54], note: "Huey, Gilchrist, Turing, Schnakenberg entries", supports: true}
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/README.md, lines: [12, 14], note: "specimen credit and digest", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Each scored step points at a function: critical_mode, sample_dispersion, parameter_sweep, ablation_control, segment_specimen, render_gif. Lean theorems pin the integer wavenumber inequalities the chronospecies block evaluates."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3206_drosophila_subobscura_turing_wavelength_s0.lean, lines: [27, 39], note: "ratios exceed 27 and 33; mode counts 27 and 33", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [131, 210], note: "dispersion sample used for Pearson r", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py --self-test exits 0 on the Pass 2 assertions, including r > 0.98, ablation, monotonic sweep, and unequal specimen fractions. Seed 3206. NumPy, SciPy, Pillow, Matplotlib."
+        evidence:
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/README.md, lines: [16, 22], note: "invocation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [651, 687], note: "self-test gates", supports: true}
+    remediation: []

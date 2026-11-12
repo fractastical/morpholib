@@ -1,0 +1,113 @@
+audit:
+  id: 2026-10-27-drosophila-subobscura-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 1)"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: a89be184699d71a03a1673e1f49d8998944a483a
+    note: "Pass 1 scores the --pass 1 path: Schnakenberg integration and dispersion only. Sweep, ablation, and specimen segmentation are absent on that path."
+references:
+  huey2000:
+    title: "Rapid Evolution of a Geographic Cline in Size in an Introduced Fly"
+    authors: "Huey RB, Gilchrist GW, Carlson ML, Berrigan D, Serra L"
+    venue: "Science 287(5451):308-309 (2000)"
+    doi: 10.1126/science.287.5451.308
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini PK, Painter KJ, Chau HNP"
+    venue: "Journal of the Chemical Society, Faraday Transactions 93(20):3601-3610 (1997)"
+    doi: 10.1039/a702602a
+simulations:
+  - id: delphi10000-drosophila-subobscura-turing-wavelength-s0
+    name: "Drosophila subobscura Turing wavelength at 3.0 µm (Pass 1)"
+    organism: "Drosophila subobscura"
+    script: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py
+    output: docs/media/drosophila_subobscura_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [huey2000, turing1952, schnakenberg1979, maini1997]
+    summary: >-
+      Pass 1 integrates Schnakenberg kinetics on a periodic 6-wavelength patch
+      pinned to 2.97e-6 m (3.0 µm, Holocene, 0 Ma). The dispersion sample
+      already correlates with the discrete eigenvalue (Pearson r = 0.999998),
+      and the chronospecies ratios versus Drosophila simulans (27.80) and
+      Drosophila suzukii (33.15) are computed. The Pass 1 path does not sweep
+      Du, does not run the equal-diffusion ablation, and replaces the specimen
+      mask with an all-ones field, so the rendered frame is the activator
+      alone. Huey et al. (2000) measured a latitudinal wing-size cline, not a
+      3 µm pigment spacing.
+    claim_boundary:
+      reported_in_source:
+        - "Huey et al. (2000) report that Old World Drosophila subobscura wing length increases with latitude, that North America had no detectable cline one decade after introduction, and that a convergent cline had evolved after two decades."
+        - "Turing (1952) shows that a reaction-diffusion system can select a finite wavenumber. Schnakenberg (1979) supplies the two-species reaction; Maini, Painter and Chau (1997) review its use as a Turing system."
+      reconstructed_in_script:
+        - "Pass 1 reconstructs k_c for a=0.085, b=1.06, Du=0.041, Dv=0.530 and integrates the nonlinear field from a critical-mode seed (seed 3206)."
+      transfer_boundary:
+        - "The 3.0 µm wavelength is the assigned subcellular detail scale. It is not a length reported by Huey, Gilchrist, or their coauthors."
+      does_not_claim:
+        - "Does not claim the Pass 1 activator image is a segmentation of the Cooper 2015 specimen."
+        - "Does not claim a parameter sweep or a negative control was executed on the Pass 1 path."
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: "The Jacobian, the critical-wavenumber formula, and the explicit integrator match the cited reaction-diffusion law. Pass 1 does not yet show that equal diffusivities close the Turing band."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [85, 99], note: "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [497, 499], note: "Pass 1 leaves ablation unset", supports: false}
+      specimen-match:
+        value: 64
+        rationale: "Pass 1 paints the activator field by itself (pass_id == 1). The Cooper collage is loaded but the mask is discarded, so the frame is not a specimen composite."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [415, 416], note: "Pass 1 GIF frame is the bare activator", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [503, 509], note: "Pass 1 mask is all ones", supports: false}
+      parameter-expressivity:
+        value: 58
+        rationale: "A single (Du, Dv) pair is integrated. The Du sweep that should lengthen λ_c as sqrt(Du) is not run when pass_id is 1."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [497, 498], note: "Pass 1 sweep record is empty", supports: false}
+      morphometric-validation:
+        value: 74
+        rationale: "Linear-regime growth rates already match the discrete eigenvalue (r = 0.999998, RMSE = 0.000495 on 12 modes). Specimen fractions are placeholders (both 1.0) and there is no ablation contrast."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [131, 210], note: "Dispersion sample; Pass 1 uses the long nonlinear horizon", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Huey 2000, Turing 1952, Schnakenberg 1979, and Maini 1997 are pinned by DOI. The CC BY 2.0 Cooper collage is SHA-256 pinned. The wing-size papers are not asked to carry the 3 µm claim."
+        evidence:
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/paper_citations.bib, lines: [1, 10], note: "Huey et al. 2000 Science DOI", supports: true}
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/paper_citations.bib, lines: [34, 43], note: "Turing 1952 DOI", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "critical_mode and chronospecies_contrast cite the formulae they implement. Pass 1's skipped controls are visible as the empty branch, which is traceable but incomplete."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [325, 340], note: "wavenumber ratios versus simulans and suzukii", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3206, --self-test, and the dataset README name the 3.0 µm scale and 0 Ma age. Pass 1 self-test does not require the sweep or the ablation."
+        evidence:
+          - {file: datasets/drosophila_subobscura_turing_wavelength_s0/README.md, lines: [5, 8], note: "scale 3.0 µm and age 0 Ma", supports: true}
+          - {file: models/2026-delphi10000-drosophila-subobscura-turing-wavelength-s0.py, lines: [651, 680], note: "Pass 2 assertions are gated on pass_id >= 2", supports: true}
+    remediation:
+      - id: R1
+        item: "Sweep Du at fixed Dv/Du and show that λ_c increases with sqrt(Du)."
+      - id: R2
+        item: "Add the equal-diffusion ablation and require its maximum growth rate to be negative."
+      - id: R3
+        item: "Segment the Cooper 2015 collage and composite the activator into the GIF and the comparison figure."
+      - id: R4
+        item: "Report two non-identical specimen estimators (Otsu versus border contrast) plus the KS distance of the growth-rate sample."
