@@ -1,0 +1,178 @@
+# Pass 1 — Acanthometra pellucida, 206 nm, Holocene 0 Ma, slot 3101.
+# Scores are for the first render (spines drawn through the disk, one ablation).
+# That render is superseded by audit-v2. Re-running the final script reproduces v2.
+audit:
+  id: 2026-10-27-acanthometra-pellucida-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (single builder-assessor; no second provider scored this pass)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f1fee7075fcbec51969593b452b4632c61bd2928
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 1 of loop 3101. Length unit fixed so analytical lambda_c at gamma 10, d 18 is 206 nm."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    venue: "J. Theor. Biol. 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  decelle2012:
+    title: "An original mode of symbiosis in open ocean plankton"
+    authors: "Decelle, J. et al."
+    venue: "PNAS 109:18000-18005 (2012)"
+    doi: 10.1073/pnas.1212303109
+  haeckel1904:
+    title: "Kunstformen der Natur, Tafel 21"
+    authors: "Haeckel, E."
+    venue: "Bibliographisches Institut, Leipzig (1904)"
+    url: https://commons.wikimedia.org/wiki/File:Acanthometra._-_Stachelstrahlinge_LCCN2015648908.jpg
+simulations:
+  - id: delphi10000-acanthometra-pellucida-turing-wavelength-s0
+    name: "Acanthometra pellucida Schnakenberg wavelength at 206 nm (Holocene, 0 Ma)"
+    organism: "Acanthometra pellucida"
+    script: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py
+    output: docs/media/acanthometra_pellucida_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/acanthometra_pellucida_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, gierer1972, murray1981, kondo2010, decelle2012, haeckel1904]
+    model_spec:
+      model: "Schnakenberg k_c with length unit fixed at 206 nm"
+      a: 0.14
+      b: 0.76
+      gamma_ref: 10.0
+      d_ratio: 18.0
+      grid_resolution: [96, 96]
+      seed: 3101
+      inputs:
+        - datasets/acanthometra_pellucida_turing_wavelength_s0/acanthometra_pellucida_specimen.jpg
+        - datasets/acanthometra_pellucida_turing_wavelength_s0/acanthometra_pellucida_turing_wavelength_s0_reference.json
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) reaction-diffusion and a critical wavelength; Gierer and Meinhardt (1972) activator-inhibitor kinetics; Murray (1981) the critical-wavenumber formula used for prepatterns."
+        - "Haeckel (1904) Kunstformen der Natur, Tafel 21, is a published drawing captioned Acanthometra."
+        - "Decelle et al. (2012) describe living acantharians. They do not report a 206 nm pigment period."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian at (a, b) = (0.14, 0.76), k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv), and a six-point gamma sweep on a periodic 96x96 patch."
+        - "Equal-diffusion ablation. Spine-axis angles measured on the vendored plate crop."
+      transfer_boundary:
+        - "206 nm (2.064e-7 m, log10 -6.685) is the assigned detail scale. The length unit is chosen so the analytical wavelength equals that number. The plate's scale is the printed drawing, not 206 nm."
+        - "Chronoseries 1/1 at 0 Ma. There is no fossil predecessor in this slot. The comparison is with a 412 nm octave on a 1339 nm patch (6 waves versus 3)."
+      does_not_claim:
+        - "That celestite spicules of A. pellucida have been shown to form by this Schnakenberg system."
+        - "That Tafel 21 figure 2 is a photograph of the type of A. pellucida."
+        - "That the plate resolves a 206 nm carrier."
+    summary: >-
+      Pass 1. Analytical lambda_c at gamma 10 is 206.0 nm by the length-unit choice.
+      Nonlinear FFT peaks track lambda_c(gamma) with Pearson r = 0.9991 and RMSE = 43.30 nm
+      (the peaks sit systematically long). Equal diffusion drops std(u) by a factor of about 2300.
+      The first drawing, with spines through the disk, had specimen-image radial-profile r = 0.548,
+      orientation KS = 0.113, and cv_sim_similarity = 90.2 on a 12-frame 960x680 GIF.
+      Eight dark-edge axes were detected against Müller's 20. Weighted score 81.5.
+      These render numbers are the pre-remediation run. The measurement sidecar is generated
+      from the checkpoint script, which already contains the pass-2 edits, so the sidecar
+      reports radial r = 0.096, held-out RMSE = 6.09 nm, and cv is not stored there.
+      v2 is the score of that checkpoint script.
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          The script implements Schnakenberg kinetics and the standard critical-wavenumber
+          formula, with (a, b, gamma, d) = (0.14, 0.76, 10, 18), periodic boundaries, and
+          explicit Euler. The 206 nm result is the length unit, not an extra fitted mode.
+          It is not a derivation of that wavelength from a measured SrSO4 diffusivity.
+        evidence:
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [65, 93], note: "Jacobian, k_c^2, and the length unit that sets lambda_c(gamma=10) = 206 nm", supports: true}
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [135, 193], note: "Periodic Schnakenberg integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3101_acanthometra_pellucida_turing_wavelength_s0.lean, lines: [15, 33], note: "Four Lean theorems, 0 sorry, for the trace sign, the ablation, monotonicity in Dv, and 6 > 3 stripes", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Side by side, the first render is a cream-ground golden disk with radial spines,
+          which is the plate's layout, not its barbed central star. Feature-space
+          cv_sim_similarity on that GIF was 90.2 (12 frames, 960x680). That score is not
+          a claim that the engraving and the drawing match spine for spine. The specimen
+          is a genus plate, not a photo of A. pellucida.
+        evidence:
+          - {file: docs/media/acanthometra_pellucida_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate crop beside the simulation", supports: true}
+          - {file: docs/media/acanthometra_pellucida_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, minimum side 680 px", supports: true}
+          - {file: datasets/acanthometra_pellucida_turing_wavelength_s0/acanthometra_pellucida_turing_wavelength_s0_reference.json, lines: [65, 78], note: "Specimen SHA-256 and the genus-level identification limit", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Raising gamma shortens both the analytical and the measured wavelength, in the
+          same direction, across 4, 7, 10, 14, 19, and 26. Equal diffusion (d = 1) collapses
+          the amplitude. A second knockout and a held-out scale for the 43 nm bias are not
+          in this pass.
+        evidence:
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [195, 223], note: "Six-point gamma sweep, Pearson r and RMSE", supports: true}
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [250, 258], note: "Equal-diffusion run paired with the reference run", supports: true}
+      morphometric-validation:
+        value: 78
+        rationale: >-
+          In-sample Pearson r = 0.9991 on six wavelengths, with p from scipy.stats.pearsonr.
+          RMSE = 43.30 nm is large relative to 206 nm and is a systematic long shift, not noise.
+          First-render radial-profile r = 0.548. Orientation KS = 0.113. Foreground fraction
+          0.501 versus 0.352 on the drawing. n = 1 plate. Self-identical value==reference
+          metrics are not used.
+        evidence:
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [110, 132], note: "Radial FFT peak used as the measured wavelength", supports: true}
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [627, 740], note: "measure_morphoeval rows; specimen metrics use a different reference than the measured value", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Turing, Gierer and Meinhardt, Murray, Kondo and Miura, and Decelle are cited by
+          real DOIs checked on OpenAlex. The plate is the public-domain Wikimedia file,
+          SHA-256 f07186d3f18203f0d0fa6c7175bf69567ee90f5ac7b6b779442847c12af09e97.
+          Decelle is organism biology, not a wavelength measurement, and is not asked to be one.
+        evidence:
+          - {file: datasets/acanthometra_pellucida_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "DOI entries and the Haeckel URL", supports: true}
+          - {file: datasets/acanthometra_pellucida_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Slot 3101 collision check and the OpenAlex DOI lookups", supports: true}
+      code-traceability:
+        value: 82
+        rationale: >-
+          k_c, the Jacobian, the sweep, and the ablation are each a named function.
+          The Lean file proves the integer trace sign, not the floating-point integrator.
+          Lean was not executed here; no lean binary was on the PATH.
+        evidence:
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [1, 40], note: "Module docstring states 206 nm, 0 Ma, and the chronoseries limit", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-acanthometra-pellucida-turing-wavelength-s0.yaml, lines: [1, 40], note: "Law records point at the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          --self-test checks the 206 nm identity, the trace signs, Pearson r > 0.98,
+          the ablation inequality, and that at least four spine axes are found.
+          Seed 3101. Pinned to commit f1fee707. One assessor.
+        evidence:
+          - {file: models/2026-delphi10000-acanthometra-pellucida-turing-wavelength-s0.py, lines: [759, 804], note: "self_test assertions", supports: true}
+          - {file: datasets/acanthometra_pellucida_turing_wavelength_s0/README.md, lines: [1, 40], note: "Run instructions, 206 nm, and 0 Ma", supports: true}
+    remediation:
+      - "R1. The 43.30 nm RMSE is a systematic long shift. Estimate one scale on gamma 4, 7, 10 and score gamma 14, 19, 26."
+      - "R2. Add an autocatalysis knockout (no u^2 v) besides equal diffusion."
+      - "R3. Leave the 206 nm carrier visible on the capsule instead of covering the disk with crossing spines."
