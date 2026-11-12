@@ -1,0 +1,196 @@
+# MorphoEval Pass 2 — Cardamine hirsuta Turing wavelength, slot 3140.
+# Closes Pass 1 items R1–R4 using the self-test numbers and the measurement
+# sidecar. R5 (second assessor) stays open. Overall rises because those
+# controls are now part of the scored record, not because the rubric was relaxed.
+audit:
+  id: 2026-10-27-cardamine-hirsuta-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-cardamine-hirsuta-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2; second assessor still pending)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Base commit when the loop was scored. Slot 3140 files are new in the working tree on top of this commit, so blob URLs at this commit do not yet contain them. Evidence is pinned by path and line in the loop commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan Mathison"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  kierzkowski2019:
+    title: "A Growth-Based Framework for Leaf Shape Development and Diversity"
+    authors: "Kierzkowski, Runions, Vuolo, Strauss, and others"
+    venue: "Cell 177(6):1405-1418 (2019)"
+    doi: 10.1016/j.cell.2019.05.011
+  vlad2014:
+    title: "Leaf Shape Evolution Through Duplication, Regulatory Diversification, and Loss of a Homeobox Gene"
+    authors: "Vlad, Kierzkowski, Rast, Vuolo, and others"
+    venue: "Science 343(6172):780-783 (2014)"
+    doi: 10.1126/science.1248384
+  hay2006:
+    title: "The genetic basis for differences in leaf form between Arabidopsis thaliana and its wild relative Cardamine hirsuta"
+    authors: "Hay, Angela and Tsiantis, Miltos"
+    venue: "Nature Genetics 38(8):942-947 (2006)"
+    doi: 10.1038/ng1835
+  fusterpons2024:
+    title: "The trichome pattern diversity of Cardamine shares genetic mechanisms with Arabidopsis but differs in environmental drivers"
+    authors: "Fuster-Pons, Murillo-Sanchez, Mendez-Vigo, Marcer, and others"
+    venue: "Plant Physiology 196(4):2730-2748 (2024)"
+    doi: 10.1093/plphys/kiae213
+    role: "Related periodic epidermal pattern. Not a measurement of a 154.1 µm pigment wavelength."
+simulations:
+  - id: delphi10000-cardamine-hirsuta-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength on Cardamine hirsuta at 154 µm (Pass 2)"
+    organism: "Cardamine hirsuta (hairy bittercress)"
+    domain: morphogenesis
+    script: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py
+    output: docs/media/cardamine_hirsuta_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/cardamine_hirsuta_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-cardamine-hirsuta-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, kierzkowski2019, vlad2014, hay2006, fusterpons2024]
+    summary: >-
+      Pass 2 keeps the same Schnakenberg point (a=0.10, b=0.90, D_u=0.04,
+      D_v=0.42, lambda_c=154.1 µm, age 0 Ma, chronoseries 1/1). Measured
+      record: dispersion Pearson r = 0.999896, RMSE = 0.001564, nonlinear
+      spacing 173.362 µm on both seeds, ablation sigma_max = -0.1016 with
+      the control standard deviation falling, sweep wavelengths
+      163.9, 173.6, 188.0, 201.0, 217.4 µm (monotonic), specimen foreground
+      fraction 0.2825, bounding-box aspect 0.6048, contour circularity
+      0.0926, orientation KS 0.0156, radial-FFT Pearson r = 0.9948, GIF
+      12 frames at 720x540, CV similarity 96.0. The 12% nonlinear shift
+      versus 154.1 µm stays in the record.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a finite critical wavenumber from reaction and diffusion."
+        - "Schnakenberg (1979) supplies the kinetics a - u + u^2 v and b - u^2 v."
+        - "Hay and Tsiantis (2006), Vlad et al. (2014), and Kierzkowski et al. (2019) establish Cardamine hirsuta as the compound-leaf comparison and tie RCO to domain size rather than to a local wavenumber."
+      reconstructed_in_script:
+        - "Neumann Schnakenberg integration, dispersion fit, D_v sweep, and equal-diffusion ablation, now scored from the measurement sidecar."
+        - "Specimen mask morphometrics and the orientation KS / radial-FFT comparison against the Commons photograph."
+      transfer_boundary:
+        - "154.1 µm is the classical wavelength of this parameter point, pinned to the slot scale. It is not a length reported by the cited Cardamine papers."
+      does_not_claim:
+        - "That the herbarium photograph resolves individual 154 µm ocelli."
+        - "A predecessor or successor chronospecies. The series length is 1 and the age is 0 Ma."
+        - "That matching the plant's silhouette validates the wavenumber. The wavenumber is tested by the dispersion fit and the spacing measurement."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Pass 2 keeps the implemented Jacobian, wavenumber law, Neumann
+          integrator, and the integer Lean checks. The ablation panel shows
+          the equal-diffusion field staying flat on the same color scale as
+          the patterned field, which is the negative control the kinetics
+          predict. The pigment label remains a reconstruction, so the score
+          stays below 95.
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [103, 134], note: "k_c law and Turing margin", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [241, 266], note: "Equal-diffusion ablation returns sigma_max and the flat field", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean, lines: [13, 28], note: "k_c cross-multiply, squared inequality, diffusion ratio, negative trace", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Last-frame CV similarity against the Commons photograph is 96.0
+          (orientation, radial FFT, coherency, occupancy), with radial-FFT
+          Pearson r = 0.9948. The comparison figure shows the same plant.
+          The score stays under 90 because the ocellus texture is a model
+          modulation, not a micrograph at 154 µm.
+        evidence:
+          - {file: docs/media/cardamine_hirsuta_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720x540 growth GIF", supports: true}
+          - {file: docs/media/cardamine_hirsuta_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Side-by-side specimen and field", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [338, 399], note: "CV similarity and KS against the specimen crop", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Selected wavelength increases at every step of D_v/D_u in
+          {10.5, 13.75, 20, 27.5, 40}: 163.9, 173.6, 188.0, 201.0, 217.4 µm.
+          The self-test asserts that sequence is strictly increasing. The
+          equal-diffusion point is a separate switch that kills the pattern
+          rather than a point on that curve.
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [219, 239], note: "max-growth wavenumber and the sweep", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [704, 704], note: "Self-test asserts sweep monotonicity", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Dispersion-band Pearson r = 0.999896 against reference gate 0.98,
+          RMSE = 0.001564 against a 0.05 tolerance, nonlinear spacing
+          173.362 µm against the 154.1 µm law (values differ on purpose),
+          ablation sigma_max = -0.1016 against 0, and the specimen mask
+          metrics differ from their priors. Orientation KS is about 0.016,
+          not zero. n = 1 photograph and two seeds.
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [551, 664], note: "measure_morphoeval rows with value != reference", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [268, 293], note: "Specimen segmentation", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [699, 710], note: "Self-test on r, RMSE, ablation, CV, and radial Pearson r", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >-
+          DOIs were checked on Crossref while scouting. The specimen file
+          is the Commons public-domain JPEG, SHA-256
+          1c268fecb3660b310d99f688a13a679c347aabc4e2522eace472f8c985bf8510,
+          distinct from the species-gallery copy. Scale 154 µm and age 0 Ma
+          are in the reference JSON, the README, and the figure title.
+        evidence:
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "Slot 3140 scout dossier", supports: true}
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "Verified bibliographic records", supports: true}
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/cardamine_hirsuta_turing_wavelength_s0_reference.json, lines: [8, 30], note: "154.1 µm and 0 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Each of k_c, the instability inequality, and the eight-wavelength
+          Holocene cutoff has a Lean theorem and a Python function. The
+          math-kg YAML names those declarations. Pass 2 does not add a
+          second formalization.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-cardamine-hirsuta-turing-wavelength-s0.yaml, lines: [24, 55], note: "Three laws with Lean loci", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean, lines: [32, 46], note: "Mode count, cell cutoff, chronoseries terminus, margin lemma", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seeds, pinned input hashes, and a self-test that
+          failed closed on the numerical gates before this audit was scored.
+          Re-running --self-test regenerates the PNG and the GIF.
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [78, 84], note: "SHA-256 verification of the five dataset files", supports: true}
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/README.md, lines: [14, 22], note: "Documented invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "D_v sweep monotonicity is now an asserted self-test and a measurement row."
+        status: resolved
+      - id: R2
+        item: "Equal-diffusion ablation sigma_max = -0.1016 is scored, and the flat field is in the comparison figure."
+        status: resolved
+      - id: R3
+        item: "Specimen foreground fraction, aspect, circularity, and coherency are measurement rows with priors that differ from the measured values."
+        status: resolved
+      - id: R4
+        item: "Pearson r = 0.999896, RMSE = 0.001564, and the orientation KS statistic are measurement rows."
+        status: resolved
+      - id: R5
+        item: "Independent second assessor is still absent. Pass 2 remains a single-agent score."
+        status: open
+    needs:
+      - id: N3
+        need_type: independent_assessor
+        target_dimension: specimen-match
+        description: "A second assessor has not scored this loop."
+        status: open
+        novelty_n: 0
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0

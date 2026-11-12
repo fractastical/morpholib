@@ -1,0 +1,94 @@
+{
+  "sim_id": "delphi10000-cardamine-hirsuta-turing-wavelength-s0",
+  "slot": 3140,
+  "organism": {
+    "scientific_name": "Cardamine hirsuta",
+    "common_name": "Hairy bittercress",
+    "aristotelian_taxonomy": "III. Phyta (Embryophyta) -> Angiospermae & Gymnospermae -> Cardamine"
+  },
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength",
+    "phenomenon_size_m": 0.0001541,
+    "phenomenon_size_um": 154.1,
+    "log10_size_m": -3.812,
+    "scale_tier": "5_primordium_100um",
+    "scale_tier_index": "5/8",
+    "variant": "detail",
+    "human": "154 µm"
+  },
+  "paleobiology": {
+    "geological_period": "Holocene (Extant)",
+    "geological_age_ma": 0.0,
+    "lineage": "",
+    "chronoseries": "Cardamine 1/1",
+    "chronoseries_index": 1,
+    "chronoseries_length": 1,
+    "predecessor": null,
+    "successor": null,
+    "scale_change": "No named predecessor or successor chronospecies. Relative to a one-cell (~16 µm) domain the critical mode is inadmissible because L < lambda_c; on the 1.233 mm detail patch, N = L / lambda_c = 8. RCO and margin-growth modules change leaflet domain size at a larger scale and do not reset k_c."
+  },
+  "model": {
+    "name": "Schnakenberg reaction-diffusion",
+    "kinetics": "f = a - u + u^2 v ; g = b - u^2 v",
+    "steady_state": "u0 = a + b ; v0 = b / u0^2",
+    "boundary_conditions": "Neumann no-flux on the rectangular detail patch. The specimen readout multiplies the field only inside the non-white leaf mask; the white background is not a reaction domain.",
+    "wavenumber_law": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength_law": "lambda_c = 2 pi / k_c",
+    "state_variables": {
+      "u": "activator, read out as the dark core of a pigment ocellus",
+      "v": "inhibitor, the lateral-suppression field"
+    }
+  },
+  "parameters": {
+    "a": 0.10,
+    "b": 0.90,
+    "D_u": 0.04,
+    "D_v": 0.42,
+    "diffusion_ratio": 10.5,
+    "grid_n": 128,
+    "wavelengths_across_domain": 8,
+    "pixels_per_classical_wavelength": 16,
+    "dt": 0.008,
+    "n_steps": 10000,
+    "seeds": [3140, 3141],
+    "note": "Operating point is just above the Turing threshold (critical D_v about 0.343 at this Jacobian) so the determinant-minimizing k_c and the maximum-growth wavenumber stay within a few percent. These coefficients are specific to slot 3140."
+  },
+  "specimen": {
+    "file": "cardamine_hirsuta_specimen.jpg",
+    "sha256": "1c268fecb3660b310d99f688a13a679c347aabc4e2522eace472f8c985bf8510",
+    "width": 617,
+    "height": 992,
+    "license": "Public domain",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Cardamine_hirsuta.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/95/Cardamine_hirsuta.jpg",
+    "gallery_fallback": "datasets/species_gallery/III_Phyta_Embryophyta/Cardamine_hirsuta.jpg",
+    "gallery_fallback_sha256": "44179e93a53b04c371f05d319392391cfb3c5bedd9caf58b3641baf5478e246b"
+  },
+  "empirical_claims": [
+    {
+      "id": "turing-kc",
+      "claim": "A two-species reaction-diffusion system with short-range activation and long-range inhibition selects a finite critical wavenumber k_c.",
+      "source_doi": "10.1098/rstb.1952.0012"
+    },
+    {
+      "id": "schnakenberg-kinetics",
+      "claim": "The cubic kinetics a - u + u^2 v and b - u^2 v admit a stable homogeneous steady state that diffusion can destabilize.",
+      "source_doi": "10.1016/0022-5193(79)90042-0"
+    },
+    {
+      "id": "cardamine-growth-domain",
+      "claim": "Cardamine hirsuta leaflet shape is produced by a quantified growth framework; the organ-scale domain is much larger than 154 µm.",
+      "source_doi": "10.1016/j.cell.2019.05.011"
+    },
+    {
+      "id": "rco-domain-not-wavenumber",
+      "claim": "RCO, present in Cardamine and absent from the Arabidopsis simple leaf, represses growth in sinuses and changes how many leaflets form. That changes domain length L, hence the mode count N = L / lambda_c, not the local k_c.",
+      "source_doi": "10.1126/science.1248384"
+    },
+    {
+      "id": "trichome-transfer",
+      "claim": "Cardamine trichome patterning uses a lateral-inhibition mechanism shared with Arabidopsis, so a periodic epidermal pattern at this tier is biologically real. The papers do not report a pigment-ocellus wavelength of 154.1 µm; that identification is the slot's quantitative target, not a quoted measurement.",
+      "source_doi": "10.1093/plphys/kiae213"
+    }
+  ]
+}
