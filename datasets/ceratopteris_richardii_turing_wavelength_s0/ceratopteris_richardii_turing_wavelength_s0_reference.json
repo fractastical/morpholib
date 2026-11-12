@@ -1,0 +1,86 @@
+{
+  "slot": 3143,
+  "sim_id": "delphi10000-ceratopteris-richardii-turing-wavelength-s0",
+  "organism": "Ceratopteris richardii",
+  "common_name": "water fern",
+  "lineage": "III. Phyta (Embryophyta) -> Angiospermae & Gymnospermae -> Ceratopteris",
+  "chronoseries": {
+    "index": "1/1",
+    "stage": "Holocene (Extant)",
+    "age_ma": 0,
+    "predecessor": null,
+    "successor": null,
+    "counterfactual_predecessor_lambda_um": 512
+  },
+  "scale": {
+    "length_um": 256,
+    "length_m": 0.000256,
+    "log10_m": -3.592,
+    "tier": "5/8",
+    "tier_id": "5_primordium_100um",
+    "variant": "detail",
+    "meaning": "Turing pigment stripe / ocellus wavelength"
+  },
+  "cohort": "1. Chemical Turing / RD",
+  "form": "Stripes, Spots & Ocelli",
+  "quantitative_law": "Turing wavenumber k_c",
+  "equations": {
+    "schnakenberg": [
+      "du/dt = D_u laplacian(u) + gamma (a - u + u^2 v)",
+      "dv/dt = D_v laplacian(v) + gamma (b - u^2 v)"
+    ],
+    "steady_state": ["u0 = a + b", "v0 = b / (a + b)^2"],
+    "jacobian": [
+      "f_u = gamma (-1 + 2 u0 v0)",
+      "f_v = gamma u0^2",
+      "g_u = gamma (-2 u0 v0)",
+      "g_v = -gamma u0^2"
+    ],
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "turing_conditions": [
+      "trace(J) < 0",
+      "det(J) > 0",
+      "D_v f_u + D_u g_v > 0",
+      "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"
+    ]
+  },
+  "parameters_this_scale": {
+    "a": 0.08,
+    "b": 0.92,
+    "D_u_um2_per_s": 8.0,
+    "D_v_um2_per_s": 96.0,
+    "diffusion_ratio": 12,
+    "lambda_c_um": 256,
+    "domain_side_um": 768,
+    "seed": 3143,
+    "note": "gamma is the unique rate that places k_c at 2*pi/256 µm for these diffusivities. Not copied from a coarser sibling slot."
+  },
+  "boundary_conditions": "periodic square of side 3*lambda_c (768 µm). No-flux is not used; the primordium window is a periodic patch of the notch field.",
+  "state_variables": ["u activator (pigment precursor)", "v inhibitor (longer-range antagonist)"],
+  "empirical_claims": {
+    "reported_in_source": [
+      "C. richardii gametophytes build a notch meristem whose archegonium sites depend on positional cues and cell-division dynamics (Geng, Yan & Zhou 2022; Bartz & Gola 2018).",
+      "The species is the standard homosporous fern model (Hickok, Warne & Fribourg 1995; Banks 1999; Plackett et al. 2014).",
+      "Two-component reaction-diffusion selects a finite critical wavenumber when the inhibitor diffuses farther than the activator (Turing 1952; Gierer & Meinhardt 1972; Schnakenberg 1979)."
+    ],
+    "not_reported": "None of the cited papers measure a 256 µm Turing wavelength in Ceratopteris pigment. That length is the slot scale."
+  },
+  "specimens": {
+    "canonical_plate": {
+      "file": "datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_primordium_plate.jpg",
+      "gallery_source": "datasets/species_gallery/III_Phyta_Embryophyta/Ceratopteris_richardii.jpg",
+      "sha256": "3fcf2684662c089b9c66687d1f6b2e9409565391d0d316e5db46561d1809641f",
+      "role": "Canonical fitness plate. Drawn 100 µm scale bar is 106 px."
+    },
+    "anatomical_voucher": {
+      "file": "datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_cfern_3weeks_cc-by-sa.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:C-Fern_Development_-_3_weeks.jpg",
+      "license": "CC BY-SA 4.0",
+      "sha256": "597a43f0f93f748ef8b7f35da9e9e6c2b0df34f4074ff564cd6e00e9c6e87b59",
+      "role": "Transmitted-light gametophyte with notch meristem and dichotomous veins. Not the fitness crop."
+    }
+  },
+  "script": "models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py",
+  "lean": "morphoeval/lean/loops/Loop_3143_ceratopteris_richardii_turing_wavelength_s0.lean"
+}

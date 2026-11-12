@@ -1,0 +1,133 @@
+audit:
+  id: 2026-10-27-ceratopteris-richardii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8bc1f20b8ecb6382629bf389fb84a0d39e22d0ca
+    note: "Pass 1. REMEDIATION_PASS = 1. No nanopub profile on this runner; ORCID is the repository setup-guide placeholder and the nanopubs are unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "Journal of Theoretical Biology"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    year: 1972
+    venue: "Kybernetik"
+    doi: 10.1007/BF00289234
+  geng2022:
+    title: "Positional cues and cell division dynamics drive meristem development and archegonium formation in Ceratopteris gametophytes"
+    authors: "Geng, Y., Yan, A. and Zhou, Y."
+    year: 2022
+    venue: "Communications Biology"
+    doi: 10.1038/s42003-022-03627-y
+  bartz2018:
+    title: "Meristem development and activity in gametophytes of the model fern, Ceratopteris richardii"
+    authors: "Bartz, M. and Gola, E. M."
+    year: 2018
+    venue: "Developmental Biology"
+    doi: 10.1016/j.ydbio.2018.10.005
+  hickok1995:
+    title: "The biology of the fern Ceratopteris and its use as a model system"
+    authors: "Hickok, L. G., Warne, T. R. and Fribourg, R. S."
+    year: 1995
+    venue: "International Journal of Plant Sciences"
+    doi: 10.1086/297255
+simulations:
+  - id: delphi10000-ceratopteris-richardii-turing-wavelength-s0
+    name: "Ceratopteris richardii Schnakenberg wavelength at 256 µm (Holocene, 0 Ma)"
+    organism: "Ceratopteris richardii"
+    script: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py
+    output: docs/media/ceratopteris_richardii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, geng2022, bartz2018, hickok1995]
+    summary: >-
+      Pass 1. Analytical lambda_c = 256 µm at D_u = 8, D_v = 96 (ratio 12),
+      gamma = 0.012738 s^-1. Dispersion Pearson r = 1.0 against matrix eigenvalues.
+      The integrated field is seeded on the critical mode and its Fourier peak is 256 µm.
+      The 12-frame GIF is that stripe field (800x600). Computer-vision similarity to the
+      canonical plate is 65.9, short of the image-fitness gate. Plate Otsu foreground
+      fraction is 0.742 against a 0.5 prior. Sweep, ablation, voucher segmentation and
+      terminal-plate lock are implemented but not exercised (REMEDIATION_PASS = 1).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 and Schnakenberg 1979 select a finite critical wavenumber when the inhibitor out-diffuses the activator."
+        - "Geng, Yan and Zhou 2022 and Bartz and Gola 2018 describe the Ceratopteris notch meristem and archegonium positions. They do not publish a 256 µm pigment wavelength."
+      reconstructed_in_script:
+        - "gamma is solved so k_c = 2*pi/256 µm on a 768 µm periodic window at age 0 Ma."
+        - "The rendered activator is initialized on that critical mode plus seed-3143 noise."
+      transfer_boundary:
+        - "Applying Schnakenberg kinetics to the gallery primordium plate is a scale assignment, not a measurement from the fern papers."
+      does_not_claim:
+        - "That Ceratopteris pigment was shown experimentally to obey these rate constants."
+        - "That a fossil chronospecies at 512 µm was measured. The series has one node, Holocene 0 Ma."
+        - "That the Pass-1 GIF matches the plate. CV similarity is 65.9."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "Schnakenberg steady state, Jacobian, and k_c formula are implemented and gamma is solved for 256 µm. The field is seeded on the critical mode rather than grown from unstructured noise, so spontaneous mode selection is not what the figure shows."
+        evidence:
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [63, 89], note: "steady state, Jacobian, gamma_for_wavelength", supports: true}
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [166, 189], note: "critical-mode initial condition and explicit integration", supports: true}
+      specimen-match:
+        value: 62
+        rationale: "The comparison figure places the canonical plate beside green stripes. The GIF never becomes the plate. CV similarity of the last frame to the gallery plate is 65.9."
+        evidence:
+          - {file: docs/media/ceratopteris_richardii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass-1 four-panel figure; sweep panel is a placeholder", supports: true}
+          - {file: docs/media/ceratopteris_richardii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 800x600, stripe field throughout", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: "self_test checks that lambda falls as gamma rises, and that equal diffusion is stable. Those sweeps are not in the rendered figure or the Pass-1 measurement list because REMEDIATION_PASS is 1."
+        evidence:
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [209, 224], note: "wavelength_sweep and ablation_sigma defined", supports: true}
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [571, 594], note: "self_test asserts monotonic sweep and ablation", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: "Dispersion Pearson r is 1.0 against a null of 0. Plate foreground fraction 0.742 and coherency 0.231 are measured, not copied from the reference priors. KS, RMSE, and the gametophyte voucher are not yet in the measurement list."
+        evidence:
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [151, 158], note: "dispersion_pearson", supports: true}
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [263, 285], note: "segment_plate Otsu and coherency", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Gierer-Meinhardt, Geng 2022, Bartz 2018 and Hickok 1995. Plate SHA-256 and the CC BY-SA voucher URL are in the reference JSON."
+        evidence:
+          - {file: datasets/ceratopteris_richardii_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Gierer, Schnakenberg entries", supports: true}
+          - {file: datasets/ceratopteris_richardii_turing_wavelength_s0/ceratopteris_richardii_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 256 µm, age 0 Ma, specimen digests", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Module docstring and function docstrings name the Schnakenberg terms and the 256 µm constraint. Lean theorems pin the same integers (256, ratio 12, window 768)."
+        evidence:
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [1, 28], note: "scale, age, and equation statement", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3143_ceratopteris_richardii_turing_wavelength_s0.lean, lines: [28, 46], note: "five theorems, no sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Seed 3143, --self-test, and deterministic explicit integration. Pass 1 self-test passed. Dependencies are the repo scientific stack."
+        evidence:
+          - {file: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py, lines: [571, 599], note: "self_test and CLI", supports: true}
+          - {file: datasets/ceratopteris_richardii_turing_wavelength_s0/README.md, lines: [1, 40], note: "invocation and scale statement", supports: true}
+    remediation:
+      - id: R1
+        item: "Lock the GIF terminal frame to the canonical plate so orientation, radial FFT and coherency are scored against that plate (Pass-1 CV 65.9, image fitness below 70)."
+      - id: R2
+        item: "Render the gamma sweep and emit it as a measurement. Self-test already checks monotonicity."
+      - id: R3
+        item: "Report the equal-diffusion ablation sigma_max as a negative control measurement."
+      - id: R4
+        item: "Segment the CC BY-SA gametophyte voucher and add KS plus RMSE goodness-of-fit against the plate."
+      - id: R5
+        item: "Single assessor only. No second provider scored this audit."
