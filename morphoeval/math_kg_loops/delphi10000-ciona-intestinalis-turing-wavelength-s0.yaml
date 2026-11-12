@@ -1,0 +1,67 @@
+sim_id: delphi10000-ciona-intestinalis-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 5.056e-05
+log10_size_m: -4.296
+size_human: 51 µm
+scale_tier: 4_cellular_10um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Ciona intestinalis (Holocene extant)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: 1/1
+fossil_lineage_group: ""
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 wavenumber selection
+  lambda_m: 5.056e-05
+  a: 0.1
+  b: 0.9
+  Du_base_um2: 8.0
+  Dv_base_um2: 80.0
+  time_scale: 30.0
+  grid: [80, 80]
+  wavelengths_across: 4
+  steps: 1100
+  dt: 0.008
+  seed: 3148
+  boundary: periodic
+  inputs:
+    - datasets/ciona_intestinalis_turing_wavelength_s0/Ciona_intestinalis_YPM_IZ_082346.jpg
+    - datasets/ciona_intestinalis_turing_wavelength_s0/ciona_intestinalis_turing_wavelength_s0_reference.json
+    - datasets/ciona_intestinalis_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Stable homogeneous state
+    formula: "tr J = f_u + g_v < 0 and det J = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3148.traceJ
+    lean_theorem: MathOfBiology.Loop_3148.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean#L22-L28
+    variables: "f_u = 0.8, g_v = -1 at the Schnakenberg steady state (1, 0.9); integers in Lean are scaled by 10"
+    role: Homogeneous pigment field is stable before diffusion is allowed to destabilise it
+    source_citation: "Turing (1952) doi:10.1098/rstb.1952.0012; Schnakenberg (1979) doi:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py#L88-L131
+  - law_name: Turing wavenumber
+    formula: "k_c^2 = gamma (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 5.056e-5 m"
+    lean_decl: MathOfBiology.Loop_3148.crossDiff
+    lean_theorem: MathOfBiology.Loop_3148.discriminant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean#L34-L42
+    variables: "D_v/D_u = 10; gamma chosen so lambda_c equals the 51 µm tier pin"
+    role: Selects the stripe wavelength on the detail-tier patch
+    source_citation: "Turing (1952) doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py#L98-L121
+  - law_name: Equal-diffusion ablation
+    formula: "If D_u = D_v then D_v f_u + D_u g_v = D_u (f_u + g_v) < 0"
+    lean_decl: MathOfBiology.Loop_3148.equal_diffusion_ablation
+    lean_theorem: MathOfBiology.Loop_3148.equal_diffusion_ablation
+    lean_locus: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean#L44-L46
+    variables: "Same Jacobian; diffusion ratio forced to 1"
+    role: Negative control. The critical mode must decay.
+    source_citation: "Turing (1952) doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py#L277-L295
+  - law_name: Scale sandwich at 0 Ma
+    formula: "1 µm < 4 * 51 µm < 10 mm, and the chronoseries predecessor count is 0"
+    lean_decl: MathOfBiology.Loop_3148.scale_sandwich
+    lean_theorem: MathOfBiology.Loop_3148.scale_sandwich
+    lean_locus: morphoeval/lean/loops/Loop_3148_ciona_intestinalis_turing_wavelength_s0.lean#L48-L55
+    variables: "melanosome 1 µm; detail patch 204 µm; adult bar 10000 µm; series length 1"
+    role: States what changes at this scale versus finer and coarser neighbours when there is no other chronospecies
+    source_citation: "Slot pin 5.056e-05 m; specimen scale bar 10 mm on YPM IZ 082346"
+    code_locus: models/2026-delphi10000-ciona-intestinalis-turing-wavelength-s0.py#L46-L52
