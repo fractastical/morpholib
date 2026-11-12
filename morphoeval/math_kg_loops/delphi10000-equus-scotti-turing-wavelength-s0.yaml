@@ -1,0 +1,55 @@
+sim_id: delphi10000-equus-scotti-turing-wavelength-s0
+slot: 3220
+math_family: "1. Chemical Turing / RD"
+poion_form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+organism: Equus scotti
+phenomenon_size_m: 0.0001643
+phenomenon_size_um: 164.3
+log10_size_m: -3.784
+size_human: 164 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Equus scotti (164 µm, detail scale)
+geological_age_ma: 0.6
+geological_period: Middle Pleistocene (Irvingtonian, 0.6 Ma)
+fossil_lineage_group: Equid Autopod & Dental Chronospecies
+predecessor: Pliohippus pernix (8.5 Ma, lambda 198.688 µm)
+successor: Equus quagga (Bard 1977 initiation spacing 400 µm)
+model_spec:
+  kinetics: Schnakenberg 1979
+  steady_state: "u0 = a + b, v0 = b / u0^2"
+  parameters:
+    a: 0.10
+    b: 0.90
+    gamma: 1.0
+    Dv_over_Du: 20
+    target_lambda_um: 164.3
+  boundary_conditions: periodic dermal patch, Fourier spectral IMEX
+  wavenumber: "k_c = argmax_k sigma_+(k), lambda_c = 2*pi/k_c = 164.3 µm"
+  murray_stationary: "k_m^2 = (Dv*fu + Du*gv) / (2*Du*Dv)"
+  not_copied_from: models/1999-forsten-equus-scotti-turing-wavelength.py (8.8 mm organ tier)
+equations:
+- law_name: Schnakenberg determinant at the Equus scotti steady state
+  formula: "det(J) = fu*gv - fv*gu > 0, with (fu,fv,gu,gv) = (0.8, 1, -1.8, -1) at (a,b)=(0.10,0.90)"
+  lean_decl: MathOfBiology.Loop_3220.schnakenbergDetScaled
+  lean_theorem: MathOfBiology.Loop_3220.schnakenberg_determinant_positive
+  lean_locus: morphoeval/lean/loops/Loop_3220_equus_scotti_turing_wavelength_s0.lean
+  variables: "fu, fv, gu, gv scaled by 10 so the integer determinant equals 100"
+  role: Homogeneous steady state is a saddle-free source for diffusion-driven instability at 164.3 µm
+  source_citation: "Schnakenberg 1979 JTB 81:389, doi:10.1016/0022-5193(79)90042-0"
+- law_name: Diffusion-driven condition at Dv/Du = 20, and its failure when Du = Dv
+  formula: "Dv*fu + Du*gv > 0 at the scotti ratio; the same contraction is negative when Du = Dv"
+  lean_decl: MathOfBiology.Loop_3220.diffusionDrive
+  lean_theorem: MathOfBiology.Loop_3220.scotti_ratio_is_diffusion_driven
+  lean_locus: morphoeval/lean/loops/Loop_3220_equus_scotti_turing_wavelength_s0.lean
+  variables: "Du scaled to 1, Dv = 20 for Equus scotti; ablation Du = Dv = 1"
+  role: Necessary condition for a positive Turing wavenumber at this follicular scale
+  source_citation: "Turing 1952 Phil. Trans. R. Soc. B 237:37, doi:10.1098/rstb.1952.0012"
+- law_name: Chronospecies wavelength order and eight-mode patch count
+  formula: "lambda_plio 198.688 µm > lambda_scotti 164.3 µm < lambda_quagga 400 µm; N = 8 on a 1314.4 µm patch"
+  lean_decl: MathOfBiology.Loop_3220.chronospecies_wavelength_order
+  lean_theorem: MathOfBiology.Loop_3220.eight_follicular_modes_on_the_scotti_patch
+  lean_locus: morphoeval/lean/loops/Loop_3220_equus_scotti_turing_wavelength_s0.lean
+  variables: "wavelengths in nanometres; patch width 1314400 nm"
+  role: What changes at 0.6 Ma and 164 µm relative to Pliohippus pernix and Equus quagga
+  source_citation: "Bard 1977 J. Zool. 183:527, doi:10.1111/j.1469-7998.1977.tb04204.x; MacFadden 1986 Paleobiology 12:355, doi:10.1017/s0094837300003109"
