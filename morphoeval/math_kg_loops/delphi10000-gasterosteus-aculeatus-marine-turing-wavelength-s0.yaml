@@ -1,0 +1,77 @@
+sim_id: delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 5.2e-05
+log10_size_m: -4.284
+size_human: 52 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Gasterosteus aculeatus_marine (52 µm, detail scale)
+geological_age_ma: 0.015
+geological_period: Late Pleistocene Marine Ancestor (15 ka)
+fossil_lineage_group: Gasterosteus Pelvic Reduction Chronospecies
+chronoseries_index: 4/6
+predecessor: Gasterosteus doryssus_late
+successor: Gasterosteus aculeatus
+model_spec:
+  model: Schnakenberg Turing wavelength selection at 52 µm for the Late Pleistocene marine stickleback
+  equations:
+    - du/dt = Du lap(u) + a - u + u^2 v
+    - dv/dt = Dv lap(v) + b - u^2 v
+    - k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)
+    - lambda_c = 2 pi / k_c
+  a: 0.10
+  b: 0.90
+  Du: 0.50
+  Dv: 20.0
+  s_marine: 1.0
+  s_doryssus_late: 4.0
+  s_aculeatus: 2.25
+  lambda_um_marine: 52.0
+  lambda_um_doryssus_late: 104.0
+  lambda_um_aculeatus: 78.0
+  grid_resolution: [96, 96]
+  steps: 280
+  dt: 0.45
+  seed: 3232
+  geological_age_ma: 0.015
+  inputs:
+    - datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/gasterosteus_aculeatus_marine_turing_wavelength_s0_reference.json
+    - datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/gasterosteus_aculeatus_marine_turing_wavelength_s0_specimen.jpg
+    - datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/scout_manifest.json
+    - datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/paper_citations.bib
+equations:
+- law_name: Turing trace-diffusion coefficient
+  formula: h = D_v f_u + D_u g_v
+  lean_decl: MathOfBiology.Loop_3232.traceDiffusion
+  lean_theorem: MathOfBiology.Loop_3232.marine_trace_diffusion_value
+  lean_locus: morphoeval/lean/loops/Loop_3232_gasterosteus_aculeatus_marine_turing_wavelength_s0.lean
+  variables: Du=0.5, Dv=20, f_u=0.8, g_v=-1, scaled by 1000 in Lean
+  role: Sign of h opens the Turing band at the 52 µm marine-ancestor scale
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py
+- law_name: Critical wavenumber
+  formula: k_c^2 = h / (2 D_u D_v) = 0.775 on the marine parameter set
+  lean_decl: MathOfBiology.Loop_3232.traceDiffusion
+  lean_theorem: MathOfBiology.Loop_3232.marine_kc_squared_is_775_thousandths
+  lean_locus: morphoeval/lean/loops/Loop_3232_gasterosteus_aculeatus_marine_turing_wavelength_s0.lean
+  variables: nondimensional k_c^2, mapped to 52 µm by L0
+  role: Quantitative law for this slot
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py
+- law_name: Chronospecies wavelength ordering
+  formula: lambda(N) = 52 µm * sqrt(32/N); 52 < 78 < 104
+  lean_decl: MathOfBiology.Loop_3232.marine_shorter_than_predecessor_and_successor
+  lean_theorem: MathOfBiology.Loop_3232.marine_shorter_than_predecessor_and_successor
+  lean_locus: morphoeval/lean/loops/Loop_3232_gasterosteus_aculeatus_marine_turing_wavelength_s0.lean
+  variables: predecessor 104 µm at 9.99 Ma, this node 52 µm at 0.015 Ma, successor 78 µm at 0 Ma
+  role: What changes at this age and scale relative to doryssus_late and aculeatus
+  source_citation: Colosimo 2005 DOI:10.1126/science.1107239
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py
+- law_name: Equal-diffusion ablation
+  formula: h(Du=Dv) < 0
+  lean_decl: MathOfBiology.Loop_3232.traceDiffusion
+  lean_theorem: MathOfBiology.Loop_3232.equal_diffusion_ablation_has_no_turing_band
+  lean_locus: morphoeval/lean/loops/Loop_3232_gasterosteus_aculeatus_marine_turing_wavelength_s0.lean
+  variables: Du = Dv = 0.5
+  role: Negative control
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py

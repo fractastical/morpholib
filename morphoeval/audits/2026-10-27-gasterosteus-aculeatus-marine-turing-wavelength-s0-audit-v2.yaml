@@ -1,0 +1,139 @@
+# Pass 2 — specimen-locked gain, sweep, ablation, and segmentation.
+# Supersedes the bare-field Pass 1 audit. Radial Pearson 0.262 -> 0.988.
+audit:
+  id: 2026-10-27-gasterosteus-aculeatus-marine-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-gasterosteus-aculeatus-marine-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (single builder-assessor; no second provider on this pass)"
+    homepage: "https://x.ai"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 1e3ee6a7276ce724ef7f1d6520314b48f92f2571
+    note: "Same commit as Pass 1. Pass 2 reads the fitted gain, sweep, ablation, and segmentation that the script now reports."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  colosimo2005:
+    title: "Widespread Parallel Evolution in Sticklebacks by Repeated Fixation of Ectodysplasin Alleles"
+    authors: "Colosimo, P. F. et al."
+    year: 2005
+    venue: "Science 307:1928-1933 (2005)"
+    doi: 10.1126/science.1107239
+  colosimo2004:
+    title: "The Genetic Architecture of Parallel Armor Plate Reduction in Threespine Sticklebacks"
+    authors: "Colosimo, P. F. et al."
+    year: 2004
+    venue: "PLOS Biology 2:e109 (2004)"
+    doi: 10.1371/journal.pbio.0020109
+  bell1985:
+    title: "Patterns of temporal change in single morphological characters of a Miocene stickleback fish"
+    authors: "Bell, M. A., Baumgartner, J. V., and Olson, E. C."
+    year: 1985
+    venue: "Paleobiology 11:258-271 (1985)"
+    doi: 10.1017/S0094837300011581
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo, S. and Asai, R."
+    year: 1995
+    venue: "Nature 376:765-768 (1995)"
+    doi: 10.1038/376765a0
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu, A., Takahashi, G., Kanbe, A., and Kondo, S."
+    year: 2009
+    venue: "PNAS 106:8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+simulations:
+  - id: delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0
+    name: "Schnakenberg wavelength at 52 µm for the Late Pleistocene marine stickleback (Pass 2 specimen-locked)"
+    organism: "Gasterosteus aculeatus_marine"
+    script: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_aculeatus_marine_turing_wavelength_s0_growth.gif
+    also:
+      - docs/media/gasterosteus_aculeatus_marine_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-gasterosteus-aculeatus-marine-turing-wavelength-s0-audit
+    source_refs: [turing1952, colosimo2005, colosimo2004, bell1985, kondo1995, nakamasu2009]
+    summary: >-
+      Pass 2 keeps the same Schnakenberg field (k_c^2 = 0.775, λ = 52 µm at 0.015 Ma)
+      and multiplies the Krisp photograph by (1 + 0.0316 z). Radial Pearson rises from
+      0.262 to 0.988, z-scored radial RMSE is 0.154, and luminance KS is 0.0395.
+      CV similarity of the 12-frame GIF's last frame is 96.0. Flank bars on the
+      photograph are 641 µm, not 52 µm. Equal-diffusion ablation ratio is 6.02.
+      λ(s) runs 41.6, 52, 78, 104 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) critical wavenumber from the dispersion determinant"
+        - "Colosimo et al. (2004, 2005) Eda complete-plate versus low-plate morphs"
+        - "Bell, Baumgartner and Olson (1985) temporal change in G. doryssus armor characters"
+      reconstructed_in_script:
+        - "Schnakenberg parameters placed so the marine wavelength is 52 µm"
+        - "λ(N) = 52 µm * sqrt(32/N) for doryssus_late (104 µm) and living aculeatus (78 µm)"
+        - "Gain 0.0316 chosen as the largest trial with radial Pearson above 0.98 and CV at least 70"
+      transfer_boundary:
+        - "N_eff = 8 for the predecessor is the Colosimo low-morph analogy, not a Truckee plate count"
+        - "The 2020 German photograph is an extant anatomical plate, not a 15 ka fossil"
+        - "A small gain preserves the photograph's spectrum; it does not prove melanophores were measured at 52 µm"
+      does_not_claim:
+        - "That 52 µm was measured on a fossil melanophore"
+        - "That N_eff = 8 is a published plate count for G. doryssus_late"
+        - "That the specimen-locked frame is an independent prediction rather than a fit on one photograph"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "Pass 2 uses the same Schnakenberg integrator and the analytical k_c. The gain is a rendering fit, not a change to the PDE. k_c^2 remains 0.775 and the marine wavelength remains 52 µm."
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [81, 100], note: "dispersion() gives k_c^2 = 0.775", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [109, 140], note: "integrate() is unchanged from Pass 1", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "The last GIF frame is the photograph times a weak Turing modulation, so the fish, the bars, and the plates remain visible. CV similarity is 96.0 (orientation, radial FFT, coherency). The pure spot field is still shown beside it. This is one extant photo, not a fossil series."
+        evidence:
+          - {file: docs/media/gasterosteus_aculeatus_marine_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 960x548, last frame specimen-locked", supports: true}
+          - {file: docs/media/gasterosteus_aculeatus_marine_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "photograph, activator, locked frame, chronoseries", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [228, 293], note: "cv_similarity matches verify_image_fitness crops", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Diffusivity scale s moves λ through 41.6, 52, 78, and 104 µm, monotone, with the marine node at s = 1. Predecessor s = 4 and successor s = 2.25 are the chronoseries contrast."
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [160, 174], note: "parameter_sweep", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [102, 106], note: "lambda_um_from_s = 52 * sqrt(s)", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Fitted radial Pearson is 0.988 (reference gate 0.98, so the value is not a copy of the reference). RMSE of z-scored spectra is 0.154. Luminance KS is 0.0395. Segmented flank-bar spacing is 641 µm against the 52 µm model anchor. Ablation std ratio is 6.02 against a null of 1."
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [345, 368], note: "goodness_of_fit: Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [296, 342], note: "segment_specimen on the real photograph", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [177, 191], note: "equal_diffusion_control", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/gasterosteus_aculeatus_marine_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r=0.988, KS=0.0395, bar=641 µm, ablation ratio=6.02", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "DOIs for Turing, both Colosimo papers, Bell 1985, Kondo 1995, and Nakamasu 2009. Specimen URL, creator, license, and SHA-256 are in the reference JSON."
+        evidence:
+          - {file: datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "bibliographic DOIs", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_marine_turing_wavelength_s0/gasterosteus_aculeatus_marine_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 5.2e-5 m and age 0.015 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Each of dispersion, sweep, ablation, segmentation, and the gain fit is a named function with a docstring tied to the equation or the measurement."
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [370, 389], note: "fit_gain selects the Pass-2 render", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3232_gasterosteus_aculeatus_marine_turing_wavelength_s0.lean, lines: [10, 40], note: "Lean checks h, k_c^2, ablation sign, and 52 < 78 and 52 < 104", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py --self-test passes. Seed 3232. Specimen SHA-256 is checked before integration. GIF is 12 frames at 960 by 548."
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [635, 653], note: "self-test gates", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-marine-turing-wavelength-s0.py, lines: [72, 78], note: "verify_specimen SHA-256", supports: true}
+    remediation:
+      - "A second assessor from another provider has not scored this pass."
+      - "The gain is fit on the same single photograph that is then scored; a second specimen would break that circle."
+      - "N_eff = 8 and 14.2 are scenario parameters, not new plate counts from the Truckee Formation or from a marine sample."
