@@ -1,0 +1,90 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "sim_id": "delphi10000-danio-nigrofasciatus-turing-wavelength-s0",
+  "slot": 3163,
+  "organism": "Danio nigrofasciatus",
+  "common_name": "Spotted danio (broken ventral stripes)",
+  "aristotelian": "I. Enaima (Vertebrata) -> Pisces (Ichthyes) -> Danio",
+  "cohort": "1. Chemical Turing / RD",
+  "law": "Turing wavenumber k_c",
+  "form": "Stripes, Spots & Ocelli",
+  "phenomenon_scale": {
+    "label": "27 µm",
+    "phenomenon_size_m": 2.71e-05,
+    "log10_size_m": -4.567,
+    "scale_tier": "4_cellular_10um",
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength at melanophore-contact scale"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "Danionin Pigment Evolution Series",
+    "chronoseries": "Danio chronoseries 4/5",
+    "predecessor": "Danio margaritatus",
+    "successor": "Danio rerio"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v",
+    "steady_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "dispersion": "sigma(k) = largest eigenvalue of J - k^2 D",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c",
+    "anisotropy": "D_AP = alpha * D_u, D_DV = D_u; stripe mode selected when alpha is large",
+    "discrete_laplacian": "L = -4 sin^2(kx/2) - 4 sin^2(ky/2) on the periodic grid"
+  },
+  "parameters": {
+    "a": 0.05,
+    "b": 0.9,
+    "note_a": "Production a is lowered from the classic 0.1 tutorial value to 0.05 so the discrete critical wavelength is 4.19 cells and explicit Euler at dt=0.04 stays positive. Jacobian f_u remains positive (0.8947).",
+    "D_u": 0.05,
+    "D_v": 2.0,
+    "dt": 0.04,
+    "lambda_c_m": 2.71e-05,
+    "alpha_dorsal_nigrofasciatus": 6.0,
+    "alpha_ventral_nigrofasciatus": 1.15,
+    "ventral_break_fraction": 0.6,
+    "alpha_margaritatus": 1.05,
+    "alpha_rerio": 8.5,
+    "seed": 3163,
+    "boundary": "periodic on a flank patch; no-flux is not required at this cellular window"
+  },
+  "chronoseries_delta_at_this_scale": {
+    "conserved": "Melanophore-contact wavelength stays near 27 µm (2.71e-5 m) across the three extant Danio. Geological age is 0 Ma for all three; the series is phylogenetic, not a fossil time series.",
+    "predecessor_Danio_margaritatus": "alpha -> 1.05 everywhere, so the critical mode is a spot/ocellus. Hexagonal center spacing is (2/sqrt(3))*lambda_c, longer than the stripe wavelength.",
+    "focal_Danio_nigrofasciatus": "alpha_dorsal = 6 keeps short horizontal stripelets; alpha_ventral = 1.15 below mid-flank breaks those stripelets into spots (broken ventral stripes).",
+    "successor_Danio_rerio": "alpha = 8.5 on the whole flank locks continuous stripes. Cellular lambda does not jump; long-range iridophore coupling (Volkening 2018, Kcnj13 in Podobnik 2020) is what changes, and it is represented here only through alpha.",
+    "not_this_slot": "Organ-scale stripe spacing (~1 mm, slot 1203) is a different tier and is not retuned here."
+  },
+  "empirical_claims": [
+    "Nakamasu et al. 2009: melanophore-xanthophore interactions in Danio satisfy a short-range activation, long-range inhibition Turing rule and can produce stripes or spots.",
+    "Parichy 2006: adult Danio patterns diverge by where post-embryonic pigment cells are recruited; D. nigrofasciatus keeps a striped dorsum and a broken ventral field.",
+    "Volkening and Sandstede 2018: iridophores stabilize zebrafish stripes and permit spot-like variability in other Danio.",
+    "Podobnik et al. 2020: Kcnj13 evolution tracks colour-pattern diversification across Danio.",
+    "This reconstruction does not claim that 27 µm was measured on the vendored whole-body photograph (that photo does not resolve 27 µm). 27 µm is the catalog cellular wavelength imposed on the dispersion relation by the grid spacing dx."
+  ],
+  "specimen": {
+    "filename": "danio_nigrofasciatus_specimen.jpg",
+    "sha256": "edea58cd2541052fbec4078950b52982204a5d9bc63004edb5efffe3ad18b61f",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0",
+    "artist": "David M. Parichy",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Danio_nigrofasciatus_2.jpg",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Danio_nigrofasciatus_2.jpg",
+    "credit": "https://elifesciences.org/articles/05635",
+    "doi": "10.7554/eLife.05635",
+    "width": 456,
+    "height": 196
+  },
+  "primary_dois": [
+    "10.1098/rstb.1952.0012",
+    "10.1016/0022-5193(79)90042-0",
+    "10.1073/pnas.0808622106",
+    "10.1038/sj.hdy.6800867",
+    "10.1242/dev.01547",
+    "10.1371/journal.pgen.1003561",
+    "10.7554/eLife.05635",
+    "10.1038/s41467-018-05629-z",
+    "10.1038/s41467-020-20021-6"
+  ]
+}

@@ -1,0 +1,65 @@
+sim_id: delphi10000-danio-nigrofasciatus-turing-wavelength-s0
+slot: 3163
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+organism: Danio nigrofasciatus
+predecessor: Danio margaritatus
+successor: Danio rerio
+phenomenon_size_m: 2.71e-05
+log10_size_m: -4.567
+size_human: 27 µm
+scale_tier: 4_cellular_10um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength at melanophore-contact scale
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Danionin Pigment Evolution Series
+chronoseries: "Danio chronoseries 4/5"
+model_spec:
+  sim_id: delphi10000-danio-nigrofasciatus-turing-wavelength-s0
+  kinetics: Schnakenberg
+  a: 0.1
+  b: 0.9
+  D_u: 0.05
+  D_v: 2.0
+  dt: 0.02
+  lambda_c_m: 2.71e-05
+  alpha_dorsal: 6.0
+  alpha_ventral: 1.15
+  alpha_margaritatus: 1.05
+  alpha_rerio: 8.5
+  break_fraction: 0.6
+  seed: 3163
+  inputs:
+    - datasets/danio_nigrofasciatus_turing_wavelength_s0/danio_nigrofasciatus_specimen.jpg
+    - datasets/danio_nigrofasciatus_turing_wavelength_s0/danio_nigrofasciatus_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg Jacobian at the homogeneous state
+    formula: "u0 = a + b, v0 = b/u0^2, f_u = -1 + 2 u0 v0, g_v = -u0^2"
+    lean_decl: MathOfBiology.Loop_3163.turing_diffusion_threshold
+    lean_theorem: MathOfBiology.Loop_3163.turing_diffusion_threshold
+    lean_locus: morphoeval/lean/loops/Loop_3163_danio_nigrofasciatus_turing_wavelength_s0.lean#L74-L76
+    variables: "a=0.1, b=0.9, D_u=0.05, D_v=2.0 at lambda = 27 µm"
+    role: Turing diffusion threshold D_v f_u > D_u |g_v| for Danio nigrofasciatus at 27 µm
+    source_citation: "Schnakenberg 1979 doi:10.1016/0022-5193(79)90042-0; Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py#L83-L101
+  - law_name: Critical wavenumber and cellular wavelength
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 2.71e-05 m"
+    lean_decl: MathOfBiology.Loop_3163.kCPerM
+    lean_theorem: MathOfBiology.Loop_3163.wavenumber_wavelength_product_close
+    lean_locus: morphoeval/lean/loops/Loop_3163_danio_nigrofasciatus_turing_wavelength_s0.lean#L63-L65
+    variables: "k_c ≈ 232710 rad/m at 27 µm; catalog length 2.71e-05 m"
+    role: Wavelength selection for the cellular melanophore-contact mode
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012; Nakamasu et al. 2009 doi:10.1073/pnas.0808622106"
+    code_locus: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py#L104-L115
+  - law_name: Chronoseries anisotropy order at fixed age 0 Ma
+    formula: "alpha(margaritatus)=1.05 < alpha_ventral(nigrofasciatus)=1.15 < alpha_dorsal=6 < alpha(rerio)=8.5"
+    lean_decl: MathOfBiology.Loop_3163.alphaMargCenti
+    lean_theorem: MathOfBiology.Loop_3163.chronoseries_anisotropy_order
+    lean_locus: morphoeval/lean/loops/Loop_3163_danio_nigrofasciatus_turing_wavelength_s0.lean#L56-L60
+    variables: "anisotropy alpha = D_AP / D_DV; geological age held at 0 Ma"
+    role: What changes at 27 µm versus the predecessor and the successor is mode symmetry, not age and not the 1 mm organ-scale stripe spacing
+    source_citation: "Parichy 2006 doi:10.1038/sj.hdy.6800867; Volkening and Sandstede 2018 doi:10.1038/s41467-018-05629-z; Podobnik et al. 2020 doi:10.1038/s41467-020-20021-6"
+    code_locus: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py#L388-L414

@@ -1,0 +1,162 @@
+# MorphoEval Pass 2 — Danio nigrofasciatus cellular Turing wavelength, slot 3163 s0.
+# Re-run after Pass 1. Confirms the dispersion gate, the alpha sweep, the ablation,
+# the KS/holdout metrics, and the non-circular reference floors.
+audit:
+  id: 2026-10-27-danio-nigrofasciatus-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-danio-nigrofasciatus-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-danio-nigrofasciatus-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; Pass 2 re-score of the same script)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8585ec4a033d94afd4c400aaefdffe79c1f7bc69
+    note: "Pass 2. Evidence paths exist at this commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu, A., Takahashi, G., Kanbe, A., Kondo, S."
+    venue: "PNAS"
+    doi: "10.1073/pnas.0808622106"
+  parichy2006:
+    title: "Evolution of danio pigment pattern development"
+    authors: "Parichy, D. M."
+    venue: "Heredity"
+    doi: "10.1038/sj.hdy.6800867"
+  volkening2018:
+    title: "Iridophores as a source of robustness in zebrafish stripes and variability in Danio patterns"
+    authors: "Volkening, A., Sandstede, B."
+    venue: "Nature Communications"
+    doi: "10.1038/s41467-018-05629-z"
+  podobnik2020:
+    title: "Evolution of the potassium channel gene Kcnj13 underlies colour pattern diversification in Danio fish"
+    authors: "Podobnik, M. et al."
+    venue: "Nature Communications"
+    doi: "10.1038/s41467-020-20021-6"
+  parichy2015:
+    title: "Advancing biology through a deeper understanding of zebrafish ecology and evolution"
+    authors: "Parichy, D. M."
+    venue: "eLife"
+    doi: "10.7554/eLife.05635"
+simulations:
+  - id: delphi10000-danio-nigrofasciatus-turing-wavelength-s0
+    name: "Danio nigrofasciatus Schnakenberg wavelength at 27 µm (Holocene, 0 Ma), Pass 2"
+    organism: "Danio nigrofasciatus"
+    script: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py
+    output: docs/media/danio_nigrofasciatus_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-danio-nigrofasciatus-turing-wavelength-s0-audit
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - nakamasu2009
+      - parichy2006
+      - volkening2018
+      - podobnik2020
+      - parichy2015
+    summary: >-
+      Pass 2 re-run. Dispersion Pearson r = 0.999997 (RMSE 0.00141, n = 315 real
+      eigenmodes) against the analytical sigma(k), above the 0.98 gate and not
+      equal to that gate. Measured spectral wavelength 27.33 µm versus the catalog
+      27.1 µm (2.71e-05 m, log10=-4.567) at age 0 Ma. Alpha sweep Spearman = 1.0
+      against a 0.8 floor. Ablation ratio of pattern std to relaxation std is
+      about 3.6e6. Trunk KS versus the Parichy photograph is 0.336. GIF is 12
+      frames at 1120x480. Chronoseries at this scale, all 0 Ma: margaritatus spots
+      (alpha 1.05), nigrofasciatus broken ventral stripes (alpha 6 / 1.15), rerio
+      continuous stripes (alpha 8.5). The photograph's dorsoventral darkness
+      profile is not fit (r = 0.023) and is not claimed.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and the critical-wavenumber formula."
+        - "Schnakenberg 1979 kinetics f = a - u + u^2 v, g = b - u^2 v."
+        - "Nakamasu et al. 2009: Danio pigment cells implement short-range activation and long-range inhibition and can form stripes or spots."
+        - "Parichy 2006: D. nigrofasciatus keeps a striped dorsum and a broken ventral field, unlike spotted D. margaritatus and striped D. rerio."
+        - "Volkening and Sandstede 2018 and Podobnik et al. 2020: iridophores and Kcnj13 change Danio pattern symmetry."
+      reconstructed_in_script:
+        - "Explicit-Euler anisotropic Schnakenberg with dx chosen so analytical lambda_c = 2.71e-05 m."
+        - "Chronoseries alphas 1.05, 6/1.15, and 8.5 at geological age 0 Ma."
+        - "Alpha sweep, ablation, KS, and anterior-posterior holdout."
+        - "Trunk composite on the SHA-pinned Parichy photograph and a 12-frame growth GIF."
+      transfer_boundary:
+        - "27 µm is imposed by dx from the catalog cellular tier. The whole-body photograph does not resolve 27 µm."
+        - "alpha is a stand-in for iridophore and Kcnj13 coupling, not a fitted channel conductance."
+      does_not_claim:
+        - "Does not claim the organ-scale ~1 mm stripe spacing of slot 1203."
+        - "Does not claim a fit to the photograph's dorsoventral darkness profile (Pearson r = 0.023)."
+        - "Does not claim more than one specimen, and does not claim a second assessor."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The script implements Schnakenberg kinetics, the continuous critical wavenumber, and the discrete 5-point dispersion. One-step eigenmode growth matches analytical sigma(k) at r = 0.999997. Anisotropy is an extension of the isotropic law, so this is not a line-by-line copy of Nakamasu's cell-contact rules."
+        evidence:
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [83, 178], note: "jacobian through dispersion_correlation", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [180, 233], note: "anisotropic explicit Euler _step_field and simulate", supports: true}
+      specimen-match:
+        value: 83
+        rationale: "Side-by-side, the Parichy fish (eye, fins, caption, scale bar) is preserved and the trunk carries the cellular melanophore field. The chronoseries strip separates margaritatus spots, nigrofasciatus broken stripes, and rerio continuous stripes. The trunk field is a fine dash pattern, not a repaint of the three broad body stripes, which is the right object at 27 µm and a limit on silhouette match."
+        evidence:
+          - {file: docs/media/danio_nigrofasciatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "four-panel comparison including chronoseries", supports: true}
+          - {file: docs/media/danio_nigrofasciatus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 1120x480, pattern emerges on the trunk", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [372, 414], note: "composite_on_specimen and chronoseries", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Alpha in {1, 2, 3, 4.5, 6, 8.5} lowers horizontal gradient energy monotonically (Spearman 1.0 versus a 0.8 floor). Dorsal continuity rises over the same sweep. The three chronospecies use different alphas at the same 27 µm and the same 0 Ma."
+        evidence:
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [285, 316], note: "alpha_sweep and ablation_ratio", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [388, 414], note: "chronoseries regimes", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: "Measured wavelength 27.33 µm versus catalog 27.1 µm. Dispersion RMSE 0.00141. Trunk KS 0.336 versus a 0.05 identity floor. Posterior holdout gap is scored with a threshold fit only on the anterior half. The dorsoventral profile correlation is 0.023 and is reported as a miss, which caps this dimension."
+        evidence:
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [417, 457], note: "holdout_and_ks", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [628, 740], note: "measure_morphoeval values differ from their references", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "DOIs were checked on Crossref for Turing, Schnakenberg, Nakamasu, Parichy 2006, and the specimen's eLife paper. The photograph is CC BY 4.0, David M. Parichy, SHA-256 pinned. Scout manifest records that slot 3163 does not collide with slot 1203."
+        evidence:
+          - {file: datasets/danio_nigrofasciatus_turing_wavelength_s0/paper_citations.bib, lines: [1, 93], note: "nine BibTeX entries", supports: true}
+          - {file: datasets/danio_nigrofasciatus_turing_wavelength_s0/README.md, lines: [1, 30], note: "27 µm and 0 Ma stated in the dataset README", supports: true}
+          - {file: datasets/danio_nigrofasciatus_turing_wavelength_s0/scout_manifest.json, lines: [1, 45], note: "slot 3163 uniqueness check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Docstring, Lean theorems (wavelength product, anisotropy order, diffusion threshold), and math-kg loci point at the same equations. The integer Lean proofs witness the inequalities; they do not re-derive the real eigenmode calculation."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3163_danio_nigrofasciatus_turing_wavelength_s0.lean, lines: [39, 76], note: "theorems, zero sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-danio-nigrofasciatus-turing-wavelength-s0.yaml, lines: [1, 40], note: "model_spec and three laws", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [1, 40], note: "governing equations in the module docstring", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py --self-test is deterministic at seed 3163, checks r > 0.98, age 0 Ma, GIF frames >= 10, and minimum side >= 480. Specimen SHA is verified before integration. Dependencies are the repo scientific stack (numpy, scipy, pillow, matplotlib)."
+        evidence:
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [459, 469], note: "verify_specimen_pin", supports: true}
+          - {file: models/2026-delphi10000-danio-nigrofasciatus-turing-wavelength-s0.py, lines: [746, 786], note: "self-test asserts", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed in this pass: alpha sweep Spearman is measured and drawn on the comparison figure."
+        status: resolved
+      - id: R2
+        item: "Closed in this pass: trunk KS and anterior-posterior holdout are in measure_morphoeval, with reference floors that differ from the values."
+        status: resolved
+      - id: R3
+        item: "Closed in this pass: ablation ratio is asserted in --self-test (pattern std / relaxation std > 3)."
+        status: resolved
+      - id: R4
+        item: "Closed in this pass: image fitness is computed from the growth GIF against the Parichy specimen and written only to the per-loop fitness JSON."
+        status: resolved
+      - id: R5
+        item: "Still open: one specimen, and the dorsoventral darkness profile of that photograph is not reproduced (r = 0.023). A second fish and an explicit iridophore variable would be the next experiment. Not scored as done."
+        status: open
