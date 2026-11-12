@@ -1,0 +1,58 @@
+sim_id: delphi10000-aspergillus-nidulans-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+slot: 3122
+organism: Aspergillus nidulans
+age_ma: 0
+lambda_m: 1.284e-05
+model_spec:
+  kinetics: schnakenberg1979
+  a: 0.12
+  b: 0.78
+  Du: 1.0
+  Dv: 9.295
+  alpha: 0.12
+  lambda_m: 1.284e-05
+  age_ma: 0
+  seed: 3122
+  grid_n: 84
+  pixels_per_onset_wave: 14
+  inputs:
+    - datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_specimen.jpg
+    - datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing onset wavenumber
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 1.284e-05 m
+    lean_decl: MathOfBiology.Loop_3122.lambda_nm
+    lean_theorem: MathOfBiology.Loop_3122.detail_variant_above_tier_floor
+    lean_locus: morphoeval/lean/loops/Loop_3122_aspergillus_nidulans_turing_wavelength_s0.lean#L14-L24
+    lean_code: 'def lambda_nm : Int := 12840
+
+      theorem detail_variant_above_tier_floor : detail_margin_nm = 2840 := by decide'
+    variables: 'lambda_nm = 12840, tier floor = 10000 nm; margin = 2840 nm versus 10 µm'
+    role: Detail-scale onset wavelength for Aspergillus nidulans at 0 Ma, longer than the tier floor
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py#L99-L122
+  - law_name: Inhibitor outruns activator
+    formula: D_v / D_u = 9.295 > 1
+    lean_decl: MathOfBiology.Loop_3122.Dv_milli
+    lean_theorem: MathOfBiology.Loop_3122.inhibitor_outdiffuses_activator
+    lean_locus: morphoeval/lean/loops/Loop_3122_aspergillus_nidulans_turing_wavelength_s0.lean#L38-L43
+    lean_code: 'def Dv_milli : Int := 9295
+
+      theorem inhibitor_outdiffuses_activator : Dv_milli - Du_milli = 8295 ∧ Dv_milli > Du_milli := by decide'
+    variables: 'Du_milli = 1000, Dv_milli = 9295'
+    role: Diffusion ratio required for stripes, spots and ocelli at this wavenumber
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py#L67-L76
+  - law_name: Holocene singleton chronoseries
+    formula: series_index = series_length = 1, age = 0 Ma, no predecessor
+    lean_decl: MathOfBiology.Loop_3122.series_index
+    lean_theorem: MathOfBiology.Loop_3122.holocene_chronoseries_singleton
+    lean_locus: morphoeval/lean/loops/Loop_3122_aspergillus_nidulans_turing_wavelength_s0.lean#L46-L52
+    lean_code: 'def age_ma : Int := 0
+
+      theorem holocene_chronoseries_singleton : series_index = series_length ∧ age_ma = 0 := by decide'
+    variables: 'series 1/1, age_ma = 0'
+    role: No predecessor or successor chronospecies; the spatial margin is against the 10 µm tier floor
+    source_citation: Adams, Wieser and Yu (1998) DOI:10.1128/MMBR.62.1.35-54.1998
+    code_locus: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py#L1-L28

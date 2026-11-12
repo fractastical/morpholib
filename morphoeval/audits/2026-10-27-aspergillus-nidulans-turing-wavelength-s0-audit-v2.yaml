@@ -1,0 +1,193 @@
+# Pass 2 audit for slot 3122. Closes the three pass-1 remediation items.
+# Scores are uncalibrated rubric ratings, not probabilities.
+
+audit:
+  id: 2026-10-27-aspergillus-nidulans-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, primary assessor, pass 2)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 67f1491da9b5137f7d8845c371d3acf6d72c7479
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      matplotlib: "Agg"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: "Pass 2. Checkpoint commit is updated to the commit that contains these paths before the knowledge-graph build."
+  supersedes: 2026-10-27-aspergillus-nidulans-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-aspergillus-nidulans-turing-wavelength-s0-audit
+
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+  adams1998:
+    title: "Asexual Sporulation in Aspergillus nidulans"
+    authors: "Adams TH, Wieser JK, Yu J-H"
+    venue: "Microbiol. Mol. Biol. Rev. 62:35-54 (1998)"
+    doi: 10.1128/MMBR.62.1.35-54.1998
+  clutterbuck1969:
+    title: "A mutational analysis of conidial development in Aspergillus nidulans"
+    authors: "Clutterbuck AJ"
+    venue: "Genetics 63:317-327 (1969)"
+    doi: 10.1093/genetics/63.2.317
+  rittenour2009:
+    title: "Hyphal morphogenesis in Aspergillus nidulans"
+    authors: "Rittenour WR, Si H, Harris SD"
+    venue: "Fungal Biology Reviews 23:20-29 (2009)"
+    doi: 10.1016/j.fbr.2009.08.001
+  trinci1974:
+    title: "A Study of the Kinetics of Hyphal Extension and Branch Initiation of Fungal Mycelia"
+    authors: "Trinci APJ"
+    venue: "J. Gen. Microbiol. 81:225-236 (1974)"
+    doi: 10.1099/00221287-81-1-225
+
+simulations:
+  - id: delphi10000-aspergillus-nidulans-turing-wavelength-s0
+    name: "Aspergillus nidulans Turing onset wavelength at 12.84 µm (nominal 13 µm), Holocene 0 Ma"
+    summary: >
+      Pass 2. The three pass-1 gaps are closed: three seeds lock to 12.84 µm
+      (CV about 0 against a 0.05 reference), 12-bin Sobel orientation L1 is
+      0.014 against a ramp null of 1.81, and the alpha sweep is exported.
+      Dispersion Pearson remains 0.9977. The spiral colony is still a measured
+      carrier, not an ab-initio prediction. Nanopubs are unsigned.
+    organism: "Aspergillus nidulans"
+    domain: morphogenesis
+    script: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py
+    output: docs/media/aspergillus_nidulans_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/aspergillus_nidulans_turing_wavelength_s0_growth.gif
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/paper_citations.bib
+      - datasets/aspergillus_nidulans_turing_wavelength_s0/README.md
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-aspergillus-nidulans-turing-wavelength-s0-audit
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - gierer1972
+      - adams1998
+      - clutterbuck1969
+      - rittenour2009
+      - trinci1974
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg (1979): the a - u + u^2 v / b - u^2 v kinetics."
+        - "Adams, Wieser and Yu (1998) and Clutterbuck (1969): conidial pigment development in A. nidulans, without a reaction-diffusion wavelength."
+        - "Trinci (1974): radial hyphal-colony expansion."
+      reconstructed_in_script:
+        - "Jacobian, onset k_c, periodic explicit Euler, equal-diffusion ablation, and D_v sweep."
+        - "Three-seed wavelength CV under ±2% wavenumber jitter, and 12-bin Sobel orientation L1 against a horizontal-ramp null."
+        - "Colony observable I = S * (1 - α + α (0.55 + 0.90 û)), α swept and exported."
+      transfer_boundary:
+        - "The 13 µm label is the slot detail scale (1.284e-05 m). The colony photograph does not resolve 13 µm."
+        - "(u, v) are not the wA or yA gene products."
+      does_not_claim:
+        - "Does not claim the spiral colony was predicted ab initio."
+        - "Does not claim a predecessor chronospecies. Series 1/1 at 0 Ma; the spatial comparison is the 10 µm tier floor."
+        - "Nanopublications are not signed: ~/.nanopub/profile.yml is absent."
+    remediation: []
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >
+          Pass 2 keeps the Schnakenberg integrator and the onset formula.
+          Dispersion Pearson of PDE mode-growth against Re(σ) is 0.9977
+          (RMSE 0.014). Three seeds with ±2% wavenumber jitter all lock to
+          the same 12.84 µm periodic mode. The pigment mapping remains a
+          transfer, so the score does not reach the mid-90s.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [16, 27], note: "Equations (1)–(4)", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [99, 121], note: "Turing report and four inequalities", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [437, 456], note: "Three-seed wavelength lock under wavenumber jitter", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >
+          Sobel 12-bin orientation L1 between the specimen crop and the
+          conditioned render is 0.014, against 1.81 for a horizontal ramp.
+          Pixel Pearson is 0.997. The GIF is 16 frames at 640×480 and the
+          last frame is the colony, because equation (4) uses the photograph
+          as the macroscopic carrier. That conditioning is why the score is
+          82 rather than a claim of ab-initio spiral prediction.
+        evidence:
+          - {file: docs/media/aspergillus_nidulans_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame 640×480 growth animation", supports: true}
+          - {file: docs/media/aspergillus_nidulans_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, mask, render, activator, ablation, dispersion", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [459, 479], note: "12-bin Sobel orientation L1 on the fitness crop", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >
+          λ_c shortens monotonically as D_v rises from 8.50 to 18. Specimen
+          Pearson falls monotonically as α rises from 0 to 0.40, and that
+          sweep is now a measurement row (α = 0.40 versus α = 0).
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [263, 273], note: "D_v sweep", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [426, 434], note: "α sweep", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [679, 687], note: "α = 0.40 Pearson exported with α = 0 as the reference", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >
+          Dispersion Pearson 0.9977, RMSE 0.014 (not zero). Specimen pixel
+          Pearson 0.997 against a stripe-null reference of about 0.001.
+          Otsu IoU 0.982 against a reference of 1. Seed wavelength CV is
+          numerically zero against a 0.05 instability reference. Sobel L1
+          0.014 against the ramp null 1.81. No specimen-named metric copies
+          its reference.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [280, 298], note: "Dispersion Pearson and RMSE", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [437, 456], note: "Multi-seed CV", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [670, 678], note: "Sobel L1 measurement with a null reference", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >
+          DOIs for Turing, Schnakenberg, Gierer–Meinhardt, Adams, Clutterbuck,
+          Rittenour and Trinci are in the bib and were checked on OpenAlex.
+          The specimen is the public-domain Commons file with a SHA-256 pin.
+          Trinci's journal year is 1974; OpenAlex's year field for that DOI
+          said 2000 and is not followed.
+        evidence:
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/paper_citations.bib, lines: [1, 88], note: "Cited DOIs", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/aspergillus_nidulans_turing_wavelength_s0_reference.json, lines: [1, 73], note: "Scale, age, chronoseries and specimen digest", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/README.md, lines: [1, 21], note: "13 µm nominal, 1.284e-05 m, 0 Ma stated in the dataset README", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >
+          Equations (1)–(4) map onto steady_state, jacobian, turing_report,
+          simulate and modulate. Pass 2 adds multi_seed_wavelengths and
+          sobel_orientation_l1, both called from the pipeline and exported
+          by measure_morphoeval. Lean theorems use 12840 nm, Dv/Du = 9.295
+          and the 0 Ma singleton, not the slot-182 integers.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [16, 27], note: "Numbered equations", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3122_aspergillus_nidulans_turing_wavelength_s0.lean, lines: [21, 52], note: "Five sorry-free theorems", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [575, 688], note: "measure_morphoeval exports non-circular metrics including the pass-2 rows", supports: true}
+      repro-package:
+        value: 92
+        rationale: >
+          --self-test now also requires seed-wavelength CV below 0.05 and a
+          Sobel L1 below the horizontal-ramp null, in addition to the Turing
+          inequalities, ablation, monotone sweeps, Pearson above 0.98, and
+          a 16-frame GIF at least 480 px on the short side. Seed 3122 and
+          the grid are constants.
+        evidence:
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [67, 79], note: "Pinned constants", supports: true}
+          - {file: models/2026-delphi10000-aspergillus-nidulans-turing-wavelength-s0.py, lines: [691, 760], note: "Self-test gates including the pass-2 checks", supports: true}
+          - {file: datasets/aspergillus_nidulans_turing_wavelength_s0/README.md, lines: [19, 21], note: "Documented invocation", supports: true}
