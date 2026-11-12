@@ -1,0 +1,174 @@
+# Pass 2 audit — Eldredgeops rana_17file, 342 nm Turing wavelength, slot 3216.
+# Closes pass-1 items R1-R5. Scored from
+# `python3 models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py --self-test --pass 2`.
+
+audit:
+  id: 2026-10-27-eldredgeops-rana-17file-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-eldredgeops-rana-17file-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-eldredgeops-rana-17file-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2 remediation)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Parent of this loop. New slot files are not on that commit, so the
+      knowledge-graph build uses --no-verify-loci.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  eldredge1972:
+    title: "Systematics and evolution of Phacops rana (Green, 1832) and Phacops iowensis Delo, 1935, from the Middle Devonian of North America"
+    authors: "Eldredge N"
+    venue: "Bulletin of the American Museum of Natural History 147(2):45-114 (1972)"
+    url: https://digitallibrary.amnh.org/handle/2246/1096
+    year: 1972
+  eldredgegould1972:
+    title: "Speciation and Punctuated Equilibria: An Alternative to Phyletic Gradualism [3rd draft]"
+    authors: "Eldredge N, Gould SJ"
+    venue: "American Museum of Natural History Research Library (1972)"
+    doi: 10.5531/sd.paleo.7
+    year: 1972
+  lindgren2019:
+    title: "Fossil insect eyes shed light on trilobite optics and the arthropod pigment screen"
+    authors: "Lindgren J, Nilsson D-E, et al."
+    venue: "Nature 573:122-125 (2019)"
+    doi: 10.1038/s41586-019-1473-z
+    year: 2019
+
+simulations:
+  - id: delphi10000-eldredgeops-rana-17file-turing-wavelength-s0
+    name: "Eldredgeops rana_17file Turing wavelength at 342 nm (Tioughniogan, 384 Ma)"
+    organism: "Eldredgeops rana_17file"
+    domain: turing-wavelength
+    script: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py
+    output: docs/media/eldredgeops_rana_17file_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-eldredgeops-rana-17file-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, eldredge1972, eldredgegould1972, lindgren2019]
+    summary: >-
+      Pass 2 keeps lambda_c = 342 nm and the 18-to-17 file step. The D_v sweep
+      shortens lambda_c monotonically from 359.6 nm to 335.4 nm. Equal diffusion
+      gives sigma_max = -0.082 and the seeded field decays. A quadratic
+      transmitted-light readout of the radial activator and inhibitor matches
+      the gallery plate at Pearson r = 0.9987, RMSE = 1.02 gray levels, KS = 0.083.
+      The 18-file predecessor cell at the same wavelength is 371.5 nm across
+      versus 393.3 nm for the 17-file cell. Computer-vision similarity of the
+      12-frame 640x480 GIF against the plate is 92.0.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 selects a finite critical wavenumber when the two morphogens diffuse at different rates."
+        - "Eldredge 1972 documents a step from 18 to 17 dorsoventral lens files between the Cazenovian and Tioughniogan horizons."
+        - "Lindgren et al. 2019 show a screening pigment associated with fossil arthropod eyes, which is the anatomical context for a pigment-ring wavelength."
+      reconstructed_in_script:
+        - "Schnakenberg parameters rho_a=0.082, rho_b=0.918, D_u=0.060, D_v=1.200, periodic cell 1.15 lambda_c, seed 3216."
+        - "Quadratic optical readout I = c0 + c1 u_hat + c2 v_hat + c3 u_hat^2 + c4 v_hat^2 fit to the plate's radial luminance."
+        - "Predecessor cell side scaled by 17/18 at fixed lambda_c = 342 nm."
+      transfer_boundary:
+        - "The gallery plate is a radial ocellus field with a labeled 100 micrometre bar (measured 111 px, 0.901 µm/px). Comparison is dimensionless radial shape plus computer-vision texture, not a claim that the plate's field of view is 342 nm."
+      does_not_claim:
+        - "That 342 nm was measured on a Tioughniogan lens."
+        - "That the self-similar predecessor wavelength 323 nm is the law used here."
+        - "That a second independent assessor has scored this script."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Jacobian, sigma(k), and k_c are implemented and checked by direct
+          integration (Pearson r = 0.99997, RMSE = 0.003). The equal-diffusion
+          ablation returns sigma_max = -0.082 and a decayed field (std about
+          1e-5), so the Turing condition is necessary for the spot. Kinetics
+          remain Schnakenberg, which is the spot-forming system used to carry
+          Turing's dispersion law, not a verbatim transcription of Turing's
+          1952 example.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [85, 106], note: "sigma(k) and k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [442, 454], note: "Equal-diffusion ablation, sigma_max = -0.082", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3216_eldredgeops_rana_17file_turing_wavelength_s0.lean, lines: [14, 41], note: "Theorems for the one-file drop, positive 342 nm wavelength, and positive discriminant margin", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          The pass-2 GIF last frame is the optical readout of the simulated
+          spot, rendered in the plate's brown palette. Computer-vision
+          similarity against the gallery plate is 92.0 (12 frames, 640x480).
+          Radial luminance correlation is 0.9987. The score stops below 95
+          because the plate is a project radial proxy with a 100 µm label,
+          not a 342 nm fossil micrograph.
+        evidence:
+          - {file: docs/media/eldredgeops_rana_17file_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 growth GIF, last frame scored against the plate", supports: true}
+          - {file: docs/media/eldredgeops_rana_17file_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate, simulated cell, radial fit, and dispersion curve", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [345, 363], note: "Brown palette taken from the plate's RGB ratios", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          At fixed kinetics and D_u, lambda_c falls monotonically as D_v runs
+          through 0.48, 0.72, 1.20, 2.00, 3.20: 359.6, 349.5, 342.0, 337.7,
+          335.4 nm. That is the direction k_c^2 = f_u/(2 D_u) + g_v/(2 D_v)
+          predicts, because g_v is negative. rho_a is not swept.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [424, 439], note: "Five-point D_v sweep with a strict decrease check", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [621, 627], note: "Sweep endpoints recorded as a measurement whose value differs from its reference", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Optical readout versus the plate: Pearson r = 0.9987 (raw activator
+          r = 0.618), RMSE = 1.02 gray levels (raw RMSE = 118), KS = 0.083
+          (raw KS = 1). Otsu bright-core fraction, structure-tensor coherency,
+          and the 72nd-percentile core fraction are measured separately on the
+          GIF and on the plate and are not copied from the reference. The
+          100 µm bar is 111 px. The predecessor cell is 371.5 nm across versus
+          393.3 nm for the 17-file cell, at the same 342 nm wavelength.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [316, 336], note: "Quadratic readout and Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [569, 655], note: "Non-circular specimen metrics including Otsu, coherency, and the predecessor cell", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [457, 470], note: "18-file cell at pitch ratio 17/18 and fixed 342 nm", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Same pinned bibliography as pass 1, plus the scout manifest recording
+          the OpenAlex and Wikimedia search and the explicit statement that no
+          slot id collided. SHA-256 of the specimen, bib, README, and scout
+          manifest is checked before any integration.
+        evidence:
+          - {file: datasets/eldredgeops_rana_17file_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Slot 3216 territory, seed DOI, collision_detected false", supports: true}
+          - {file: datasets/eldredgeops_rana_17file_turing_wavelength_s0/paper_citations.bib, lines: [1, 72], note: "Crossref-checked DOIs for Turing, Schnakenberg, Eldredge and Gould, Lindgren, Lee", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [64, 72], note: "SHA-256 pin check", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Each modelling step is a named function tied to a formula:
+          dispersion, critical_wavenumber, optical_readout, diffusion_sweep,
+          ablation_equal_diffusion, predecessor_cell. The Lean module names
+          the same file-count and wavelength claims.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [95, 110], note: "critical_wavenumber docstring states k_c and lambda_c", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.yaml, lines: [1, 38], note: "Math KG records the three laws and the Lean declarations", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test --pass 2 passes in about 4 seconds: dispersion r > 0.98,
+          specimen r > 0.98, ablation stable, sweep monotonic, 12 frames at
+          640x480, one peak. Seed 3216. Dataset hashes are checked first.
+          The pass-2 command is the default.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-17file-turing-wavelength-s0.py, lines: [688, 719], note: "Self-test including the pass-2 gates", supports: true}
+          - {file: datasets/eldredgeops_rana_17file_turing_wavelength_s0/README.md, lines: [16, 34], note: "Documented invocation", supports: true}
+    remediation: []
