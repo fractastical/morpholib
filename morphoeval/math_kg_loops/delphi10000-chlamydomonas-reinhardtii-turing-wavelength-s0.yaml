@@ -1,0 +1,55 @@
+sim_id: delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0
+organism: Chlamydomonas reinhardtii
+slot: 3146
+age_ma: 0.0
+geological_period: Holocene (Extant)
+phenomenon_size_m: 1.032e-08
+phenomenon_size_nm: 10.32
+log10_size_m: -7.986
+scale_tier: 1_molecular_nm
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  sim_id: delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0
+  kinetics: schnakenberg
+  parameters:
+    a: 0.07
+    b: 0.95
+    Du: 1.0
+    Dv: 36.0
+    seed: 3146
+    phenomenon_size_m: 1.032e-08
+    age_ma: 0.0
+    stripes_across_patch: 6
+  grid:
+    N: 96
+    regime: linear_fastest_mode
+  inputs:
+    - datasets/chlamydomonas_reinhardtii_turing_wavelength_s0/chlamydomonas_reinhardtii_specimen.jpg
+equations:
+  - law_name: Schnakenberg activator-inhibitor kinetics
+    formula: "du/dt = Du lap u + a - u + u^2 v ;  dv/dt = Dv lap v + b - u^2 v"
+    lean_decl: MathOfBiology.Loop_3146.thisSlotScaledBasal
+    lean_theorem: MathOfBiology.Loop_3146.distinct_from_slot_0195
+    lean_locus: morphoeval/lean/loops/Loop_3146_chlamydomonas_reinhardtii_turing_wavelength_s0.lean#L24-L36
+    variables: "a=0.07 basal activator, b=0.95 basal inhibitor, Du=1, Dv=36"
+    role: Kinetics at the 10.32 nm pigment-stripe scale; distinct from slot 0195
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py
+  - law_name: Turing onset wavenumber k_c
+    formula: "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv) ;  lambda_c = 2 pi / k_c"
+    lean_decl: MathOfBiology.Loop_3146.dvOverDuTimes100
+    lean_theorem: MathOfBiology.Loop_3146.diffusion_ratio_above_onset
+    lean_locus: morphoeval/lean/loops/Loop_3146_chlamydomonas_reinhardtii_turing_wavelength_s0.lean#L30-L32
+    variables: "f_u, g_v Jacobian entries of the Schnakenberg steady state; Du, Dv"
+    role: Onset critical wavenumber. Above onset the fastest mode k_max is smaller than k_c.
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py
+  - law_name: Selected pigment-stripe wavelength
+    formula: "lambda_star = 2 pi / k_max = 10.32 nm, with k_max = argmax sigma(k)"
+    lean_decl: MathOfBiology.Loop_3146.stripePm
+    lean_theorem: MathOfBiology.Loop_3146.stripe_above_carotenoid_monomer
+    lean_locus: morphoeval/lean/loops/Loop_3146_chlamydomonas_reinhardtii_turing_wavelength_s0.lean#L18-L24
+    variables: "stripe 10320 pm; carotenoid monomer 3200 pm; quarter-wave spacing 90000 pm"
+    role: Scale sandwich for the Holocene eyespot at 0 Ma. Six stripes fit in one globule.
+    source_citation: "Foster & Smyth 1980 DOI:10.1128/mr.44.4.572-630.1980; Dieckmann 2003 DOI:10.1002/bies.10259"
+    code_locus: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py
