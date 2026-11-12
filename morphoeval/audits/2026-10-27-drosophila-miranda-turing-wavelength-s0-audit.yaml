@@ -1,0 +1,170 @@
+# Pass 1 audit for slot 3193. Builder and assessor are the same agent (grok-4.7).
+# The --pass 1 path renders the plate, the Schnakenberg field, and a fixed-depth overlay.
+# Sweep, ablation, specimen CV, and dispersion goodness-of-fit are implemented but
+# withheld from the pass-1 measurement set (measure_morphoeval returns only the core pair).
+audit:
+  id: 2026-10-27-drosophila-miranda-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 1; second assessor not run)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Loop files are added on top of 0c76d15d. Pass 1 figure was rendered with --pass 1 and then replaced by the pass-2 figure; this audit scores the pass-1 measurement path."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  shoup1966:
+    title: "The development of pigment granules in the eyes of wild type and mutant Drosophila melanogaster"
+    authors: "Shoup JR"
+    venue: "J. Cell Biol. 29:223-249 (1966)"
+    doi: "10.1083/jcb.29.2.223"
+  bachtrog2013:
+    title: "Y-chromosome evolution: emerging insights into processes of Y-chromosome degeneration"
+    authors: "Bachtrog D"
+    venue: "Nat. Rev. Genet. 14:113-124 (2013)"
+    doi: "10.1038/nrg3366"
+simulations:
+  - id: delphi10000-drosophila-miranda-turing-wavelength-s0
+    name: "Drosophila miranda detail-scale Turing wavelength (1.9 µm, 0 Ma)"
+    organism: "Drosophila miranda"
+    script: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+    output: docs/media/drosophila_miranda_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, shoup1966, bachtrog2013]
+    phenomenon_size_m: 1.864e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation: a finite band of wavenumbers can grow when the inhibitor out-diffuses the activator."
+        - "Schnakenberg (1979) two-species kinetics used here as the reaction terms."
+        - "Shoup (1966) documents subcellular Drosophila eye pigment granules."
+        - "Bachtrog (2013) reviews neo-Y degeneration, including Drosophila miranda. It does not report a 1.9 µm wavelength."
+      reconstructed_in_script:
+        - "Diffusivities solved so the fastest Schnakenberg mode on a 22.368 µm field is 1.864 µm."
+        - "Chronoseries wavelengths 1.412 µm (melanogaster) and 2.286 µm (mojavensis) at 0 Ma by D_u ∝ λ²."
+      transfer_boundary:
+        - "The species-gallery plate is the image-fitness target. It is not an electron micrograph of miranda granules."
+      does_not_claim:
+        - "Does not claim Bachtrog (2013) measured this wavelength."
+        - "Does not claim the predecessor and successor wavelengths were measured on new specimens in this loop."
+    summary: >
+      Pass 1 executes the Schnakenberg field (FFT wavelength 1.864 µm) and a 12-frame
+      640×480 GIF at fixed overlay depth 0.22. The pass-1 measurement set stops at
+      wavelength and trace. Sweep, ablation, specimen segmentation, and dispersion
+      Pearson/RMSE are the remediation items.
+    remediation:
+      - "Add the D_u parameter sweep (λ versus √D_u) to the figure and to measure_morphoeval."
+      - "Add the equal-diffusion negative control and report the activator std ratio."
+      - "Segment the real gallery plate (foreground, coherency, circularity, orientation KS) and emit non-circular specimen metrics."
+      - "Report dispersion goodness-of-fit (Pearson r, RMSE) between continuum σ(k) and the explicit-Euler symbol."
+      - "Choose overlay depth by a CV sweep instead of the fixed pass-1 depth 0.22."
+    needs:
+      - id: n3193-sweep
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Pass 1 does not score the five-point D_u sweep."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: n3193-gof
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Pass 1 measurement set has no Pearson r, RMSE, KS, or ablation ratio."
+        status: open
+        novelty_n: 0.5
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: n3193-specimen
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Pass 1 does not emit plate segmentation metrics."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >
+          The pass-1 run integrates Schnakenberg kinetics with a pseudospectral
+          Laplacian and the Turing linearisation (trace -0.16, det 1, Turing margin
+          positive). Kinetics are the published Schnakenberg form; the diffusivities
+          are solved for this slot rather than copied from a miranda table.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [72, 98], note: "Jacobian trace, determinant, Turing margin, and continuum sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [145, 194], note: "Semi-implicit pseudospectral Schnakenberg step and seeded integration", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean, lines: [11, 45], note: "Six theorems, no sorry: trace, determinant, equal-diffusion, Turing margin, chronoseries", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >
+          The GIF is 12 frames at 640×480. The last frame is the gallery plate
+          modulated by the activator. Pass 1 uses a fixed depth and does not yet
+          score plate segmentation, so specimen-match stays below the pass-2 value.
+          The pure field is a spot lattice, not a portrait, and the plate is not an EM.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [365, 386], note: "Frame blend from false-colour field to plate times tanh(pattern)", supports: true}
+          - {file: docs/media/drosophila_miranda_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 growth GIF", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [507, 508], note: "Pass 1 returns before specimen-segmentation metrics", supports: false}
+      parameter-expressivity:
+        value: 64
+        rationale: >
+          diffusivity_sweep exists, but the pass-1 figure is a single row and
+          measure_morphoeval returns before the sweep correlation. Expressivity
+          is not credited until that sweep is on the figure and in the sidecar.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [225, 238], note: "Five-point D_u sweep is implemented", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [430, 431], note: "Pass 1 opens a one-row figure and skips the sweep panel", supports: false}
+      morphometric-validation:
+        value: 70
+        rationale: >
+          Pass 1 reports FFT wavelength 1.864 µm against the 1.9 µm label and the
+          trace against a stability prior. Pearson r, RMSE, KS, ablation ratio,
+          and plate morphometrics are computed in memory and then dropped.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [196, 209], note: "Radial FFT wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [487, 508], note: "Pass-1 metric list is wavelength plus trace, then return", supports: false}
+      source-traceability:
+        value: 90
+        rationale: >
+          Turing 1952, Schnakenberg 1979, Shoup 1966, and Bachtrog 2013 are cited
+          with DOIs resolved on OpenAlex. The specimen SHA-256 is pinned. Slot 3193
+          is outside campaign_100, so scout_literature.py --slot 3193 cannot load
+          a campaign row; the manifest records the DOI lookup that replaced it.
+        evidence:
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Schnakenberg, Gierer-Meinhardt, Dobzhansky, Shoup DOIs", supports: true}
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "Slot 3193 territory, 1.9 µm, 0 Ma, collision flag false", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >
+          Dispersion, kinetics, ablation, and the chronoseries each have a Lean
+          theorem and a Python function. Pass 1 does not yet point the figure at
+          the dispersion curve, so the trace from equation to pixel is incomplete.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-miranda-turing-wavelength-s0.yaml, lines: [40, 80], note: "Equation records with Lean loci and code loci", supports: true}
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [40, 66], note: "Locked a, b, D_u, D_v, λ = 1.864 µm, age 0 Ma", supports: true}
+      repro-package:
+        value: 80
+        rationale: >
+          --self-test checks the Lean integer witnesses, wavelength, Pearson r > 0.98,
+          ablation, and sweep monotonicity. Pass 1's public measurement sidecar does
+          not yet carry those checks, so the package is not fully evidenced.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py, lines: [608, 650], note: "Self-test assertions including r > 0.98 and chronoseries order", supports: true}
+          - {file: datasets/drosophila_miranda_turing_wavelength_s0/README.md, lines: [1, 40], note: "Scale 1.9 µm and age 0 Ma, run commands", supports: true}
