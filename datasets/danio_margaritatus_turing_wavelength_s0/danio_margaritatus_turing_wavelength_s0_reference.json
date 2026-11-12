@@ -1,0 +1,97 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3162,
+  "sim_id": "delphi10000-danio-margaritatus-turing-wavelength-s0",
+  "organism": "Danio margaritatus",
+  "common_name": "Celestial Pearl Danio (Galaxy Rasbora)",
+  "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Pisces (Ichthyes) -> Danio",
+  "cohort": "1. Chemical Turing / RD",
+  "law": "Turing Wavenumber k_c",
+  "form": "Stripes, Spots & Ocelli",
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength, cellular detail rung",
+    "phenomenon_size_m": 1.339e-05,
+    "phenomenon_size_um": 13.39,
+    "log10_size_m": -4.873,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "variant": "detail"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "Danionin Pigment Evolution Series",
+    "chronoseries": "Danio 3/5",
+    "chronoseries_members": [
+      "Danio aesculapii",
+      "Danio albolineatus",
+      "Danio margaritatus",
+      "Danio nigrofasciatus",
+      "Danio rerio"
+    ],
+    "predecessor": "Danio albolineatus",
+    "successor": "Danio nigrofasciatus",
+    "what_changes_at_this_scale": "All three chronospecies are extant (0 Ma). At the 13.39 µm cellular rung the difference is the sign and the length of the selected Turing mode, not geological age. D. albolineatus (predecessor, uniform interstripe) is placed outside the Turing band (inhibitor/activator diffusion ratio below threshold; sigma(k) < 0 at every wavenumber). D. margaritatus (this slot) is an isotropic spot/ocellus mode with lambda_c fixed at 1.339e-05 m. D. nigrofasciatus (successor, broken ventral stripes) is an unstable mode at a longer cellular wavelength (17.80 µm) with AP-biased inhibitor diffusion."
+  },
+  "equations": {
+    "system": "Schnakenberg activator-depleted substrate",
+    "pde": [
+      "du/dt = D_u * laplacian(u) + gamma * (a - u + u^2 v)",
+      "dv/dt = D_v * laplacian(v) + gamma * (b - u^2 v)"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "dispersion": "det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)",
+    "critical_wavenumber": "k_c^2 = gamma * (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "boundary_conditions": "Zero-flux Neumann boundaries on the cellular patch; periodic boundaries on the 1D dispersion-validation line."
+  },
+  "parameters": {
+    "margaritatus": {
+      "role": "focal chronospecies, isotropic pearls/ocelli",
+      "a": 0.062,
+      "b": 0.938,
+      "delta_Dv_over_Du": 40.0,
+      "gamma_per_s": 1.0,
+      "lambda_c_m": 1.339e-05,
+      "anisotropy_Dy_over_Dx": 1.0
+    },
+    "albolineatus_predecessor": {
+      "role": "uniform interstripe; Turing-stable at this rung",
+      "a": 0.240,
+      "b": 0.410,
+      "delta_Dv_over_Du": 1.35,
+      "gamma_per_s": 1.0,
+      "anisotropy_Dy_over_Dx": 1.0
+    },
+    "nigrofasciatus_successor": {
+      "role": "broken ventral stripes; longer cellular wave",
+      "a": 0.110,
+      "b": 0.790,
+      "delta_Dv_over_Du": 18.5,
+      "gamma_per_s": 1.0,
+      "lambda_c_m": 1.780e-05,
+      "anisotropy_inhibitor_Dx_over_Dy": 2.2
+    }
+  },
+  "empirical_claims": [
+    "Turing 1952: a coupled reaction-diffusion system can be stable to homogeneous perturbations and unstable to a finite band of wavenumbers.",
+    "Nakamasu et al. 2009: zebrafish melanophore-xanthophore interactions satisfy the qualitative requirements of a Turing system (short-range activation, long-range inhibition).",
+    "Patterson, Bain & Parichy 2014: Danio pattern diversity, including reduced stripes in relatives of D. rerio, tracks differential xanthophore recruitment.",
+    "Volkening & Sandstede 2018: iridophore agents change whether a Danio flank resolves to stripes, spots, or a uniform field.",
+    "The adult characteristic length used to calibrate the photograph is 0.018 m (project Danio margaritatus catalog entry), applied to the pearl-field major axis. The 13.39 µm mode is below the sampling scale of that photograph."
+  ],
+  "specimen": {
+    "file": "danio_margaritatus_specimen.jpg",
+    "sha256": "48a9005afc001e30472b386bdcabc9db7b2ecd48224c68324755cb166de0181f",
+    "license": "CC BY-SA 3.0",
+    "creator": "Cisamarc",
+    "source": "https://commons.wikimedia.org/wiki/File:Danio_margaritatus_(zoom).jpg",
+    "attribution": "Danio margaritatus (zoom) by Cisamarc, Wikimedia Commons, CC BY-SA 3.0."
+  },
+  "boundary_conditions": {
+    "cellular_patch": "zero-flux Neumann",
+    "dispersion_line": "periodic",
+    "domain_wavelengths": {"x": 12, "y": 9}
+  }
+}
