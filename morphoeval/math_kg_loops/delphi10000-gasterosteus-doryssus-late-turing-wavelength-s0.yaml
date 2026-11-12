@@ -1,0 +1,76 @@
+sim_id: delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection (1. Chemical Turing / RD)
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_m (fastest-growing mode)
+phenomenon_size_m: 2.707e-05
+log10_size_m: -4.568
+size_human: 27 µm
+scale_tier: 4_cellular_10um
+scale_variant: detail
+anatomical_structure: >-
+  Turing pigment stripe / ocellus wavelength in Gasterosteus doryssus_late
+  (27 µm, detail scale)
+geological_age_ma: 9.99
+geological_period: Late Miocene (Truckee Fm, 9.99 Ma)
+fossil_lineage_group: Gasterosteus Pelvic Reduction Chronospecies
+chronospecies_index: 3/6
+predecessor: Gasterosteus doryssus_mid
+successor: Gasterosteus aculeatus_marine
+slot: 3231
+model_spec:
+  model: >-
+    Schnakenberg activator-inhibitor (Turing 1952 dispersion) with fastest-mode
+    wavelength λ_m = 27.07 µm at the late pelvic-loss chronospecies. Nonlinear
+    ocellus render is the far-field spiral at that wavelength. Not the 1.7 mm
+    organ-scale sibling bell-gasterosteus-doryssus-late-turing-wavelength.
+  kinetics:
+    a: 0.2
+    b: 1.0
+    u0: 1.2
+    v0_num: 25
+    v0_den: 36
+    fu: "2/3"
+    fv: "36/25"
+    gu: "-5/3"
+    gv: "-36/25"
+    r_Dv_over_Du: 25
+  grid_1d: 196
+  waves_in_domain: 14
+  seed: 3231
+  lambda_nm:
+    doryssus_mid: 33620
+    doryssus_late: 27070
+    aculeatus_marine: 21480
+  inputs:
+    - datasets/gasterosteus_doryssus_late_turing_wavelength_s0/gasterosteus_doryssus_late_turing_wavelength_s0_reference.json
+    - datasets/gasterosteus_doryssus_late_turing_wavelength_s0/gasterosteus_doryssus_late_specimen.jpg
+equations:
+  - law_name: Schnakenberg trace-stability without diffusion
+    formula: "tr J = f_u + g_v = -58/75 < 0"
+    lean_decl: MathOfBiology.Loop_3231.traceNum
+    lean_theorem: MathOfBiology.Loop_3231.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3231_gasterosteus_doryssus_late_turing_wavelength_s0.lean
+    variables: "f_u = 2/3, g_v = -36/25 at steady state (6/5, 25/36)"
+    role: Homogeneous dermal state is stable until diffusion splits the eigenvalues
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py
+  - law_name: Turing inequality at inhibitor ratio r = 25
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det J, cleared as 1142^2 > 144 * 75^2"
+    lean_decl: MathOfBiology.Loop_3231.turing_inequality_r25
+    lean_theorem: MathOfBiology.Loop_3231.turing_inequality_r25
+    lean_locus: morphoeval/lean/loops/Loop_3231_gasterosteus_doryssus_late_turing_wavelength_s0.lean
+    variables: "r = D_v/D_u = 25, det J = 36/25"
+    role: Opens a finite band of unstable wavenumbers at the 27 µm detail scale
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Kondo & Miura (2010) DOI:10.1126/science.1179047"
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py
+  - law_name: Chronospecies ordering of fastest-mode wavelength
+    formula: "λ_marine (21.48 µm) < λ_late (27.07 µm) < λ_mid (33.62 µm), and D_u ∝ λ_m^2"
+    lean_decl: MathOfBiology.Loop_3231.chronospecies_wavelength_order
+    lean_theorem: MathOfBiology.Loop_3231.chronospecies_wavelength_order
+    lean_locus: morphoeval/lean/loops/Loop_3231_gasterosteus_doryssus_late_turing_wavelength_s0.lean
+    variables: "wavelengths stored in nanometres 21480, 27070, 33620"
+    role: >-
+      Pelvic-loss stage (9.99 Ma) shortens the cellular pigment wavelength relative
+      to vestigial-spine doryssus_mid and remains longer than the plated marine successor
+    source_citation: "Hunt, Bell & Travis (2008) DOI:10.1111/j.1558-5646.2007.00310.x"
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py
