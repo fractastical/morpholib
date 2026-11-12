@@ -1,0 +1,137 @@
+{
+  "sim_id": "delphi10000-confuciusornis-sanctus-turing-wavelength-s0",
+  "slot": 3152,
+  "organism": {
+    "binomial": "Confuciusornis sanctus",
+    "common_name": "Early Cretaceous pygostylian beaked bird (ribbon-tail streamers)",
+    "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Aves (Ornithes) -> Confuciusornis",
+    "lineage": "Theropod-Avian Feather Fossil Series"
+  },
+  "phenomenon_scale": {
+    "label": "143.4 µm Turing pigment stripe / ocellus wavelength",
+    "rounded_label_um": 143,
+    "phenomenon_size_m": 0.0001434,
+    "phenomenon_size_um": 143.4,
+    "log10_size_m": -3.843,
+    "scale_tier": "5_primordium_100um",
+    "scale_variant": "detail",
+    "note": "The governed length is one critical wavelength λ_c, not the whole bird and not the 5.4 mm organ-scale sibling."
+  },
+  "paleobiology": {
+    "geological_period": "Early Cretaceous (Yixian Fm, 125.0 Ma)",
+    "geological_age_ma": 125.0,
+    "chronoseries_index": "1/1",
+    "formation": "Yixian Formation"
+  },
+  "chronoseries": {
+    "predecessor": {
+      "node": "Anchiornis-grade feathered theropod",
+      "age_ma": 160.0,
+      "horizon": "Late Jurassic",
+      "change_at_this_scale": "Ribbon-like pygostylian rectrices are absent, so a 143.4 µm transverse pigment mode has no ribbon-collar domain. Melanosome pigment remains sub-micrometre and is not this wavelength."
+    },
+    "this_node": {
+      "binomial": "Confuciusornis sanctus",
+      "age_ma": 125.0,
+      "horizon": "Early Cretaceous (Yixian Fm, 125.0 Ma)",
+      "change_at_this_scale": "Pygostyle and paired ribbon streamers exist. Collar transect L = 1147.2 µm admits N = 8 wavelengths of 143.4 µm. Kinetics (a, b, Dv/Du) are the primordium set below, not the organ-scale sibling."
+    },
+    "successor_scale": {
+      "node": "same feather series at the 5.4 mm organ scale",
+      "wavelength_um": 143.4,
+      "mode_count": 38,
+      "change_at_this_scale": "Wavelength is unchanged. Domain growth from 1147.2 µm to 5.4 mm raises the admitted mode count from 8 to round(5400/143.4) = 38. Diffusivity rescales by (5400/143.4)^2 if the dimensionless wavenumber is held fixed."
+    }
+  },
+  "state_variables": [
+    {"symbol": "u", "role": "activator (pigment-precursor / barb-ridge activator analogue)", "steady_state": 1.2},
+    {"symbol": "v", "role": "inhibitor (lateral inhibitor analogue)", "steady_state": 0.7777777777777778}
+  ],
+  "boundary_conditions": {
+    "geometry": "periodic circumferential transect of the feather follicle collar",
+    "bc": "periodic",
+    "rationale": "A follicle collar is a ring. Periodic boundaries are the Turing (1952) setting in which a discrete wavenumber is selected.",
+    "domain_length_um": 1147.2,
+    "n_wavelengths": 8
+  },
+  "equations": {
+    "kinetics": "du/dt = Du ∇²u + a - u + u²v ; dv/dt = Dv ∇²v + b - u²v",
+    "steady_state": "u0 = a + b ; v0 = b / (a + b)²",
+    "jacobian": "fu = -1 + 2b/(a+b) ; fv = (a+b)² ; gu = -2b/(a+b) ; gv = -(a+b)²",
+    "dispersion": "σ(k) = ½ (tr(k) + sqrt(tr(k)² - 4 det(k))) ; tr(k) = fu + gv - (Du+Dv) k² ; det(k) = (fu - Du k²)(gv - Dv k²) - fv gu",
+    "critical_wavenumber": "k_c² = (Dv fu + Du gv) / (2 Du Dv)",
+    "wavelength": "λ_c = 2π / k_c",
+    "turing_inequality": "(Dv fu + Du gv)² > 4 Du Dv det(J)",
+    "mode_count": "N = round(L / λ_c)"
+  },
+  "parameters": {
+    "a": 0.08,
+    "b": 1.12,
+    "Du": 0.5,
+    "Dv": 6.0,
+    "diffusion_ratio_Dv_over_Du": 12.0,
+    "anisotropy_Dyy_over_Dxx": 0.35,
+    "fu": 0.8666666666666667,
+    "fv": 1.44,
+    "gu": -1.8666666666666667,
+    "gv": -1.44,
+    "trace": -0.5733333333333333,
+    "det": 1.44,
+    "kc2_per_length2": 0.7466666666666666,
+    "lambda_nondimensional": 7.271374059978044,
+    "um_per_length": 19.72116945396604,
+    "lambda_c_um": 143.4,
+    "lambda_c_m": 0.0001434,
+    "grid_n": 128,
+    "dt": 0.04,
+    "n_steps": 1600,
+    "seed": 3152,
+    "note": "Spatial unit is calibrated so the analytical λ_c equals 143.4 µm. Dimensionless kinetics are not taken from the 5.4 mm sibling."
+  },
+  "empirical_claims": [
+    "Turing (1952) selects a finite critical wavenumber k_c when the inhibitor diffuses sufficiently faster than the activator.",
+    "Prum & Williamson (2002) model within-feather bars, spots and ocelli as reaction-diffusion pigment patterns.",
+    "Harris et al. (2005) give molecular evidence for an activator-inhibitor mechanism of embryonic barb-ridge branching.",
+    "Hou et al. (1995) name Confuciusornis sanctus, a beaked pygostylian. This loop places it at the Yixian Formation, 125.0 Ma.",
+    "O'Connor et al. (2012) discuss the ribbon-like rectricial streamers of Confuciusornis as a distinct early-bird feather morphology.",
+    "Zhang et al. (2010) and Wogelius et al. (2011) show melanosome and trace-metal evidence of feather pigment in Confuciusornis. That pigment is the biological substrate; λ_c = 143.4 µm is the primordium wavelength, not the melanosome length."
+  ],
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing dispersion relation and the existence of a critical wavenumber",
+      "Within-feather pigment patterns are a reaction-diffusion phenomenon (Prum & Williamson 2002)",
+      "Barb ridges use an activator-inhibitor mechanism (Harris et al. 2005)",
+      "Confuciusornis sanctus is an Early Cretaceous beaked bird with ribbon rectrices and preserved feather pigment"
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg parameter set (a, b, Du, Dv) chosen so λ_c = 143.4 µm on a periodic 8-wavelength collar",
+      "Anisotropic diffusion (Dyy/Dxx = 0.35) so the selected mode is a transverse stripe",
+      "Spectral split-step integration of the PDE"
+    ],
+    "transfer_boundary": [
+      "Schnakenberg kinetics are a carrier of Turing's k_c law. They are not a claim that Prum, Harris or Hou published these numerical values.",
+      "The 143.4 µm length is this slot's primordium scale, not a newly measured fossil barb spacing."
+    ],
+    "does_not_claim": [
+      "That the museum-slab outline is itself a Turing pattern",
+      "That melanosome length equals 143.4 µm",
+      "A radiometric re-dating of the Yixian Formation"
+    ]
+  },
+  "specimen": {
+    "filename": "confuciusornis_sanctus_specimen.jpg",
+    "sha256": "9e83715a2090a0499eb6dde56991bc7af2cd428c5a3e3347becd2d05c7809614",
+    "license": "CC BY-SA 4.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Confuciusornis_sanctus_(Vogel_des_heiligen_Konfuzius)_im_Senckenberg-Naturmuseum_01.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Confuciusornis_sanctus_%28Vogel_des_heiligen_Konfuzius%29_im_Senckenberg-Naturmuseum_01.jpg",
+    "credit": "Confuciusornis sanctus slab, Senckenberg Naturmuseum; Wikimedia Commons, CC BY-SA 4.0",
+    "width": 2264,
+    "height": 2778
+  },
+  "input_sha256": {
+    "confuciusornis_sanctus_specimen.jpg": "9e83715a2090a0499eb6dde56991bc7af2cd428c5a3e3347becd2d05c7809614",
+    "paper_citations.bib": "969b2a6a15f61ba899ba297e4993f9e92d216675f506313038d4f923e741d99c",
+    "README.md": "27dfac8804fe0dc2a19b1ca3efeb0cb05eefd363d3558729d48d394b747c84d7",
+    "scout_manifest.json": "7bb87407193f71b36eb12d97129ff2e0d393f1103c683eda5f2b03c30e654d77"
+  }
+}

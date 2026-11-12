@@ -1,0 +1,64 @@
+sim_id: delphi10000-confuciusornis-sanctus-turing-wavelength-s0
+slot: 3152
+math_family: Reaction-Diffusion & Turing Dispersion
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+phenomenon_size_m: 0.0001434
+log10_size_m: -3.843
+size_human: 143.4 µm
+scale_tier: 5_primordium_100um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength on the Confuciusornis sanctus ribbon-streamer barb-ridge primordium
+geological_age_ma: 125.0
+geological_period: Early Cretaceous (Yixian Fm, 125.0 Ma)
+fossil_lineage_group: Theropod-Avian Feather Fossil Series
+chronoseries: "1/1"
+organism: Confuciusornis sanctus
+model_spec:
+  model: Schnakenberg Turing wavelength selection at 143.4 µm
+  a: 0.08
+  b: 1.12
+  Du: 0.5
+  Dv: 6.0
+  diffusion_ratio: 12.0
+  anisotropy_Dyy_over_Dxx: 0.35
+  grid_resolution: [128, 128]
+  dt: 0.04
+  steps: 1600
+  seed: 3152
+  lambda_c_um: 143.4
+  domain_um: 1147.2
+  geological_age_ma: 125.0
+  inputs:
+    - datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_specimen.jpg
+    - datasets/confuciusornis_sanctus_turing_wavelength_s0/confuciusornis_sanctus_turing_wavelength_s0_reference.json
+    - datasets/confuciusornis_sanctus_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing dispersion determinant
+    formula: "det(J - k^2 D) = Du Dv k^4 - (Dv fu + Du gv) k^2 + (fu gv - fv gu)"
+    lean_decl: MathOfBiology.Loop_3152.det_positive
+    lean_theorem: MathOfBiology.Loop_3152.turing_wavenumber_instability
+    lean_locus: morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean
+    variables: "fu = 13/15, gv = -36/25, r = Dv/Du = 12, det = 36/25"
+    role: Instability inequality that admits a finite k_c at 143.4 µm
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py
+  - law_name: Critical wavelength
+    formula: "lambda_c = 2 pi / k_c, k_c^2 = (Dv fu + Du gv) / (2 Du Dv) = 143.4 µm"
+    lean_decl: MathOfBiology.Loop_3152.lambdaCTenthUm
+    lean_theorem: MathOfBiology.Loop_3152.primordium_shorter_than_organ_sibling
+    lean_locus: morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean
+    variables: "lambda_c = 1434 tenths of a micrometre, organ sibling = 54000"
+    role: This primordium wavelength is shorter than the 5.4 mm organ-scale sibling
+    source_citation: "Prum & Williamson 2002 DOI:10.1098/rspb.2001.1896"
+    code_locus: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py
+  - law_name: Collar mode count
+    formula: "N = L / lambda_c = 8 on the 1147.2 µm periodic collar; organ scale admits 38"
+    lean_decl: MathOfBiology.Loop_3152.eight_wavelengths_on_collar
+    lean_theorem: MathOfBiology.Loop_3152.eight_wavelengths_on_collar
+    lean_locus: morphoeval/lean/loops/Loop_3152_confuciusornis_sanctus_turing_wavelength_s0.lean
+    variables: "L = 8 * 143.4 µm at 125.0 Ma; predecessor ribbon domain absent at 160 Ma"
+    role: What changes at this scale versus the predecessor horizon and the successor vane
+    source_citation: "O'Connor et al. 2012 DOI:10.3390/geosciences2030157"
+    code_locus: models/2026-delphi10000-confuciusornis-sanctus-turing-wavelength-s0.py
