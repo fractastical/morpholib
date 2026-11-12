@@ -1,0 +1,77 @@
+sim_id: delphi10000-drosophila-paulistorum-turing-wavelength-s0
+slot: 3197
+organism: Drosophila paulistorum
+phenomenon_size_m: 2.417e-06
+log10_size_m: -5.617
+size_human: "2.4 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: "Turing pigment stripe / ocellus wavelength in Drosophila paulistorum (2.4 µm, detail scale)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora obscura & willistoni Clade"
+chronoseries: "Drosophila 26/41"
+predecessor: Drosophila orena
+successor: Drosophila persimilis
+math_family: "Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)"
+aristotelian:
+  megiston_genos: "II. Anaima (Invertebrata)"
+  subaltern_genos: "Entoma (Arthropoda)"
+  genus: Drosophila
+  poion_form: "Stripes, Spots & Ocelli"
+  poson_law: "Turing Wavenumber k_c"
+  efficient_cause: "1. Chemical Turing / RD"
+model_spec:
+  kinetics: schnakenberg
+  a: 0.10
+  b: 0.90
+  gamma: 8.0
+  diffusivity_ratio: 36.0
+  lambda_c_m: 2.417e-06
+  domain_side_m: 1.4502e-05
+  grid_n: 64
+  seed: 3197
+  boundary: periodic
+  inputs:
+    - datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_turing_wavelength_s0_reference.json
+    - datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_male_haars_2018.png
+    - datasets/drosophila_paulistorum_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_paulistorum_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_paulistorum_turing_wavelength_s0/README.md
+equations:
+  - law_name: Schnakenberg trace at the 2.417 µm steady state
+    formula: "tr(J) = f_u + g_v = -0.200 < 0"
+    lean_decl: MathOfBiology.Loop_3197.schnakenbergTraceMilli
+    lean_theorem: MathOfBiology.Loop_3197.homogeneous_steady_state_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3197_drosophila_paulistorum_turing_wavelength_s0.lean
+    variables: "a=0.10, b=0.90, u*=1, v*=0.9, f_u=0.8, g_v=-1"
+    role: "Homogeneous ocellar steady state is linearly stable to uniform perturbations at 0 Ma."
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012; Schnakenberg 1979 doi:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py
+  - law_name: Positive reaction Jacobian determinant
+    formula: "det(J) = f_u g_v - f_v g_u = 1 > 0"
+    lean_decl: MathOfBiology.Loop_3197.schnakenbergDetMillion
+    lean_theorem: MathOfBiology.Loop_3197.reaction_jacobian_determinant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3197_drosophila_paulistorum_turing_wavelength_s0.lean
+    variables: "f_u=0.800, f_v=1, g_u=-1.800, g_v=-1"
+    role: "Saddle structure required before diffusion can destabilise a finite band of wavenumbers."
+    source_citation: "Maini, Painter & Chau 1997 doi:10.1039/a702602a"
+    code_locus: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py
+  - law_name: Critical wavenumber numerator at diffusivity ratio 36
+    formula: "d f_u + g_v > 0, k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2.417 µm"
+    lean_decl: MathOfBiology.Loop_3197.diffusionNumeratorMilli
+    lean_theorem: MathOfBiology.Loop_3197.critical_wavenumber_numerator_positive
+    lean_locus: morphoeval/lean/loops/Loop_3197_drosophila_paulistorum_turing_wavelength_s0.lean
+    variables: "d=36, lambda_c=2.417e-6 m"
+    role: "Places the Turing wavenumber on the subcellular ocellar pigment rung, not the 91 µm cellular rung."
+    source_citation: "Turing 1952 doi:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py
+  - law_name: Detail rung versus orena and persimilis
+    formula: "2417*37 = 89429 < 89440 (orena); 2417*48 = 116016 < 116700 (persimilis); 2417*6 = 14502"
+    lean_decl: MathOfBiology.Loop_3197.detail_scale_shorter_than_orena_cellular
+    lean_theorem: MathOfBiology.Loop_3197.six_wavelengths_tile_ocellar_patch
+    lean_locus: morphoeval/lean/loops/Loop_3197_drosophila_paulistorum_turing_wavelength_s0.lean
+    variables: "lambda_nm=2417, orena_nm=89440, persimilis_nm=116700, age_ma=0"
+    role: "Formalises the scale change at chronoseries position 26/41 against the catalog predecessor and successor."
+    source_citation: "Dobzhansky & Spassky 1959 doi:10.1073/pnas.45.3.419"
+    code_locus: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py

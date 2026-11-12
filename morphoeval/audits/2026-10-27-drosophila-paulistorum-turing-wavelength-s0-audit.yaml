@@ -1,0 +1,167 @@
+# Pass 1 audit — Drosophila paulistorum 2.4 µm ocellar Turing wavelength (slot 3197).
+# First integration implemented Schnakenberg kinetics and a habitus render, but the
+# nonlinear stripe field did not sit on the stated 2.417 µm mode.
+
+audit:
+  id: 2026-10-27-drosophila-paulistorum-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (primary loop assessor)"
+    homepage: https://x.ai
+  second_assessor:
+    id: independent-rubric-pass
+    label: "Same-run independent rescore of the seven rubric questions before remediation"
+  publisher_orcid: https://github.com/fractastical
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 9a9d6408
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 of loop 2026-10-27-drosophila-paulistorum-turing-wavelength-s0-loop.
+      The cited commit contains the model, the Haars specimen, and the Lean module.
+      Nanopub signing was not available (~/.nanopub/profile.yml absent). publisher_orcid
+      is the repository URI, not an ORCID iD, so the unsigned graph can be emitted.
+
+references:
+  dobzhansky1959:
+    title: "Drosophila paulistorum, a cluster of species in statu nascendi"
+    authors: "Dobzhansky T, Spassky B"
+    venue: "PNAS 45(3):419-428 (1959)"
+    doi: 10.1073/pnas.45.3.419
+    url: https://doi.org/10.1073/pnas.45.3.419
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    url: https://doi.org/10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini PK, Painter KJ, Chau HNP"
+    venue: "J. Chem. Soc. Faraday Trans. 93:3601-3610 (1997)"
+    doi: 10.1039/a702602a
+  haars2018:
+    title: "Drosophila paulistorum male"
+    authors: "Haars J"
+    venue: "Wikimedia Commons, CC BY-SA 4.0 (2018-11-29)"
+    url: https://commons.wikimedia.org/wiki/File:Drosophila_paulistorum_male.png
+
+simulations:
+  - id: delphi10000-drosophila-paulistorum-turing-wavelength-s0
+    name: "Drosophila paulistorum Schnakenberg ocellar stripe at 2.4 µm (Pass 1)"
+    organism: "Drosophila paulistorum"
+    script: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py
+    output: docs/media/drosophila_paulistorum_turing_wavelength_s0_comparison.png
+    status: evaluated
+    domain: morphogenesis
+    source_refs: [dobzhansky1959, turing1952, schnakenberg1979, maini1997, haars2018]
+    phenomenon_size_m: 2.417e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    summary: >-
+      Pass 1 implements periodic Schnakenberg kinetics (a=0.10, b=0.90, γ=8, Dv/Du=36)
+      on a 14.502 µm patch, segments the CC BY-SA Haars 2018 male, and renders a
+      12-frame 640×480 growth GIF. The classical determinant wavenumber was pinned at
+      2.417 µm, but the maximum of σ(k) sat near 3.5 µm. The nonlinear Du sweep therefore
+      correlated only at r=0.877 (RMSE 1.18 µm). Image CV against the Haars frame was 88.5.
+    claim_boundary:
+      reported_in_source:
+        - "Dobzhansky & Spassky 1959: D. paulistorum is a willistoni-group cluster of incipient semispecies. Holocene, 0 Ma."
+        - "Turing 1952 and Maini, Painter & Chau 1997: a finite critical wavenumber exists when tr(J)<0, det(J)>0, and the inhibitor diffuses sufficiently faster than the activator."
+        - "Schnakenberg 1979: the two-species kinetics used here."
+      reconstructed_in_script:
+        - "Placement of that wavenumber on a 2.417 µm intra-ocellar pigment stripe (campaign rung 3_subcellular_um, detail s0)."
+        - "Catalog comparison with Drosophila orena (89.44 µm, 37 packings) and Drosophila persimilis (116.7 µm, 48 packings), both extant at 0 Ma."
+      transfer_boundary:
+        - "Gompel et al. 2005 document Drosophila wing-pigment cis-regulation. That result is not an ocellar wavelength measurement and is not used as one."
+      does_not_claim:
+        - "That Dobzhansky measured 2.4 µm."
+        - "That orena → paulistorum → persimilis is a stratigraphic ancestor chain."
+        - "That the habitus GIF is an electron micrograph of pigment granules."
+    remediation:
+      - "The nonlinear activator FFT did not track the stated wavelength (Pearson r=0.877, RMSE 1.18 µm) because σ(k) peaked near 3.5 µm while the determinant formula had been pinned at 2.417 µm, and broadband noise did not lock to one mode."
+      - "Rescale both diffusivities so argmax σ(k) is 2.417 µm, seed each Du-sweep point with that integer mode, and remeasure λ from the activator field until Pearson r > 0.98."
+      - "Re-render the growth GIF from the corrected field and re-score image fitness."
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          The Jacobian, periodic Laplacian, and Schnakenberg update match the cited kinetics,
+          and the homogeneous state has tr=-0.2 and det=1. The emergent stripe was not yet
+          the 2.417 µm maximum-growth mode, so the run does not get full credit for the law
+          at this rung.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [98, 176], note: "Steady state, Jacobian trace and determinant, classical k_c, and growth-rate eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [190, 248], note: "Periodic explicit Schnakenberg integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3197_drosophila_paulistorum_turing_wavelength_s0.lean, lines: [17, 56], note: "Six concrete theorems, no unfinished proofs, for trace, determinant, numerator, and the orena/persimilis packings", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The Haars 2018 male is vendored and SHA-256 pinned, and the 12-frame GIF's last
+          frame scored CV 88.5 against that photograph. The raw activator panel was still
+          the wrong wavelength, so the biological match of the stripe itself is incomplete.
+        evidence:
+          - {file: datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_male_haars_2018.png, lines: [0, 0], note: "CC BY-SA 4.0 adult male, Jonathan Haars, 2018-11-29", supports: true}
+          - {file: docs/media/drosophila_paulistorum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640×480 growth GIF, Pass 1 CV 88.5", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [406, 432], note: "Foreground, circularity, and structure-tensor coherency of the specimen", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: >-
+          A Du sweep and an equal-diffusion ablation were executed. Activator amplitude
+          collapsed under d=1, but measured wavelength did not move cleanly with Du
+          (nonlinear r=0.877), so the sweep did not yet demonstrate control of λ.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [332, 404], note: "Du sweep and equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [919, 966], note: "Self-test checks trace, determinant, growth of a seeded mode, and decay under equal diffusion", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: >-
+          Specimen foreground 0.300 (prior 0.22), coherency 0.632 (prior 0.45), and
+          circularity 0.597 (prior 0.72) are non-circular. The wavelength goodness-of-fit
+          on the nonlinear field failed the 0.98 gate (r=0.877, RMSE 1.18 µm). Midline
+          spacing was already near 2.40 µm (KS 0.50 against a 4% band).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [434, 473], note: "Inter-peak KS and orena/persimilis packing counts 37 and 48", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [578, 659], note: "measure_morphoeval rows with references that are priors, not copies of the measured values", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Dobzhansky & Spassky 1959, Turing 1952, Schnakenberg 1979, and Maini et al. 1997
+          are cited with DOIs. The Haars file URL, license, and SHA-256 are in the reference
+          JSON. The 2.417 µm length is identified as the campaign rung, not a 1959 measurement.
+        evidence:
+          - {file: datasets/drosophila_paulistorum_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "BibTeX for Dobzhansky, Turing, Schnakenberg, Maini, Gompel, and Haars", supports: true}
+          - {file: datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 2.417e-06 m, log10 -5.617, age 0 Ma, predecessor and successor", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Integrator, Jacobian, and Lean declarations are mapped in the math-kg loop file.
+          The Pass 1 dispersion curve annotated the determinant wavenumber rather than the
+          wavenumber the field selected.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-paulistorum-turing-wavelength-s0.yaml, lines: [1, 80], note: "sim_id, scale, age, and Lean loci for the three Jacobian laws", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [1, 30], note: "Module docstring states 2.4 µm, 0 Ma, orena, and persimilis", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          SHA-256 pins, seed 3197, --self-test, and a deterministic explicit scheme are
+          present. Self-test passed (dispersion r=0.999 on the linear grid, ablation std
+          near 0). The nonlinear wavelength failure is scored under morphometric-validation,
+          not hidden here.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [70, 84], note: "Pinned SHA-256 of the five dataset sources", supports: true}
+          - {file: models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py, lines: [919, 966], note: "--self-test invariants including the 37- and 48-fold packings", supports: true}

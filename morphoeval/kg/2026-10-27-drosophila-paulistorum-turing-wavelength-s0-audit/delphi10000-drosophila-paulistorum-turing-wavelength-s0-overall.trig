@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-paulistorum-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-paulistorum-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-paulistorum-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Drosophila paulistorum Schnakenberg ocellar stripe at 2.4 µm (Pass 1) — MorphoEval overall 79.4/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 implements periodic Schnakenberg kinetics (a=0.10, b=0.90, γ=8, Dv/Du=36) on a 14.502 µm patch, segments the CC BY-SA Haars 2018 male, and renders a 12-frame 640×480 growth GIF. The classical determinant wavenumber was pinned at 2.417 µm, but the maximum of σ(k) sat near 3.5 µm. The nonlinear Du sweep therefore correlated only at r=0.877 (RMSE 1.18 µm). Image CV against the Haars frame was 88.5. Overall 79.4/100 (faithfulness 76.6, reproducibility 86.1); rubric morphoeval 0.1.0; checkpoint commit 9a9d6408; environment: python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 80, Parameter expressivity 70, Morphometric validation 68, Source and data traceability 88, Code-to-model traceability 84, Reproducibility package 86. Output judged: docs/media/drosophila_paulistorum_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-drosophila-paulistorum-turing-wavelength-s0.py at 9a9d6408, image/png, 435973 B, 1740×912 px, artifact_sha256 26d4992383a6d270eb32a0d049e22264a9afc1f82990d04f9cbf33c6da9acf4d (sha256 26d4992383a6d270eb32a0d049e22264a9afc1f82990d04f9cbf33c6da9acf4d), spec_fingerprint 59419ebb8a88efc4005d1cc11aab51778bad8613c26ac834a4d86676d99742f1. Dual provenance: spec_fingerprint: 59419ebb8a88efc4005d1cc11aab51778bad8613c26ac834a4d86676d99742f1; artifact_sha256: 26d4992383a6d270eb32a0d049e22264a9afc1f82990d04f9cbf33c6da9acf4d; input_dataset_sha256: {datasets/drosophila_paulistorum_turing_wavelength_s0/README.md=b770bcff5173b0a0..., datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_male_haars_2018.png=e01e60e633f99ef1..., datasets/drosophila_paulistorum_turing_wavelength_s0/drosophila_paulistorum_turing_wavelength_s0_reference.json=39b5153e4682ffee..., datasets/drosophila_paulistorum_turing_wavelength_s0/paper_citations.bib=5c00ca3d9a631902..., datasets/drosophila_paulistorum_turing_wavelength_s0/scout_manifest.json=a859ae40d3f79e52...}. Claim boundary: reported_in_source: Dobzhansky & Spassky 1959: D. paulistorum is a willistoni-group cluster of incipient semispecies. Holocene, 0 Ma. | Turing 1952 and Maini, Painter & Chau 1997: a finite critical wavenumber exists when tr(J)<0, det(J)>0, and the inhibitor diffuses sufficiently faster than the activator. | Schnakenberg 1979: the two-species kinetics used here.; reconstructed_in_script: Placement of that wavenumber on a 2.417 µm intra-ocellar pigment stripe (campaign rung 3_subcellular_um, detail s0). | Catalog comparison with Drosophila orena (89.44 µm, 37 packings) and Drosophila persimilis (116.7 µm, 48 packings), both extant at 0 Ma.; transfer_boundary: Gompel et al. 2005 document Drosophila wing-pigment cis-regulation. That result is not an ocellar wavelength measurement and is not used as one.; does_not_claim: That Dobzhansky measured 2.4 µm. | That orena → paulistorum → persimilis is a stratigraphic ancestor chain. | That the habitus GIF is an electron micrograph of pigment granules.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Re-render the growth GIF from the corrected field and re-score image fitness.",
+            "remediation needed: Rescale both diffusivities so argmax σ(k) is 2.417 µm, seed each Du-sweep point with that integer mode, and remeasure λ from the activator field until Pearson r > 0.98.",
+            "remediation needed: The nonlinear activator FFT did not track the stated wavelength (Pearson r=0.877, RMSE 1.18 µm) because σ(k) peaked near 3.5 µm while the determinant formula had been pinned at 2.417 µm, and broadband noise did not lock to one mode." ;
+        pk:hasScore "0.794"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (primary loop assessor)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://github.com/fractastical> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://github.com/fractastical>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://commons.wikimedia.org/wiki/File:Drosophila_paulistorum_male.png>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1039/a702602a>,
+            <https://doi.org/10.1073/pnas.45.3.419>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://commons.wikimedia.org/wiki/File:Drosophila_paulistorum_male.png> dct:title "Drosophila paulistorum male" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1039/a702602a> dct:date "1997"^^xsd:gYear ;
+        dct:title "Spatial pattern formation in chemical and biological systems" .
+    <https://doi.org/10.1073/pnas.45.3.419> dct:date "1959"^^xsd:gYear ;
+        dct:title "Drosophila paulistorum, a cluster of species in statu nascendi" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Drosophila paulistorum Schnakenberg ocellar stripe at 2.4 µm (Pass 1) — MorphoEval overall 79.4/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:52:35Z"^^xsd:dateTime ;
+        dct:creator <https://github.com/fractastical> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-paulistorum-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-paulistorum-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
