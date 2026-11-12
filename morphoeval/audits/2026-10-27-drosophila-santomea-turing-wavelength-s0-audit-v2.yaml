@@ -1,0 +1,216 @@
+# Pass 2 — remediates the four Pass 1 gaps for slot 3201.
+# Dispersion fit unchanged (RMSE 4.9e-5). Added: five-point γ sweep
+# (Pearson r = 0.984 on wavelength), equal-diffusion ablation (σ = -0.451
+# versus wild-type σ = +0.285), gallery scale bar (110 px = 100 µm;
+# radial-peak spacing 90.909 µm, 39× the model wavelength), and KS distances
+# (dispersion residuals 0.172, gallery luminance vs activator 0.249).
+audit:
+  id: 2026-10-27-drosophila-santomea-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-drosophila-santomea-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (single builder-assessor; no separate second-model pass)"
+  publisher_orcid: https://github.com/fractastical
+  publisher_note: "No ~/.nanopub/profile.yml in this environment. This URI is the repository owner, not an ORCID iD. Nanopubs were not signed."
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 working tree. Cited paths land in the loop commit that follows this audit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    url: https://www.sciencedirect.com/science/article/pii/0022519379902580
+    year: 1979
+    note: "Printed DOI 10.1016/0022-5193(79)90258-0 returned Crossref 404 on 2026-10-27."
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    doi: 10.1016/0022-5193(81)90334-9
+    year: 1981
+  jeong2008:
+    title: "The evolution of gene regulation underlies a morphological difference between two Drosophila sister species"
+    doi: 10.1016/j.cell.2008.01.014
+    year: 2008
+  lachaise2000:
+    title: "Evolutionary novelties in islands: Drosophila santomea, a new melanogaster sister species from São Tomé"
+    doi: 10.1098/rspb.2000.1169
+    year: 2000
+  llopart2002:
+    title: "Genetics of a difference in pigmentation between Drosophila yakuba and Drosophila santomea"
+    doi: 10.1111/j.0014-3820.2002.tb00150.x
+    year: 2002
+simulations:
+  - id: delphi10000-drosophila-santomea-turing-wavelength-s0
+    name: "Drosophila santomea Schnakenberg wavelength at 2.326 µm (Holocene, 0 Ma), pass 2"
+    organism: Drosophila santomea
+    script: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+    output: docs/media/drosophila_santomea_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-santomea-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, jeong2008, lachaise2000, llopart2002]
+    model_spec:
+      model: Schnakenberg kinetics, Turing critical wavenumber
+      a: 0.13
+      b: 0.87
+      Du: 1.0
+      Dv: 40.0
+      gamma_santomea: 1.0
+      lambda_um: 2.326
+      lambda_um_pseudoobscura: 1.84
+      lambda_um_sechellia: 2.05
+      age_ma: 0.0
+      seed: 3201
+      inputs:
+        - datasets/drosophila_santomea_turing_wavelength_s0/drosophila_santomea_turing_wavelength_s0_reference.json
+        - datasets/drosophila_santomea_turing_wavelength_s0/drosophila_santomea_specimen.jpg
+        - datasets/drosophila_santomea_turing_wavelength_s0/paper_citations.bib
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 gives k_c from the linearized reaction-diffusion Jacobian."
+        - "Schnakenberg 1979 supplies the kinetics f = a - u + u^2 v, g = b - u^2 v."
+        - "Jeong et al. 2008 show loss of abdominal tan expression in D. santomea relative to D. yakuba."
+      reconstructed_in_script:
+        - "ξ is chosen so γ = 1 yields λ_c = 2.326 µm on this Jacobian."
+        - "Predecessor D. pseudoobscura is assigned 1.840 µm and successor D. sechellia 2.050 µm at this same tier, with γ ∝ 1/λ^2."
+        - "The gallery radial peak is converted with the drawn 100 µm bar."
+      transfer_boundary:
+        - "Neighbor wavelengths belong to the 2.3 µm tier only. They are not the 88 µm and 114 µm primordium slots."
+      does_not_claim:
+        - "That Jeong, Llopart, or Lachaise measured 2.326 µm."
+        - "That D. pseudoobscura is the ancestor of D. santomea. The sister species is D. yakuba."
+        - "That the gallery arm spacing of 90.909 µm confirms the model wavelength. It contradicts a literal reading of the image as a 2.3 µm micrograph."
+        - "That a second, independent assessor model scored this audit."
+    summary: >-
+      Pass 2 keeps the pass-1 dispersion identity (RMSE 4.9e-5) and adds the four
+      remediations. Across γ in {0.70, 1, 1.287, 1.598, 2.10} the analytic
+      wavelength decreases monotonically and the numeric-peak wavelength tracks it
+      with Pearson r = 0.984 (RMSE 0.91 µm; the discrete peak sits long of k_c).
+      Equal diffusion gives σ(k_c) = -0.451 against wild-type σ = +0.285. The
+      gallery bar is 110 px = 100 µm (0.909 µm/px); the radial peak is 90.909 µm,
+      39.1 times 2.326 µm. Two-sample KS between gallery luminance and the
+      activator is 0.249. GIF remains 12 frames at 800×600.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Same Schnakenberg Jacobian and k_c formula as pass 1, now checked by an
+          equal-diffusion run that loses the positive growth rate, which is the
+          Turing requirement and not an extra parameter fit.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [75, 148]
+            note: "Jacobian, k_c, and analytic σ(k) with eigenvector"
+            supports: true
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [294, 312]
+            note: "Equal-diffusion probe at the wild-type k_c"
+            supports: true
+          - file: morphoeval/lean/loops/Loop_3201_drosophila_santomea_turing_wavelength_s0.lean
+            lines: [16, 52]
+            note: "Closed decide proofs for the gap, k_c identity, negative trace, and wavelength order"
+            supports: true
+      specimen-match:
+        value: 78
+        rationale: >-
+          The adult GIF frame is a 0.40 blend of the gallery field into the
+          sepia-scaled activator, so the silhouette of that spiral field is
+          present. The spot panel itself is not a spiral, and the measured arm
+          spacing (90.909 µm) is not 2.326 µm. The score credits the documented
+          visual comparison and withholds credit for a false length match.
+        evidence:
+          - file: docs/media/drosophila_santomea_turing_wavelength_s0_comparison.png
+            lines: [0, 0]
+            note: "Gallery field, spot field, dispersion, and chronoseries bars"
+            supports: true
+          - file: docs/media/drosophila_santomea_turing_wavelength_s0_growth.gif
+            lines: [0, 0]
+            note: "12-frame 800×600 growth GIF"
+            supports: true
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [390, 407]
+            note: "Last three frames blend in the gallery scaffold at weight up to 0.40"
+            supports: true
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Five γ values produce a strictly decreasing analytic wavelength, and the
+          numeric peak moves the same way (r = 0.984). Equal diffusion is the
+          negative control on D_v/D_u. Chronoseries γ values are the two interior
+          sweep points 1.287 and 1.598.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [451, 515]
+            note: "Pass 2 metrics builder calls the γ sweep and the ablation"
+            supports: true
+          - file: datasets/drosophila_santomea_turing_wavelength_s0/metrics.json
+            lines: [0, 0]
+            note: "gamma_sweep.pearson_r = 0.984048, monotonic_decreasing true"
+            supports: true
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Dispersion RMSE is 4.9e-5 (r rounded to 1.0 at six decimals, reference
+          ideal 1). Wavelength-sweep RMSE is 0.91 µm and is reported, not hidden.
+          KS(gallery, activator) = 0.249 against a reference of 0. Gallery arm
+          spacing 90.909 µm against reference 2.326 µm. None of these pairs are
+          value-equals-reference.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [517, 607]
+            note: "measure_morphoeval rows for r, wavelength gaps, ablation σ, KS, and arm spacing"
+            supports: true
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [314, 375]
+            note: "Scale-bar span and radial-FFT arm spacing"
+            supports: true
+      source-traceability:
+        value: 88
+        rationale: >-
+          DOIs that OpenAlex resolved are cited as DOIs. Schnakenberg is cited by
+          PII URL because Crossref 404'd the printed DOI. Specimen bytes are
+          SHA-256 pinned and match the species-gallery fallback.
+        evidence:
+          - file: datasets/drosophila_santomea_turing_wavelength_s0/drosophila_santomea_turing_wavelength_s0_reference.json
+            lines: [1, 70]
+            note: "Scale 2.326e-6 m, log10 -5.633, age 0 Ma, claim boundary, specimen hash"
+            supports: true
+          - file: datasets/drosophila_santomea_turing_wavelength_s0/paper_citations.bib
+            lines: [1, 90]
+            note: "Source bibliography"
+            supports: true
+      code-traceability:
+        value: 88
+        rationale: >-
+          Each pass-2 block is marked and called from build_metrics when --pass 2
+          (the default). The Lean file names the same integers the dispersion gap
+          uses (286^2 > 16000, 1840 < 2050 < 2326).
+        evidence:
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [99, 134]
+            note: "k_c, ξ, and chronospecies γ scaling"
+            supports: true
+          - file: morphoeval/math_kg_loops/delphi10000-drosophila-santomea-turing-wavelength-s0.yaml
+            lines: [1, 70]
+            note: "Math KG records the three laws and the model_spec inputs"
+            supports: true
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seed, --self-test, and --pass 1|2. Pass 2 is the default.
+          Self-test refuses to pass unless dispersion r > 0.98 and the specimen
+          hash matches the pin.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-santomea-turing-wavelength-s0.py
+            lines: [609, 696]
+            note: "self_test and CLI"
+            supports: true
+    remediation:
+      - "A second assessor from another model family has not scored this audit."
+      - "Replace the gallery spiral with a CC micrograph that actually resolves cuticle pigment near 2 µm; the present radial peak is 90.909 µm."
+      - "The numeric wavelength peak is biased long (sweep RMSE 0.91 µm) even though rank agreement is 0.984. A finer k grid would tighten it."
