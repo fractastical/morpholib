@@ -1,0 +1,63 @@
+sim_id: delphi10000-emiliania-huxleyi-turing-wavelength-s0
+organism: Emiliania huxleyi
+age_ma: 0.0
+scale_m: 5.808e-9
+scale_nm: 5.808
+log10_scale_m: -8.236
+tier: 1_molecular_nm
+math_family: Reaction-Diffusion & Turing Dispersion
+law: Turing wavenumber k_c
+form: Stripes, Spots & Ocelli
+slot: 3217
+model_spec:
+  model: Schnakenberg substrate-depletion RD with Turing marginal wavenumber fixed at 5.808 nm
+  equations:
+    - "f = a - u + u^2 v"
+    - "g = b - u^2 v"
+    - "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)"
+    - "lambda_c = 2 pi / k_c = 5.808 nm"
+  a: 0.10
+  b: 0.90
+  diffusion_ratio: 18.0
+  lambda_nm: 5.808
+  lambda_predecessor_nm: 7.744
+  lambda_successor_nm: 5.808
+  domain_nm: 46.464
+  holocene_modes: 8
+  predecessor_modes: 6
+  grid_resolution: [96, 96]
+  steps: 1200
+  dt: 0.028
+  seed: 3217
+  age_ma: 0.0
+  inputs:
+    - datasets/emiliania_huxleyi_turing_wavelength_s0/emiliania_huxleyi_coccosphere_coccolith.jpg
+    - datasets/emiliania_huxleyi_turing_wavelength_s0/emiliania_huxleyi_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing critical wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v),  lambda_c = 2 pi / k_c"
+    lean_decl: MathOfBiology.Loop_3217.lambdaHolocenePm
+    lean_theorem: MathOfBiology.Loop_3217.holocene_patch_is_eight_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3217_emiliania_huxleyi_turing_wavelength_s0.lean
+    variables: "f_u, g_v Jacobian entries; D_u, D_v diffusivities in nm^2 per time"
+    role: Selects the 5.808 nm molecular repeat on the Holocene Emiliania base-plate patch
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py
+  - law_name: Holocene mode gain against the reconstructed predecessor
+    formula: "L = 8 * 5.808 nm = 6 * 7.744 nm;  successor delta = 0"
+    lean_decl: MathOfBiology.Loop_3217.lambdaPredecessorPm
+    lean_theorem: MathOfBiology.Loop_3217.holocene_gains_two_modes
+    lean_locus: morphoeval/lean/loops/Loop_3217_emiliania_huxleyi_turing_wavelength_s0.lean
+    variables: "mode counts on a fixed 46.464 nm patch"
+    role: States what changes at 0 Ma versus the predecessor spacing, and that the extant node has no successor
+    source_citation: "Young & Henriksen 2003 DOI:10.2113/0540189 (coccolith calcite in vesicles; the 7.744 nm predecessor is a reconstruction)"
+    code_locus: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: "D_v = D_u implies the det(k) vertex sits at k^2 <= 0"
+    lean_decl: MathOfBiology.Loop_3217.duScaled
+    lean_theorem: MathOfBiology.Loop_3217.diffusion_product_clears_the_stability_gap
+    lean_locus: morphoeval/lean/loops/Loop_3217_emiliania_huxleyi_turing_wavelength_s0.lean
+    variables: "scaled diffusion product versus the stability gap"
+    role: Negative control for Turing wavenumber selection
+    source_citation: "Maini, Painter & Chau 1997 DOI:10.1039/a702602a"
+    code_locus: models/2026-delphi10000-emiliania-huxleyi-turing-wavelength-s0.py
