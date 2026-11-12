@@ -1,0 +1,58 @@
+sim_id: delphi10000-ambystoma-mexicanum-turing-wavelength-s0
+slot: 3107
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+phenomenon_size_m: 0.0001843
+log10_size_m: -3.734
+size_human: 184 µm
+scale_tier: 5_primordium_100um
+detail_variant: true
+anatomical_structure: "Larval flank chromatophore primordium of Ambystoma mexicanum (melanophore–xanthophore spacing)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "Ambystoma 1/1 — Holocene extant only; no predecessor or successor chronospecies"
+fossil_lineage_group: ""
+equations:
+  - law_name: Schnakenberg onset wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 184.3 um"
+    lean_decl: MathOfBiology.Loop_3107.onsetNumeratorTenth
+    lean_theorem: MathOfBiology.Loop_3107.onset_wavenumber_is_real
+    lean_locus: morphoeval/lean/loops/Loop_3107_ambystoma_mexicanum_turing_wavelength_s0.lean
+    variables: "f_u = 0.8, g_v = -1, D_v/D_u = 9, lambda_c = 184.3 um"
+    role: "Selects the 184 µm primordium pigment spacing on the Holocene axolotl flank"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Murray (1981) DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py
+  - law_name: Diffusion-free stability of the uniform chromatophore state
+    formula: "trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3107.traceTenth
+    lean_theorem: MathOfBiology.Loop_3107.diffusion_free_equilibrium_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3107_ambystoma_mexicanum_turing_wavelength_s0.lean
+    variables: "trace ×10 = -2, det ×100 = 100 at (a, b) = (0.10, 0.90)"
+    role: "Uniform state is stable without diffusion and unstable with it"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py
+  - law_name: Eight-wavelength primordium patch
+    formula: "L = 8 * 184.3 um = 1474.4 um"
+    lean_decl: MathOfBiology.Loop_3107.domainTenthUm
+    lean_theorem: MathOfBiology.Loop_3107.eight_wavelengths_span_the_flank_patch
+    lean_locus: morphoeval/lean/loops/Loop_3107_ambystoma_mexicanum_turing_wavelength_s0.lean
+    variables: "n = 8, lambda tenth-um = 1843, domain tenth-um = 14744"
+    role: "Domain that holds eight onset wavelengths at this scale and no other chronospecies"
+    source_citation: "Epperlein & Löfberg (1989) DOI:10.1007/978-3-642-75056-4"
+    code_locus: models/2026-delphi10000-ambystoma-mexicanum-turing-wavelength-s0.py
+model_spec:
+  model: Schnakenberg near-threshold wavelength selection
+  lambda_um: 184.3
+  phenomenon_size_m: 0.0001843
+  geological_age_ma: 0.0
+  a: 0.10
+  b: 0.90
+  diffusion_ratio: 9.0
+  n_grid: 96
+  n_wavelengths: 8
+  seed: 3107
+  inputs:
+    - datasets/ambystoma_mexicanum_turing_wavelength_s0/ambystoma_mexicanum_chromatophores_specimen.jpg
+    - datasets/ambystoma_mexicanum_turing_wavelength_s0/ambystoma_mexicanum_turing_wavelength_s0_reference.json
