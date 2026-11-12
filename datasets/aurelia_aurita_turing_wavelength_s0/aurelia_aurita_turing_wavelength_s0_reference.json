@@ -1,0 +1,97 @@
+{
+  "sim_id": "delphi10000-aurelia-aurita-turing-wavelength-s0",
+  "slot": 3129,
+  "organism": "Aurelia aurita",
+  "common_name": "Moon jellyfish",
+  "aristotelian_place": "II. Anaima (Invertebrata) -> Zoophyta & Vermes (Cnidaria/Platyhelminthes) -> Aurelia",
+  "age_ma": 0,
+  "age_label": "Holocene (Extant)",
+  "chronoseries": {
+    "name": "Aurelia",
+    "index": 1,
+    "count": 1,
+    "predecessor": null,
+    "successor": null,
+    "what_changes_at_this_node": "This is the only node, at 0 Ma. Nothing in the series is older or younger. The change that the mathematics can show at this age is between the living diffusion ratio D_v/D_u = 20, which admits a 201 µm mode, and the equal-diffusion control D_u = D_v = 1, which does not. A sub-wavelength cellular patch (domain shorter than λ_c) also refuses the mode. A millimetre-scale rhopalium would fit several repeats of the same wavelength; it would not change λ_c."
+  },
+  "scale": {
+    "label": "201 µm",
+    "metres": 0.0002006,
+    "micrometres_exact": 200.6,
+    "log10": -3.698,
+    "tier": "5_primordium_100um",
+    "variant": "detail",
+    "meaning": "Turing pigment stripe / ocellus wavelength inside one rhopalial pigment cup. Not the bell diameter. Not the arc length between neighbouring rhopalia."
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979 activator-substrate",
+    "pde_u": "du/dt = Du * laplacian(u) + gamma * (a - u + u^2 * v)",
+    "pde_v": "dv/dt = Dv * laplacian(v) + gamma * (b - u^2 * v)",
+    "steady_state": "u* = a + b, v* = b / (a + b)^2",
+    "jacobian": "fu = gamma*(-1 + 2*u*v*), fv = gamma*u*^2, gu = gamma*(-2*u*v*), gv = gamma*(-u*^2)",
+    "dispersion": "sigma(k) = 0.5 * (tr(k) + sqrt(tr(k)^2 - 4*det(k))), tr(k) = fu + gv - (Du+Dv)*k^2",
+    "critical_wavenumber": "k_c = (det(J) / (Du * Dv))^0.25",
+    "wavelength": "lambda_c = 2 * pi / k_c",
+    "physical_length": "lambda_c * ell = 0.0002006 m"
+  },
+  "boundary_conditions": "Periodic on a square patch whose side is 3 critical wavelengths (about 601.8 µm). The patch is one ocellus neighbourhood, not the whole bell.",
+  "parameters": {
+    "a": 0.10,
+    "b": 0.90,
+    "Du": 1.0,
+    "Dv": 20.0,
+    "gamma": 1.0,
+    "u_star": 1.0,
+    "v_star": 0.9,
+    "fu": 0.8,
+    "fv": 1.0,
+    "gu": -1.8,
+    "gv": -1.0,
+    "trace": -0.2,
+    "det": 1.0,
+    "seed": 3129,
+    "grid": [128, 128],
+    "note": "These numbers are for this 201 µm Holocene node. They are not taken from the sibling stub abrams-aurelia-aurita-turing-wavelength."
+  },
+  "empirical_claims": [
+    "Aurelia develops rhopalia, and each rhopalium bears a pigment-cup ocellus (Nakanishi, Hartenstein & Jacobs 2009).",
+    "A scyphozoan medusa has eight rhopalia (Helm 2018). Eight is an anatomical count. It is not L_bell / 201 µm.",
+    "A two-species reaction-diffusion system can select a finite wavelength when the inhibitor diffuses sufficiently faster than the activator (Turing 1952; Schnakenberg 1979).",
+    "No source consulted here measures that Aurelia ocellus pigment wavelength as 201 µm. The length is the assigned detail scale."
+  ],
+  "specimen": {
+    "file": "aurelia_aurita_specimen.jpg",
+    "sha256": "f4f54dc98dc4d9b364c41744f74c8a6d97b9d4f1fdde43d396bb40a48cb6a31f",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Aurelia-aurita-3.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/1/19/Aurelia-aurita-3.jpg",
+    "license": "CC0",
+    "artist": "Martin Thoma",
+    "date": "2015-01-24",
+    "width": 2560,
+    "height": 1920,
+    "what_it_shows": "Several living Aurelia aurita medusae in aquarium light. Oral views show four gonad arcs. The photograph does not resolve 201 µm."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 linear instability of a reaction-diffusion system and the existence of a finite critical wavelength.",
+      "Schnakenberg 1979 two-species kinetics used here.",
+      "Nakanishi, Hartenstein & Jacobs 2009: Aurelia rhopalia develop a pigment-cup ocellus.",
+      "Helm 2018: scyphozoan medusae have eight rhopalia.",
+      "Thoma 2015 CC0 photograph of living Aurelia aurita."
+    ],
+    "reconstructed_in_script": [
+      "Jacobian numbers a=0.10, b=0.90, Du=1, Dv=20, gamma=1, chosen so the critical wavelength equals 0.0002006 m.",
+      "Spectral Lie–Trotter integration, dispersion curve sampled from the PDE, equal-diffusion ablation, and Dv sweep.",
+      "Bell circularity and coherency measured on the Karlsruhe photograph."
+    ],
+    "transfer_boundary": [
+      "The 201 µm figure is a scale assignment, transferred onto Schnakenberg wavelength selection. It is not a fit to a histological measurement."
+    ],
+    "does_not_claim": [
+      "That a published study measured an Aurelia pigment wavelength of 201 µm.",
+      "That eight rhopalia are produced by counting 201 µm waves around the bell margin.",
+      "That the Karlsruhe photograph is a micrograph of the ocellus.",
+      "That the gallery tile datasets/species_gallery/.../Aurelia_aurita.jpg is a primary specimen. It was not used."
+    ]
+  }
+}
