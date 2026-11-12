@@ -1,0 +1,109 @@
+audit:
+  id: 2026-10-27-clytia-hemisphaerica-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; Pass 1 of slot 3150)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: bd8176806dee28731b94a3866aa6609c1d9d4ba2
+    note: "Pass 1 scored the activator-only dispersion probe before the eigenvector refit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: 10.1016/0022-5193(79)90042-0
+  momose2007:
+    title: "Two oppositely localised Frizzled RNAs as axis determinants in a cnidarian embryo"
+    authors: "Momose, T. and Houliston, E."
+    doi: 10.1371/journal.pbio.0050070
+  quiroga2018:
+    title: "A gonad-expressed opsin mediates light-induced spawning in the jellyfish Clytia"
+    authors: "Quiroga Artigas, G. et al."
+    doi: 10.7554/eLife.29555
+  leclere2019:
+    title: "The genome of the jellyfish Clytia hemisphaerica and the evolution of the cnidarian life-cycle"
+    authors: "Leclère, L. et al."
+    doi: 10.1038/s41559-019-0833-2
+  singla1974:
+    title: "Ocelli of hydromedusae"
+    authors: "Singla, C. L."
+    doi: 10.1007/BF00226774
+simulations:
+  - id: delphi10000-clytia-hemisphaerica-turing-wavelength-s0
+    name: "Clytia hemisphaerica Schnakenberg wavelength at 8.64 µm (Pass 1)"
+    organism: "Clytia hemisphaerica"
+    script: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py
+    output: docs/media/clytia_hemisphaerica_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, momose2007, quiroga2018, leclere2019, singla1974]
+    summary: >-
+      Pass 1 integrates Schnakenberg kinetics with Du = 1 µm²/s and Dv/Du = 20,
+      and γ is already pinned near 2.227 s⁻¹ so k_* sits on 8.64 µm. The growth-rate
+      comparison used an activator-only kick fit from t = 0. That probe is off the
+      unstable eigenspace: Pearson r = 0.506 against Jacobian σ(k), which fails the
+      0.98 gate. The planula render and the equal-diffusion integrator exist in the
+      file but were not yet the reported morphometric table. Holocene age is 0 Ma;
+      the chronoseries is 1/1.
+    claim_boundary:
+      reported_in_source:
+        - "Turing dispersion and Schnakenberg kinetics"
+        - "Clytia hemisphaerica planula and medusa life cycle"
+        - "Gonad opsin and hydrozoan pigment-cup ocelli as anatomical context"
+      reconstructed_in_script:
+        - "γ chosen so the most-unstable mode is the assigned 8.64 µm detail length"
+        - "Planula mask used as the render domain"
+      transfer_boundary:
+        - "8.64 µm is the MorphoEval detail anchor, not a published ocellus measurement"
+      does_not_claim:
+        - "A fossil wavelength shift (series length 1, age delta 0 Ma)"
+        - "That the Pass-1 transient probe validates the dispersion relation"
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "The Jacobian and the PDE are the Schnakenberg system, but Pass 1 reads σ from an activator-only perturbation, so the numerical growth rates are not the unstable eigenvalue."
+        evidence:
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [164, 212], note: "eigenvector flag; Pass 1 takes the activator-only branch and fits from t = 0", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The GIF places pigment grain inside a segmented day-2 planula on the photograph's background. The outline is more jagged than the DIC halo, so this is a recognisable larva rather than a matched micrograph."
+        evidence:
+          - {file: docs/media/clytia_hemisphaerica_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "side-by-side planula and render", supports: true}
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [378, 414], note: "render_frames composites the field into the segmented mask", supports: true}
+      parameter-expressivity:
+        value: 60
+        rationale: "Du, the diffusion ratio, and γ are defined, but Pass 1 does not yet report the ratio sweep as a measurement. Wavelength control is asserted by the pin, not shown across the ratio."
+        evidence:
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [73, 90], note: "physical constants for this slot, distinct from the slot-0168 template", supports: true}
+      morphometric-validation:
+        value: 64
+        rationale: "Pass-1 Pearson r between σ_numeric and σ_analytic is 0.506 (RMSE large relative to the band). That is below 0.98. Specimen aspect, circularity, and KS were not yet the recorded comparison."
+        evidence:
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [214, 240], note: "dispersion_probe; Pass 1 calls it with eigenvector=False", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "DOIs resolve on OpenAlex. The planula file is Momose's CC BY-SA 4.0 Commons micrograph, SHA-256 pinned. Slot 3150 is absent from the 100-slot campaign manifest; that absence is recorded rather than papered over."
+        evidence:
+          - {file: datasets/clytia_hemisphaerica_turing_wavelength_s0/paper_citations.bib, lines: [1, 89], note: "Turing, Schnakenberg, Momose, Quiroga Artigas, Leclère, Singla", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "The module docstring maps the PDE and the Pass-1 probe defect to the dispersion relation. Murray's scale argument is cited for the mode-count contrast, not section-pinned."
+        evidence:
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [1, 47], note: "scale, age, kinetics, and the Pass-1 probe warning", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3150, --self-test, and pinned γ. Pass 1 self-test already refuses a transient probe that accidentally looks calibrated, but the reported fit itself does not clear 0.98."
+        evidence:
+          - {file: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py, lines: [505, 543], note: "self_test gates on wavelength, Pass-1 r < 0.96, ablation, monotonicity", supports: true}
+    remediation:
+      - "Refit σ from the analytic unstable eigenvector on the second half of each Fourier trajectory, and require Pearson r > 0.98 against the discrete-Laplacian dispersion."
+      - "Put the equal-diffusion ablation (Dv = Du) in the measurement table next to the wild-type std(u)."
+      - "Segment the Momose planula and report aspect ratio, circularity, and an interior KS statistic whose value is not equal to its reference."
+      - "Sweep Dv/Du at fixed γ and record that the selected wavelength moves monotonically."

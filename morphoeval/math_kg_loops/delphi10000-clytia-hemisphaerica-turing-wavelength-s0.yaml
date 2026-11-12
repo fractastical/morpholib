@@ -1,0 +1,65 @@
+sim_id: delphi10000-clytia-hemisphaerica-turing-wavelength-s0
+slot: 3150
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  kinetics: schnakenberg
+  a: 0.1
+  b: 0.9
+  Du_um2_s: 1.0
+  diffusion_ratio: 20.0
+  lambda_assigned_m: 8.64e-6
+  age_Ma: 0
+  seed: 3150
+  render_px: 640
+  n_frames: 12
+  inputs:
+    - datasets/clytia_hemisphaerica_turing_wavelength_s0/clytia_hemisphaerica_specimen.jpg
+    - datasets/clytia_hemisphaerica_turing_wavelength_s0/clytia_hemisphaerica_turing_wavelength_s0_reference.json
+    - datasets/clytia_hemisphaerica_turing_wavelength_s0/scout_manifest.json
+    - datasets/clytia_hemisphaerica_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Schnakenberg diffusion-ratio Turing margin
+    formula: "D_v f_u - D_u |g_v| > 0, cleared as 4*(D_v/D_u) - 5 > 0 at f_u = 4/5"
+    lean_decl: MathOfBiology.Loop_3150.turingMargin
+    lean_theorem: MathOfBiology.Loop_3150.slot_ratio_is_turing_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3150_clytia_hemisphaerica_turing_wavelength_s0.lean#L12-L15
+    variables: "ratio = D_v/D_u = 20 at this slot; f_u = 0.8; g_v = -1"
+    role: Instability threshold that the equal-diffusion ablation violates
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py#L101-L117
+  - law_name: Selected Turing wavelength at the detail scale
+    formula: "k_star = argmax Re sigma(k); lambda_star = 2 pi / k_star = 8640 nm"
+    lean_decl: MathOfBiology.Loop_3150.selectedWavelengthNm
+    lean_theorem: MathOfBiology.Loop_3150.selected_wavelength_is_detail_scale
+    lean_locus: morphoeval/lean/loops/Loop_3150_clytia_hemisphaerica_turing_wavelength_s0.lean#L18-L22
+    variables: "lambda_star = 8.64 µm; age_Ma = 0"
+    role: Quantitative wavenumber law pinned to the assigned 8.64 µm detail length
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py#L132-L151
+  - law_name: Detail-scale mode count versus an organism-scale bell
+    formula: "N = floor(L / lambda_star); N(250 µm) < N(2 mm)"
+    lean_decl: MathOfBiology.Loop_3150.modeCount
+    lean_theorem: MathOfBiology.Loop_3150.detail_scale_has_fewer_modes_than_bell
+    lean_locus: morphoeval/lean/loops/Loop_3150_clytia_hemisphaerica_turing_wavelength_s0.lean#L25-L30
+    variables: "L_planula = 250000 nm reconstructed; L_bell = 2000000 nm; lambda = 8640 nm"
+    role: What changes at this scale when the chronoseries has no temporal neighbour
+    source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py#L546-L590
+  - law_name: Wavelength scales with the square root of activator diffusivity
+    formula: "(2 lambda)^2 = 4 lambda^2"
+    lean_decl: MathOfBiology.Loop_3150.wavelength_scales_with_sqrt_diffusivity
+    lean_theorem: MathOfBiology.Loop_3150.wavelength_scales_with_sqrt_diffusivity
+    lean_locus: morphoeval/lean/loops/Loop_3150_clytia_hemisphaerica_turing_wavelength_s0.lean#L33-L35
+    variables: "lambda and 2*lambda in nanometres"
+    role: Diffusion scaling of the selected wavelength at fixed rate and ratio
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py#L153-L162
+  - law_name: Holocene terminus of a 1/1 chronoseries
+    formula: "age_Ma = 0"
+    lean_decl: MathOfBiology.Loop_3150.holoceneAgeMa
+    lean_theorem: MathOfBiology.Loop_3150.no_temporal_predecessor
+    lean_locus: morphoeval/lean/loops/Loop_3150_clytia_hemisphaerica_turing_wavelength_s0.lean#L48-L51
+    variables: "holoceneAgeMa = 0"
+    role: No predecessor chronospecies, so the temporal increment is zero
+    source_citation: "Leclère et al. 2019 DOI:10.1038/s41559-019-0833-2"
+    code_locus: models/2026-delphi10000-clytia-hemisphaerica-turing-wavelength-s0.py#L75-L76
