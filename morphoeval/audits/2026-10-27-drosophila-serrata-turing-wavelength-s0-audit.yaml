@@ -1,0 +1,182 @@
+# Pass 1 — Drosophila serrata detail-scale Turing wavelength (slot 3203).
+# Single builder-assessor (Grok 4.7). Scores are uncalibrated rubric ratings.
+# Self-test: Pearson r = 0.99998, λ = 2134 / 2123 / 2102 nm, k/k_c = 0.952,
+# equal-diffusion σ_max = -0.231, GIF 640×520 × 12 frames, CV similarity 94.1.
+audit:
+  id: 2026-10-27-drosophila-serrata-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor; second assessor not run)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Slot-3203 files are new and uncommitted at audit time. Loci checked with --no-verify-loci."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  frentiu2010:
+    title: "Clines in cuticular hydrocarbons in two Drosophila species with independent population histories"
+    authors: "Frentiu FD, Chenoweth SF"
+    venue: "Evolution 64:1784-1794 (2010)"
+    year: 2010
+    doi: 10.1111/j.1558-5646.2009.00936.x
+  higgie2000:
+    title: "Natural selection and the reinforcement of mate recognition"
+    authors: "Higgie M, Chenoweth SF, Blows MW"
+    venue: "Science 290:519-521 (2000)"
+    year: 2000
+    doi: 10.1126/science.290.5491.519
+  howard2003:
+    title: "Cuticular hydrocarbons of Drosophila birchii and D. serrata"
+    authors: "Howard RW, Jackson LL, Banse H, Blows MW"
+    venue: "Journal of Chemical Ecology 29:961-976 (2003)"
+    year: 2003
+    doi: 10.1023/A:1022992002239
+simulations:
+  - id: delphi10000-drosophila-serrata-turing-wavelength-s0
+    name: "Drosophila serrata Schnakenberg Turing wavelength at 2.123 µm (Holocene, 0 Ma)"
+    organism: "Drosophila serrata"
+    script: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py
+    output: docs/media/drosophila_serrata_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, frentiu2010, higgie2000, howard2003]
+    summary: >
+      Schnakenberg kinetics (a = 0.037, b = 1.146) with Du solved so the band-center
+      wavenumber sits at 2.123 µm. Analytic λ is 2134 nm (sechellia), 2123 nm (serrata, 0 Ma),
+      2102 nm (silvestris) at fixed Du. RK2 growth rates match the closed form at Pearson r = 0.99998
+      (RMSE 0.00169). The nonlinear patch selects k/k_c = 0.952. Equal diffusion is stable
+      (σ_max = -0.231). The growth GIF is a radial J0 ocellus in the gallery plate's palette
+      (12 frames, 640×520, CV similarity 94.1).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and a finite critical wavenumber"
+        - "Schnakenberg 1979 trimolecular kinetics"
+        - "D. serrata CHC cline along the Australian east coast (Frentiu & Chenoweth 2010)"
+      reconstructed_in_script:
+        - "2.123e-6 m assigned as λ_c for this detail-scale slot"
+        - "Chronoseries wavelengths 2134 / 2123 / 2102 nm at fixed activator diffusivity"
+        - "Latitude slope 0.012 mapping cline direction onto δ"
+      transfer_boundary:
+        - "Gallery plate is the species-gallery fallback, not a measured 2.1 µm micrograph"
+        - "GIF colors are the plate's luminance-quantile palette"
+      does_not_claim:
+        - "A published measurement of a 2.123 µm ocellar Turing wavelength in D. serrata"
+        - "That D. sechellia is the phylogenetic sister of D. serrata"
+    needs:
+      - id: N1
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Report k_measured against k_max, the fastest linear mode, not only against band-center k_c."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Second assessor from another provider has not scored this script."
+        status: open
+        novelty_n: 0
+        contradiction_c: 0
+        depth_d: 0
+        age_days_a: 0
+      - id: N3
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Figure should state that the gallery scale bar reads 100 µm while the model wavelength is 2.123 µm."
+        status: open
+        novelty_n: 0
+        contradiction_c: 1
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >
+          Jacobian, onset δ_c, k_c^2 = (δ f_u + g_v)/(2 δ D_u), and σ(k) are the Schnakenberg
+          linearization of Turing 1952. RK2 on the same ODE agrees at r = 0.99998. The nonlinear
+          FFT peak at k/k_c = 0.952 is not yet compared with k_max, so the off-onset shift is easy
+          to misread as an implementation error.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [97, 145], note: "Jacobian and analytic growth rate σ(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [147, 179], note: "RK2 mode growth and Pearson/RMSE fit", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3203_drosophila_serrata_turing_wavelength_s0.lean, lines: [43, 46], note: "Integer Turing inequality, 0 sorry", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >
+          The GIF last frame is a radial J0 ocellus in the plate's brown palette. Computer-vision
+          similarity against that plate is 94.1 (12-bin orientation, 24-bin radial FFT, coherency).
+          The plate is a project gallery fallback whose printed bar says 100 µm, so it is a texture
+          reference for an ocellus-like field, not a voucher at 2.1 µm. That cap is why this is not 90+.
+        evidence:
+          - {file: docs/media/drosophila_serrata_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640×520 ocellus growth; CV similarity 94.1", supports: true}
+          - {file: docs/media/drosophila_serrata_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate beside the Schnakenberg patch", supports: true}
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [351, 394], note: "J0 radial mode, palette, GIF writer", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >
+          At fixed Du, λ(δ) shortens monotonically across seven factors from 1.03× to 1.35× onset
+          (self-test sweep_monotone). The three chronospecies are 2134, 2123 and 2102 nm.
+          Neighbor patches are integrated, not only plotted from the closed form.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [266, 326], note: "δ sweep and sechellia/silvestris integrations", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3203_drosophila_serrata_turing_wavelength_s0.lean, lines: [19, 26], note: "2102 < 2123 < 2134 and eight wavelengths in the patch", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >
+          Dispersion Pearson r = 0.99998 against reference 1.0 (RMSE 0.00169 against 0).
+          Orientation KS between plate and GIF is 0.071 against a 0.5 ceiling. Chronoseries
+          gap sechellia−serrata is 11.14 nm against a null of 0. The east-coast nm span is
+          reconstructed from the CHC-cline direction, not from a published wavelength table.
+          k_measured/k_max is the missing comparison (R1).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [504, 596], note: "measure_morphoeval values differ from their reference_value fields", supports: true}
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [438, 448], note: "12-bin orientation KS", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >
+          Governing and serrata CHC DOIs were checked on Crossref. The scout records an empty
+          OpenAlex hit for the combined query, then the direct DOI resolutions. Specimen SHA-256
+          is pinned. Wikimedia, iNaturalist, and GBIF did not supply a CC single-animal photo;
+          the gallery fallback is named as such.
+        evidence:
+          - {file: datasets/drosophila_serrata_turing_wavelength_s0/paper_citations.bib, lines: [1, 87], note: "Turing, Schnakenberg, Gierer–Meinhardt, Higgie, Howard, Chenoweth, Rundle, Frentiu", supports: true}
+          - {file: datasets/drosophila_serrata_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Slot 3203 territory and collision note versus the 92 µm sibling", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >
+          Each modelling step is a named function (jacobian, critical_delta, diffusivity, sigma_analytic,
+          sigma_rk2, simulate_patch, ocellus_field). The Lean integers are recomputed in integer_witness
+          and asserted in --self-test (fu = 937447, δ numerator 98855, positive margin).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [254, 264], note: "integer_witness matches Loop_3203", supports: true}
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [599, 645], note: "--self-test gates including r > 0.98 and r < 1", supports: true}
+      repro-package:
+        value: 88
+        rationale: >
+          --self-test verifies dataset SHA-256 pins, the dispersion fit, the ablation, GIF frame count
+          and resolution, and CV similarity. Seed 3203. Dependencies are numpy, scipy, Pillow, matplotlib.
+          Checkpoint commit does not yet contain these new paths.
+        evidence:
+          - {file: datasets/drosophila_serrata_turing_wavelength_s0/README.md, lines: [1, 55], note: "Invocation and scale/age statement", supports: true}
+          - {file: models/2026-delphi10000-drosophila-serrata-turing-wavelength-s0.py, lines: [86, 95], note: "SHA-256 pin check", supports: true}
+    remediation:
+      - "R1: Mark k_max (fastest linear mode) on the dispersion panel and report k_measured/k_max. k/k_c = 0.952 mixes the off-onset shift with FFT lattice quantization."
+      - "R2: No second assessor from another provider scored this pass."
+      - "R3: Put the 100 µm gallery-bar versus 2.123 µm model-wavelength disclaimer on the comparison figure."
