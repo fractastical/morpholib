@@ -1,0 +1,112 @@
+{
+  "sim_id": "delphi10000-danio-albolineatus-turing-wavelength-s0",
+  "slot": 3161,
+  "organism": "Danio albolineatus",
+  "common_name": "Pearl Danio (Uniform Interstripe)",
+  "taxonomy": "I. Enaima (Vertebrata) -> Pisces (Ichthyes) -> Danio",
+  "phenomenon_scale": {
+    "label": "37 µm",
+    "phenomenon_size_m": 3.686e-05,
+    "log10_size_m": -4.433,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "variant": "detail",
+    "structure": "Turing pigment stripe / ocellus wavelength in Danio albolineatus (37 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "Danionin Pigment Evolution Series",
+    "chronoseries": "2/5",
+    "predecessor": "Danio aesculapii",
+    "successor": "Danio margaritatus"
+  },
+  "governing_model": {
+    "name": "Schnakenberg reaction-diffusion",
+    "equations": [
+      "du/dt = div(D_u grad u) + a - u + u^2 v",
+      "dv/dt = div(D_v grad v) + b - u^2 v"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "boundary_conditions": "periodic on an 8 by 5 wavelength flank patch",
+    "parameters": {
+      "a": 0.12,
+      "b": 0.88,
+      "delta_factor_albolineatus": 1.22,
+      "aesculapii_inhibitor_anisotropy_alpha": 1.8,
+      "margaritatus_activator_shrink_beta": 1.55,
+      "margaritatus_delta_factor": 2.4,
+      "length_unit_m": 3.686e-05,
+      "grid": [96, 60],
+      "dt": 0.007,
+      "t_end": 32.0,
+      "seed": 3161
+    },
+    "negative_control": "D_u = D_v (equal diffusion) is linearly stable; noise decays."
+  },
+  "chronoseries_claim": {
+    "scale_note": "Comparisons are at the 37 µm cellular tier and age 0 Ma, not at the millimetre body-stripe scale.",
+    "predecessor_danio_aesculapii": "Inhibitor diffusivity is stretched along the anterior-posterior axis (alpha = 1.8) and compressed dorsoventrally. The dorsoventral mode is stable. The anterior-posterior mode is unstable at a longer wavelength and forms vertical bars.",
+    "focal_danio_albolineatus": "Isotropic diffusion at 1.22 times the critical inhibitor ratio. The fastest mode is tuned to 3.686e-05 m and its growth rate is several times smaller than either neighbour, so the flank remains a low-amplitude uniform interstripe.",
+    "successor_danio_margaritatus": "Activator diffusivity is reduced by 1.55 and the inhibitor ratio is raised to 2.40 times critical, which shortens the wavelength and places the kinetics in the spot regime."
+  },
+  "empirical_claims": [
+    {
+      "id": "nakamasu2009",
+      "claim": "Adjacent melanophores and xanthophores exclude one another, while melanophores require a more distant xanthophore population to differentiate and survive. That sign structure is the Turing condition.",
+      "doi": "10.1073/pnas.0808622106"
+    },
+    {
+      "id": "patterson2014",
+      "claim": "Danio albolineatus does not recruit the dense early xanthophore population that reiterates zebrafish stripes, and its adult pattern is the uniform interstripe rather than a stack of stripes.",
+      "doi": "10.1038/ncomms6299"
+    },
+    {
+      "id": "podobnik2020",
+      "claim": "Danio colour patterns range from horizontal stripes to vertical bars to spots, and kcnj13 divergence between D. rerio and D. aesculapii changes melanophore shape and interactions.",
+      "doi": "10.1038/s41467-020-20021-6"
+    },
+    {
+      "id": "inaba2012",
+      "claim": "Contact of a xanthophore dendrite transiently depolarizes a melanophore, a short-range interaction consistent with a cellular interaction length of tens of micrometres.",
+      "doi": "10.1126/science.1212821"
+    }
+  ],
+  "specimen": {
+    "file": "danio_albolineatus_turing_wavelength_s0_specimen.jpg",
+    "sha256": "f42000111fe647d8a7f85abadd6aa0812ef58e8ea337f55591224e492615a91b",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Danio_albolineatus.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Danio_albolineatus.jpg",
+    "license": "Public domain",
+    "artist": "Steven Coburn (Sc99cs), own work",
+    "width": 1024,
+    "height": 680,
+    "body_depth_over_sl_reference": 0.25003,
+    "body_depth_over_sl_source": "thompson/portfolio/results/fishbase_morphmet.json BDmax_over_SL.obs for Danio_albolineatus"
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing dispersion relation and critical wavenumber (Turing 1952).",
+      "Short-range melanophore-xanthophore exclusion and long-range melanophore dependence on xanthophores (Nakamasu et al. 2009).",
+      "D. albolineatus fails to build the reiterated zebrafish stripe stack (Patterson, Bain & Parichy 2014).",
+      "Vertical bars versus stripes versus spots across Danio, with kcnj13 implicated in the D. aesculapii bar pattern (Podobnik et al. 2020)."
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg parameters (a, b) = (0.12, 0.88) and the diffusion ratios that place this species, its predecessor, and its successor on opposite sides of the spot/bar regimes.",
+      "The identification of the assigned 3.686e-05 m detail scale with lambda_c of the pearl-danio fastest mode.",
+      "Numerical integration on a periodic 96 by 60 grid."
+    ],
+    "transfer_boundary": [
+      "Sister-species wavelengths are predictions of this diffusion change, not histological measurements at 37 µm.",
+      "One public-domain aquarium photograph is the specimen; it does not resolve a 37 µm mode (about 150 µm per pixel along the body)."
+    ],
+    "does_not_claim": [
+      "The sand, plants, and body outline are not produced by the reaction-diffusion equation.",
+      "The model is not Patterson & Parichy's cell-by-cell simulation and does not use their unpublished rate constants.",
+      "Equal-diffusion stability is a negative control, not a description of any Danio."
+    ]
+  }
+}

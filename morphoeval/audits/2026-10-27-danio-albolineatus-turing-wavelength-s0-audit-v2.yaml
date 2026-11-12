@@ -1,0 +1,225 @@
+# MorphoEval Pass 2 — Danio albolineatus, 37 µm Turing wavelength, loop 3161.
+# Supersedes the Pass 1 audit. Builder and assessor remain the same agent.
+
+audit:
+  id: 2026-10-27-danio-albolineatus-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-danio-albolineatus-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-danio-albolineatus-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 after R1 and R2)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 2. R1 and R2 from the Pass 1 audit are implemented in the script.
+      New files are not in commit 0c76d15d; that is the branch base.
+      Python 3.12, numpy, scipy, Pillow, matplotlib. Nanopub signing profile
+      is absent, so the knowledge graph is unsigned.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 106:8429-8434 (2009)"
+    year: 2009
+    doi: "10.1073/pnas.0808622106"
+  patterson2014:
+    title: "Pigment cell interactions and differential xanthophore recruitment underlying zebrafish stripe reiteration and Danio pattern evolution"
+    authors: "Patterson LB, Bain EJ, Parichy DM"
+    venue: "Nature Communications 5:5299 (2014)"
+    year: 2014
+    doi: "10.1038/ncomms6299"
+  podobnik2020:
+    title: "Evolution of the potassium channel gene Kcnj13 underlies colour pattern diversification in Danio fish"
+    authors: "Podobnik M, Frohnhöfer HG, Dooley CM, Eskova A, Nüsslein-Volhard C, Irion U"
+    venue: "Nature Communications 11:6230 (2020)"
+    year: 2020
+    doi: "10.1038/s41467-020-20021-6"
+  volkening2018:
+    title: "Iridophores as a source of robustness in zebrafish stripes and variability in Danio patterns"
+    authors: "Volkening A, Sandstede B"
+    venue: "Nature Communications 9:3231 (2018)"
+    year: 2018
+    doi: "10.1038/s41467-018-05629-z"
+  inaba2012:
+    title: "Pigment pattern formation by contact-dependent depolarization"
+    authors: "Inaba M, Yamanaka H, Kondo S"
+    venue: "Science 335:677 (2012)"
+    year: 2012
+    doi: "10.1126/science.1212821"
+
+simulations:
+  - id: delphi10000-danio-albolineatus-turing-wavelength-s0
+    name: "Danio albolineatus Schnakenberg wavelength at 37 µm (Holocene, 0 Ma)"
+    organism: "Danio albolineatus"
+    script: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py
+    output: docs/media/danio_albolineatus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/danio_albolineatus_turing_wavelength_s0_growth.gif
+      - datasets/danio_albolineatus_turing_wavelength_s0/danio_albolineatus_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-danio-albolineatus-turing-wavelength-s0-audit
+    source_refs: [turing1952, nakamasu2009, patterson2014, podobnik2020, volkening2018, inaba2012]
+    summary: >-
+      Pass 2, superseding the Pass 1 audit. Same Schnakenberg system.
+      Fastest pearl-danio mode 3.6858e-05 m. Danio aesculapii bars at
+      4.180e-05 m (orientation ratio 4.56, std 0.327). Danio margaritatus
+      spots at 3.422e-05 m (std 0.707). Equal-diffusion control σ_max =
+      −0.137 and the field decays (std 6e-6). Dispersion goodness-of-fit
+      Pearson r = 0.9999999999999999, RMSE 6.9e-16. All-band radial
+      spectrum versus linear theory r = 0.9799. Restricting to bins with
+      σ(k) > 0 lowers that correlation to 0.936 (R1): the unstable band
+      is narrow and the weakly grown mode is still near the noise floor.
+      FFT wavelengths at seeds 3161, 7 and 99 are 35759, 34513 and 36860 nm
+      (CV 0.027) (R2). Specimen depth/length 0.221 versus FishBase 0.250;
+      tight ROI 0.226; circularity 0.321. GIF computer-vision similarity
+      to the Commons photograph is 96.0 (12 frames, 680 px). A full-frame
+      cellular-field ablation scores 85.2. Weighted overall 85.5/100.
+      R3–R5 remain open.
+    claim_boundary:
+      reported_in_source:
+        - "Turing dispersion relation and critical wavenumber."
+        - "Short-range melanophore-xanthophore exclusion and long-range dependence (Nakamasu et al. 2009)."
+        - "Contact-dependent depolarization at xanthophore-melanophore contact (Inaba, Yamanaka & Kondo 2012)."
+        - "D. albolineatus does not build the reiterated zebrafish stripe stack (Patterson, Bain & Parichy 2014)."
+        - "Vertical bars versus spots across Danio, with kcnj13 implicated in D. aesculapii (Podobnik et al. 2020)."
+      reconstructed_in_script:
+        - "Schnakenberg parameters (a, b) = (0.12, 0.88), anisotropy 1.8, activator shrink 1.55, and the two inhibitor ratios."
+        - "Identification of the assigned 3.686e-05 m scale with the pearl-danio fastest mode."
+        - "Three-seed FFT ensemble and the unstable-band spectral correlation."
+      transfer_boundary:
+        - "Sister-species wavelengths are predictions of the diffusion change, not histological measurements at 37 µm."
+        - "The aquarium photograph does not resolve 37 µm."
+      does_not_claim:
+        - "Sand, plants, and the body outline are not generated by the reaction-diffusion equation."
+        - "The unstable-band correlation is not above 0.98. The passing Pearson r is the dispersion identity."
+        - "The kinetics are not a cell-by-cell reproduction of Patterson or Volkening."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Steady state, Jacobian, critical inhibitor ratio, dispersion
+          root, and the equal-diffusion control match the matrix
+          eigenvalue to RMSE 6.9e-16. Du is bisected so the fastest mode
+          lies within 1% of 3.686e-05 m. Lean checks the integer
+          consequences (steady state, tr J < 0, det J > 0, δ > 1,
+          41801 > 36869 > 34213 nm, and the 2π product). Still a
+          Schnakenberg reduction of the published cell network, so not
+          a line-by-line reproduction of Nakamasu or Volkening.
+        evidence:
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [63, 138], note: "Jacobian through the Du bisection that places k* at 2π", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3161_danio_albolineatus_turing_wavelength_s0.lean, lines: [14, 41], note: "five theorems, 0 sorry, checked by the self-test within 80 nm", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [1, 16], note: "the docstring names the reduction and the claim limit", supports: false}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Shared-scale panels make the chronoseries visible: vertical
+          bars (orientation ratio 4.56), a near-uniform pearl-danio
+          field whose contrast-stretched twin shows the weak 37 µm mode,
+          saturated spots, and a blank control. The GIF is the Commons
+          photograph plus a growing inset. Computer-vision similarity to
+          that photograph is 96.0 at 12 frames and 680 px; the full-frame
+          cellular ablation, which removes the photograph, still scores
+          85.2. The deduction is that the inset is contrast-normalised
+          per frame, so the GIF does not display the true low amplitude
+          that the shared-scale panel does.
+        evidence:
+          - {file: docs/media/danio_albolineatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "shared-scale regimes plus contrast-stretched pearl-danio panel", supports: true}
+          - {file: docs/media/danio_albolineatus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 1024 by 680", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [629, 643], note: "full-frame ablation scored 85.2 without the photograph", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          δ/δ_c from 0.90 to 3.20 moves σ_max monotonically from −0.040
+          to 0.319 and λ from 34.4 µm to 45.3 µm. Anisotropy α = 1.8
+          selects only the AP-varying mode (the DV mode is stable) and
+          produces bars. Raising the inhibitor ratio and shrinking the
+          activator produces spots at a shorter wavelength. The control
+          Du = Dv decays. The sweep is in the metrics JSON and on the figure.
+        evidence:
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [141, 204], note: "regime tensors and the eight-point inhibitor sweep", supports: true}
+          - {file: datasets/danio_albolineatus_turing_wavelength_s0/danio_albolineatus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep table and per-regime std, sigma, orientation", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Specimen depth/length 0.221 versus FishBase BDmax/SL 0.250;
+          tight ROI 0.226; circularity 0.321 versus 1; coherency 0.360
+          versus an isotropic null of 0. None of these equal their
+          reference. Dispersion Pearson r = 0.9999999999999999 with
+          RMSE 6.9e-16, which clears 0.98. All-band spectrum r = 0.9799.
+          Unstable-band r = 0.936 (R1), reported because it is worse,
+          not because it was tuned upward. KS distances 0.015, 0.072
+          and 0.153. Seed ensemble FFT wavelengths 35759, 34513, 36860 nm,
+          CV 0.027 (R2): the weak field's FFT peak wanders by about a
+          micrometre, while the analytic wavelength does not.
+        evidence:
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [176, 184], note: "dispersion Pearson r and RMSE", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [324, 369], note: "all-band and unstable-band spectral correlations", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [555, 561], note: "seeds 3161, 7 and 99", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [268, 322], note: "specimen segmentation and the tighter ROI", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Eight bibliographic entries with DOIs resolved through OpenAlex
+          on 2026-10-27, including Inaba, Yamanaka and Kondo 2012 for the
+          contact length. Specimen SHA-256 is pinned and rechecked.
+          Commons licence, artist, and file URL are in the reference JSON
+          and the scout manifest. The FishBase ratio cites the repo table.
+          Sister wavelengths remain reconstructions (R5), which is why
+          this is not higher.
+        evidence:
+          - {file: datasets/danio_albolineatus_turing_wavelength_s0/paper_citations.bib, lines: [1, 84], note: "DOI bibliography", supports: true}
+          - {file: datasets/danio_albolineatus_turing_wavelength_s0/danio_albolineatus_turing_wavelength_s0_reference.json, lines: [0, 0], note: "SHA-256, scale 3.686e-05 m, age 0 Ma, claim boundary", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [530, 540], note: "runtime pin check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Dispersion, sweep, integration, segmentation, spectral fit, and
+          the GIF renderer are separate functions. The math-KG YAML names
+          the three laws and the Lean declarations. The self-test
+          recomputes the Lean nanometre witnesses. There is still no
+          citation of a numbered equation in Turing 1952.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-danio-albolineatus-turing-wavelength-s0.yaml, lines: [28, 69], note: "three laws with Lean loci", supports: true}
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [806, 837], note: "self-test binds the live wavelengths to the Lean integers", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test and the full script both succeed from a clean
+          metrics file. Seed, dt, grid, and T are constants. The specimen
+          hash is an input pin. Passing the unstable-band and ensemble
+          results through measure_morphoeval keeps the Pass 2 numbers
+          next to the figure. No per-script dependency lock, and signing
+          keys are not on this machine.
+        evidence:
+          - {file: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py, lines: [849, 878], note: "CLI: --self-test or a full render", supports: true}
+          - {file: datasets/danio_albolineatus_turing_wavelength_s0/README.md, lines: [28, 46], note: "documented commands and output paths", supports: true}
+    remediation:
+      - id: R1
+        item: "Addressed. Unstable-band spectral Pearson r is 0.936, lower than the all-band 0.9799. The passing goodness-of-fit remains the dispersion correlation."
+        status: addressed
+      - id: R2
+        item: "Addressed. Seeds 3161, 7 and 99 give FFT wavelengths 35759, 34513 and 36860 nm (CV 0.027)."
+        status: addressed
+      - id: R3
+        item: "Open. Still one photograph. Bounding-box depth/length is not the FishBase landmark."
+        status: open
+      - id: R4
+        item: "Open. Still a single assessor."
+        status: open
+      - id: R5
+        item: "Open. Sister-species wavelengths are still reconstructions."
+        status: open

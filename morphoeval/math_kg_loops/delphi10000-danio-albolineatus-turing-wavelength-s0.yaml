@@ -1,0 +1,69 @@
+sim_id: delphi10000-danio-albolineatus-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: "1. Chemical Turing / RD"
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+organism: Danio albolineatus
+common_name: Pearl Danio (Uniform Interstripe)
+phenomenon_size_m: 3.686e-05
+log10_size_m: -4.433
+size_human: "37 µm"
+scale_tier: 4_cellular_10um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Danio albolineatus (37 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Danionin Pigment Evolution Series
+chronoseries:
+  index: "2/5"
+  predecessor: Danio aesculapii
+  successor: Danio margaritatus
+model_spec:
+  model: "Schnakenberg RD (Turing 1952 dispersion; Nakamasu 2009 melanophore–xanthophore interactions) at the 37 µm cellular wavelength"
+  kinetics: "f = a - u + u^2 v; g = b - u^2 v"
+  a: 0.12
+  b: 0.88
+  delta_factor_albolineatus: 1.22
+  aesculapii_inhibitor_anisotropy: 1.80
+  margaritatus_activator_shrink: 1.55
+  margaritatus_delta_factor: 2.40
+  domain_wavelengths: [8.0, 5.0]
+  grid_resolution: [96, 60]
+  dt: 0.007
+  t_end: 32.0
+  seed: 3161
+  boundary: periodic
+  length_unit_m: 3.686e-05
+  inputs:
+    - datasets/danio_albolineatus_turing_wavelength_s0/danio_albolineatus_turing_wavelength_s0_specimen.jpg
+    - datasets/danio_albolineatus_turing_wavelength_s0/danio_albolineatus_turing_wavelength_s0_reference.json
+    - datasets/danio_albolineatus_turing_wavelength_s0/paper_citations.bib
+    - datasets/danio_albolineatus_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Turing dispersion determinant
+    formula: "det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)"
+    lean_decl: MathOfBiology.Loop_3161.homogeneous_stable_without_diffusion
+    lean_theorem: MathOfBiology.Loop_3161.homogeneous_stable_without_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3161_danio_albolineatus_turing_wavelength_s0.lean#L18-L22
+    variables: "f_u, f_v, g_u, g_v at the Schnakenberg steady state (a, b) = (0.12, 0.88); scale L = 37 µm"
+    role: "Homogeneous state of the pearl-danio kinetics is stable in the absence of diffusion (tr J < 0, det J > 0), so any pattern requires diffusive instability."
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Nakamasu et al. (2009) DOI:10.1073/pnas.0808622106"
+    code_locus: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py
+  - law_name: Critical wavenumber k_c
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v);  lambda_c = 2 pi / k_c"
+    lean_decl: MathOfBiology.Loop_3161.wavenumber_wavelength_product
+    lean_theorem: MathOfBiology.Loop_3161.wavenumber_wavelength_product
+    lean_locus: morphoeval/lean/loops/Loop_3161_danio_albolineatus_turing_wavelength_s0.lean#L36-L40
+    variables: "D_u solved so the fastest-growing mode of Danio albolineatus has lambda_c = 3.686e-05 m"
+    role: "Selects the 37 µm cellular wavelength of the uniform-interstripe species."
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Patterson, Bain & Parichy (2014) DOI:10.1038/ncomms6299"
+    code_locus: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py
+  - law_name: Chronoseries wavelength order
+    formula: "lambda(D. aesculapii bars) > lambda(D. albolineatus) > lambda(D. margaritatus spots)"
+    lean_decl: MathOfBiology.Loop_3161.chronoseries_wavelength_order
+    lean_theorem: MathOfBiology.Loop_3161.chronoseries_wavelength_order
+    lean_locus: morphoeval/lean/loops/Loop_3161_danio_albolineatus_turing_wavelength_s0.lean#L30-L34
+    variables: "41801 nm > 36869 nm > 34213 nm at age 0 Ma"
+    role: "At 37 µm the predecessor lengthens the AP-varying bar mode by anisotropic inhibitor spread; the successor shortens the spot mode."
+    source_citation: "Podobnik et al. (2020) DOI:10.1038/s41467-020-20021-6; Volkening & Sandstede (2018) DOI:10.1038/s41467-018-05629-z"
+    code_locus: models/2026-delphi10000-danio-albolineatus-turing-wavelength-s0.py
