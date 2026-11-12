@@ -1,0 +1,213 @@
+# Pass 2 of loop 3145. Scores the committed portrait render and the
+# like-with-like fastest-mode sweep. Supersedes the pass-1 audit.
+audit:
+  id: 2026-10-27-charnia-masoni-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-charnia-masoni-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-charnia-masoni-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, primary assessor, pass 2)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 96a891cfffcbf7fb81617c1df76c424d1d7359a5
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: >-
+      Commit 96a891cf contains the script, the Lean proofs, the reference
+      files and the CC BY-SA Tübingen cast. A second company did not score
+      this audit. Nanopub signing was not available (no ~/.nanopub/profile.yml).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  ford1958:
+    title: "Pre-Cambrian fossils from Charnwood Forest"
+    authors: "Ford TD"
+    venue: "Proc. Yorkshire Geol. Soc. 31:211-217 (1958)"
+    doi: 10.1144/pygs.31.3.211
+  dunn2021:
+    title: "The developmental biology of Charnia and the eumetazoan affinity of the Ediacaran rangeomorphs"
+    authors: "Dunn FS, Liu AG, Grazhdankin DV and others"
+    venue: "Science Advances 7:eabe0291 (2021)"
+    doi: 10.1126/sciadv.abe0291
+  brasier2012:
+    title: "The architecture of Ediacaran Fronds"
+    authors: "Brasier MD, Antcliffe JB, Liu AG"
+    venue: "Palaeontology 55:1105-1124 (2012)"
+    doi: 10.1111/j.1475-4983.2012.01164.x
+  hoyalcuthill2014:
+    title: "Fractal branching organizations of Ediacaran rangeomorph fronds reveal a lost Proterozoic body plan"
+    authors: "Hoyal Cuthill JF, Conway Morris S"
+    venue: "PNAS 111:13122-13126 (2014)"
+    doi: 10.1073/pnas.1408542111
+  antcliffe2007:
+    title: "Charnia and sea pens are poles apart"
+    authors: "Antcliffe JB, Brasier MD"
+    venue: "J. Geol. Soc. London 164:49-51 (2007)"
+    doi: 10.1144/0016-76492006-080
+
+simulations:
+  - id: delphi10000-charnia-masoni-turing-wavelength-s0
+    name: "Charnia masoni apical Turing wavelength at 140 µm (565 Ma)"
+    organism: "Charnia masoni"
+    domain: morphogenesis
+    script: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+    also:
+      - morphoeval/lean/loops/Loop_3145_charnia_masoni_turing_wavelength_s0.lean
+      - datasets/charnia_masoni_turing_wavelength_s0/charnia_masoni_turing_wavelength_s0_reference.json
+    output: docs/media/charnia_masoni_turing_wavelength_s0_comparison.png
+    status: evaluated
+    summary: >-
+      Pass 2 scores the committed portrait chevron render of Charnia masoni at
+      the 140.4 µm determinant-critical wavelength (565 Ma). Euler σ(k) matches
+      the analytic dispersion at Pearson r 0.9984. The fastest mode is 167.44 µm.
+      The diffusivity sweep matches at r 1.000 (RMSE 3.26 µm). Canonical image
+      similarity of the 12-frame GIF against the Tübingen cast is 89.5. Equal
+      diffusion suppresses the pattern (σ_max -0.900).
+    supersedes_audit_id: 2026-10-27-charnia-masoni-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, ford1958, dunn2021, brasier2012, hoyalcuthill2014, antcliffe2007]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber. Schnakenberg 1979: the a - u + u^2 v kinetics integrated here."
+        - "Ford 1958 named Charnia masoni. Antcliffe and Brasier 2007 and Brasier, Antcliffe and Liu 2012 describe glide reflection rather than a sea-pen bilateral body. Dunn et al. 2021 argue for apical growth and a stem-eumetazoan affinity. Hoyal Cuthill and Conway Morris 2014 quantify fractal branching."
+      reconstructed_in_script:
+        - "Parameters (a, b, D_u, D_v) = (0.14, 0.93, 0.062, 1.35). The determinant-critical wavelength is scaled to 1.404e-4 m. Above onset the fastest mode is longer: analytic λ_m = 167.44 µm."
+        - "Explicit-Euler σ(k) versus the eigenvalue formula (Pearson r = 0.9984, RMSE = 0.020). Equal diffusivities give σ_max = -0.900. Scaling both diffusivities moves λ with Pearson r = 1.000 and RMSE 3.26 µm."
+        - "A portrait chevron at 58°, the maximum of a four-angle CV probe (48°→87.0, 58°→89.5, 68°→84.5, 78°→83.6). Vertical gradient fraction versus commanded angle has Pearson r = 0.995."
+      transfer_boundary:
+        - "The cast is a centimetre-scale relief frond. The chemical wavelength is 140 µm. Only outline, orientation and a stylized chevron cross that gap. The photograph does not resolve 140 µm."
+        - "Cohort words 'pigment stripe' and 'ocellus' name the Turing pattern class. The fossil is not evidence of pigment or eyes."
+      does_not_claim:
+        - "Does not claim Ediacaran tissue ran these kinetics, or that 140.4 µm was measured on the holotype."
+        - "Does not claim a pre-565 Ma chronospecies or a Cambrian successor. The wavenumber ratio to the 6.322 mm organ-scale sibling is 45.03, which is a scale comparison, not a copied parameter set."
+        - "Does not generate the higher-order fractal branching of Hoyal Cuthill and Conway Morris 2014. One wavelength is embedded as chevrons."
+        - "Nanopublications were not signed. No profile exists at ~/.nanopub/profile.yml."
+    needs:
+      - id: portrait-chevron
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Retarget the pass-1 landscape disk at 85° to the portrait 58° chevron."
+        status: resolved
+      - id: like-with-like-sweep
+        need_type: parameter_sweep
+        target_dimension: morphometric-validation
+        description: "Compare fastest-mode wavelengths to each other instead of mixing k_c with argmax σ."
+        status: resolved
+      - id: visible-control
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Show the equal-diffusion control as a blank frond, not only as a curve."
+        status: resolved
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The committed script integrates Schnakenberg kinetics, the Turing Jacobian, k_c^2 = (D_v f_u + D_u g_v)/(2 D_u D_v), and σ(k) as the larger eigenvalue. Euler growth on 12 wavenumbers matches the eigenvalue formula (r = 0.9984, RMSE = 0.0201). Du = Dv yields σ_max = -0.900 and is drawn as a branch-free oval. The reduction is a 1D apical row plus a chevron chart, not a curved-tissue PDE, so this is not a full 2D saturation study."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [83, 142]
+            supports: true
+            note: "Jacobian (Eqs. 3–4) and analytic σ(k) (Eq. 7)."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [144, 191]
+            supports: true
+            note: "Euler probe and the 12-point dispersion comparison, including the equal-diffusion control."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [555, 557]
+            supports: true
+            note: "Control panel is the zero-amplitude frond."
+      specimen-match:
+        value: 84
+        rationale: "The committed GIF is 12 frames at 640×1280. Its last frame scores 89.5 against the Tübingen cast on the canonical orientation / radial-FFT / coherency comparator. The panel shows the cast beside an upward chevron oval at 58°. It is a single-wavelength stylization: the cast's irregular outline, holdfast and higher-order rangeomorph elements are not reproduced, which is why this is not a higher score."
+        evidence:
+          - file: docs/media/charnia_masoni_turing_wavelength_s0_growth.gif
+            lines: [0, 0]
+            supports: true
+            note: "12-frame portrait growth GIF, minimum side 640 px."
+          - file: docs/media/charnia_masoni_turing_wavelength_s0_comparison.png
+            lines: [0, 0]
+            supports: true
+            note: "Cast, 58° chevrons, and the suppressed-pattern control."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [54, 58]
+            supports: true
+            note: "Portrait canvas and the CV-maximising angle of 58°."
+      parameter-expressivity:
+        value: 90
+        rationale: "Scaling D_u and D_v together by {0.35, 0.6, 1, 1.7, 2.8, 4.5} moves the fastest-mode wavelength on a 1:1 line (Pearson r = 1.000, RMSE 3.26 µm). Commanded chevron angle from 15° to 85° moves the vertical share of Sobel energy monotonically (Pearson r = 0.995). The operating angle is an interior point of the CV probe, not the edge of the search."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [245, 275]
+            supports: true
+            note: "fastest_k and the diffusivity sweep."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [365, 399]
+            supports: true
+            note: "vertical_gradient_fraction and the angle sweep."
+      morphometric-validation:
+        value: 86
+        rationale: "Fastest-mode λ_m = 167.44 µm against the determinant-critical reference 140.4 µm (they differ because the run is above onset). Cast-versus-render orientation histograms have L1 = 0.283 and KS = 0.093. Slab occupancy profiles correlate at r = 0.800. Structure-tensor coherency is 0.456 on the cast and 0.380 on the render. No population of specimens and no direct 140 µm measurement on the fossil are claimed."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [591, 670]
+            supports: true
+            note: "measure_morphoeval rows: wavelength, both Pearson r values, KS, coherency, occupancy."
+          - file: datasets/charnia_masoni_turing_wavelength_s0/charnia_masoni_specimen.jpg
+            lines: [0, 0]
+            supports: true
+            note: "Segmented cast used for the orientation and occupancy measurements."
+      source-traceability:
+        value: 92
+        rationale: "DOIs for Turing, Schnakenberg, Ford, Dunn et al. 2021, Brasier et al. 2012, Hoyal Cuthill and Conway Morris 2014, and Antcliffe and Brasier 2007 were resolved on Crossref. The cast is File:Charnia masoni Charnwood.JPG by Ghedoghedo, 2013-08-28, CC BY-SA 3.0, SHA-256 c7e8d470af175675bb833454640f57719a042ccad2afa6f7662dd8d3d8158333. The synthetic species-gallery JPEG was rejected."
+        evidence:
+          - file: datasets/charnia_masoni_turing_wavelength_s0/charnia_masoni_turing_wavelength_s0_reference.json
+            lines: [1, 40]
+            supports: true
+            note: "Scale 0.0001404 m, age 565 Ma, and the specimen pin."
+          - file: datasets/charnia_masoni_turing_wavelength_s0/README.md
+            lines: [1, 40]
+            supports: true
+            note: "Licence, creator, and the explicit rejection of the synthetic gallery image."
+      code-traceability:
+        value: 88
+        rationale: "Module docstring Eqs. 1–8 name the kinetics, k_c, σ(k) and the glide shift. lean_integers_agree checks the same integers as Loop_3145 (f_u = 7383/10000, numerator 1350*7383 - 11449*62 > 0, wavenumber ratio strictly between 45 and 46). The chevron chart is labelled as an embedding, not as a second PDE."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [1, 20]
+            supports: true
+            note: "Numbered equations and the source list."
+          - file: morphoeval/lean/loops/Loop_3145_charnia_masoni_turing_wavelength_s0.lean
+            lines: [14, 44]
+            supports: true
+            note: "Five theorems, no sorry, namespace MathOfBiology.Loop_3145."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [413, 423]
+            supports: true
+            note: "Runtime check that the Python Jacobian still matches the Lean integers."
+      repro-package:
+        value: 90
+        rationale: "python3 models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py --self-test checks r > 0.98, a decaying control, and the pins. Seed 3145. Dataset digests are hardcoded and repeated in the reference JSON. Dependencies are the repository scientific stack (numpy, scipy, Pillow, matplotlib). The GIF and PNG are regenerated by the same command."
+        evidence:
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [61, 81]
+            supports: true
+            note: "PINNED digests and verify_pinned."
+          - file: models/2026-delphi10000-charnia-masoni-turing-wavelength-s0.py
+            lines: [513, 529]
+            supports: true
+            note: "assert_pass gates used by --self-test and by the full render."
