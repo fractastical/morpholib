@@ -1,0 +1,165 @@
+# Pass 1 — Argonauta argo 95 µm ocellus, smooth critical mode.
+# Builder and assessor are the same agent (grok-4.7). No second assessor.
+# The judged animation is the smooth-control GIF. Grain calibration is open.
+
+audit:
+  id: 2026-10-27-argonauta-argo-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent round; second assessor not run)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0e502ec97af571f7d94f76469868477feaaf61eb
+    note: >-
+      Slot 3121 science commit. Python 3 with numpy, scipy, Pillow, matplotlib.
+      OpenAlex returned HTTP 429; Crossref DOIs were checked on 2026-10-27.
+      ~/.nanopub/profile.yml is absent, so this audit is not signed.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+  finn2010:
+    title: "The argonaut shell: gas-mediated buoyancy control in a pelagic octopus"
+    authors: "Finn JK, Norman MD"
+    venue: "Proceedings of the Royal Society B 277:2967-2971 (2010)"
+    doi: 10.1098/rspb.2010.0155
+
+simulations:
+  - id: delphi10000-argonauta-argo-turing-wavelength-s0
+    name: "Argonauta argo Schnakenberg critical mode at the 95 µm Holocene tier"
+    organism: "Argonauta argo"
+    script: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py
+    output: datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_smooth_control.gif
+    extra_outputs:
+      - datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, gierer1972, finn2010]
+    summary: >-
+      Pass 1 judges the smooth critical-mode animation (12 frames, 800×600).
+      Schnakenberg parameters a=0.10, b=0.90, D_u=1, D_v=18 give trace=-0.2,
+      det=1, k_c=0.610, σ(k_c)=0.200, and equal-diffusion σ_max=-0.100.
+      The plate's radial profile matches the mode at Pearson r=0.99934
+      (RMSE 0.00550). Measured inhibitory halo is 85.87 µm against the
+      95 µm tier label. Smooth-control image CV against the plate is 80.2.
+      Overall 81.3/100. Grain amplitude, grained coherency, and a second
+      assessor are still open.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a finite critical wavenumber when the inhibitor out-diffuses the activator and the reaction Jacobian is stable without diffusion."
+        - "Gierer & Meinhardt (1972) produce spots by local activation and long-range inhibition."
+        - "Finn & Norman (2010) describe the female Argonauta argo brood shell as a buoyancy organ."
+      reconstructed_in_script:
+        - "A radial critical mode whose period is the plate's peak-to-peak spacing (170.03 µm) and whose halo (85.87 µm) is compared with the 95 µm tier."
+        - "The length unit (16.51 µm) that places analytical k_c on that measured period."
+      transfer_boundary:
+        - "Kondo & Asai (1995) is a pigment reaction-diffusion wave in a fish, not a measurement on Argonauta."
+      does_not_claim:
+        - "Finn & Norman did not measure a 95 µm Turing wavelength."
+        - "The gallery plate is not a raw camera micrograph and is not one of their figures."
+        - "Diffusivities are not independently measured chemical constants."
+        - "There is no sampled predecessor chronospecies; none is invented."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          The Jacobian, quadratic dispersion, critical wavenumber, and
+          equal-diffusion ablation match the Schnakenberg linearisation,
+          and the matrix-eigenvalue cross-check has Pearson r = 1.
+          Five Lean theorems encode this slot's scaled integers
+          (trace -20, det 10000, Turing margin 1340² > 720000).
+          Deduction: D_u and D_v are chosen so k_c sits on the measured
+          period; they are not published Argonauta diffusivities, and the
+          radial profile is a fitted critical-mode shape rather than a
+          long free 2D integration.
+        evidence:
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [88, 123], note: "Jacobian, sigma_max, and k_c", supports: true}
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [261, 296], note: "dispersion bundle, ablation, gamma sweep", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3121_argonauta_argo_turing_wavelength_s0.lean, lines: [10, 43], note: "five theorems, zero sorry", supports: true}
+      specimen-match:
+        value: 74
+        rationale: >-
+          The smooth control is recognisably one brown ocellus, and the
+          radial means overlie the plate (r=0.99934). Computer-vision
+          similarity of that GIF to the plate is 80.2. The field is
+          perfectly axisymmetric and has none of the plate's grain or
+          caption, so it is not a close pixel-level match. This score
+          is for the smooth GIF only.
+        evidence:
+          - {file: datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_smooth_control.gif, lines: [0, 0], note: "12-frame smooth amplitude rise, 800x600, CV 80.2", supports: true}
+          - {file: datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "cv_smooth_control 80.2 versus later cv_selected 86.2", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Raising γ from 0.55 to 2.4 shortens λ_c from 229.3 µm to 109.8 µm,
+          monotone and consistent with λ ∝ γ^(-1/2). Equal diffusion
+          (D_u = D_v) drops σ_max from +0.200 to -0.100. The grain-amplitude
+          sweep is computed in the same run but is not what this pass judges.
+        evidence:
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [261, 296], note: "gamma sweep and equal-diffusion sigma", supports: true}
+          - {file: datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "lambda_um sweep 229.27 to 109.75", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          Halo 85.87 µm versus tier 95 µm, Pearson r 0.99934, RMSE 0.00550,
+          residual CV 0.0118, KS D 0.063, and a second radial window
+          (halo 85.29 µm, r 0.99957). Shell-photo rib fraction 0.088 versus
+          ocellus period fraction 0.234. Deduction: structure-tensor
+          coherency of the smooth field is 0.998 against the plate's 0.203,
+          so the segmentation comparison is not yet on the delivered texture.
+        evidence:
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [298, 351], note: "radial fit, KS, halo, shell transect, coherency", supports: true}
+          - {file: datasets/argonauta_argo_turing_wavelength_s0/argonauta_argo_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "halo_um 85.87, coherency_model 0.998, coherency_specimen 0.203", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Turing 1952, Gierer & Meinhardt 1972, and Finn & Norman 2010
+          were confirmed on Crossref. The plate and the CC0 shell
+          (Di Turner, iNaturalist 15508745) are SHA-256 pinned and checked
+          at runtime. OpenAlex was rate-limited (HTTP 429); that gap is
+          recorded in the scout manifest rather than filled with invented hits.
+        evidence:
+          - {file: datasets/argonauta_argo_turing_wavelength_s0/paper_citations.bib, lines: [1, 63], note: "DOIs for Turing, Gierer-Meinhardt, Murray, Kondo, Finn", supports: true}
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [74, 86], note: "runtime SHA-256 check against the reference JSON", supports: true}
+      code-traceability:
+        value: 82
+        rationale: >-
+          The module docstring states the PDE, the steady state, k_c, and
+          the claim boundary, and each of those is a named function.
+          Lean declarations name the same scaled integers. Deduction: there
+          is no line-by-line map onto numbered equations of Turing 1952.
+        evidence:
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [1, 42], note: "docstring equations and claim limits", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-argonauta-argo-turing-wavelength-s0.yaml, lines: [1, 54], note: "math KG points at the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          Seed 3121, --self-test, and pinned input hashes. The self-test
+          passed (r=0.99934, ablation σ_max=-0.100, age 0 Ma, size
+          9.48e-05 m). Deduction: dependency versions are the environment's,
+          not a per-script lock, and the pass-1 GIF is the smooth control
+          rather than the grain-calibrated deliverable.
+        evidence:
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [669, 700], note: "self_test and main", supports: true}
+          - {file: models/2026-delphi10000-argonauta-argo-turing-wavelength-s0.py, lines: [56, 67], note: "slot parameters and seed", supports: true}
+    remediation:
+      - "R1: Sweep procedural grain amplitude and keep the value that raises CV similarity of the growth GIF; the smooth control scores 80.2."
+      - "R2: Recompute structure-tensor coherency on the grained frame. The smooth field's coherency (0.998) is not comparable to the plate (0.203)."
+      - "R3: Independent second assessor. This round is builder-scored."
+      - "R4: Nanopublication signing. ~/.nanopub/profile.yml is not present; do not invent a signature."
+      - "R5: The pattern target is one gallery plate (n=1), not a population of Argonauta ocelli."
