@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg Turing wavelength of Gasterosteus doryssus_early at 33 µm (10.02 Ma) — MorphoEval overall 84.5/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1. Periodic Schnakenberg field on a 280 µm patch with D_u = 8.204 µm² and D_v/D_u = 12.277, chosen so argmax σ(k) sits at 33.01 µm against the assigned λ_c = 32.86 µm (3.286e-05 m) at 10.02 Ma. Nonlinear FFT wavelength 33.87 µm. Linearized dispersion Pearson r = 0.9947, RMSE = 0.0259, KS = 0.182. Equal-diffusion ablation std ratio 2.16e-4. D_u sweep is monotonic from 27.65 µm to 41.71 µm. Gallery ocellus high-pass band measures 81.08 µm and is reported as a different length. GIF CV similarity against that photograph is 85.9 (12 frames, 640×480). Successor doryssus_mid λ is analytic only (41.71 µm). Overall 84.5/100 (faithfulness 83.1, reproducibility 87.6); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d; environment: python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0. Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 80, Parameter expressivity 84, Morphometric validation 84, Source and data traceability 90, Code-to-model traceability 84, Reproducibility package 88. Output judged: docs/media/gasterosteus_doryssus_early_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py at 0c76d15d, image/png, 331153 B, 1512×984 px, artifact_sha256 d2172aa3837f97872586cc97d88a282113f4a76bbe3eb225414e55a1258b4d19 (sha256 d2172aa3837f97872586cc97d88a282113f4a76bbe3eb225414e55a1258b4d19), spec_fingerprint 7da029c4116b272894d7e1440005167263445ac99716f78586b6bac5b2bee85e. Dual provenance: spec_fingerprint: 7da029c4116b272894d7e1440005167263445ac99716f78586b6bac5b2bee85e; artifact_sha256: d2172aa3837f97872586cc97d88a282113f4a76bbe3eb225414e55a1258b4d19. Claim boundary: reported_in_source: Turing (1952) dispersion relation and the critical wavenumber of a two-species reaction-diffusion system. | Schnakenberg (1979) kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v. | Hunt, Bell & Travis (2008) and Bell, Travis & Blouw (2006): Truckee Formation G. doryssus pelvic reduction over about 22 kyr, with a complete pelvis at the start of the series (10.02 Ma in this slot's chronology). | Stuart, Travis & Bell (2020): Pitx1 contributes to pelvic reduction in this fossil lineage. | Nakamasu et al. (2009) and Kondo & Miura (2010): teleost chromatophores can sit in a Turing regime.; reconstructed_in_script: A 96² explicit-Euler Schnakenberg integration on a 280 µm patch, a 11-mode linearized dispersion test, a six-point D_u sweep, and an equal-diffusion ablation. | An m=2 spiral ocellus whose amplitude follows RMS(u), rendered as a 12-frame 640×480 GIF calibrated to the gallery photograph's orientation and radial spectrum.; transfer_boundary: The 32.86 µm length is the Delphi cellular-detail assignment. Bell, Hunt, and Stuart did not publish a pigment spacing. | Nakamasu/Kondo zebrafish chromatophore kinetics are not re-fit; a=0.062 and b=0.948 are a Jacobian that places the fastest mode at this wavelength. | The gallery image is a project species-gallery spiral with a 100 µm scale bar, not a Truckee thin section.; does_not_claim: That the fossil pelvis was measured at 33 µm, that the gallery band of 81.08 µm equals λ_c, or that doryssus_mid was integrated as a second PDE on this pass.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: R1: Integrate the successor (doryssus_mid) Schnakenberg field at D_u scaled by (41.50/32.86)^2 and report its FFT wavelength next to the analytic 41.71 µm. Pass 1 only evaluates the dispersion law.",
+            "remediation needed: R2: Repeat the nonlinear 280 µm patch at four seeds and report the coefficient of variation of the selected wavelength.",
+            "remediation needed: R3: Sweep the diffusion ratio D_v/D_u at fixed D_u. Pass 1 sweeps D_u only.",
+            "remediation needed: R4: A second assessor from another provider has not scored this pass." ;
+        pk:hasScore "0.845"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second provider on this pass)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1038/s41559-020-01287-x>,
+            <https://doi.org/10.1073/pnas.0808622106>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1111/j.1558-5646.2007.00310.x>,
+            <https://doi.org/10.1126/science.1179047>,
+            <https://doi.org/10.1666/05026.1> .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1038/s41559-020-01287-x> dct:date "2020"^^xsd:gYear ;
+        dct:title "Inferred genetic architecture underlying evolution in a fossil stickleback lineage" .
+    <https://doi.org/10.1073/pnas.0808622106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1111/j.1558-5646.2007.00310.x> dct:date "2008"^^xsd:gYear ;
+        dct:title "Evolution toward a new adaptive optimum: phenotypic evolution in a fossil stickleback lineage" .
+    <https://doi.org/10.1126/science.1179047> dct:date "2010"^^xsd:gYear ;
+        dct:title "Reaction-diffusion model as a framework for understanding biological pattern formation" .
+    <https://doi.org/10.1666/05026.1> dct:date "2006"^^xsd:gYear ;
+        dct:title "Inferring natural selection in a fossil threespine stickleback" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Schnakenberg Turing wavelength of Gasterosteus doryssus_early at 33 µm (10.02 Ma) — MorphoEval overall 84.5/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:53:27Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
