@@ -1,0 +1,143 @@
+audit:
+  id: 2026-10-27-drosophila-ananassae-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-ananassae-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-ananassae-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 builder-assessor, pass 2 (no second assessor on this run)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 94b693bd2928b4d8996239b3f400b320fcf30723
+    note: "Pass 2 adds the diffusion-scale sweep, ratio sweep, integrated ablations, and plate-versus-render segmentation. publisher_orcid is the creator URI already used on this repository's MorphoEval nanopubs. ~/.nanopub/profile.yml is absent, so these nanopubs are not signed. Lean was not kernel-executed."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    venue: "Kybernetik"
+    doi: "10.1007/BF00289234"
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science"
+    doi: "10.1126/science.1179047"
+  genomes2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Drosophila 12 Genomes Consortium"
+    venue: "Nature"
+    doi: "10.1038/nature06341"
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel, N., Prud'homme, B., Wittkopp, P. J., Kassner, V. A. and Carroll, S. B."
+    venue: "Nature"
+    doi: "10.1038/nature03235"
+  ready1976:
+    title: "Development of the Drosophila retina, a neurocrystalline lattice"
+    authors: "Ready, D. F., Hanson, T. E. and Benzer, S."
+    venue: "Dev. Biol."
+    doi: "10.1016/0012-1606(76)90225-6"
+  wittkopp2003:
+    title: "Evolution in black and white: genetic control of pigment patterns in Drosophila"
+    authors: "Wittkopp, P. J., Carroll, S. B. and Kopp, A."
+    venue: "Trends Genet."
+    doi: "10.1016/S0168-9525(03)00194-X"
+simulations:
+  - id: delphi10000-drosophila-ananassae-turing-wavelength-s0
+    name: "Drosophila ananassae Turing wavenumber at 2.1 µm (Holocene, 0 Ma)"
+    organism: "Drosophila ananassae"
+    script: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py
+    output: docs/media/drosophila_ananassae_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-ananassae-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo2010, genomes2007, gompel2005, ready1976, wittkopp2003]
+    summary: >-
+      Pass 2 keeps the Schnakenberg field (a=0.11, b=1.15, Dv/Du=19.7) at 2.106 µm.
+      Scaling both diffusivities by s² moves the FFT wavelength with the linear
+      prediction (Pearson r = 0.99483, RMSE = 8.05e-8 m, KS = 0.167, six scales).
+      Holding Du fixed, λ rises from 1.75 µm at Dv/Du = 8 to 2.26 µm at Dv/Du = 28,
+      and σ changes from negative to positive across that grid. Equal diffusion and
+      linear kinetics, integrated for 2000 steps, decay (std ratios 2.0e-4 and
+      6.5e-9) while the nominal system grows (1.73). The plate and the GIF last
+      frame are segmented separately: circularity 0.136 versus 0.018, gray-level
+      KS 0.222. Computer-vision similarity of the 12-frame 960×640 GIF to the
+      plate is 94.3.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation and Schnakenberg (1979) kinetics."
+        - "D. ananassae is a sequenced ananassae-subgroup species (12 Genomes Consortium 2007); geological age in this slot is 0 Ma."
+        - "Ready, Hanson and Benzer (1976) describe the retinal lattice at a scale of a few micrometres."
+        - "Gompel et al. (2005) and Wittkopp, Carroll and Kopp (2003) are the successor and predecessor pigment contexts, at 96 µm and 139 µm in this chronoseries."
+      reconstructed_in_script:
+        - "a=0.11, b=1.15, Dv/Du=19.7 and dx chosen so argmax Re σ(k) equals 2.106 µm."
+        - "Six-point diffusion-scale sweep, four-point ratio sweep, and two integrated ablations."
+        - "Activator field painted as a luminance modulation on the Wikimedia plate."
+      transfer_boundary:
+        - "2.106 µm is this slot's assigned detail-scale wavelength, not a published Turing-wavelength measurement on ananassae cuticle."
+      does_not_claim:
+        - "The transverse sex comb and the optomotor-blind chiasma are not claimed as products of this 2.1 µm mode."
+        - "The adult body outline is the vendored plate, not an output of the reaction-diffusion field."
+        - "The Pearson coefficient is the wavelength-law fit, not a pixel identity between the plate and the field."
+        - "The Lean file was not executed by a Lean kernel on this machine."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The integrator is the Schnakenberg PDE. Removing either the diffusion difference or the nonlinear term, at the same seed and step count, collapses the activator variance, which is the integrated form of the Turing condition already checked on σ(k)."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [79, 124], note: "Jacobian, onset diffusivity, growth rate, fastest mode", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [362, 372], note: "Integrated equal-diffusion and linear-kinetics ablations", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "The GIF last frame is the public-domain plate with a cuticle-only pigment modulation. CV similarity to that plate is 94.3 at 960×640 and 12 frames. Segmentation shows the render is not a pixel copy (circularity 0.018 versus 0.136 on the plate; gray KS 0.222). The plate is a 225×112 illustration, so this is not a match to a 2.1 µm micrograph."
+        evidence:
+          - {file: docs/media/drosophila_ananassae_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate, field, modulation, and wavelength-fit scatter", supports: true}
+          - {file: docs/media/drosophila_ananassae_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 960×640 modulation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [419, 442], note: "render_versus_plate segmentation", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Multiplying both diffusivities by s² moves analytic and FFT wavelengths together across s = 0.75 to 1.50. Holding Du fixed, raising Dv/Du from 8 to 28 lengthens λ from 1.75 µm to 2.26 µm and carries σ from negative (no Turing) to positive."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [317, 360], note: "scale_sweep and ratio_sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [626, 630], note: "self-test requires r > 0.98 and a longer wavelength at the high ratio", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pearson r = 0.99483 and RMSE = 8.05e-8 m on six scales, with KS statistic 0.167 between the analytic and FFT samples. Plate circularity 0.136 is scored against a circle null of 1, and the render coherency gap is scored against 0. The same sweep is used to fit and to score."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [479, 600], note: "measure_morphoeval records r, RMSE, KS, ablation ratio, coherency gap", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [626, 634], note: "self-test gates on r and the ablation ratios", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "Eight Crossref-checked DOIs, the Wikimedia public-domain plate URL, and SHA-256 pins checked at runtime. OpenAlex returned no works for the slot query; that empty result is kept in the scout manifest."
+        evidence:
+          - {file: datasets/drosophila_ananassae_turing_wavelength_s0/paper_citations.bib, lines: [1, 84], note: "Crossref-checked DOIs", supports: true}
+          - {file: datasets/drosophila_ananassae_turing_wavelength_s0/drosophila_ananassae_turing_wavelength_s0_reference.json, lines: [77, 86], note: "Specimen URL, license, SHA-256", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [67, 77], note: "Runtime SHA-256 check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Each pass-2 control is its own function (scale_sweep, ratio_sweep, integrated_ablations, render_versus_plate), and the Lean file states the 2106 nm wavelength and the milli-unit h-condition. Paper equation numbers are not pinned, and the Lean kernel was not run."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [317, 442], note: "Pass-2 analysis functions", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3176_drosophila_ananassae_turing_wavelength_s0.lean, lines: [24, 40], note: "Four theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3176, pinned hashes, and --self-test now fails unless r > 0.98 and both ablations decay. The run is deterministic. No Lean binary is installed, so the theorems were not kernel-checked."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ananassae-turing-wavelength-s0.py, lines: [604, 648], note: "--self-test including the pass-2 gates", supports: true}
+          - {file: datasets/drosophila_ananassae_turing_wavelength_s0/README.md, lines: [1, 29], note: "Scale 2.1 µm, age 0 Ma, run command", supports: true}
+    remediation:
+      - "Kernel-check the Lean file when a Lean 4 binary is available."
+      - "A second assessor has not scored this audit."
+      - "The vendored plate is a 225×112 public-domain illustration, not a micrograph resolved at 2.1 µm."
+      - "The wavelength Pearson coefficient is computed on the same six scales used to choose the comparison, so it is a fit rather than a held-out test."
