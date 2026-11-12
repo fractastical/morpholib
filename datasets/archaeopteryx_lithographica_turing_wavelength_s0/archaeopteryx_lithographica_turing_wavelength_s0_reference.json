@@ -1,0 +1,118 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "delphi10000-archaeopteryx-lithographica-turing-wavelength-s0",
+  "slot": 3120,
+  "organism": {
+    "scientific_name": "Archaeopteryx lithographica",
+    "common_name": "Late Jurassic Solnhofen Urvogel (Asymmetric Flight Vane)",
+    "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Aves (Ornithes) -> Archaeopteryx",
+    "lineage": "Theropod-Avian Feather Fossil Series"
+  },
+  "phenomenon_scale": {
+    "phenomenon": "Turing pigment stripe / ocellus wavelength",
+    "phenomenon_size_m": 7.478e-05,
+    "size_human": "75 µm",
+    "log10_size_m": -4.126,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": "s0"
+  },
+  "paleobiology": {
+    "geological_age_ma": 150.0,
+    "geological_period": "Late Jurassic (Tithonian, 150.0 Ma)",
+    "chronoseries_index": "1/1",
+    "chronoseries_note": "Archaeopteryx is represented by a single Solnhofen horizon in this slot. Wavelength change is formalized against lineage neighbors, not against a second Archaeopteryx chronospecies.",
+    "predecessor": {
+      "taxon": "Anchiornis huxleyi",
+      "age_ma": 160.8,
+      "horizon": "Tiaojishan Formation, Oxfordian",
+      "role": "symmetric pennaceous vane; melanosome colour reconstructed by Li et al. 2010"
+    },
+    "successor": {
+      "taxon": "Microraptor gui",
+      "age_ma": 120.0,
+      "horizon": "Jiufotang Formation, Aptian",
+      "role": "iridescent melanosome stacks; Li et al. 2012"
+    }
+  },
+  "governing_model": {
+    "name": "Schnakenberg activator-inhibitor Turing system",
+    "law": "Turing wavenumber k_c",
+    "cohort": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "state_variables": {
+      "u": "activator (melanocyte-promoting morphogen on the feather vane)",
+      "v": "inhibitor (longer-range keratinocyte signal)"
+    },
+    "equations": [
+      "du/dt = div(D_u grad u) + gamma * (a - u + u^2 v)",
+      "dv/dt = div(D_v grad v) + gamma * (b - u^2 v)",
+      "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+      "lambda_c = 2 pi / k_c"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": {
+      "f_u": "gamma * (-1 + 2 u0 v0)",
+      "f_v": "gamma * u0^2",
+      "g_u": "gamma * (-2 u0 v0)",
+      "g_v": "gamma * (-u0^2)"
+    },
+    "boundary_conditions": "Periodic on a square vane patch (np.roll). The patch is much smaller than the feather, so a torus stands in for a no-flux vane interior.",
+    "parameters": {
+      "a": 0.112,
+      "b": 0.836,
+      "Du": 0.052,
+      "Dv": 1.48,
+      "gamma_archaeopteryx": 0.039,
+      "gamma_anchiornis": 0.024,
+      "gamma_microraptor": 0.067,
+      "anisotropy_rachis_over_barb": 1.22,
+      "grid_n": 96,
+      "seed": 3120,
+      "note": "These values are a slot-3120 reconstruction chosen so the Archaeopteryx critical wavelength is 7.478e-05 m. They are not copied from the 2.9 mm Loop-1230 sibling and are not a published feather-follicle table."
+    }
+  },
+  "empirical_claims": [
+    {
+      "id": "turing_kc",
+      "claim": "A two-morphogen system with Du != Dv selects a finite critical wavenumber k_c.",
+      "source_doi": "10.1098/rstb.1952.0012"
+    },
+    {
+      "id": "schnakenberg_kinetics",
+      "claim": "The cubic activator-inhibitor kinetics a - u + u^2 v and b - u^2 v support diffusion-driven pattern.",
+      "source_doi": "10.1016/0022-5193(79)90042-0"
+    },
+    {
+      "id": "within_feather_rd",
+      "claim": "Within-feather pigment bars and spots are in the reaction-diffusion class.",
+      "source_doi": "10.1098/rspb.2001.1896"
+    },
+    {
+      "id": "carney_melanosome",
+      "claim": "The isolated Archaeopteryx feather preserves melanosomes consistent with dark pigment; melanosome length is ~1 µm, far below this slot's 75 µm wavelength.",
+      "source_doi": "10.1038/ncomms1642"
+    },
+    {
+      "id": "manning_plumage",
+      "claim": "Synchrotron maps show plumage patterning on a 150 Ma Archaeopteryx.",
+      "source_doi": "10.1039/c3ja50077b"
+    },
+    {
+      "id": "foth_pennaceous",
+      "claim": "Pennaceous, asymmetric flight feathers are present in Archaeopteryx.",
+      "source_doi": "10.1038/nature13467"
+    }
+  ],
+  "scale_transfer": {
+    "statement": "75 µm sits between melanosome length (~1 µm, Carney 2012) and the 2.9 mm organ-scale vane wavelength of Loop 1230. The Berlin-slab JPEG does not resolve 75 µm.",
+    "scan_observable": "Pearson fit of a quartic illumination plus three harmonics of the dominant frequency on the wing optical-density transect (rows 450:850, cols 750:1200)."
+  },
+  "specimen": {
+    "file": "archaeopteryx_lithographica_berlin_slab.jpg",
+    "sha256": "2e307a2774e085710fa58b72ee4579dd2b9ad7b9e328822eaea375619bd1d25d",
+    "license": "Public domain",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Archaeopteryx_lithographica_fossil.jpg",
+    "pixel_size": [1391, 1620]
+  }
+}
