@@ -1,0 +1,157 @@
+# Pass 1. Daphnia magna ocellus-pigment Turing wavelength, slot 3165.
+# Weighted mean of the scores below is 84.0. The 2.736 µm field is not the
+# 20 µm cuticle mesh, and the dispersion fit is still in-sample.
+audit:
+  id: 2026-10-27-daphnia-magna-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single pass)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 86cc0374f85f7f6fea93d271291a5192c8f44eb3
+    environment:
+      python: "3.12"
+      numpy: "1.26.4"
+      note: "scipy 1.18 and Pillow 13 installed for this run; no virtualenv"
+    note: "Pass 1. Sources committed before this audit. Nanopub profile is absent, so nothing is signed."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: 10.1007/BF00289234
+    year: 1972
+  macagno1981:
+    title: "Cellular interactions and pattern formation in the development of the visual system of Daphnia magna"
+    authors: "Macagno ER"
+    venue: "The Journal of Neuroscience 1:945-955 (1981)"
+    doi: 10.1523/jneurosci.01-09-00945.1981
+    year: 1981
+  smith1990:
+    title: "UV photoreceptors in the compound eye of Daphnia magna. A fourth spectral class in single ommatidia"
+    authors: "Smith KC, Macagno ER"
+    venue: "Journal of Comparative Physiology A 166 (1990)"
+    doi: 10.1007/BF00240009
+    year: 1990
+  hebert1990:
+    title: "The Adaptive Significance of Cuticular Pigmentation in Daphnia"
+    authors: "Hebert PDN, Emery CJ"
+    venue: "Functional Ecology 4:703 (1990)"
+    doi: 10.2307/2389739
+    year: 1990
+simulations:
+  - id: delphi10000-daphnia-magna-turing-wavelength-s0
+    name: "Daphnia magna ocellus-pigment Turing wavelength at 2.736 µm (Holocene, detail scale)"
+    organism: "Daphnia magna"
+    domain: morphogenesis
+    script: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py
+    output: docs/media/daphnia_magna_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/daphnia_magna_turing_wavelength_s0_growth.gif
+      - datasets/daphnia_magna_turing_wavelength_s0/run_results.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, macagno1981, smith1990, hebert1990]
+    summary: >-
+      Schnakenberg reaction-diffusion on a periodic patch whose length unit
+      puts the analytical critical wavelength at 2.736 µm (log10 = -5.563),
+      the Holocene detail tier for Daphnia magna. The chronoseries is 1/1 at
+      0 Ma: there is no predecessor chronospecies and no successor. The
+      solver's growth rates match σ(k) at Pearson r = 0.99999995 on the band
+      around k_c (RMSE 0.00013). Raising D_u from 0.008 to 0.036 lengthens
+      λ_c by a factor 2.21. Setting D_v = D_u drops the activator standard
+      deviation to 0.286 of its initial value and the analytical max σ is
+      negative. The CC BY-SA head SEM (Paulo Corgosinho, 2016) has a 100 µm
+      bar measured at 156 px. Its cuticle mesh has an interior spectral peak
+      at 20.17 µm, about seven times the model wavelength, so the polygons
+      are not the Turing field. The saturated pattern's dominant wavelength
+      is 3.72 µm, a nonlinear shift that Pass 1 does not yet treat as a
+      held-out claim. The growth GIF has 12 frames at 720×540; its last
+      frame is the SEM, which is the registration image for the fitness test.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a wavelength 2π/k_c from a dispersion relation. Schnakenberg (1979) supplies the kinetics du/dt = a − u + u²v, dv/dt = b − u²v."
+        - "Macagno (1981) showed that the Daphnia magna visual system is built by cellular interactions. Smith & Macagno (1990) resolved four spectral classes inside single ommatidia. Hebert & Emery (1990) showed that cuticular melanin is an inducible ultraviolet shield."
+      reconstructed_in_script:
+        - "The length unit is chosen so λ_c = 2.736 µm. Parameters a = 0.062, b = 1.180, D_u = 0.016, D_v = 0.640 are not the slot-149 placeholders."
+        - "Nine Fourier modes are grown from the unstable eigenvector. Pearson r and RMSE compare those rates with σ(k) on the band σ > -0.15. A D_u sweep and an equal-diffusion ablation are included."
+        - "The SEM scale bar and an interior peak of the cuticle spectrum (20.17 µm) are measured on the vendored image."
+      transfer_boundary:
+        - "The age delta along this chronoseries is zero. The comparison with a melanosome (~0.5 µm) and an ommatidium (tens of µm) is a scale comparison, not a fossil sequence."
+        - "Nothing here transfers to a claim that the ×130 cuticle polygons are a 2.736 µm pigment stripe."
+      does_not_claim:
+        - "Does not claim a published measurement of a 2.736 µm ocellus stripe. That length is the assigned tier."
+        - "Does not claim the in-sample dispersion correlation is a held-out test. Odd modes are not yet withheld."
+        - "Does not claim a nanopublication signature. No ~/.nanopub/profile.yml is present."
+        - "Does not claim an independent second assessor scored this pass."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "The script integrates Schnakenberg kinetics with a spectral Laplacian and compares growth rates to the larger eigenvalue of J − k²D. The length unit is imposed so λ_c equals the assigned 2.736 µm; it is not fitted to a published stripe period. The strongly damped mode is excluded from the scored band after a burn-in, which is disclosed."
+        evidence:
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [87, 141], note: "Jacobian, k_c, and σ(k)", supports: true}
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [155, 162], note: "explicit spectral step", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The comparison figure places the Corgosinho head SEM beside the Otsu mask and the activator. The GIF's last frame is that SEM, so the registration image is the animal. The activator is a subcellular field, and the cuticle peak at 20.17 µm shows the polygons are a coarser structure. Specimen-match is the anatomical registration plus that disclosed mismatch, not a claim that the spots reproduce the mesh."
+        evidence:
+          - {file: docs/media/daphnia_magna_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "SEM, mask, activator, dispersion, sweep, ablation", supports: true}
+          - {file: docs/media/daphnia_magna_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540; last frame is the SEM", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "D_u from 0.008 to 0.036, the term that dominates k_c² ≈ f_u/(2 D_u), lengthens λ_c by a factor 2.21 and the series is strictly increasing. The equal-diffusion ablation decays (amplitude ratio 0.286, max σ < 0)."
+        evidence:
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [299, 322], note: "D_u sweep", supports: true}
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [274, 297], note: "equal-diffusion ablation", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Dispersion Pearson r = 0.99999995 against a reference of 1, RMSE = 0.000125 against 0. The SEM foreground, aspect ratio, coherency, and orientation KS differ from their references. The cuticle peak is 20.17 µm against the model wavelength 2.736 µm. The saturated dominant wavelength is 3.72 µm and is not yet given its own coarsening ratio. Outline circularity is 0.018 because the perimeter follows the antennule and carapace folds."
+        evidence:
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [171, 229], note: "linear growth measurement", supports: true}
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [358, 426], note: "Otsu mask, scale bar, cuticle peak", supports: true}
+          - {file: datasets/daphnia_magna_turing_wavelength_s0/run_results.json, lines: [0, 0], note: "recorded r, RMSE, wavelengths, ablation", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "Six Crossref-checked DOIs, a scout manifest, and a SHA-256-pinned CC BY-SA 4.0 SEM (Paulo Corgosinho, File:Daphnia magna head.jpg). An OpenAlex DOI that did not resolve at Crossref is stored and unused. The reference JSON states 2.736e-06 m and 0 Ma."
+        evidence:
+          - {file: datasets/daphnia_magna_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "Turing, Schnakenberg, Gierer–Meinhardt, Macagno, Smith, Hebert", supports: true}
+          - {file: datasets/daphnia_magna_turing_wavelength_s0/daphnia_magna_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale, age, chronoseries, parameters", supports: true}
+          - {file: datasets/daphnia_magna_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "slot 3165 scout and collision check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "The module docstring, the Jacobian, and the Lean witnesses (disc numerator 5350516939, margin numerator 22679272279285929721, D_v = 40 D_u, 500 < 2736 < 22000 nm) name the same rationals. The nonlinear 3.72 µm peak is plotted but not yet tied back to k_c by a ratio in the scored measurements' narrative beyond the raw comparison."
+        evidence:
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [1, 20], note: "scale, age, and claim about the SEM", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3165_daphnia_magna_turing_wavelength_s0.lean, lines: [20, 54], note: "four theorems, zero sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Pinned SHA-256 inputs, seed 3165, and a --self-test that requires r > 0.98, a monotone D_u sweep with ratio > 1.4, a decaying ablation, a 156 px scale bar, and a GIF of at least 10 frames and 480 px. The self-test passed. Signing is unavailable. One assessor scored the pass."
+        evidence:
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [46, 70], note: "pinned hashes, seed, holdout flag still false", supports: true}
+          - {file: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py, lines: [682, 724], note: "self-test gates", supports: true}
+          - {file: datasets/daphnia_magna_turing_wavelength_s0/README.md, lines: [1, 32], note: "scale, age, invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Hold out the odd-indexed Fourier modes and require Pearson r > 0.98 on that withheld set, not only on the full scored band."
+      - id: R2
+        item: "Report the saturated wavelength divided by the analytical 2.736 µm as a coarsening ratio, so 3.72 µm is read as a nonlinear shift rather than a second target."
+      - id: R3
+        item: "Nanopub signing is blocked: ~/.nanopub/profile.yml is absent. Do not invent a signature."
+      - id: R4
+        item: "State beside the circularity 0.018 that the perimeter follows the antennule and carapace folds, and keep the aspect ratio as the shape number."
