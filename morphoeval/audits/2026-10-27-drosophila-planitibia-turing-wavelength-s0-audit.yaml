@@ -1,0 +1,185 @@
+# Pass 1 audit — Drosophila planitibia detail-tier Turing wavelength (slot 3199).
+# The first self-test failed. Scores below are that failure, not the corrected script.
+
+audit:
+  id: 2026-10-27-drosophila-planitibia-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (primary assessor, loop 3199 pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 614364984b077999780547c54c33040355b80944
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 of loop 3199. Schnakenberg PDE, specimen LUT render, and dataset
+      pins were in place. The dispersion correlation, the diffusion-ratio
+      monotonicity test, and the specimen radial-peak definition were not.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing A. M."
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J."
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  edwards2007:
+    title: "A database of wing diversity in the Hawaiian Drosophila"
+    authors: "Edwards K. A., Doescher L. T., Kaneshiro K. Y., Yamamoto D."
+    venue: "PLoS ONE 2:e487 (2007)"
+    doi: 10.1371/journal.pone.0000487
+  kambysellis1995:
+    title: "Pattern of ecological shifts in the diversification of Hawaiian Drosophila inferred from a molecular phylogeny"
+    authors: "Kambysellis M. P., Ho K.-F., Craddock E. M., Piano F., Parisi M., Cohen J."
+    venue: "Current Biology 5:1129-1139 (1995)"
+    doi: 10.1016/s0960-9822(95)00229-6
+  carson1982:
+    title: "Evolution of Drosophila on the newer Hawaiian volcanoes"
+    authors: "Carson H. L."
+    venue: "Heredity 48:3-25 (1982)"
+    doi: 10.1038/hdy.1982.2
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S., Miura T."
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: delphi10000-drosophila-planitibia-turing-wavelength-s0
+    name: "Drosophila planitibia detail-tier Turing wavelength (5.13 µm, Holocene 0 Ma)"
+    organism: "Drosophila planitibia"
+    script: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py
+    output: docs/media/drosophila_planitibia_turing_wavelength_s0_comparison.png
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation for a two-species reaction-diffusion system, and Schnakenberg (1979) kinetics a - u + u^2 v, b - u^2 v."
+        - "Edwards et al. (2007) Hawaiian Drosophila wing-diversity database and Kambysellis et al. (1995, Current Biology) picture-wing phylogeny. Neither paper reports a 5.13 µm wavelength."
+        - "Carson (1982) radiation of Drosophila on the newer Hawaiian volcanoes, the biogeographic setting of Maui D. planitibia. Geological age in this chronoseries is 0 Ma."
+      reconstructed_in_script:
+        - "Periodic Schnakenberg integration scaled so the fastest discrete mode is the assigned detail-tier length 5.13e-06 m."
+        - "Chronoseries contrast with D. persimilis at 117 µm and D. pseudoobscura at 114 µm at fixed kinetics: activator diffusivity scales as lambda squared. Age delta is 0 Ma."
+      transfer_boundary:
+        - "Generic Schnakenberg pigment kinetics are not a measured yellow/ebony network for D. planitibia. The 5.13 µm length is the assigned tier, not a published morphometric."
+      does_not_claim:
+        - "That the vendored micrograph's spiral carrier equals 5.13 µm, or that DOI 10.1073/pnas.92.17.7819 is the Kambysellis phylogeny (it is a different 1995 paper)."
+        - "A measured spacing of foretarsal cilia."
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - edwards2007
+      - kambysellis1995
+      - carson1982
+      - kondo2010
+    summary: >-
+      Pass 1 overall is the pre-correction rating. The Schnakenberg PDE rendered
+      a 12-frame 800×600 GIF whose specimen CV similarity was already 87.6, but
+      the dispersion self-test returned Pearson r = -0.125 because activator-only
+      initial data mixed a complex long-wave pair into the log-slope. The
+      diffusion-ratio sweep asserted the wrong monotonicity, and the specimen
+      radial peak locked onto the vignette at 180 µm instead of the spiral-band
+      ridge. Those three failures are the remediation list. Dataset SHA-256 pins,
+      the 0 Ma chronoseries statement, and the Lean statements were already in place.
+    remediation:
+      - "Reseed each Turing-band Fourier mode on its leading real eigenvector, drop the complex long-wave pair, and require Pearson r > 0.98 against the discrete dispersion symbol. Pass 1 measured r = -0.125."
+      - "Restrict the diffusion-ratio sweep to ratios with sigma_max > 0 and test the direction the fastest mode actually moves. Pass 1 asserted a decreasing lambda and the assertion failed."
+      - "Measure the specimen spiral-band ridge above the vignette bins of the radial FFT. Pass 1 reported the envelope at 180 µm from a 111 px / 100 µm scale bar."
+      - "Re-run image fitness, measure_outputs, and the knowledge-graph build on the corrected probe."
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          The Jacobian, the Turing threshold, and the periodic Schnakenberg Euler
+          step match Schnakenberg (1979) and Turing (1952). The Pass 1 dispersion
+          comparison did not: seeding u = ε cos(kx), v = 0 produced Pearson
+          r = -0.125 because modes 1–3 are a complex conjugate pair and the
+          activator projection is not a pure exponential. Model fidelity stays
+          at 72 until that probe is restricted to the real Turing band.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [95, 149], note: "Homogeneous Jacobian and discrete/continuous dispersion symbol", supports: true}
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [301, 320], note: "Periodic Schnakenberg explicit Euler step", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3199_drosophila_planitibia_turing_wavelength_s0.lean, lines: [39, 47], note: "Lean statements of the trace-diffusion threshold and the equal-diffusion ablation", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The growth GIF is 800×600 and 12 frames, full-bleed, colored with the
+          specimen pigment LUT, and scored CV similarity 87.6 against
+          drosophila_planitibia_specimen.jpg. The Pass 1 carrier measurement
+          nevertheless reported the vignette (180 µm) rather than the spiral
+          ridge, so the specimen metric was not yet the band the figure claims
+          to compare. Spot geometry is also not a pixel copy of the spiral.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [449, 482], note: "Specimen pigment LUT and full-bleed growth GIF", supports: true}
+          - {file: docs/media/drosophila_planitibia_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 800×600 animation scored by the image-fitness CV", supports: true}
+          - {file: docs/media/drosophila_planitibia_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 1 comparison figure", supports: true}
+      parameter-expressivity:
+        value: 64
+        rationale: >-
+          A diffusion-ratio sweep and an equal-diffusion ablation exist, but the
+          Pass 1 monotonicity test included ratios whose sigma_max was still
+          negative and asserted that lambda falls as d rises. The self-test
+          raised AssertionError on that claim. Expressivity is not credited
+          until the unstable branch is isolated and the measured direction is
+          the one that is tested.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [229, 298], note: "Ablation control and diffusion-ratio sweep as they stood when the monotonicity assertion failed", supports: false}
+      morphometric-validation:
+        value: 68
+        rationale: >-
+          Scale-bar detection (111 px = 100 µm), Otsu circularity, and a KS
+          comparison were implemented, but the headline specimen wavelength was
+          the 180 µm envelope and the dispersion Pearson r was -0.125, below
+          the 0.98 gate. Quantitative validation is incomplete until both
+          numbers are recomputed on the corrected definitions.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [383, 447], note: "Specimen segmentation, scale bar, Otsu contour, radial KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [638, 717], note: "measure_morphoeval metric list; Pass 1 values failed the Pearson gate", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          OpenAlex/Crossref resolved Turing 1952, Schnakenberg 1979
+          (10.1016/0022-5193(79)90042-0, not the non-resolving 90258-0 suffix),
+          Edwards 2007, Kambysellis 1995 Current Biology
+          (10.1016/s0960-9822(95)00229-6), Carson 1982, and Kondo & Miura 2010.
+          Wikimedia Commons returned no D. planitibia file; the gallery JPEG
+          is SHA-256 pinned. Slot 3199 is absent from campaign_100_slots.yaml,
+          which is recorded in the scout manifest rather than papered over.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [83, 92], note: "Runtime SHA-256 check of the five dataset files", supports: true}
+          - {file: datasets/drosophila_planitibia_turing_wavelength_s0/drosophila_planitibia_turing_wavelength_s0_reference.json, lines: [1, 76], note: "Scale 5.13e-06 m, age 0 Ma, chronoseries, and corrected citations", supports: true}
+          - {file: datasets/drosophila_planitibia_turing_wavelength_s0/paper_citations.bib, lines: [1, 87], note: "BibTeX for the six primary sources", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Docstring, math-kg loci, and Lean namespace MathOfBiology.Loop_3199
+          name the same wavelength, age, and diffusion-ratio integers. Pass 1
+          could not yet trace a passing dispersion fit to those declarations
+          because the numerical probe disagreed with the symbol.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [1, 42], note: "Module docstring stating 5.13 µm, 0 Ma, and the predecessor/successor contrast", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-planitibia-turing-wavelength-s0.yaml, lines: [1, 75], note: "Math KG equations, Lean loci, and model_spec inputs", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          --self-test is deterministic (seed 3199), checks dataset hashes, and
+          correctly failed closed on Pass 1 (Pearson r and sweep direction).
+          Failure was reported rather than relaxed. A known-good invocation
+          exists; the numerical gates were not yet green.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-planitibia-turing-wavelength-s0.py, lines: [720, 753], note: "Self-test gates including Pearson r > 0.98 and sweep monotonicity", supports: true}
+          - {file: datasets/drosophila_planitibia_turing_wavelength_s0/README.md, lines: [1, 24], note: "Documented invocation and the 5.1 µm / 0 Ma statement", supports: true}
