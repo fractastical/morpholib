@@ -1,0 +1,131 @@
+# Pass 2 — closes R1–R3 from 2026-10-27-bos-taurus-turing-wavelength-s0-audit.
+# Overall (rubric.yaml weights) = 88.3.
+audit:
+  id: 2026-10-27-bos-taurus-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-bos-taurus-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2. Signing was not performed: ~/.nanopub/profile.yml is absent, so no published.json exists to chain npx:supersedes. The audit id supersession is recorded in this file. publisher_orcid is the repository publisher identity, not a signature."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+    year: 1952
+  gierer1972:
+    title: "A Theory of Biological Pattern Formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: "10.1007/BF00289234"
+    year: 1972
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329(5999):1616-1620 (2010)"
+    doi: "10.1126/science.1179047"
+    year: 2010
+  wasmeier2008:
+    title: "Melanosomes at a Glance"
+    authors: "Wasmeier C, Hume AN, Bolasco G, Seabra MC"
+    venue: "Journal of Cell Science 121(24):3995-3999 (2008)"
+    doi: "10.1242/jcs.040667"
+    year: 2008
+  murray1981:
+    title: "A Pre-pattern Formation Mechanism for Animal Coat Markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88(1):161-199 (1981)"
+    doi: "10.1016/0022-5193(81)90334-9"
+    year: 1981
+simulations:
+  - id: delphi10000-bos-taurus-turing-wavelength-s0
+    name: "Bos taurus Gierer–Meinhardt wavelength at 3.137 µm (Holocene, 0 Ma)"
+    organism: "Bos taurus"
+    script: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+    output: docs/media/bos_taurus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/bos_taurus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-bos-taurus-turing-wavelength-s0-audit
+    source_refs: [turing1952, gierer1972, kondo2010, wasmeier2008, murray1981]
+    summary: >-
+      Pass 2 of the 3.137 µm (log10 = -5.503), age 0 Ma Bos taurus detail-scale
+      loop. R1: the comparison figure now prints the 500 nm predecessor
+      growth rate (sigma = -10.91, stable) and the 20 µm successor count
+      (6.38 wavelengths) on the dispersion panel. R2: a second CC BY-SA 3.0
+      Fleckvieh cow (Kim Hansen, SHA-256 bda7b80a…) is segmented; foreground
+      fraction 0.805 versus 0.623 on the Hereford calf. R3: GIF frames 0–10
+      are the activator alone; only the last frame anchors the Hereford
+      photograph (display weight 0.50). CV similarity remains 93.0 on that
+      last frame (640×480, 12 frames). Pearson r of FFT wavelength versus
+      k_star(s) remains 0.99595. Measured peak 3.199 µm versus the 3.137 µm
+      calibration. Equal-diffusion sigma_max = -0.275. Production-off
+      amplitude ratio = 7.5e-5. Chronoseries is still 1/1 at 0 Ma.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) and Gierer & Meinhardt (1972) supply the dispersion relation and the activator–inhibitor kinetics."
+        - "Wasmeier et al. (2008) place melanosomes below 1 µm. Murray (1981) is the macroscopic coat claim this slot does not repeat."
+      reconstructed_in_script:
+        - "Same calibrated Gierer–Meinhardt integration as pass 1, plus the scale-neighbour annotation, a second segmented Bos taurus voucher, and activator-only growth frames."
+        - "Pearson r = 0.99595, RMSE = 0.104 µm, KS = 0.414, two foreground fractions that are not equal to each other or to the simulated occupancy."
+      transfer_boundary:
+        - "Neither photograph resolves 3.137 µm. The wavelength is the calibrated k_star, not a ruler on the image."
+        - "No predecessor chronospecies is in the slot. The age offset along the series is zero."
+      does_not_claim:
+        - "Does not claim the Fleckvieh patches are the 3.137 µm mode. That animal is a second segmentation voucher only."
+        - "Does not claim a cryptographic nanopublication. No nanopub profile was present."
+        - "Does not claim the sibling Holstein flank model."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Unchanged from pass 1: Gierer–Meinhardt kinetics, trace and determinant signs, cross term, and separate k_c versus k_star. The pass-2 edits are display and a second segmentation, not a change of equation."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [66, 90], note: "rates, diffusion ratio 14.5, 3.137e-6 m, age 0", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [92, 124], note: "sigma, k_star, classical k_c", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [153, 191], note: "Euler step of the GM system", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "Growth frames are now the activator field. The last frame still matches the Hereford photograph at CV 93.0. A second Bos taurus portrait is segmented. The photographs remain organism-scale vouchers, so the score stays short of a histological identity."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [350, 370], note: "R3: specimen weight is 0 until the last frame", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [260, 292], note: "border-contrast segmentation used for both vouchers", supports: true}
+          - {file: docs/media/bos_taurus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last-frame CV 93.0", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "The nine-point diffusion sweep is unchanged and still tracks sqrt(s) (r = 0.99595). Equal diffusion remains the negative control on the same axis."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [193, 214], note: "wavelength_sweep", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [231, 235], note: "equal_diffusion_sigma", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pass 1 metrics stand (wavelength 3.199 µm vs 3.137 µm, r = 0.99595, RMSE 0.104 µm, KS 0.414, ensemble std). Pass 2 adds the Fleckvieh foreground fraction 0.805 against the Hereford fraction 0.623. None of these values are copies of their references."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [510, 634], note: "measure_morphoeval including the second-specimen row", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [462, 466], note: "R2: second voucher is segmented in run_pipeline", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Both vouchers are CC BY-SA 3.0 with Wikimedia URLs and SHA-256 digests in the reference JSON. The five paper DOIs were checked on OpenAlex in the scout step."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength_s0/bos_taurus_turing_wavelength_s0_reference.json, lines: [64, 82], note: "Hereford and Fleckvieh digests and licenses", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength_s0/paper_citations.bib, lines: [1, 54], note: "five cited works", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "The scale-neighbour annotation on the figure is the same predecessor_mode_stable and successor_mode_count already used by the self-test, and the Lean file states the same inequalities."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [417, 428], note: "R1: predecessor and successor text on the dispersion axes", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean, lines: [37, 52], note: "500 nm < lambda, 20 µm holds >= 6, age 0", supports: true}
+      repro-package:
+        value: 90
+        rationale: "--self-test now also requires the second foreground fraction to differ from the first, r > 0.98, CV >= 58, and a GIF of at least 10 frames and 480 px. The pass-2 run satisfied those asserts."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [636, 660], note: "self_test gates including the second voucher", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength_s0/README.md, lines: [1, 23], note: "scale 3.1 µm and age 0 Ma stated", supports: true}
+    remediation: []
