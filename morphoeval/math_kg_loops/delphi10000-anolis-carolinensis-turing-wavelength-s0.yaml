@@ -1,0 +1,35 @@
+sim_id: delphi10000-anolis-carolinensis-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+slot: 3112
+organism: Anolis carolinensis
+scale_m: 0.0001011
+scale_um: 101.1
+age_ma: 0.0
+equations:
+- law_name: Homogeneous stability of the Schnakenberg fixed point
+  formula: trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0 at (a, b) = (0.055, 0.945)
+  lean_decl: MathOfBiology.Loop_3112.traceMilli
+  lean_theorem: MathOfBiology.Loop_3112.homogeneous_stable_without_diffusion
+  lean_locus: morphoeval/lean/loops/Loop_3112_anolis_carolinensis_turing_wavelength_s0.lean#L26-L30
+  variables: f_u = 0.89, g_v = -1, det J = 1, trace J = -0.11
+  role: Without diffusion the 101.1 µm dermal patch stays uniform. A wavelength is not selected by the reaction alone.
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py#L92-L110
+- law_name: Critical wavenumber at 101.1 µm
+  formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 101.1 µm, with D_v/D_u = 8.2
+  lean_decl: MathOfBiology.Loop_3112.ratioTenths
+  lean_theorem: MathOfBiology.Loop_3112.diffusion_driven_instability
+  lean_locus: morphoeval/lean/loops/Loop_3112_anolis_carolinensis_turing_wavelength_s0.lean#L33-L42
+  variables: ratio 8.2 above onset (~7.12); discriminant (r f_u + g_v)^2 - 4 r det > 0
+  role: Places the onset wavelength on the assigned tier-5 detail scale, inside one dorsal scale rather than on the whole animal.
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py#L104-L118
+- law_name: Mode count versus the cellular predecessor
+  formula: N = floor(L / lambda_c); N(808 µm) = 8 and N(40 µm) = 0
+  lean_decl: MathOfBiology.Loop_3112.modeCount
+  lean_theorem: MathOfBiology.Loop_3112.cellular_predecessor_fits_no_critical_mode
+  lean_locus: morphoeval/lean/loops/Loop_3112_anolis_carolinensis_turing_wavelength_s0.lean#L48-L56
+  variables: primordium patch 808 µm; cellular predecessor 40 µm; Holocene age 0 Ma
+  role: At 0 Ma the chronoseries has no fossil predecessor. The scale predecessor cannot fit k_c; this patch can.
+  source_citation: Alexander and Fahrenbach (1969) DOI:10.1002/aja.1001260105
+  code_locus: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py#L544-L556
