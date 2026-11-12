@@ -1,0 +1,181 @@
+# MorphoEval audit — Gasterosteus doryssus_mid, 42 µm Turing wavelength, Pass 2.
+# Supersedes the Pass 1 audit. Same assessor. Remediations R1–R3 are in the script.
+
+audit:
+  id: 2026-10-27-gasterosteus-doryssus-mid-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-mid-turing-wavelength-s0-audit
+  supersedes: 2026-10-27-gasterosteus-doryssus-mid-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 after R1–R3)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 files are new on top of 0c76d15d. Built with --no-verify-loci."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376:765-768 (1995)"
+    doi: 10.1038/376765a0
+  bell1982:
+    title: "Fine-scale temporal variation of the Miocene stickleback Gasterosteus doryssus"
+    authors: "Bell MA, Haglund TR"
+    venue: "Paleobiology 8(3):282-292 (1982)"
+    doi: 10.1017/s0094837300006990
+  hunt2008:
+    title: "Evolution toward a new adaptive optimum: phenotypic evolution in a fossil stickleback lineage"
+    authors: "Hunt G, Bell MA, Travis MP"
+    venue: "Evolution 62(3):700-710 (2008)"
+    doi: 10.1111/j.1558-5646.2007.00310.x
+  shapiro2004:
+    title: "Genetic and developmental basis of evolutionary pelvic reduction in threespine sticklebacks"
+    authors: "Shapiro MD et al."
+    venue: "Nature 428:717-723 (2004)"
+    doi: 10.1038/nature02415
+  chan2010:
+    title: "Adaptive evolution of pelvic reduction in sticklebacks by recurrent deletion of a Pitx1 enhancer"
+    authors: "Chan YF et al."
+    venue: "Science 327:302-305 (2010)"
+    doi: 10.1126/science.1182213
+  voje2022:
+    title: "Evolution of static allometry and constraint on evolutionary allometry in a fossil stickleback"
+    authors: "Voje KL, Bell MA, Stuart YE"
+    venue: "Journal of Evolutionary Biology 35(3):423-438 (2022)"
+    doi: 10.1111/jeb.13984
+
+simulations:
+  - id: delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 42 µm on Gasterosteus doryssus_mid (Truckee Fm, 10.01 Ma)"
+    organism: "Gasterosteus doryssus_mid"
+    script: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_growth.gif
+    extra_outputs:
+      - docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_comparison.png
+      - datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-mid-turing-wavelength-s0-audit
+    source_refs: [turing1952, kondo1995, bell1982, hunt2008, shapiro2004, chan2010, voje2022]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion: a critical wavenumber selected by diffusion and reaction rates."
+        - "Kondo & Asai 1995: reaction-diffusion waves set pigment spacing on fish skin."
+        - "Bell & Haglund 1982 and Hunt, Bell & Travis 2008: directional pelvic reduction in Truckee Fm G. doryssus."
+        - "Shapiro et al. 2004 and Chan et al. 2010: extant pelvic reduction maps to a Pitx1 enhancer deletion."
+        - "Voje, Bell & Stuart 2022: CC BY 4.0 plate of weakly and strongly armored G. doryssus morphs."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian at (a, b) = (0.062, 1.18), σ(k), and Du bisection onto 41.94 µm."
+        - "Chronoseries (Dv/Du, γ) = (14.2, 1.55), (18, 1), (24.8, 0.62) giving 32.14, 41.94, 56.90 µm."
+        - "Du ±10% band 39.80 / 41.94 / 44.02 µm, pure-field CV 58.1 beside registered CV 92.3, bone-mask KS."
+      transfer_boundary:
+        - "42 µm melanophore spacing is transferred from extant pigment-pattern RD onto a fossil that preserves bone, not chromatophores."
+      does_not_claim:
+        - "That the centimetre-scale fossil photograph is a 42 µm histological section."
+        - "That Pitx1 was sequenced from these Miocene fish."
+        - "That the unguided stripe field reproduces the skeleton. Its CV is 58.1; the 92.3 score is the registered render."
+    summary: >-
+      Pass 2 closes the three Pass 1 remediations. Du scaled by 0.9 and 1.1 moves λ from
+      39.80 µm to 44.02 µm around the calibrated 41.94 µm. The unguided activator GIF scores
+      CV 58.1; the specimen-registered growth GIF (12 frames, 640×480) scores CV 92.3.
+      The darkest 40% of the plate (bone) has radial KS 0.333 against the render; the sediment
+      complement has KS 0.542. Dispersion Pearson r remains 0.9897, RMSE 0.070.
+      Early/mid/late wavelengths remain 32.14 / 41.94 / 56.90 µm at 10.02 / 10.01 / 9.99 Ma.
+      Overall 86.8/100. Nanopubs are unsigned: ~/.nanopub/profile.yml is absent.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          The Pass 1 linearisation is unchanged and still matches the Schnakenberg Jacobian,
+          with k_c defined as argmax σ(k) rather than the large-ratio algebraic approximation
+          (those two differ by about two pixels here, and the code uses the exact argmax).
+          Pass 2 adds du_sensitivity, pure_field_cv and bone_mask_spectra without changing
+          the PDE. The amplitude clip at 8 and the fossil composite remain render/numerics
+          choices, so this is not a 100. Four Lean theorems still have zero sorry.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [97, 140], note: "Jacobian, exact σ(k), Du bisection", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [435, 493], note: "R1–R3: Du band, pure-field CV, bone-mask spectra", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean, lines: [18, 44], note: "four theorems, decide, no sorry", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Registered GIF versus the CC BY Voje, Bell & Stuart 2022 plate: CV similarity 92.3,
+          12 frames, 640×480. The same fitness function on the unguided stripe field, now
+          stored as pure_field_cv, is 58.1. The comparison PNG keeps the pure stripes visible
+          next to the fossil and the equal-diffusion control. The score stays below the CV
+          number because the plate is a centimetre skeleton and the 42 µm claim is a
+          modulation of that plate, which the code states in composite_on_specimen.
+        evidence:
+          - {file: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "registered growth GIF, CV 92.3, 12 frames, 640x480", supports: true}
+          - {file: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "pure stripes remain in the middle panel", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pure_field_cv 58.1 and registered_cv 92.3 stored side by side", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Ratio sweep at γ = 1: λ_pix rises 12.91 → 15.73 from Dv/Du = 12 to 32.
+          Chronoseries, which also drops γ: 32.14 → 41.94 → 56.90 µm.
+          New Du band: 0.9 Du gives 39.80 µm, 1.0 Du gives 41.94 µm, 1.1 Du gives 44.02 µm,
+          monotone, as λ ∝ sqrt(Du) near the calibrated mode. The self-test checks that order.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [435, 448], note: "du_sensitivity at 0.9, 1.0, 1.1", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [159, 171], note: "ratio sweep", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "Du band 39.80 / 41.94 / 44.02 µm", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Dispersion: Pearson r = 0.9897, RMSE = 0.070 against the eigenvalue.
+          Equal-diffusion σ_max = -0.324. Registered-frame coherency 0.603 versus specimen
+          0.596; foreground 0.821 versus 0.589. Whole-frame radial KS D = 0.333.
+          Bone mask (darkest 40%, fraction 0.400) radial KS = 0.333; sediment complement
+          KS = 0.542, so the two regions are not the same comparison. Gray-level CV ratio
+          sim/specimen = 0.948. None of these value/reference pairs are copies.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [173, 206], note: "analytic versus RK2 dispersion", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [473, 493], note: "bone versus sediment radial KS", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r, RMSE, KS, Du band, both CV scores", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Unchanged sources from Pass 1, still SHA-pinned. The metrics sidecar now records
+          the pure-field CV and the bone-mask split, so a reader can see which number came
+          from the plate and which from the PDE. Crossref DOIs and the Commons CC BY 4.0
+          file are the same as Pass 1. Shapiro and Chan author lists remain fuller in the BibTeX
+          than in the short audit reference labels.
+        evidence:
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/paper_citations.bib, lines: [1, 74], note: "seven DOIs", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_reference.json, lines: [48, 56], note: "specimen SHA-256 and Commons source", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [89, 95], note: "runtime SHA-256 check", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Pass 2 functions are named for the remediations they close: du_sensitivity,
+          pure_field_cv, bone_mask_spectra. Each is called from run_pipeline and asserted
+          in self_test. The docstring claim boundary still matches does_not_claim in this audit,
+          including the sentence that the unguided field is not the skeleton.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [1, 52], note: "equations and claim boundary", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [697, 726], note: "self_test now asserts Du order, pure CV below registered CV, and bone fraction", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test passed after the Pass 2 additions: r = 0.98974, wavelengths
+          32.14/41.94/56.90 µm, control σ = -0.324, Du band monotone, pure CV 58.1 below
+          registered CV 92.3, GIF 12 frames at 640×480. Seed 3230. No second machine,
+          and signing was not possible without a nanopub profile.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [697, 726], note: "extended self_test", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/README.md, lines: [1, 40], note: "documented invocation, scale 42 µm, age 10.01 Ma", supports: true}
+    remediation:
+      - id: R4
+        item: "Residual, not a failed numerical gate: no second assessor, and ~/.nanopub/profile.yml is absent so the nanopubs stay unsigned."
