@@ -1,0 +1,62 @@
+sim_id: delphi10000-dionaea-muscipula-turing-wavelength-s0
+slot: 3169
+organism: Dionaea muscipula
+common_name: Venus flytrap
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 2.4e-05
+log10_size_m: -4.62
+size_human: 24 µm
+scale_tier: 4_cellular_10um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength on the adaxial epidermis of Dionaea muscipula (Holocene extant)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "1/1"
+fossil_lineage_group: ""
+predecessor_scale_m: 8.0e-06
+successor_scale_m: 4.8e-04
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 wavenumber selection at 24 µm
+  a: 0.1
+  b: 0.9
+  diffusivity_ratio: 18
+  lambda_c_um: 24
+  domain_um: [192, 144]
+  dx_um: 1.5
+  grid: [128, 96]
+  seed: 3169
+  script: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py
+  inputs:
+    - datasets/dionaea_muscipula_turing_wavelength_s0/dionaea_muscipula_turing_wavelength_s0_reference.json
+    - datasets/dionaea_muscipula_turing_wavelength_s0/dionaea_muscipula_trap_lobe_specimen.jpg
+    - datasets/dionaea_muscipula_turing_wavelength_s0/scout_manifest.json
+    - datasets/dionaea_muscipula_turing_wavelength_s0/paper_citations.bib
+    - datasets/dionaea_muscipula_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing diffusion margin
+    formula: "Delta = Dv * f_u + Du * g_v"
+    lean_decl: MathOfBiology.Loop_3169.turing_margin
+    lean_theorem: MathOfBiology.Loop_3169.patterned_margin_positive
+    lean_locus: morphoeval/lean/loops/Loop_3169_dionaea_muscipula_turing_wavelength_s0.lean#L15-L21
+    variables: "Du, Dv, f_u, g_v at the Schnakenberg steady state (f_u, g_v) = (0.8, -1)"
+    role: Positive margin is required for a Turing band at 24 µm in Dionaea muscipula
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py#L115-L146
+  - law_name: Critical wavelength
+    formula: "lambda_c = 2 * pi / k_c,  k_c^2 = (Dv * f_u + Du * g_v) / (2 * Du * Dv)"
+    lean_decl: MathOfBiology.Loop_3169.domain_holds_eight_wavelengths
+    lean_theorem: MathOfBiology.Loop_3169.domain_holds_eight_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3169_dionaea_muscipula_turing_wavelength_s0.lean#L35-L37
+    variables: "lambda_c = 24 µm on a 192 µm patch (eight wavelengths); age 0 Ma"
+    role: Wavenumber selection for stripes, spots and ocelli
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py#L134-L158
+  - law_name: Equal-diffusion ablation and the subcellular predecessor
+    formula: "Dv = Du implies Delta < 0; at L = 8 µm, k_min = pi/L lies above the Turing band"
+    lean_decl: MathOfBiology.Loop_3169.equal_diffusion_ablation
+    lean_theorem: MathOfBiology.Loop_3169.predecessor_shorter_than_one_wavelength
+    lean_locus: morphoeval/lean/loops/Loop_3169_dionaea_muscipula_turing_wavelength_s0.lean#L30-L42
+    variables: "ablation margin negative; predecessor 8 µm; successor 480 µm holds 20 wavelengths"
+    role: What changes at 24 µm and 0 Ma relative to the neighbouring scales of this single chronospecies
+    source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py#L311-L394

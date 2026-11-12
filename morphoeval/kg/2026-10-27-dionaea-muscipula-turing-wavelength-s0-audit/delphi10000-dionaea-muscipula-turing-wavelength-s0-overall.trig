@@ -1,0 +1,70 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dionaea-muscipula-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dionaea-muscipula-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dionaea-muscipula-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Dionaea muscipula Turing wavenumber at 24 µm (pass 1, unfitted field) — MorphoEval overall 59.4/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 runs Schnakenberg kinetics on a 192 µm by 144 µm adaxial patch with Du and Dv chosen so the linear wavelength is 24 µm, and writes a full-bleed red activator GIF (12 frames, 640×480). Computer-vision similarity of that GIF to the CC BY-SA trap photograph is 73.0. The saturated Fourier wavelength on the patch is 26.63 µm. No diffusivity sweep, no equal-diffusion ablation, and no specimen-versus-render segmentation are in the emitted metrics. The only saved comparison is λ = 24 µm against λ = 24 µm. Overall 59.4/100 (faithfulness 51.1, reproducibility 78.5); rubric morphoeval 0.1.0; checkpoint commit d71d2f0b1c64d11b069392db32c90726b8fa5d72; environment: . Dimension assessments: Model fidelity to source 76, Morphological realism / specimen match 46, Parameter expressivity 40, Morphometric validation 34, Source and data traceability 86, Code-to-model traceability 70, Reproducibility package 78. Output judged: docs/media/dionaea_muscipula_turing_wavelength_s0_growth.gif: rendered output of models/2026-delphi10000-dionaea-muscipula-turing-wavelength-s0.py at d71d2f0b1c64d11b069392db32c90726b8fa5d72, image/gif, 1467858 B, 640×480 px, 12 frames, artifact_sha256 3c8a8601e273489aff9c29aa29131418152771fcf5240b41f9ddc42ed4460021 (sha256 3c8a8601e273489aff9c29aa29131418152771fcf5240b41f9ddc42ed4460021), spec_fingerprint 8e108788aba01a68d605b3e6f5b55f34806823e95c468fc791b29029952be4e4. Dual provenance: spec_fingerprint: 8e108788aba01a68d605b3e6f5b55f34806823e95c468fc791b29029952be4e4; artifact_sha256: 3c8a8601e273489aff9c29aa29131418152771fcf5240b41f9ddc42ed4460021; input_dataset_sha256: {datasets/dionaea_muscipula_turing_wavelength_s0/README.md=3f406da6d038e1ef..., datasets/dionaea_muscipula_turing_wavelength_s0/dionaea_muscipula_trap_lobe_specimen.jpg=6e5b87a782e373b3..., datasets/dionaea_muscipula_turing_wavelength_s0/dionaea_muscipula_turing_wavelength_s0_reference.json=7976efe0424723e6..., datasets/dionaea_muscipula_turing_wavelength_s0/paper_citations.bib=d5d325187b9bbe7d..., datasets/dionaea_muscipula_turing_wavelength_s0/scout_manifest.json=732331a6145be952...}. Claim boundary: reported_in_source: Turing 1952: a linear reaction-diffusion system selects a finite critical wavenumber k_c. | Schnakenberg 1979: the two-species kinetics du/dt = a − u + u²v, dv/dt = b − u²v. | Forterre et al. 2005: the Dionaea lobe snaps by curvature inversion. That is context, not this wavelength law.; reconstructed_in_script: Jacobian at (a, b) = (0.10, 0.90) and diffusivities that place λ_c at the assigned 24 µm. | Semi-implicit Fourier integration of the nonlinear PDE on the 192 µm patch (--emit 1).; transfer_boundary: 24 µm is the slot scale (tier 4_cellular_10um, detail), not a new measurement of gland spacing. | Age is 0 Ma, Holocene extant, chronoseries 1/1.; does_not_claim: That the pass-1 GIF is a pixel fit to the trap photograph. | That a second assessor scored this audit.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': 'Add a diffusivity-scale sweep and show that the PDE wavelength tracks 24*sqrt(s).'}",
+            "remediation needed: {'id': 'R2', 'item': 'Add the equal-diffusion ablation (Dv = Du) as a negative control with σ_max < 0.'}",
+            "remediation needed: {'id': 'R3', 'item': 'Segment the real specimen and the render (foreground, coherency, circularity, KS). Values must not be copies of the references.'}",
+            "remediation needed: {'id': 'R4', 'item': 'Report Pearson r and RMSE for σ_PDE(k) against σ_analytic(k), and keep r > 0.98.'}",
+            "remediation needed: {'id': 'R5', 'item': \"Rebuild the GIF so the last frame carries the trap's cilia and lobe geometry; pass-1 CV is 73.0 and image fitness stays under 70 at these audit subscores.\"}",
+            "remediation needed: {'id': 'R6', 'item': 'No second assessor. Left open: this loop is one agent.'}" ;
+        pk:hasScore "0.594"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second assessor)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1038/nature03185>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.1179047> .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1038/nature03185> dct:title "How the Venus flytrap snaps" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.1179047> dct:title "Reaction-diffusion model as a framework for understanding biological pattern formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Dionaea muscipula Turing wavenumber at 24 µm (pass 1, unfitted field) — MorphoEval overall 59.4/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:47:22Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dionaea-muscipula-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dionaea-muscipula-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
