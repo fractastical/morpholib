@@ -1,0 +1,66 @@
+sim_id: delphi10000-botryllus-schlosseri-turing-wavelength-s0
+slot: 3136
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 3.872e-05
+log10_size_m: -4.412
+size_human: 39 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Botryllus schlosseri (Holocene, 0 Ma, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: ""
+chronoseries: "1/1"
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber k_c at 38.72 µm
+  a: 0.097
+  b: 1.246
+  gamma: 1.37
+  lambda_m: 3.872e-05
+  n_wavelengths: 7
+  domain_m: 0.00027104
+  grid: 96
+  steps: 2400
+  dt: 0.04
+  seed: 3136
+  render_factor: 1.55
+  boundary: periodic
+  inputs:
+    - datasets/botryllus_schlosseri_turing_wavelength_s0/Botryllus_schlosseri_Parent1991_Banyuls.jpg
+    - datasets/botryllus_schlosseri_turing_wavelength_s0/botryllus_schlosseri_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing dispersion determinant
+    formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)
+    lean_decl: MathOfBiology.Loop_3136.law1_invariant
+    lean_theorem: MathOfBiology.Loop_3136.law1_positive_scaling
+    lean_locus: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean#L13-L18
+    variables: "a, b positive stand-ins for the two diffusion weights at λ = 38.72 µm"
+    role: Positivity of the diffusion product in the Turing symbol at the 39 µm detail scale
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py#L122-L129
+  - law_name: Critical wavenumber
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c
+    lean_decl: MathOfBiology.Loop_3136.law2_balance
+    lean_theorem: MathOfBiology.Loop_3136.law2_exact_cancellation
+    lean_locus: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean#L21-L26
+    variables: "p is the cleared wavenumber identity; q cancels"
+    role: Wavelength selection at 38.72 µm inside a 271.04 µm window (7 modes)
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py#L107-L119
+  - law_name: Detail-tier margin over the granule band
+    formula: lambda_c - lambda_floor > 0 with lambda_c = 38.72 µm and lambda_floor = 10 µm
+    lean_decl: MathOfBiology.Loop_3136.law3_threshold_margin
+    lean_theorem: MathOfBiology.Loop_3136.law3_instability_criterion
+    lean_locus: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean#L29-L33
+    variables: "3872 and 1000 encode 38.72 µm and 10 µm in hundredths of a micrometre"
+    role: This Holocene detail mode is coarser than the damped granule band
+    source_citation: "Sorrentino, Manni, Lane & Burighel (2000) DOI:10.1046/j.1463-6395.2000.00054.x"
+    code_locus: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py#L48-L52
+  - law_name: Seven-wavelength detail window
+    formula: N = L / lambda_c = 7
+    lean_decl: MathOfBiology.Loop_3136.law4_mode_count
+    lean_theorem: MathOfBiology.Loop_3136.law4_seven_modes_positive
+    lean_locus: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean#L36-L40
+    variables: "n = 7 wavelengths across the 271.04 µm window"
+    role: Mode count at 0 Ma for the single Botryllus chronospecies in this series
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py#L140-L142

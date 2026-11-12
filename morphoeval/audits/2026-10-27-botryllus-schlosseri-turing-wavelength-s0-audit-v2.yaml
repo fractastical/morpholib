@@ -1,0 +1,145 @@
+# Pass 2 audit — Botryllus schlosseri Turing wavelength, slot 3136.
+# Closes Pass-1 R1 (diffusivity-ratio sweep), R2 (autocatalysis knockout), and R3 (RMSE saved with the fit).
+# Weighted overall 85.3.
+audit:
+  id: 2026-10-27-botryllus-schlosseri-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-botryllus-schlosseri-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 files are new on this branch; locus check needs --no-verify-loci until they are committed. No ~/.nanopub/profile.yml, so these nanopubs are not signed."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Alan Mathison Turing"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "J. Schnakenberg"
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Alfred Gierer and Hans Meinhardt"
+    year: 1972
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: "10.1007/BF00289234"
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Shigeru Kondo and Rihito Asai"
+    year: 1995
+    venue: "Nature 376:765-768 (1995)"
+    doi: "10.1038/376765a0"
+  sorrentino2000:
+    title: "Evolution of cerebral vesicles and their sensory organs in an ascidian larva"
+    authors: "Marina Sorrentino, Lucia Manni, Nancy J. Lane and Paolo Burighel"
+    year: 2000
+    venue: "Acta Zoologica 81:243-258 (2000)"
+    doi: "10.1046/j.1463-6395.2000.00054.x"
+  cloney1982:
+    title: "Ascidian larvae and the events of metamorphosis"
+    authors: "Richard A. Cloney"
+    year: 1982
+    venue: "American Zoologist 22:817-826 (1982)"
+    doi: "10.1093/icb/22.4.817"
+simulations:
+  - id: delphi10000-botryllus-schlosseri-turing-wavelength-s0
+    name: "Schnakenberg–Turing wavelength at 39 µm in Botryllus schlosseri (Holocene, detail scale)"
+    organism: "Botryllus schlosseri"
+    script: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py
+    output: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/botryllus_schlosseri_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-botryllus-schlosseri-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo1995, sorrentino2000, cloney1982]
+    summary: >-
+      Pass 2 keeps the seven-wavelength Schnakenberg window (λ assigned 38.72 µm,
+      nonlinear FFT 39.90 µm, 12-frame 640×480 GIF). γ-sweep Pearson r = 0.999998,
+      RMSE = 1.598 cells. With D_u fixed, raising D_v/D_u shortens the onset-formula
+      wavelength monotonically (39.81 → 37.99 µm) while the supercritical peak moves
+      the other way (40.27 → 47.57 µm, r = -0.987, RMSE = 5.652 µm). Equal diffusion
+      stays stable (σ_peak = -0.649). Removing u²v drops the peak growth rate to -1.37.
+      Specimen circularity on the Parent 1991 photograph is 0.085 versus a circle
+      reference of 1. CV similarity of the last GIF frame to that photograph is 83.7.
+    provenance:
+      input_dataset_sha256:
+        datasets/botryllus_schlosseri_turing_wavelength_s0/Botryllus_schlosseri_Parent1991_Banyuls.jpg: "e351975e1a0b4822b9d0a91545403e9770ae958c31a3ba46a2b07fe05f4dff01"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite critical wavenumber when two morphogens diffuse at different rates."
+        - "Schnakenberg 1979: the mass-action system f = a - u + u^2 v, g = b - u^2 v."
+        - "Sorrentino, Manni, Lane and Burighel 2000: ascidian larvae carry a cerebral vesicle with sensory organs, including an ocellus."
+        - "Cloney 1982: review of ascidian larval metamorphosis, including colonial botryllids."
+      reconstructed_in_script:
+        - "Slot-3136 parameters a=0.097, b=1.246, γ=1.37 solve the onset identity at λ=3.872e-5 m."
+        - "Pass 2 adds the D_v/D_u sweep and the u^2 v knockout beside the γ sweep, equal-diffusion control, specimen segmentation, KS test, and seed CV."
+      transfer_boundary:
+        - "Kondo and Asai 1995 is the pigment-stripe exemplar of the same law. It is not a Botryllus measurement."
+        - "39 µm is the MorphoEval detail-tier assignment, not a caliper reading on the Parent 1991 colony photograph."
+      does_not_claim:
+        - "Does not claim that Botryllus star systems are produced by this PDE."
+        - "Does not claim the colony photograph was taken at 39 µm."
+        - "Does not claim a second independent assessor scored this audit."
+        - "Does not claim the nanopublications are cryptographically signed."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Schnakenberg kinetics, the dispersion relation, and the onset identity for k_c are implemented directly and recover λ = 38.72 µm. Pass 2 adds the two controls the law predicts: unequal diffusion is required, and so is the u²v autocatalytic term (knockout σ_peak = -1.37)."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [77, 129], note: "jacobian through growth_rates", supports: true}
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [199, 258], note: "ratio_sweep and autocatalysis_knockout", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The GIF is unchanged from Pass 1: burgundy-gold spots in the colony's colour histogram, CV similarity 83.7 against the Parent 1991 photograph. The star systems themselves are not reconstructed, so the score stays below the computer-vision number."
+        evidence:
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "photograph beside activator, dispersion, sweeps, and ablations", supports: true}
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames at 640x480", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "γ scales both the formula wavelength and the dispersion peak together (r = 0.999998). With D_u fixed, increasing D_v/D_u shortens the formula wavelength monotonically and lengthens the supercritical peak monotonically. Both curves are on the comparison figure."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [145, 177], note: "gamma_sweep_gof", supports: true}
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [199, 237], note: "ratio_sweep", supports: true}
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "γ panel and ratio panel", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Nonlinear FFT wavelength 39.90 µm versus assigned 38.72 µm. γ-sweep Pearson r = 0.999998, RMSE = 1.598 cells. Ratio-sweep RMSE = 5.652 µm versus a reference of 0. Specimen circularity 0.085 versus 1. Seed CV and the KS orientation statistic are recorded. The colony photograph is not at the 39 µm scale."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [579, 655], note: "measure_morphoeval including ratio RMSE and knockout", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/botryllus_schlosseri_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pearson, RMSE, KS, ratio sweep, knockout", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "DOIs were read back from OpenAlex. The specimen SHA-256 matches the vendored public-domain Parent 1991 file, with author, locality, and license."
+        evidence:
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/paper_citations.bib, lines: [1, 65], note: "six citations", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/botryllus_schlosseri_turing_wavelength_s0_reference.json, lines: [62, 78], note: "SHA-256, 39 µm, 0 Ma", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Docstring, function names, and the Lean module state the same four facts: positive diffusion product, cancellation in the wavenumber identity, 38.72 µm above the 10 µm floor, and seven modes in the detail window."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [1, 40], note: "docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean, lines: [12, 40], note: "four theorems, zero sorry", supports: true}
+      repro-package:
+        value: 90
+        rationale: "--self-test now also requires the ratio sweep to be monotone, the γ-sweep Pearson r to exceed 0.98, the knockout to be stable, and the specimen digest to match the reference JSON. Seed 3136 is fixed."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [658, 707], note: "self_test", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/README.md, lines: [26, 31], note: "invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved. Diffusivity-ratio sweep with D_u fixed: formula λ falls monotonically from 39.81 µm to 37.99 µm; supercritical peak λ rises from 40.27 µm to 47.57 µm."
+      - id: R2
+        item: "Resolved. Autocatalysis knockout (u^2 v removed) gives σ_peak = -1.37, so the band of positive growth disappears."
+      - id: R3
+        item: "Resolved. Ratio-sweep RMSE 5.652 µm is stored in the metrics JSON beside γ-sweep Pearson r = 0.999998, RMSE 1.598 cells, KS = 0.086, and seed spacing CV."
