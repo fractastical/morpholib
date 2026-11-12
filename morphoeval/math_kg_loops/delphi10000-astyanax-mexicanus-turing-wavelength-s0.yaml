@@ -1,0 +1,67 @@
+sim_id: delphi10000-astyanax-mexicanus-turing-wavelength-s0
+math_family: Turing reaction-diffusion wavenumber selection
+phenomenon_size_m: 6.656e-07
+log10_size_m: -6.177
+size_human: 666 nm
+scale_tier: 2_macromolecular_100nm
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Astyanax mexicanus (Holocene cave morph)
+geological_age_ma: 0.0
+geological_period: Holocene Cave Morph (Extant)
+fossil_lineage_group: Iconic Vertebrate Sensory & Dermal Specializations
+chronoseries: "1/1 Holocene cave morph; no fossil predecessor or successor"
+compared_with:
+  cellular_sibling_m: 2.418e-05
+  scale_ratio: 36.328125
+equations:
+- law_name: Reaction Jacobian trace (stable without diffusion)
+  formula: "tr(J) = f_u + g_v < 0"
+  lean_decl: MathOfBiology.Loop_3125.trace
+  lean_theorem: MathOfBiology.Loop_3125.trace_stable_without_diffusion
+  lean_locus: morphoeval/lean/loops/Loop_3125_astyanax_mexicanus_turing_wavelength_s0.lean#L17-L23
+  variables: "f_u, g_v at the Schnakenberg steady state, cleared by a factor of 5"
+  role: homogeneous mode must decay
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py#L85-L96
+- law_name: Turing discriminant
+  formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)"
+  lean_decl: MathOfBiology.Loop_3125.diffusionDrive
+  lean_theorem: MathOfBiology.Loop_3125.turing_discriminant
+  lean_locus: morphoeval/lean/loops/Loop_3125_astyanax_mexicanus_turing_wavelength_s0.lean#L33-L36
+  variables: "D_u:D_v = 2:20 on the integer Jacobian (4, 5, -9, -5)"
+  role: necessary condition for a finite unstable band
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py#L85-L103
+- law_name: Critical wavelength
+  formula: "k_c = 2 pi / lambda, lambda = 6.656e-7 m"
+  lean_decl: MathOfBiology.Loop_3125.lambda_tenth_nm
+  lean_theorem: MathOfBiology.Loop_3125.wavenumber_brackets_two_pi
+  lean_locus: morphoeval/lean/loops/Loop_3125_astyanax_mexicanus_turing_wavelength_s0.lean#L45-L51
+  variables: "lambda = 6656 x 10^-10 m; floor(2 pi x 10^7) = 62831853"
+  role: pins the slot wavelength to the wavenumber bracket
+  source_citation: "loop card 666 nm detail scale; Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py#L105-L108
+- law_name: Scale ratio against the 24 micrometre sibling
+  formula: "24180 nm / 666 nm is strictly between 36 and 37"
+  lean_decl: MathOfBiology.Loop_3125.lambda_cell_nm
+  lean_theorem: MathOfBiology.Loop_3125.cellular_sibling_is_longer_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3125_astyanax_mexicanus_turing_wavelength_s0.lean#L53-L59
+  variables: "cellular sibling lambda = 2.418e-5 m"
+  role: states what changes relative to the chromatophore-scale slot
+  source_citation: "Jeffery 2009 DOI:10.1146/annurev-genet-102108-134216"
+  code_locus: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py#L49-L52
+model_spec:
+  model: Schnakenberg reaction-diffusion, periodic Fourier pseudo-spectral, loop 3125
+  lambda_m: 6.656e-07
+  age_ma: 0.0
+  parameters:
+    a: 0.1
+    b: 0.9
+    Du: 2.0
+    Dv: 20.0
+    gamma: 1.0
+    seed: 3125
+    grid: [72, 112]
+  inputs:
+    - datasets/astyanax_mexicanus_turing_wavelength_s0/astyanax_mexicanus_specimen.jpg
+    - datasets/astyanax_mexicanus_turing_wavelength_s0/paper_citations.bib
