@@ -1,0 +1,166 @@
+# Pass 2 audit — closes R1–R3 from the pass-1 Ambulocetus 224 µm audit.
+audit:
+  id: 2026-10-27-ambulocetus-natans-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-ambulocetus-natans-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-ambulocetus-natans-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2)"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: dff4f2b5
+    note: "Pass 2 working tree on the loop branch. Origin URL in this checkout does not match the plain repository URL, so commit-pinned loci are not git-verified here."
+    environment:
+      python: "3.12"
+      numpy: "2.5"
+      scipy: "1.18"
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: "1952"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: "1979"
+    doi: "10.1016/0022-5193(79)90042-0"
+  thewissen1994:
+    title: "Fossil evidence for the origin of aquatic locomotion in archaeocete whales"
+    authors: "Thewissen, J. G. M.; Hussain, S. T.; Arif, M."
+    venue: "Science 263:210-212 (1994)"
+    year: "1994"
+    doi: "10.1126/science.263.5144.210"
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S.; Miura, T."
+    venue: "Science 329:1616-1620 (2010)"
+    year: "2010"
+    doi: "10.1126/science.1179047"
+  gingerich1994:
+    title: "New whale from the Eocene of Pakistan and the origin of cetacean swimming"
+    authors: "Gingerich, P. D.; Raza, S. M.; Arif, M.; Anwar, M.; Zhou, X."
+    venue: "Nature 368:844-847 (1994)"
+    year: "1994"
+    doi: "10.1038/368844a0"
+  thewissen2001:
+    title: "Skeletons of terrestrial cetaceans and the relationship of whales to artiodactyls"
+    authors: "Thewissen, J. G. M.; Williams, E. M.; Roe, L. J.; Hussain, S. T."
+    venue: "Nature 413:277-281 (2001)"
+    year: "2001"
+    doi: "10.1038/35095005"
+simulations:
+  - id: delphi10000-ambulocetus-natans-turing-wavelength-s0
+    name: "Ambulocetus natans Turing wavenumber at 224 µm (47.5 Ma, detail primordium)"
+    organism: "Ambulocetus natans"
+    domain: morphogenesis
+    script: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py
+    output: docs/media/ambulocetus_natans_turing_wavelength_s0_growth.gif
+    also:
+      - morphoeval/lean/loops/Loop_3106_ambulocetus_natans_turing_wavelength_s0.lean
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-ambulocetus-natans-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, thewissen1994, kondo2010, gingerich1994, thewissen2001]
+    summary: >-
+      Pass 2 sets ANALYSIS_PASS=2. Three seeds give emergent wavelengths 172.8, 175.9
+      and 177.4 µm (the pass-1 single-seed value was 177.8 µm). Re-running the nonlinear
+      patch at the chronoseries hydrations gives 127.7 µm (Pakicetus, h=0.72), 177.4 µm
+      (Ambulocetus, h=1) and 239.5 µm (Rodhocetus, h=1.35), monotone and in the same order
+      as 190, 224 and 260 µm from lambda = 224 µm * sqrt(h). The fossil mask now keeps the
+      largest Otsu component (foreground fraction 0.178 to 0.161). Dispersion fit is
+      unchanged: Pearson r=0.9997, RMSE=0.0034. The nonlinear peak remains shorter than
+      the analytic fastest mode; that gap is reported. GIF is 12 frames at 720x540.
+      Direct CV similarity of the last frame to the Naturalis photograph is 91.6.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite wavenumber."
+        - "Schnakenberg 1979: activator-inhibitor kinetics."
+        - "Thewissen, Hussain and Arif 1994: Ambulocetus natans as an amphibious archaeocete."
+        - "Thewissen et al. 2001 and Gingerich et al. 1994 place Pakicetus and Rodhocetus on either side of that habit."
+      reconstructed_in_script:
+        - "Schnakenberg parameters a=0.05, b=0.90, Du=1, Dv=50, gamma=8, length-scaled to a 224 µm fastest analytic mode."
+        - "Multi-seed nonlinear runs and hydration re-runs at h=0.72, 1.0 and 1.35."
+        - "Largest-component Otsu mask on the Naturalis photograph."
+      transfer_boundary:
+        - "h=0.72 and h=1.35 remain a diffusivity transfer, not a measurement from the fossil papers."
+        - "The flank inset is a dermal-field window on a photograph of bone."
+      does_not_claim:
+        - "That the skeleton preserves 224 µm pigment stripes."
+        - "That the emergent ~177 µm peak equals the analytic 224 µm target."
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          Same Schnakenberg system and eigenvalue dispersion as pass 1 (r=0.9997).
+          Pass 2 adds a log-parabola radial peak so the reported wavelength is not
+          an integer FFT bin, and it re-integrates the PDE at the predecessor and
+          successor hydrations instead of only scaling the closed form.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [68, 88], note: "sigma(k) and onset k_c", supports: true}
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [192, 251], note: "Sub-bin wavelength and nonlinear integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3106_ambulocetus_natans_turing_wavelength_s0.lean, lines: [31, 53], note: "Chronoseries order and stripe counts", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Unchanged composite: the Naturalis mount fills the frame and a flank window
+          shows the growing activator field. The mount is recognizable. Pigment is
+          not preserved on the fossil, so the inset is a model overlay.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [345, 372], note: "GIF composite", supports: true}
+          - {file: docs/media/ambulocetus_natans_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720x540, last-frame CV 91.6 against the mount", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Nonlinear emergent wavelength increases with hydration: 127.7, 177.4, 239.5 µm
+          at h=0.72, 1.0, 1.35. That is the same order as the analytic sqrt(h) law
+          (190, 224, 260 µm). Equal diffusion still suppresses the band. The yellow
+          points on the chronoseries panel are those re-runs.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [457, 463], note: "Hydration re-runs when ANALYSIS_PASS>=2", supports: true}
+          - {file: docs/media/ambulocetus_natans_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Analytic bars plus nonlinear markers", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Dispersion Pearson r=0.9997 and RMSE=0.0034 stand. Three seeds span 172.8–177.4 µm.
+          Specimen coherency 0.359 versus model coherency 0.114, KS=0.066, foreground
+          fraction 0.161 after largest-component cleanup. Emergent 177.4 µm is not
+          overwritten to equal the 224 µm reference.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [290, 308], note: "Otsu plus largest-component cleanup", supports: true}
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [522, 598], note: "Non-circular specimen and wavelength rows", supports: true}
+          - {file: datasets/ambulocetus_natans_turing_wavelength_s0/ambulocetus_natans_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "extra_seed_lambda_m and measured_by_h", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Unchanged provenance: six DOIs, Commons photograph by Ghedoghedo (2011),
+          CC BY-SA 3.0, SHA-256 checked before the run.
+        evidence:
+          - {file: datasets/ambulocetus_natans_turing_wavelength_s0/ambulocetus_natans_turing_wavelength_s0_reference.json, lines: [63, 73], note: "Pinned specimen record", supports: true}
+          - {file: datasets/ambulocetus_natans_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "BibTeX including chronoseries papers", supports: true}
+      code-traceability:
+        value: 87
+        rationale: >-
+          The pass-2 gate is the ANALYSIS_PASS branch in run_all, next to lambda_of_h
+          and the Lean statements of the same ordering. Float parameters stay in the
+          script; Lean keeps the integer sign conditions.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [43, 46], note: "ANALYSIS_PASS = 2", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-ambulocetus-natans-turing-wavelength-s0.yaml, lines: [14, 48], note: "Law record for this sim id", supports: true}
+      repro-package:
+        value: 91
+        rationale: >-
+          --self-test still requires r>0.98, ablation sign, chronoseries order, at least
+          10 frames and 480 px. Pass 2 adds the extra seeds and hydration runs under the
+          same seed family (3106, 3123, 3147) without changing the pinned specimen digest.
+        evidence:
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [613, 628], note: "Self-test gate", supports: true}
+          - {file: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py, lines: [436, 443], note: "Runtime SHA-256 pin", supports: true}
+    remediation:
+      - id: R4
+        item: "Emergent wavelength stays near 177 µm against the analytic fastest-mode target of 224 µm (ratio about 0.79 at h=1). Reported as a nonlinear shift, not adjusted to force agreement."

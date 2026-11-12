@@ -1,0 +1,55 @@
+sim_id: delphi10000-ambulocetus-natans-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 0.000224
+log10_size_m: -3.65
+size_human: 224 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Ambulocetus natans (224 µm, detail scale)
+geological_age_ma: 47.5
+geological_period: Early Eocene (Lutetian, 47.5 Ma)
+fossil_lineage_group: Cetacean Limb-to-Flipper Fossil Series
+model_spec:
+  model: Schnakenberg (1979) activator-inhibitor with Turing (1952) wavenumber k_c, length-scaled so the fastest mode is 224 µm
+  a: 0.05
+  b: 0.9
+  Du: 1.0
+  Dv: 50.0
+  gamma: 8.0
+  grid_resolution: [50, 50]
+  seed: 3106
+  lambda_m: 0.000224
+  hydration:
+    pakicetus: 0.72
+    ambulocetus: 1.0
+    rodhocetus: 1.35
+  inputs:
+    - datasets/ambulocetus_natans_turing_wavelength_s0/ambulocetus_natans_naturalis_specimen.jpg
+    - datasets/ambulocetus_natans_turing_wavelength_s0/ambulocetus_natans_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing trace-diffusion numerator
+    formula: D_v f_u + D_u g_v > 0 opens a finite-k band; equal diffusivities keep it negative
+    lean_decl: MathOfBiology.Loop_3106.dvTuring
+    lean_theorem: MathOfBiology.Loop_3106.faster_inhibitor_opens_turing_band
+    lean_locus: morphoeval/lean/loops/Loop_3106_ambulocetus_natans_turing_wavelength_s0.lean#L60-L63
+    variables: D_u=2, D_v=40, f_u=3, g_v=-6 in the integer skeleton; dimensionless floats D_u=1, D_v=50 in the script
+    role: Sign condition for Turing wavenumber selection at the 224 µm primordium
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py
+  - law_name: Critical wavelength and chronoseries order
+    formula: lambda(h) = 224 µm * sqrt(h); 190 µm < 224 µm < 260 µm so k decreases Pakicetus to Rodhocetus
+    lean_decl: MathOfBiology.Loop_3106.lambdaAmbulocetusUm
+    lean_theorem: MathOfBiology.Loop_3106.chronoseries_wavelength_increases
+    lean_locus: morphoeval/lean/loops/Loop_3106_ambulocetus_natans_turing_wavelength_s0.lean#L31-L41
+    variables: h_Pakicetus=0.72, h_Ambulocetus=1, h_Rodhocetus=1.35; age 47.5 Ma
+    role: What changes at this age and scale relative to the predecessor and successor chronospecies
+    source_citation: Thewissen, Hussain and Arif (1994) DOI:10.1126/science.263.5144.210
+    code_locus: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py
+  - law_name: Stripe count on a fixed primordium
+    formula: N = floor(L / lambda) with L = 1344 µm; N = 7, 6, 5 along the chronoseries
+    lean_decl: MathOfBiology.Loop_3106.primordiumDomainUm
+    lean_theorem: MathOfBiology.Loop_3106.stripe_count_decreases_as_wavelength_grows
+    lean_locus: morphoeval/lean/loops/Loop_3106_ambulocetus_natans_turing_wavelength_s0.lean#L48-L53
+    variables: L = 6 * 224 µm
+    role: Domain-growth mode count at the detail scale, distinct from the 1 cm sibling slot
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-ambulocetus-natans-turing-wavelength-s0.py
