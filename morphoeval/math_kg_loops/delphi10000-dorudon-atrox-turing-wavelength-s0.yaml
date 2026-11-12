@@ -1,0 +1,62 @@
+sim_id: delphi10000-dorudon-atrox-turing-wavelength-s0
+slot: 3171
+organism: Dorudon atrox
+age_ma: 37.0
+scale_um: 253
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  model: Schnakenberg activator-inhibitor, critical wavelength pinned at 253 µm (Priabonian Dorudon atrox)
+  lambda_um: 253.0
+  age_ma: 37.0
+  a: 0.164
+  b: 0.837
+  diffusion_ratio: 15.97000185961372
+  Du_um2: 406.1279694525256
+  Dv_um2: 6485.864427397978
+  grid_resolution: [80, 80]
+  rd_steps: 6000
+  seed: 3171
+  predecessor_modes: 8
+  dorudon_modes: 3
+  successor_modes: 0
+  inputs:
+    - datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_turing_wavelength_s0_specimen.jpg
+    - datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_wadi_el_hitan.jpg
+    - datasets/dorudon_atrox_turing_wavelength_s0/dorudon_atrox_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg steady state and Jacobian trace-determinant
+    formula: "u0 = a + b, v0 = b/u0^2; trace = f_u + g_v < 0; det = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3171.traceJ
+    lean_theorem: MathOfBiology.Loop_3171.trace_negative_without_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean#L41-L45
+    variables: "a = 0.164, b = 0.837; integer image fu=6723, fv=10020, gu=-16723, gv=-10020"
+    role: Diffusion-free stability of the Dorudon dermal steady state at the 253 µm slot
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py#L105-L145
+  - law_name: Critical wavelength pinned at 253 µm
+    formula: "k_c^2 = sqrt(det(J)/(Du Dv)); lambda_c = 2*pi/k_c = 253 µm"
+    lean_decl: MathOfBiology.Loop_3171.turingMargin
+    lean_theorem: MathOfBiology.Loop_3171.turing_margin_positive
+    lean_locus: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean#L47-L48
+    variables: "Du = 406.128 µm^2, Dv = 6485.864 µm^2, ratio = 15.970"
+    role: Wavenumber selection for an ocellus on a 253 µm primordium
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py#L124-L164
+  - law_name: Equal-diffusion ablation
+    formula: "(Du f_u + Du g_v)^2 - 4 Du Du det(J) < 0 when Du = Dv"
+    lean_decl: MathOfBiology.Loop_3171.equalDiffusionMargin
+    lean_theorem: MathOfBiology.Loop_3171.equal_diffusion_margin_negative
+    lean_locus: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean#L50-L51
+    variables: "Du = Dv = 406 in the integer image"
+    role: Negative control. Same chemistry, no differential diffusion, no pattern.
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py#L160-L171
+  - law_name: Hindlimb domain shrinks at fixed wavelength
+    formula: "N_pred = 8, N_dorudon = 3, N_successor = 0; 3*253 = 759; 8*253 = 2024"
+    lean_decl: MathOfBiology.Loop_3171.dorudonModes
+    lean_theorem: MathOfBiology.Loop_3171.hindlimb_domain_shrinks
+    lean_locus: morphoeval/lean/loops/Loop_3171_dorudon_atrox_turing_wavelength_s0.lean#L53-L61
+    variables: "lambda fixed at 253 µm across 47 Ma, 37.0 Ma, and 0 Ma"
+    role: What changes at this scale and age is the bud domain, not k_c
+    source_citation: "Gingerich, Smith and Simons 1990 DOI:10.1126/science.249.4965.154; Uhen 2007 DOI:10.1002/ar.20545"
+    code_locus: models/2026-delphi10000-dorudon-atrox-turing-wavelength-s0.py#L174-L193
