@@ -1,0 +1,71 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-gallus-gallus-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gallus-gallus-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gallus-gallus-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Gallus gallus Holocene Turing pigment-ocellus wavelength, 319.2 µm (pass 1) — MorphoEval overall 72.4/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 solves the Schnakenberg onset wavenumber so λ_c = 319.2 µm exactly at age 0 Ma (Gallus chronoseries 1/1, no predecessor or successor). A single radial harmonic plus a quadratic trend matches the gallery ocellus plate at Pearson r = 0.985 against a trend-only null of lower correlation. The painted scale-bar reader is wrong on this pass (it spans stray bright pixels and reports ~10 µm). There is no Dv sweep, no integrated equal-diffusion ablation, and no computer-vision segmentation of the plate. Overall 72.4/100 (faithfulness 68.3, reproducibility 82.1); rubric morphoeval 0.1.0; checkpoint commit 8be940bbc4e23235f2785d66e06db9da83a65aee; environment: python 3.12.3, note numpy, scipy, pillow, matplotlib, pyyaml, rdflib installed for this run. Dimension assessments: Model fidelity to source 76, Morphological realism / specimen match 74, Parameter expressivity 48, Morphometric validation 62, Source and data traceability 84, Code-to-model traceability 80, Reproducibility package 82. Output judged: docs/media/gallus_gallus_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py at 8be940bbc4e23235f2785d66e06db9da83a65aee, image/png, 436094 B, 1500×504 px, artifact_sha256 a9d7854ae24967e566ae04c4f936b5a8c06cfb5cddd3f5d8ec4e3e5ed7dc32cf (sha256 a9d7854ae24967e566ae04c4f936b5a8c06cfb5cddd3f5d8ec4e3e5ed7dc32cf), spec_fingerprint d79e485299e3508a55f35819cf41b353933badb10f650ee2ade00ae23887b314. Dual provenance: spec_fingerprint: d79e485299e3508a55f35819cf41b353933badb10f650ee2ade00ae23887b314; artifact_sha256: a9d7854ae24967e566ae04c4f936b5a8c06cfb5cddd3f5d8ec4e3e5ed7dc32cf; input_dataset_sha256: {datasets/gallus_gallus_turing_wavelength_s0/gallus_gallus_ocellus_specimen.jpg=7e7d58db6bb564eb..., datasets/gallus_gallus_turing_wavelength_s0/gallus_gallus_turing_wavelength_s0_reference.json=5589d95bf0b106f7...}. Claim boundary: reported_in_source: Turing (1952) derived a finite-wavenumber instability of a homogeneous reaction-diffusion state. | Prum & Williamson (2002) reproduced within-feather bars, spots, and ocelli with reaction-diffusion on a growing feather germ. | Harris et al. (2005) reported Shh/Bmp2 activator-inhibitor interactions during barb-ridge formation in embryonic Gallus gallus.; reconstructed_in_script: Schnakenberg slopes at (a, b) = (0.2005, 0.7995), Du = 1, Dv = 16, with γ solved so λ_c = 319.2 µm. | Singleton Holocene chronoseries: age 0 Ma, index 1 of 1, no predecessor and no successor. | Single-harmonic radial reconstruction of the gallery ocellus plate, grown by a Stuart-Landau amplitude in a 12-frame GIF.; transfer_boundary: 319.2 µm is the slot's primordium-scale wavelength, not a length read off the plate's painted 100 µm bar. | The gallery plate is the campaign ocellus image, not a micrograph with a calibrated scale.; does_not_claim: That a blinded prediction of a second feather was tested. | That the painted bar measures 319.2 µm. | That pass 1 already contains a parameter sweep, an integrated ablation, or specimen CV segmentation.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': 'Sweep inhibitor diffusivity Dv at fixed γ and show λ_c(Dv) and the Turing margin R(Dv), including the stable side of onset.'}",
+            "remediation needed: {'id': 'R2', 'item': 'Integrate the Schnakenberg PDE: the critical mode must grow at Dv = 16 and decay under the equal-diffusion ablation Dv = Du.'}",
+            "remediation needed: {'id': 'R3', 'item': 'Segment the real ocellus plate (foreground fraction, structure-tensor coherency, circularity) and compare those measurements to the rendered frame.'}",
+            "remediation needed: {'id': 'R4', 'item': 'Replace the single in-sample harmonic with a held-out multi-harmonic goodness-of-fit (Pearson r, RMSE, KS) and fix the painted scale-bar measurement.'}",
+            "remediation needed: {'id': 'R5', 'item': 'Force-track gallus_gallus_ocellus_specimen.jpg so the SHA-256 pin is in the repository despite the specimen-jpg gitignore.'}" ;
+        pk:hasScore "0.724"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second provider on this pass)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.0500781102>,
+            <https://doi.org/10.1098/rspb.2001.1896>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1371/journal.pbio.1001028> .
+    <https://doi.org/10.1073/pnas.0500781102> dct:title "Molecular evidence for an activator-inhibitor mechanism in development of embryonic feather branching" .
+    <https://doi.org/10.1098/rspb.2001.1896> dct:title "Reaction-diffusion models of within-feather pigmentation patterning" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1371/journal.pbio.1001028> dct:title "Cryptic patterning of avian skin confers a developmental facility for loss of neck feathering" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Gallus gallus Holocene Turing pigment-ocellus wavelength, 319.2 µm (pass 1) — MorphoEval overall 72.4/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:49:45Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-gallus-gallus-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-gallus-gallus-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/feather-pigment-ocellus> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/feather-pigment-ocellus> rdfs:label "feather-pigment-ocellus" .
+}

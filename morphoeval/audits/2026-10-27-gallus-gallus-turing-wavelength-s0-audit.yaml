@@ -1,0 +1,135 @@
+# MorphoEval audit — Gallus gallus Turing ocellus wavelength, slot 3228, pass 1.
+# λ_c = 319.2 µm, Holocene 0 Ma, chronoseries 1/1.
+audit:
+  id: 2026-10-27-gallus-gallus-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider on this pass)"
+    homepage: "https://x.ai"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8be940bbc4e23235f2785d66e06db9da83a65aee
+    environment:
+      python: "3.12.3"
+      note: "numpy, scipy, pillow, matplotlib, pyyaml, rdflib installed for this run"
+    note: "Pass 1. Onset wavenumber and single-harmonic plate comparison only."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+    url: "https://doi.org/10.1098/rstb.1952.0012"
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum, R. O. and Williamson, S."
+    venue: "Proc. R. Soc. B"
+    doi: "10.1098/rspb.2001.1896"
+    url: "https://doi.org/10.1098/rspb.2001.1896"
+  harris2005:
+    title: "Molecular evidence for an activator-inhibitor mechanism in development of embryonic feather branching"
+    authors: "Harris, M. P., Williamson, S., Fallon, J. F., Meinhardt, H. and Prum, R. O."
+    venue: "PNAS"
+    doi: "10.1073/pnas.0500781102"
+    url: "https://doi.org/10.1073/pnas.0500781102"
+  mou2011:
+    title: "Cryptic patterning of avian skin confers a developmental facility for loss of neck feathering"
+    authors: "Mou, C. et al."
+    venue: "PLoS Biology"
+    doi: "10.1371/journal.pbio.1001028"
+    url: "https://doi.org/10.1371/journal.pbio.1001028"
+simulations:
+  - id: delphi10000-gallus-gallus-turing-wavelength-s0
+    name: "Gallus gallus Holocene Turing pigment-ocellus wavelength, 319.2 µm (pass 1)"
+    organism: "Gallus gallus"
+    domain: feather-pigment-ocellus
+    script: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py
+    output: docs/media/gallus_gallus_turing_wavelength_s0_comparison.png
+    also:
+      - morphoeval/lean/loops/Loop_3228_gallus_gallus_turing_wavelength_s0.lean
+    status: evaluated
+    source_refs: [turing1952, prum2002, harris2005, mou2011]
+    summary: >-
+      Pass 1 solves the Schnakenberg onset wavenumber so λ_c = 319.2 µm exactly
+      at age 0 Ma (Gallus chronoseries 1/1, no predecessor or successor).
+      A single radial harmonic plus a quadratic trend matches the gallery ocellus
+      plate at Pearson r = 0.985 against a trend-only null of lower correlation.
+      The painted scale-bar reader is wrong on this pass (it spans stray bright
+      pixels and reports ~10 µm). There is no Dv sweep, no integrated
+      equal-diffusion ablation, and no computer-vision segmentation of the plate.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) derived a finite-wavenumber instability of a homogeneous reaction-diffusion state."
+        - "Prum & Williamson (2002) reproduced within-feather bars, spots, and ocelli with reaction-diffusion on a growing feather germ."
+        - "Harris et al. (2005) reported Shh/Bmp2 activator-inhibitor interactions during barb-ridge formation in embryonic Gallus gallus."
+      reconstructed_in_script:
+        - "Schnakenberg slopes at (a, b) = (0.2005, 0.7995), Du = 1, Dv = 16, with γ solved so λ_c = 319.2 µm."
+        - "Singleton Holocene chronoseries: age 0 Ma, index 1 of 1, no predecessor and no successor."
+        - "Single-harmonic radial reconstruction of the gallery ocellus plate, grown by a Stuart-Landau amplitude in a 12-frame GIF."
+      transfer_boundary:
+        - "319.2 µm is the slot's primordium-scale wavelength, not a length read off the plate's painted 100 µm bar."
+        - "The gallery plate is the campaign ocellus image, not a micrograph with a calibrated scale."
+      does_not_claim:
+        - "That a blinded prediction of a second feather was tested."
+        - "That the painted bar measures 319.2 µm."
+        - "That pass 1 already contains a parameter sweep, an integrated ablation, or specimen CV segmentation."
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: "The onset formula k_c^2 = (Dv fu + Du gv) / (2 Du Dv) is implemented and γ is solved so λ_c is 319.2 µm. Pass 1 does not integrate the PDE, so the selected wavelength is analytical rather than emergent from a time-stepper."
+        evidence:
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [62, 104], note: "Schnakenberg slopes, diffusion margin, gamma_for_wavelength, critical_wavelength_um", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3228_gallus_gallus_turing_wavelength_s0.lean, lines: [47, 51], note: "turing_onset_gap", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The 800×600, 12-frame GIF is a centered ocellus in the plate's purple grain and scores CV similarity 90.5 against the gallery plate. The match is a radial fit to that same plate, so it is not an independent feather."
+        evidence:
+          - {file: docs/media/gallus_gallus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 800×600, Stuart-Landau growth of the radial mode", supports: true}
+          - {file: docs/media/gallus_gallus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, reconstruction, and radial profiles", supports: true}
+      parameter-expressivity:
+        value: 48
+        rationale: "a, b, Du, Dv and the solved γ are defined, and the equal-diffusion margin is zero, but pass 1 never sweeps a parameter across a range or shows the resulting change in λ_c or pattern amplitude."
+        evidence:
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [52, 82], note: "fixed (a, b, Du, Dv) and diffusion_margin; no sweep loop", supports: true}
+      morphometric-validation:
+        value: 62
+        rationale: "In-sample Pearson r = 0.985 versus a trend-only null, and the model wavelength 319.2 µm is reported against the (incorrectly read) painted bar. No held-out split, no KS statistic, and no CV segmentation of the plate. The scale-bar width is wrong."
+        evidence:
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [143, 171], note: "single_harmonic_fit Pearson and RMSE", supports: true}
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [362, 414], note: "measure_morphoeval references differ from values", supports: true}
+          - {file: datasets/gallus_gallus_turing_wavelength_s0/gallus_gallus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pass 1 metrics including the bad plate_bar_implies_um", supports: true}
+      source-traceability:
+        value: 84
+        rationale: "Turing 1952, Prum & Williamson 2002, Harris et al. 2005, and Mou et al. 2011 are cited with DOIs. The ocellus plate SHA-256 and the CC BY 4.0 junglefowl voucher are in the reference JSON. The plate JPEG itself matches a datasets/*/*_specimen.jpg gitignore and is not in commit 8be940bb."
+        evidence:
+          - {file: datasets/gallus_gallus_turing_wavelength_s0/paper_citations.bib, lines: [1, 43], note: "four DOI records", supports: true}
+          - {file: datasets/gallus_gallus_turing_wavelength_s0/gallus_gallus_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 319.2 µm and age 0 Ma stated", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "gamma_for_wavelength and critical_wavelength_um are the onset formula. Lean theorems pin the onset gap, the singleton chronoseries, and the six-wavelength patch. The radial renderer is a weakly nonlinear reduction, not a line-by-line transcription of Prum & Williamson's growing-feather geometry."
+        evidence:
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [84, 104], note: "onset wavenumber mapped to λ_c", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-gallus-gallus-turing-wavelength-s0.yaml, lines: [20, 60], note: "equation records with lean and code loci", supports: true}
+      repro-package:
+        value: 82
+        rationale: "--self-test checks λ_c, age 0 Ma, the singleton series, R > 1, and the equal-diffusion margin. Seed 3228 fixes the grain. The known-good command is in the dataset README."
+        evidence:
+          - {file: models/2026-delphi10000-gallus-gallus-turing-wavelength-s0.py, lines: [416, 431], note: "self_test assertions", supports: true}
+          - {file: datasets/gallus_gallus_turing_wavelength_s0/README.md, lines: [28, 34], note: "documented invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Sweep inhibitor diffusivity Dv at fixed γ and show λ_c(Dv) and the Turing margin R(Dv), including the stable side of onset."
+      - id: R2
+        item: "Integrate the Schnakenberg PDE: the critical mode must grow at Dv = 16 and decay under the equal-diffusion ablation Dv = Du."
+      - id: R3
+        item: "Segment the real ocellus plate (foreground fraction, structure-tensor coherency, circularity) and compare those measurements to the rendered frame."
+      - id: R4
+        item: "Replace the single in-sample harmonic with a held-out multi-harmonic goodness-of-fit (Pearson r, RMSE, KS) and fix the painted scale-bar measurement."
+      - id: R5
+        item: "Force-track gallus_gallus_ocellus_specimen.jpg so the SHA-256 pin is in the repository despite the specimen-jpg gitignore."
