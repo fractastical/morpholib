@@ -1,0 +1,72 @@
+{
+  "claim_id": "T1917-025",
+  "sim_id": "thompson1917-t1917-025",
+  "date_made": "1917",
+  "citation": "Thompson (1917), Ch. IX-X, pp. 411-492, Figs. 221-235, 236-259",
+  "claim_text": "Radiolarian and similar siliceous skeletons approximate geodesic/minimal frameworks on a sphere (latticed shells as systems of shortest lines and near-equal partitions).",
+  "state_variables": {
+    "R": "sphere radius (normalised to 1 in model)",
+    "V": "set of junction vertices on the shell",
+    "E": "set of strut edges between junctions",
+    "L_e": "length of edge e (geodesic / great-circle arc length on S^2)",
+    "valence(v)": "number of edges incident at vertex v"
+  },
+  "boundary_conditions": [
+    "Shell approximates a closed spherical surface (Thompson treats radiolarian tests as spherical lattices).",
+    "Struts follow shortest paths on the sphere (great circles) rather than arbitrary Euclidean chords in R^3 when projected.",
+    "Partitions of the surface into near-equal cells (Thompson: 'near-equal partitions')."
+  ],
+  "equations": [
+    {
+      "id": "thompson1917-t1917-025-1",
+      "name": "Great-circle geodesic length",
+      "formula": "L_g(p,q) = R * arccos(p . q)  for unit directions p, q on S^2",
+      "role": "Shortest curve between two points on the sphere"
+    },
+    {
+      "id": "thompson1917-t1917-025-2",
+      "name": "Equal partition on equator",
+      "formula": "n equal azimuthal arcs of length 2 pi R / n have identical geodesic length",
+      "role": "Near-equal partition baseline"
+    },
+    {
+      "id": "thompson1917-t1917-025-3",
+      "name": "Geodesic triangle inequality (sphere)",
+      "formula": "L_g(a,c) <= L_g(a,b) + L_g(b,c)",
+      "role": "Stability / minimality of composite paths"
+    },
+    {
+      "id": "thompson1917-t1917-025-4",
+      "name": "Icosahedral geodesic refinement",
+      "formula": "Subdivide icosahedron faces, project to S^2; edges are great-circle segments",
+      "role": "Reference minimal framework used for morphometric comparison"
+    }
+  ],
+  "parameter_regimes": [
+    {"name": "geodesic_freq", "values": [1, 2, 3, 4], "note": "icosahedral subdivision frequency"},
+    {"name": "edge_length_cv_threshold", "values": [0.05, 0.15, 0.35], "note": "near-equal partition tolerance"},
+    {"name": "ablation", "values": ["euclidean_grid", "random_chords"], "note": "non-geodesic controls"}
+  ],
+  "empirical_claims": [
+    "Haeckel/Challenger radiolarian tests show polygonal lattices suggestive of geodesic nets.",
+    "Thompson compares such shells to systems of shortest lines on a sphere."
+  ],
+  "vendored_files": {
+    "radiolaria_challenger_plate111.jpg": {
+      "sha256": "ae71b483d2973c4471ef07bafaf4e392724a0f280571b402a14da83d7ac21375",
+      "source": "https://commons.wikimedia.org/wiki/File:Radiolaria_(Challenger)_Plate_111.jpg",
+      "license": "Public domain"
+    },
+    "haeckel_radiolaria_plate_1888.jpg": {
+      "sha256": "14f1944cae1d62f02fe09f2305acd7159b11f599b2c5b6035dcb823eebbaa7d7",
+      "source": "https://commons.wikimedia.org/wiki/File:Die_Radiolarien_(Rhizopoda_radiaria)_-_eine_Monographie_(1888)_(20932349692).jpg",
+      "license": "No restrictions"
+    }
+  },
+  "dataset_audit_verdict": {
+    "named_local_file": "datasets/acanthometra_pellucida_flux_canalization/acanthometra_pellucida_specimen.jpg",
+    "present": false,
+    "species_match": "partial (radiolarian taxon, wrong variables)",
+    "primary_specimens_used": ["radiolaria_challenger_plate111.jpg", "haeckel_radiolaria_plate_1888.jpg"]
+  }
+}

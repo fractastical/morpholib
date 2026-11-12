@@ -1,0 +1,85 @@
+# MorphoEval Pass 1 (v1) — Thompson (1917) T1917-025 geodesic radiolarian frameworks
+
+audit:
+  id: 2026-10-31-t1917-025-spicules-geodetics-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Cloud Loop Slot 220 Pass 1)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    commit: 35d30f4cf
+
+references:
+  thompson1917:
+    title: "On Growth and Form (1st ed.), Ch. IX-X"
+    url: https://archive.org/details/ongrowthform1917thom
+  haeckel1887:
+    title: "Challenger Radiolaria Plate 111"
+    url: https://commons.wikimedia.org/wiki/File:Radiolaria_(Challenger)_Plate_111.jpg
+
+simulations:
+  - id: thompson1917-t1917-025
+    name: "Thompson (1917) T1917-025 — radiolarian geodesic spherical lattices"
+    organism: "Radiolaria (Haeckel / Challenger plates)"
+    script: thompson/claims/t1917-025_spicules-geodetics.py
+    output: docs/media/t1917_025_spicules_geodetics_comparison.png
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Thompson (1917) Ch. IX-X: latticed siliceous shells as shortest lines on a sphere with near-equal partitions"
+      reconstructed_in_script:
+        - "Great-circle geodesic edge lengths on icosahedral / Fibonacci-sphere reference nets"
+      does_not_claim:
+        - "Quantitative 3-D SEM tomography from 2-D engravings in Pass 1"
+    source_refs:
+      - thompson1917
+      - haeckel1887
+    summary: >-
+      Pass 1 baseline: geodesic reference mesh and plate comparison figure, single subdivision frequency,
+      no ablation controls, no result.json, incomplete morphometric GOF block.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: Implements arccos geodesic lengths and icosahedral baseline per reference JSON.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [150, 178], note: "geodesic_edge_lengths", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_025.lean, lines: [1, 76], note: "Loop_220 lemmas", supports: true}
+      specimen-match:
+        value: 48
+        rationale: Verified Commons specimens rendered; limited segmentation in Pass 1.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [48, 62], note: "SHA-256 verify", supports: true}
+          - {file: docs/media/t1917_025_spicules_geodetics_comparison.png, lines: [0, 0], note: "comparison PNG", supports: true}
+      parameter-expressivity:
+        value: 40
+        rationale: Single freq in default Pass 1 run.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [268, 270], note: "pass2 false -> one freq", supports: false}
+      morphometric-validation:
+        value: 38
+        rationale: CV only; no ablation or histogram GOF in Pass 1.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [264, 300], note: "partial measure_morphoeval", supports: false}
+      source-traceability:
+        value: 78
+        rationale: scout_manifest + reference JSON + Commons URLs.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-025/scout_manifest.json, lines: [1, 80], note: "Step 1 vetting", supports: true}
+      code-traceability:
+        value: 65
+        rationale: Docstring and math_kg yaml link equations to Lean.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-025.yaml, lines: [1, 40], note: "equation registry", supports: true}
+      repro-package:
+        value: 58
+        rationale: Self-test ok; Pass 1 skips result.json.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [398, 410], note: "run_self_test", supports: true}
+    remediation:
+      - "Full freq sweep and specimen-matched model selection."
+      - "Ablation controls and GOF statistics; write result.json."
