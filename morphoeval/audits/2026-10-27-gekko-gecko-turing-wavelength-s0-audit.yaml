@@ -1,0 +1,155 @@
+audit:
+  id: 2026-10-27-gekko-gecko-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree on cursor/gekko-gecko-turing-wavelength-b6cb. New slot files are not in this commit yet."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B (1952)"
+    doi: 10.1098/rstb.1952.0012
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, James D."
+    year: 1981
+    venue: "Journal of Theoretical Biology (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  manukyan2017:
+    title: "A living mesoscopic cellular automaton made of skin scales"
+    authors: "Manukyan, Montandon, Fofonjka, Smirnov, Milinkovitch"
+    year: 2017
+    venue: "Nature (2017)"
+    doi: 10.1038/nature22031
+  fofonjka2021:
+    title: "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton"
+    authors: "Fofonjka, Milinkovitch"
+    year: 2021
+    venue: "Nature Communications (2021)"
+    doi: 10.1038/s41467-021-22525-1
+  saenko2013:
+    title: "Precise colocalization of interacting structural and pigmentary elements generates extensive color pattern variation in Phelsuma lizards"
+    authors: "Saenko, Teyssier, van der Marel, Milinkovitch"
+    year: 2013
+    venue: "BMC Biology (2013)"
+    doi: 10.1186/1741-7007-11-105
+  dupont2005:
+    title: "Tokay Gecko (Gekko gecko), Wanree Resort, Pak Chong, Thailand"
+    authors: "Dupont, Bernard"
+    year: 2005
+    venue: "Wikimedia Commons, CC BY-SA 2.0"
+    url: https://commons.wikimedia.org/wiki/File:Tokay_Gecko_(Gekko_gecko)_(7109782823).jpg
+simulations:
+  - id: delphi10000-gekko-gecko-turing-wavelength-s0
+    name: "Gekko gecko Turing wavenumber at 242 µm (Holocene, Pass 1)"
+    organism: "Gekko gecko (Tokay gecko)"
+    script: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py
+    output: docs/media/gekko_gecko_turing_wavelength_s0_growth.gif
+    also:
+      - docs/media/gekko_gecko_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, murray1981, manukyan2017, fofonjka2021, saenko2013, dupont2005]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics whose fastest linear mode is calibrated
+      to 242 µm on an 8×6-wavelength primordium (Holocene, 0 Ma). The dorsum crop of
+      Dupont's CC BY-SA photograph is the pattern-class specimen. The sweep, ablation,
+      and specimen segmentation exist in the script but are not yet the scored
+      measurement sidecar; that closure is the Pass 2 remediation.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation for a two-species reaction-diffusion system."
+        - "Murray 1981 use of that wavelength as a coat pre-pattern."
+        - "Manukyan 2017 and Fofonjka 2021: reptile skin can carry a mesoscopic reaction-diffusion pattern (Timon, not Gekko)."
+        - "Saenko 2013: gekkotan color colocalizes structural and pigment cells (Phelsuma, not Gekko)."
+      reconstructed_in_script:
+        - "Schnakenberg field with (a, b) = (0.137, 0.863) and diffusion ratio 1.35 times critical, calibrated so k_c = argmax sigma(k) gives 242 µm."
+        - "Periodic 1936 µm × 1452 µm patch, seed 3235, 12-frame growth GIF."
+      transfer_boundary:
+        - "242 µm is the slot's primordium detail scale, not a published caliper measurement on Gekko gecko."
+        - "The Dupont photograph has no scale bar; it constrains pattern class only."
+      does_not_claim:
+        - "That adult Tokay ocelli are 242 µm apart."
+        - "That Tokay chromatophores implement the Timon scale automaton."
+        - "That setal adhesion spacing is this pigment wavelength."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The dispersion relation and argmax definition of k_c are implemented and calibrated to 242.000 µm. Kinetics are a Schnakenberg skeleton, not a chromatophore cell model."
+        evidence:
+          - {file: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py, lines: [119, 185], note: "growth_rates, k_selected, diffusion-ratio threshold, diffusivity calibration", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "Side-by-side, both are fields of orange spots on a pale ground. The photograph also shows granular scales and a turquoise edge the reaction-diffusion field does not."
+        evidence:
+          - {file: docs/media/gekko_gecko_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 1 four-panel comparison", supports: true}
+          - {file: datasets/gekko_gecko_turing_wavelength_s0/Gekko_gecko_dorsum_cc-by-sa.jpg, lines: [0, 0], note: "Dupont dorsum crop", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: "Diffusivity scale is coded to move lambda as sqrt(s), but Pass 1 does not yet close that sweep as a measured Pearson/RMSE sidecar."
+        evidence:
+          - {file: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py, lines: [261, 297], note: "diffusivity_sweep present, not yet the scored sidecar", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: "Self-test locks the linear wavelength at 242 µm. Specimen blob spacing, coherency, KS, and the nonlinear ring centroid are not yet in the measurement sidecar."
+        evidence:
+          - {file: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py, lines: [242, 259], note: "ring-centroid wavelength in micrometres", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Murray, Manukyan, Fofonjka, and Saenko. Specimen is SHA-256 pinned with author, license, and Commons URL."
+        evidence:
+          - {file: datasets/gekko_gecko_turing_wavelength_s0/paper_citations.bib, lines: [1, 48], note: "DOI entries", supports: true}
+          - {file: datasets/gekko_gecko_turing_wavelength_s0/gekko_gecko_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 242 µm and age 0 Ma", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Module docstring and growth_rates map onto the Turing dispersion. Murray's section numbers are not pinned; the onset shortcut is a separate function."
+        evidence:
+          - {file: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py, lines: [1, 40], note: "equation block and claim boundary in the docstring", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3235, --self-test, and pinned (a, b, ratio margin). Pass 1 self-test passes. Nanopub signing is unavailable on this VM."
+        evidence:
+          - {file: models/2026-delphi10000-gekko-gecko-turing-wavelength-s0.py, lines: [717, 760], note: "self_test checks", supports: true}
+    remediation:
+      - "R1: Put the six-point diffusivity sweep (Pearson r, RMSE) into the measurement sidecar."
+      - "R2: Record the equal-diffusivity ablation and the reaction-off control against the patterned amplitude."
+      - "R3: Segment the real dorsum crop (ocellus spacing, structure-tensor coherency) and compare to the render with values that are not copies of each other."
+      - "R4: Report a two-sample KS statistic between specimen and simulation luminance."
+      - "R5: Independent second assessor was not run."
+      - "R6: Do not treat 242 µm as a length measured on the unscaled photograph."
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Score the diffusivity-scale sweep (Pearson r and RMSE) from executed output."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Specimen ocellus segmentation, coherency, and KS against the render; ablation amplitude."
+        status: open
+        novelty_n: 0.5
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N3
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "A second assessor from another provider has not scored this audit."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
