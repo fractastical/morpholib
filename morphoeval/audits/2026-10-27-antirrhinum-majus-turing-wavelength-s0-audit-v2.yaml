@@ -1,0 +1,176 @@
+# MorphoEval audit — Antirrhinum majus Turing ocellus at 259 µm, Pass 2.
+# Supersedes the Pass 1 audit. R1 (physical-k bins) and R3 (band-edge annotation)
+# are closed. R2 (second assessor) stays open: this is still one agent.
+
+audit:
+  id: 2026-10-27-antirrhinum-majus-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-antirrhinum-majus-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-antirrhinum-majus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 remediation)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Pass 2 working tree on top of 0c76d15d. ~/.nanopub/profile.yml is absent,
+      so the TriG files are unsigned.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  shang2010:
+    title: "The molecular basis for venation patterning of pigmentation and its effect on pollinator attraction in flowers of Antirrhinum"
+    authors: "Shang Y, Venail J, Mackay S, Bailey PC, Schwinn KE, Jameson PE, Martin CR, Davies KM"
+    venue: "New Phytologist 189:602-615 (2010)"
+    year: 2010
+    doi: 10.1111/j.1469-8137.2010.03498.x
+  schwinn2006:
+    title: "A small family of MYB-regulatory genes controls floral pigmentation intensity and patterning in the genus Antirrhinum"
+    authors: "Schwinn K et al."
+    venue: "The Plant Cell 18:831-851 (2006)"
+    year: 2006
+    doi: 10.1105/tpc.105.039255
+  noda1994:
+    title: "Flower colour intensity depends on specialized cell shape controlled by a Myb-related transcription factor"
+    authors: "Noda K, Glover BJ, Linstead P, Martin C"
+    venue: "Nature 369:661-664 (1994)"
+    year: 1994
+    doi: 10.1038/369661a0
+  coen2004:
+    title: "The genetics of geometry"
+    authors: "Coen E, Rolland-Lagan AG, Matthews M, Bangham JA, Prusinkiewicz P"
+    venue: "PNAS 101:4728-4735 (2004)"
+    year: 2004
+    doi: 10.1073/pnas.0306308101
+
+simulations:
+  - id: delphi10000-antirrhinum-majus-turing-wavelength-s0
+    name: "Antirrhinum majus Turing ocellus wavelength at 259 µm (Holocene, 0 Ma)"
+    organism: "Antirrhinum majus"
+    script: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py
+    output: docs/media/antirrhinum_majus_turing_wavelength_s0_growth.gif
+    extra_outputs:
+      - docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png
+      - datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-antirrhinum-majus-turing-wavelength-s0-audit
+    source_refs: [turing1952, shang2010, schwinn2006, noda1994, coen2004]
+    summary: >-
+      Pass 2 of the 259.13 µm ocellus (Holocene, 0 Ma). The radial power
+      spectrum is now binned in physical wavenumber. At unit diffusivity the
+      readback is 255.1 µm against λ_c = 259.13 µm (1.6% relative, was about
+      7% on integer pixel bins). The diffusivity sweep Pearson r is 0.99973
+      and RMSE(k) is 0.000263 µm⁻¹. Equal-diffusion σ_max stays −0.25 h⁻¹.
+      Gallery pitch remains 77.8 µm (KS = 1 against the simulated gaps).
+      The corner in σ(k) is marked as the unstable-band edge. GIF 800×600,
+      12 frames, CV similarity 83.6. Overall 88.1. No second assessor (R2).
+    claim_boundary:
+      reported_in_source:
+        - "Shang et al. 2010: Venosa MYB places anthocyanin over veins."
+        - "Noda et al. 1994: MIXTA conical epidermal cells intensify petal colour."
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber."
+      reconstructed_in_script:
+        - "D_u=640, D_v=4341 µm²/h so that argmax σ(k) is 259.13 µm."
+        - "Physical-k radial bins and the annotated band edge."
+      transfer_boundary:
+        - "Vein-locked Venosa pigment is not shown here to be a Turing instability."
+        - "The gallery pitch of 77.8 µm is a measurement of that asset."
+      does_not_claim:
+        - "That Antirrhinum uses these kinetic constants in vivo."
+        - "That the gallery pitch equals 259.13 µm."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Same Jacobian, dispersion, cubic split-step, and ablation as Pass 1,
+          with k_c defined as argmax σ(k). The Pass 1 readback bias is closed:
+          physical-k bins recover 255.1 µm against 259.13 µm. Lean still checks
+          the integer margin and the equal-diffusion closure, with zero sorry.
+          The rates remain a reconstruction for this slot, not a snapdragon fit.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [139, 187], note: "k_c = argmax sigma and the Turing margin", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [197, 229], note: "physical-wavenumber bins replace integer pixel radius", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean, lines: [32, 42], note: "Turing margin and equal-diffusion theorems", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Last frame versus the gallery field scores 83.6 on the shared
+          orientation / radial-FFT / coherency comparator. Both are soft green
+          radial ocelli in an 800×600 frame. The physical pitches differ
+          (77.8 µm on the bar, 259.13 µm in the model) and the audit does not
+          treat that difference as a match. The CC BY-SA flower is the organ-scale
+          voucher, not the fitness target.
+        evidence:
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "gallery field, critical mode, annotated dispersion", supports: true}
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "800×600, 12 frames", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "cv_sim_similarity 83.6", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Joint scale of D_u and D_v from 0.35 to 4 moves λ from about 153 µm
+          to about 518 µm. With physical-k bins, Pearson r is 0.99973 and
+          RMSE(k) is 0.000263 µm⁻¹. The ablation D_u = D_v = 640 stays at
+          σ_max = −0.25 and is not on that curve.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [261, 285], note: "diffusivity scale sweep", supports: true}
+          - {file: docs/media/antirrhinum_majus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "measured versus analytical k", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Gallery bar 111 px = 100 µm, ring pitch 77.8 µm, foreground fraction
+          0.684, coherency 0.236. None of these equals its reference (the
+          references are λ_c, 0.5, and 0.25). KS of the gap samples is 1.0.
+          Pass 2 cuts the unit-scale wavelength bias from about 7% to 1.6%
+          (255.1 vs 259.13 µm) and lowers RMSE(k) from 0.00114 to 0.000263.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [429, 494], note: "scale bar and ring segmentation", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [519, 541], note: "KS on ring spacings", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [728, 755], note: "specimen metrics with unequal references", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Unchanged from Pass 1. Five DOIs checked on Crossref after OpenAlex
+          returned 429. SHA-256 pins on the gallery field and the CC BY-SA
+          Sète flower. The gallery asset is not a DOI-backed micrograph.
+        evidence:
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Crossref-checked bibliography", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_reference.json, lines: [48, 70], note: "pinned specimen digests", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Docstring, sigma_of_k2, k_c_and_sigma, and the physical-k binning
+          docstring name the same law. The band-edge annotation in the figure
+          points at the sign change of σ(k). Lean integers match D_u and D_v.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [43, 54], note: "docstring distinguishes argmax sigma from the Delta minimizer", supports: true}
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [570, 586], note: "band-edge marker on the dispersion panel", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test passes after the binning change (r = 0.99973, RMSE
+          0.000263, ablation negative, bar 111 px, λ_c within 1% of 259.2).
+          Seed 3114. Re-render writes the same GIF size. No per-script lockfile.
+        evidence:
+          - {file: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py, lines: [779, 817], note: "self_test", supports: true}
+          - {file: datasets/antirrhinum_majus_turing_wavelength_s0/README.md, lines: [28, 34], note: "invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed in Pass 2. Physical-k bins. Unit-scale readback 255.1 µm vs 259.13 µm (1.6%)."
+        status: closed
+      - id: R2
+        item: "Open. Single assessor; no second provider has scored this script."
+        status: open
+      - id: R3
+        item: "Closed in Pass 2. The dispersion panel marks the σ=0 crossing as the band edge."
+        status: closed
