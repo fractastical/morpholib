@@ -1,0 +1,156 @@
+audit:
+  id: 2026-10-27-drosophila-heteroneura-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 1fc59ceabb8ad3bc2b65011b9e189d8de99889cf
+    note: "Pass 1 scores fit_metrics_pass1.json from the pre-carrier render. The script at this commit already contains the pass-2 revision; v2 scores that revision."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: "10.1016/0022-5193(79)90042-0"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    doi: "10.1016/0022-5193(81)90334-9"
+  spieth1981:
+    title: "Drosophila heteroneura and Drosophila silvestris: Head Shapes, Behavior and Evolution"
+    authors: "Spieth, H. T."
+    year: 1981
+    doi: "10.1111/j.1558-5646.1981.tb04958.x"
+  werner2010:
+    title: "Generation of a novel wing colour pattern by the Wingless morphogen"
+    authors: "Werner, T., Koshikawa, S., Williams, T. M., Carroll, S. B."
+    year: 2010
+    doi: "10.1038/nature08896"
+  pitnick1995:
+    title: "Delayed male maturity is a cost of producing large sperm in Drosophila"
+    authors: "Pitnick, S., Markow, T. A., Spicer, G. S."
+    year: 1995
+    doi: "10.1073/pnas.92.23.10614"
+simulations:
+  - id: delphi10000-drosophila-heteroneura-turing-wavelength-s0
+    name: "Drosophila heteroneura detail-scale Turing wavelength (5.222 µm, Holocene 0 Ma)"
+    organism: "Drosophila heteroneura"
+    script: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py
+    output: docs/media/drosophila_heteroneura_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, spieth1981, werner2010, pitnick1995]
+    model_spec:
+      sim_id: delphi10000-drosophila-heteroneura-turing-wavelength-s0
+      inputs:
+        - datasets/drosophila_heteroneura_turing_wavelength_s0/drosophila_heteroneura_specimen.jpg
+        - datasets/drosophila_heteroneura_turing_wavelength_s0/drosophila_heteroneura_turing_wavelength_s0_reference.json
+        - datasets/drosophila_heteroneura_turing_wavelength_s0/paper_citations.bib
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and Schnakenberg 1979 kinetics"
+        - "Spieth 1981 documents the heteroneura hammerhead head relative to silvestris"
+        - "Werner 2010: guttifera wing spots are Wingless-induced yellow melanin"
+        - "Pitnick 1995: hydei is a giant-sperm repleta-group fly"
+      reconstructed_in_script:
+        - "a=0.064, b=1.137, Dv/Du=36.5, gamma=18.6 chosen so lambda_c is 5.222 µm"
+        - "Neighbor gammas set by lambda proportional to gamma^{-1/2}"
+        - "Head width 1.72 mm is reconstructed, not a caliper measurement"
+        - "Radial envelope is a 4-harmonic least-squares fit to the gallery micrograph"
+      transfer_boundary:
+        - "Guttifera and hydei are Delphi chronoseries neighbors at 0 Ma, not stratigraphic ancestors"
+      does_not_claim:
+        - "That the micrograph's 68.47 µm rings are the 5.222 µm critical mode"
+        - "That the kinetic constants were measured in a heteroneura pigment assay"
+        - "A second independent assessor"
+    summary: >-
+      Pass 1 dispersion root is 5.222 µm with h(k_c)=-1802.8 and equal-diffusion
+      growth rate -5.106. Specimen ring spacing is 68.47 µm (111 px = 100 µm).
+      Radial-envelope Pearson r = 0.98482, RMSE = 0.01911, CV similarity of the
+      pre-carrier GIF = 87.7. Guttifera mode count in that metrics file is 205
+      because it used rounding, not the Lean truncating division.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: "jacobian_parts and critical_k2 implement the Schnakenberg steady state and the Turing wavenumber. The pass-1 GIF is the 68 µm envelope only; the 5.222 µm carrier is not yet in the rendered field."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py, lines: [89, 121], note: "Jacobian and h(k^2)", supports: true}
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/fit_metrics_pass1.json, lines: [1, 20], note: "Pass-1 metrics have no carrier_period_px", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "Pre-carrier GIF scores CV similarity 87.7 against the gallery micrograph (12 frames, 800x600). The rings read as the same radial ocellus. The critical-wavelength grain is missing."
+        evidence:
+          - {file: docs/media/drosophila_heteroneura_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Animated envelope. Pass-1 CV 87.7 is recorded in fit_metrics_pass1.json", supports: true}
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/fit_metrics_pass1.json, lines: [60, 70], note: "cv_sim_similarity 87.7", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "gamma sweep and Dv/Du sweep are both monotonic: raising either control shortens lambda_c. Equal diffusion is a real negative control (growth rate negative, PDE amplification collapses)."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py, lines: [189, 226], note: "sweep_gamma, sweep_diffusion, integrate_schnakenberg", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: "Pearson r 0.98482 and RMSE 0.01911 on the radial mean, KS D about 0.42 against a zero-difference reference, scale-bar spacing 68.47 µm versus the 5.222 µm carrier. Mode counts in the pass-1 file still use rounding (guttifera 205, not the Lean value 204)."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py, lines: [294, 321], note: "fit_envelope Pearson and RMSE", supports: true}
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/fit_metrics_pass1.json, lines: [22, 45], note: "rounded mode counts 205, 271, 329", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "OpenAlex-checked DOIs for Turing, Schnakenberg, Murray, Spieth, Werner, and Pitnick. Specimen SHA-256 is pinned. Commons returned no bitmap; the gallery file is the vendored image."
+        evidence:
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "DOI entries", supports: true}
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/drosophila_heteroneura_turing_wavelength_s0_reference.json, lines: [40, 70], note: "SHA-256 pins and claim boundary", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "Each modelling step is commented back to the dispersion formula. Lean theorems pin the integer wavelength and gamma orderings, not a real-analysis proof that h(k_c) is negative; that sign is the Python self-test."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3188_drosophila_heteroneura_turing_wavelength_s0.lean, lines: [21, 35], note: "four theorems, zero sorry", supports: true}
+          - {file: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py, lines: [104, 121], note: "critical_k2 and dispersion_h", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3188, --self-test, pinned input hashes, and a known Python stack. Pass-1 metrics and the later script revision are both in the tree, which is easy to confuse until v2 says which file it scores."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-heteroneura-turing-wavelength-s0.py, lines: [633, 670], note: "assert_gates", supports: true}
+          - {file: datasets/drosophila_heteroneura_turing_wavelength_s0/README.md, lines: [1, 30], note: "invocation and scale stated as 5.2 µm at 0 Ma", supports: true}
+    remediation:
+      - "R1: Modulate the rendered envelope by the 5.222 µm carrier and record its pixel period. Pass-1 metrics omit carrier_period_px."
+      - "R2: Count head-capsule modes with the Lean truncating division 1720000//lambda_nm. Pass-1 guttifera count is 205, not 204."
+      - "R3: Independent second assessor. This pass is builder-scored."
+      - "R4: Head width 1.72 mm is reconstructed from Spieth 1981, not measured on this micrograph."
+    needs:
+      - id: R1
+        need_type: specimen_comparison
+        target_dimension: model-fidelity
+        description: "Render the 5.222 µm carrier on the envelope and record its pixel period."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.2
+        depth_d: 1
+        age_days_a: 0
+      - id: R2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Align mode counts with Loop_3188 integer division."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0.3
+        depth_d: 1
+        age_days_a: 0
+      - id: R3
+        need_type: independent_assessor
+        target_dimension: source-traceability
+        description: "A second assessor from another provider has not scored this loop."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
