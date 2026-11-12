@@ -1,0 +1,53 @@
+sim_id: delphi10000-aptenodytes-forsteri-turing-wavelength-s0
+organism: Aptenodytes forsteri
+age_ma: 0
+scale_m: 0.0011776059735208078
+scale_label: 1.2 mm
+tier: 6_organ_mm
+math_family: Turing reaction-diffusion wavelength selection
+model_spec:
+  sim_id: delphi10000-aptenodytes-forsteri-turing-wavelength-s0
+  seed: 3116
+  a: 0.20
+  b: 0.30
+  delta: 42
+  lambda_m: 0.0011776059735208078
+  inputs:
+    - datasets/aptenodytes_forsteri_turing_wavelength_s0/aptenodytes_forsteri_specimen.jpg
+equations:
+  - law_name: Schnakenberg steady state
+    formula: "u0 = a + b, v0 = b / (a + b)^2"
+    lean_decl: MathOfBiology.Loop_3116.tierWavelengthUm
+    lean_theorem: MathOfBiology.Loop_3116.tier_inside_shell_thickness
+    lean_locus: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean#L20-L22
+    variables: "a = 0.20, b = 0.30, so u0 = 0.50 and v0 = 1.20"
+    role: Homogeneous base state about which the 1.178 mm shell-thickness mode is linearised
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg kinetics as used for integument RD"
+    code_locus: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py#L69-L86
+  - law_name: Fastest-growing Turing wavenumber
+    formula: "sigma(k^2) = 0.5 * (tr(J - k^2 D) + sqrt(discriminant)); lambda_c = 2 pi / k_peak"
+    lean_decl: MathOfBiology.Loop_3116.diffusionRatio
+    lean_theorem: MathOfBiology.Loop_3116.schnakenberg_margin_at_delta_42
+    lean_locus: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean#L30-L32
+    variables: "D_v/D_u = 42; D_u rescaled so k_peak = 2 pi per tier wavelength"
+    role: Selects lambda = 10^(-2.929) m on the Holocene egg, inside the 0.94-1.32 mm shell-thickness window
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py#L108-L123
+  - law_name: Equal-diffusion ablation
+    formula: "when D_u = D_v, sigma_max < 0"
+    lean_decl: MathOfBiology.Loop_3116.diffusionRatio
+    lean_theorem: MathOfBiology.Loop_3116.equal_diffusion_margin_fails
+    lean_locus: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean#L35-L37
+    variables: "delta = 1 versus delta = 42"
+    role: Negative control. Pattern growth requires the long-range inhibitor.
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py#L208-L219
+  - law_name: Successor scale along the egg
+    formula: "L_egg / lambda_c > 100"
+    lean_decl: MathOfBiology.Loop_3116.eggLengthUm
+    lean_theorem: MathOfBiology.Loop_3116.egg_is_successor_scale
+    lean_locus: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean#L40-L42
+    variables: "L_egg = 121.3 mm, lambda_c = 1.178 mm, age = 0 Ma, chronoseries length = 1"
+    role: The whole egg is the successor length. There is no earlier chronospecies in this 1/1 series.
+    source_citation: "Chinese Journal of Polar Research 20(4):320-328 (2008), egg length 121.3 mm"
+    code_locus: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py#L57-L66
