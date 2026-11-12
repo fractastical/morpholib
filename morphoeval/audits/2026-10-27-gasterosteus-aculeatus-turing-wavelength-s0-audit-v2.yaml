@@ -1,0 +1,193 @@
+# Pass 2 — supersedes the pass-1 audit. Absolute melanin threshold and parabolic FFT.
+# Residual: saturated benthic radial peak does not follow the analytic contraction.
+
+audit:
+  id: 2026-10-27-gasterosteus-aculeatus-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-gasterosteus-aculeatus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 2)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: "4fdc4af8f8347d55b64a1de2f47c8a0931a60888"
+    note: "Script, specimen, Lean module, and media at this commit. Audit text and nanopubs follow in the next commit."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  miller2007:
+    title: "cis-Regulatory changes in Kit ligand expression and parallel evolution of pigmentation in sticklebacks and humans"
+    authors: "Miller CT, Beleza S, Pollen AA, Schluter D, Kittles RA, Shriver MD, Kingsley DM"
+    venue: "Cell 131:1179-1189 (2007)"
+    year: 2007
+    doi: 10.1016/j.cell.2007.10.055
+  greenwood2011:
+    title: "The genetic basis of divergent pigment patterns in juvenile threespine sticklebacks"
+    authors: "Greenwood AK, Jones FC, Chan YF, Brady SD, Absher DM, Grimwood J, Schmutz J, Myers RM, Kingsley DM, Peichel CL"
+    venue: "Heredity 107:155-166 (2011)"
+    year: 2011
+    doi: 10.1038/hdy.2011.1
+  tapanes2024:
+    title: "The genetic basis of divergent melanic pigmentation in benthic and limnetic threespine stickleback"
+    authors: "Tapanes E, Rennison DJ"
+    venue: "Heredity 133:207-215 (2024)"
+    year: 2024
+    doi: 10.1038/s41437-024-00706-0
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "PNAS 106:8429-8434 (2009)"
+    year: 2009
+    doi: 10.1073/pnas.0808622106
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    year: 2010
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: delphi10000-gasterosteus-aculeatus-turing-wavelength-s0
+    name: "Holocene Gasterosteus aculeatus cellular Turing wavelength (56 µm)"
+    organism: "Gasterosteus aculeatus"
+    script: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_comparison.png
+    supersedes_audit_id: 2026-10-27-gasterosteus-aculeatus-turing-wavelength-s0-audit
+    phenomenon_size_m: 5.632e-05
+    scale_tier: 4_cellular_10um
+    geological_age_ma: 0.0
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, miller2007, greenwood2011, tapanes2024, nakamasu2009, kondo2010]
+    summary: >
+      Pass 2 keeps the same Schnakenberg carrier (Holocene analytic λ_c = 56.00 µm;
+      marine 61.81 µm; benthic 52.23 µm). Parabolic radial-FFT interpolation moves the
+      Holocene nonlinear peak to 54.99 µm. Gamma-sweep Pearson r is 0.9938 (RMSE 4.88 µm).
+      Absolute luminance < 95 gives specimen melanin area 0.266 versus render 0.097.
+      The saturated benthic peak is 57.90 µm, so the nonlinear lattice does not follow
+      the analytic contraction. Posterior bar r stays 0.372 because that half was not fit.
+      GIF cv_sim_similarity remains 88.4 at 960×548, 12 frames.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and a selected wavenumber"
+        - "Schnakenberg 1979 two-species kinetics"
+        - "Miller 2007 Kitlg cis-regulatory reduction of freshwater pigmentation"
+        - "Greenwood 2011 genetic basis of juvenile stickleback pigment patterns"
+        - "Tapanes & Rennison 2024 density and barring are different QTLs"
+      reconstructed_in_script:
+        - "Diffusion pair and gamma fixed so Holocene analytic λ_c equals the assigned 56 µm"
+        - "Chronospecies knob a = 0.28 / 0.20 / 0.14"
+        - "Organ-scale bar cosine is fit on the anterior flank only"
+      transfer_boundary:
+        - "Nakamasu 2009 zebrafish pigment-cell interactions are not stickleback data"
+      does_not_claim:
+        - "That 56 µm is resolved by the Krisp photograph"
+        - "That the nonlinear benthic FFT peak equals 52.23 µm"
+        - "That plate number or Pitx1 is predicted"
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >
+          The script integrates the Schnakenberg PDE and evaluates the onset formula
+          k_c² = γ (Dv f_u + Du g_v) / (2 Du Dv) for three values of a and for the
+          equal-diffusion control, which is stable. Lean checks the cleared trace,
+          determinant, discriminant and the analytic contraction. Deduction: a, Du, Dv
+          and γ are chosen to place the Holocene carrier on the assigned 56 µm, and the
+          stickleback papers are genetic rather than a published parameter table.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [67, 107], note: "jacobian and k_c", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [113, 141], note: "explicit Euler periodic Laplacian", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3233_gasterosteus_aculeatus_turing_wavelength_s0.lean, lines: [20, 48], note: "four theorems, decide, 0 sorry", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/gasterosteus_aculeatus_turing_wavelength_s0_reference.json, lines: [78, 96], note: "reconstructed parameters are labelled as such", supports: false}
+      specimen-match:
+        value: 84
+        rationale: >
+          cv_sim_similarity against the real Krisp specimen is 88.4 (12 frames, 960×548).
+          The comparison figure shows the photograph, the body mask, and the barred
+          composite on that background. Column-luminance r is 0.851, not 1. Melanin area
+          inside the mask is 0.266 on the specimen and 0.097 on the render, so the model
+          is too pale, and the held-out bar profile only reaches r = 0.372. Those gaps
+          keep this below the low 90s.
+        evidence:
+          - {file: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "animated GIF scored by verify_image_fitness.compute_sim_vs_specimen_cv_similarity", supports: true}
+          - {file: docs/media/gasterosteus_aculeatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "side-by-side specimen and composite", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/run_metrics.json, lines: [1, 40], note: "cv 88.4, column_r 0.851, dark fractions 0.266 vs 0.097, posterior_r 0.372", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >
+          Raising γ from 3 to 10 shortens both analytic and nonlinear wavelengths
+          (Pearson r = 0.9938). Setting Du = Dv collapses the activator standard deviation
+          from 0.807 to ~0. Changing a from 0.28 to 0.20 to 0.14 shortens analytic λ from
+          61.81 to 56.00 to 52.23 µm. The saturated benthic FFT peak does not follow that
+          last step (57.90 µm), which is reported rather than tuned away.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [320, 338], note: "γ sweep", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/run_metrics.json, lines: [1, 30], note: "r 0.9938, RMSE 4.88 µm, measured marine 60.25, Holocene 54.99, benthic 57.90", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [36, 52], note: "a_marine, a_holocene, a_benthic and SWEEP_GAMMAS", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >
+          Pass-1 remediation is in the code. Parabolic interpolation puts the Holocene
+          nonlinear peak at 54.99 µm against the 56.00 µm reference (not equal). Absolute
+          luminance < 95 separates specimen melanin area 0.266 from render 0.097.
+          KS D is 0.685 versus the equal-diffusion field and 0.179 versus specimen
+          luminance inside the mask. Sweep r = 0.9938 with RMSE 4.88 µm. Posterior r
+          remains 0.372 because R4 forbids fitting that half. The benthic nonlinear peak
+          (57.90 µm) misses the analytic 52.23 µm reference; that miss is the score cap.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [164, 178], note: "parabolic sub-bin radial peak (R2)", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [387, 396], note: "absolute luminance threshold 95 (R1) and KS tests", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [248, 281], note: "anterior fit, posterior held out (R4)", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/run_metrics.json, lines: [1, 45], note: "R3 result: benthic nonlinear 57.90 does not sit below Holocene 54.99", supports: false}
+      source-traceability:
+        value: 91
+        rationale: >
+          Same pinned DOIs and SHA-256 specimen as pass 1, plus Kondo & Miura 2010 as the
+          review that states the wavelength-selection framework used to read k_c. Scout
+          manifest records that slot 3233 does not collide with the 2.4 mm marine or
+          2.2 mm benthic sibling scripts.
+        evidence:
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/paper_citations.bib, lines: [22, 40], note: "Kondo & Miura 2010 and Nakamasu 2009", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/scout_manifest.json, lines: [5, 40], note: "slot 3233 territory and collision note", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/README.md, lines: [1, 30], note: "56 µm and 0 Ma stated with the chronoseries table", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >
+          Dispersion, simulator, sweep, segmentation, held-out cosine and the GIF
+          compositor are separate functions cited by the math KG. Pass-2 measurement
+          changes (interpolation, absolute threshold) are local to those functions.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.yaml, lines: [20, 55], note: "three laws with Lean loci", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [143, 178], note: "radial power and interpolated wavelength", supports: true}
+      repro-package:
+        value: 88
+        rationale: >
+          --self-test passed after the pass-2 readout change: analytic triple exact,
+          sweep r = 0.9938 > 0.98, ablation std below 5% of the pattern, GIF 12 frames
+          at 960×548, specimen SHA checked. Pass-1 metrics file is kept beside the new
+          run_metrics.json. Nanopub signing was not available (~/.nanopub/profile.yml absent).
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py, lines: [676, 694], note: "self-test gates", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/run_metrics.json, lines: [0, 0], note: "pass-2 scalars", supports: true}
+          - {file: datasets/gasterosteus_aculeatus_turing_wavelength_s0/pass1_run_metrics.json, lines: [0, 0], note: "pass-1 scalars retained", supports: true}
+    remediation:
+      - "Resolved R1: melanin area uses luminance < 95 (specimen 0.266, render 0.097)."
+      - "Resolved R2: dominant_wavelength_cells interpolates the radial peak."
+      - "Resolved R3: re-measured peaks are marine 60.25, Holocene 54.99, benthic 57.90 µm. The saturated benthic pattern does not shorten past the Holocene peak."
+      - "Resolved R4: posterior r remains 0.372; the posterior half is still not in the fit."
+      - "Open: nonlinear benthic radial peak does not track analytic 52.23 µm. Not adjusted by changing a or the FFT window."

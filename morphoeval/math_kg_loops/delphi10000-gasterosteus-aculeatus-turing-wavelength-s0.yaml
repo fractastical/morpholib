@@ -1,0 +1,64 @@
+sim_id: delphi10000-gasterosteus-aculeatus-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+organism: Gasterosteus aculeatus
+phenomenon_size_m: 5.632e-05
+geological_age_ma: 0.0
+scale_tier: 4_cellular_10um
+model_spec:
+  model: "Schnakenberg (1979) activator-inhibitor on Turing (1952) linear dispersion, Holocene G. aculeatus cellular carrier"
+  kinetics: "du/dt = Du lap u + gamma (a - u + u^2 v); dv/dt = Dv lap v + gamma (b - u^2 v)"
+  critical_wavenumber: "k_c^2 = gamma (Dv f_u + Du g_v) / (2 Du Dv); lambda_c = 2 pi / k_c"
+  holocene:
+    a: 0.20
+    b: 1.0
+    Du: 1.0
+    Dv: 30.0
+    gamma: 6.0
+    lambda_um: 56.0
+  marine_predecessor:
+    a: 0.28
+    lambda_um: 61.81
+    envelope_um: 2400
+    age_ma: 0.015
+  benthic_successor:
+    a: 0.14
+    lambda_um: 52.23
+    envelope_um: 2200
+    age_ma: 0.0
+  grid: [96, 128]
+  dt: 0.004
+  steps: 3200
+  seed: 3233
+  inputs:
+    - datasets/gasterosteus_aculeatus_turing_wavelength_s0/gasterosteus_aculeatus_turing_wavelength_s0_reference.json
+    - datasets/gasterosteus_aculeatus_turing_wavelength_s0/gasterosteus_aculeatus_turing_wavelength_s0_specimen.jpg
+    - datasets/gasterosteus_aculeatus_turing_wavelength_s0/paper_citations.bib
+    - datasets/gasterosteus_aculeatus_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Homogeneous stability of the Schnakenberg Jacobian
+    formula: "tr J = f_u + g_v < 0 and det J = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3233.traceNumerator
+    lean_theorem: MathOfBiology.Loop_3233.stable_without_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3233_gasterosteus_aculeatus_turing_wavelength_s0.lean#L11-L19
+    variables: "a=1/5, b=1; trace numerator -58, determinant numerator 108"
+    role: "The Holocene cellular steady state is stable without diffusion"
+    source_citation: "Schnakenberg (1979) JTB 81:389-400 DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py
+  - law_name: Diffusion-driven Turing discriminant
+    formula: "(Dv f_u + Du g_v)^2 - 4 Du Dv det J > 0"
+    lean_decl: MathOfBiology.Loop_3233.discriminantNumerator
+    lean_theorem: MathOfBiology.Loop_3233.diffusion_driven_discriminant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3233_gasterosteus_aculeatus_turing_wavelength_s0.lean#L21-L26
+    variables: "Du=1, Dv=30; discriminant numerator 107296"
+    role: "Unequal diffusion destabilises a band of wavenumbers"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py
+  - law_name: Critical wavelength and chronoseries contraction
+    formula: "lambda_c = 2 pi / k_c with k_c^2 = gamma (Dv f_u + Du g_v) / (2 Du Dv); lambda(a=0.28) > lambda(a=0.20) > lambda(a=0.14)"
+    lean_decl: MathOfBiology.Loop_3233.holoceneCellularHundredths
+    lean_theorem: MathOfBiology.Loop_3233.cellular_wavelength_contracts_from_marine_to_benthic
+    lean_locus: morphoeval/lean/loops/Loop_3233_gasterosteus_aculeatus_turing_wavelength_s0.lean#L39-L48
+    variables: "marine 61.81 um, Holocene 56.00 um, benthic 52.23 um at fixed dx"
+    role: "At 56 um the Kitlg-direction knob shortens the carrier from marine ancestor to benthic successor"
+    source_citation: "Miller et al. (2007) Cell 131:1179-1189 DOI:10.1016/j.cell.2007.10.055"
+    code_locus: models/2026-delphi10000-gasterosteus-aculeatus-turing-wavelength-s0.py
