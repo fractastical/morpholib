@@ -1,0 +1,166 @@
+# MorphoEval audit v2 — Drosophila guttifera Turing wavelength, detail tier, 2026-10-27
+#
+# Closes pass-1 items R1 (Neumann control), R2 (wing-membrane mask), and R3
+# (saturated spacing). R4 (second assessor) stays open: this is still one builder.
+# Scale 2.12e-6 m, age 0 Ma. Scores are uncalibrated rubric ratings.
+
+audit:
+  id: 2026-10-27-drosophila-guttifera-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-drosophila-guttifera-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent; no independent second assessor)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Parent of the loop commit. Slot 3187 paths are new in the working tree."
+  ontology:
+    version: "1.3"
+
+references:
+  werner2010:
+    title: "Generation of a novel wing colour pattern by the Wingless morphogen"
+    authors: "Werner T, Koshikawa S, Williams TM, Carroll SB"
+    venue: "Nature 464:1143-1148 (2010)"
+    year: 2010
+    doi: 10.1038/nature08896
+  koshikawa2015:
+    title: "Gain of cis-regulatory activities underlies novel domains of wingless gene expression in Drosophila"
+    authors: "Koshikawa S, Giorgianni MW, Vaccaro K, Kassner VA, Yoder JH, Werner T, Carroll SB"
+    venue: "PNAS 112:7524-7529 (2015)"
+    year: 2015
+    doi: 10.1073/pnas.1509022112
+  koseki2021:
+    title: "The color pattern inducing gene wingless is expressed in specific cell types of campaniform sensilla of a polka-dotted fruit fly, Drosophila guttifera"
+    authors: "Koseki M, Tanaka NK, Koshikawa S"
+    venue: "Development Genes and Evolution 231:85-93 (2021)"
+    year: 2021
+    doi: 10.1007/s00427-021-00674-z
+  fukutomi2017:
+    title: "Pupal development and pigmentation process of a polka-dotted fruit fly, Drosophila guttifera"
+    authors: "Fukutomi Y, Matsumoto K, Agata K, Funayama N, Koshikawa S"
+    venue: "Development Genes and Evolution 227:171-180 (2017)"
+    year: 2017
+    doi: 10.1007/s00427-017-0578-3
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  genomes2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Drosophila 12 Genomes Consortium"
+    venue: "Nature 450:203-218 (2007)"
+    year: 2007
+    doi: 10.1038/nature06341
+  spieth1981:
+    title: "Drosophila heteroneura and Drosophila silvestris: head shapes, behavior and evolution"
+    authors: "Spieth HT"
+    venue: "Evolution 35:921-930 (1981)"
+    year: 1981
+    doi: 10.2307/2407863
+
+simulations:
+  - id: delphi10000-drosophila-guttifera-turing-wavelength-s0
+    name: "Schnakenberg micro-ocellus wavelength of Drosophila guttifera at 2.12 µm"
+    organism: "Drosophila guttifera"
+    script: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py
+    output: docs/media/drosophila_guttifera_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_guttifera_turing_wavelength_s0_growth.gif
+      - datasets/drosophila_guttifera_turing_wavelength_s0/run_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-guttifera-turing-wavelength-s0-audit
+    source_refs: [werner2010, koshikawa2015, koseki2021, fukutomi2017, turing1952, schnakenberg1979, genomes2007, spieth1981]
+    summary: >-
+      Pass 2 keeps the periodic Dv sweep (Pearson r = 0.992, RMSE = 0.208 µm, focal
+      centroid 1.983 µm against the 2.12 µm linear calibration). The new zero-flux
+      control selects 1.767 µm. Saturated guttifera peaks are spaced 1.332 µm apart
+      (97 peaks, CV = 0.255, KS = 0.801 against a normal centered on 2.12 µm), so
+      saturation shortens the spacing further; that gap is reported rather than fitted
+      away. The wing-membrane mask counts 18 dark spots against Werner's 16; the
+      pass-1 global threshold had counted 28. Grimshawi coherency remains 0.480
+      against guttifera 0.010. Heteroneura linear wavelength remains 2.048 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Werner et al. 2010: Wingless at vein intersections and campaniform sensilla induces the yellow wing spots."
+        - "Koseki, Tanaka & Koshikawa 2021: wingless expression inside campaniform sensilla."
+        - "Turing 1952 marginal wavenumber and Schnakenberg 1979 two-species kinetics."
+      reconstructed_in_script:
+        - "Focal parameters a=0.10, b=0.90, Du=0.016, Dv=1.25, scaled so λ(k_max)=2.12 µm."
+        - "Periodic spectral centroid on a fixed band, equal-diffusion ablation, reflecting-boundary control, and saturated peak spacing."
+        - "Wing-membrane mask: foreground outside the dilated reddish body."
+        - "Grimshawi anisotropy 3.15 and heteroneura activator 0.24 at geological age 0 Ma."
+      transfer_boundary:
+        - "2.12 µm is the campaign detail tier. Werner et al. 2010 do not report that length."
+        - "The adult photograph cannot resolve 2.12 µm. Its role is the organism, not a micrograph of the grain."
+      does_not_claim:
+        - "That the saturated spacing equals 2.12 µm. It is 1.33 µm."
+        - "That the zero-flux wavelength equals the periodic calibration. It is 1.77 µm."
+        - "That 18 segmented spots are the named 16. Both wings are in the frame."
+        - "That Spieth 1981 measured a wing wavelength. It is cited for the heteroneura chronospecies, and the head-shape paper is not a wavelength source."
+        - "A second assessor. R4 is still open."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The periodic dispersion relation is unchanged and still matches the Lean discriminant. Pass 2 adds an explicit zero-flux integrator instead of leaving the boundary untested. The Wingless Gaussian and the 2.12 µm unit choice remain reconstructions under Turing's law, not equations from Werner 2010."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [77, 110], note: "Jacobian and k_c", supports: true}
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [222, 266], note: "integrate_neumann reflecting pad, dt inside the explicit stability limit", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "Wing-membrane segmentation now returns 18 spots against the nominal 16, down from the pass-1 global count of 28. The comparison figure still shows the adult male beside the three chronospecies fields. The GIF ends on the photograph, which is the right adult phenotype and the wrong magnification for 2.12 µm."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [303, 354], note: "body mask and wing-restricted dark components", supports: true}
+          - {file: docs/media/drosophila_guttifera_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen beside guttifera, grimshawi, heteroneura, dispersion, and sweep", supports: true}
+          - {file: docs/media/drosophila_guttifera_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last frame is the adult male", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Dv still moves the centroid with the analytical curve (r = 0.992) while staying short of the 1:1 line. Anisotropy moves coherency from 0.010 to 0.480. Equal diffusion decays (ratio 0.228). Switching to zero-flux moves the centroid from 1.983 µm to 1.767 µm, so the boundary condition is not inert."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [386, 420], note: "fixed-domain sweep and equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [535, 552], note: "zero-flux wavelength recorded as its own measurement", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Linear centroid: r = 0.992, RMSE = 0.208 µm, focal numerical value 1.983 µm against reference 2.12 µm. Saturated nearest-neighbour spacing is 1.332 µm (CV = 0.255, KS = 0.801 versus a normal at 2.12 µm), which widens the linear shortfall instead of cancelling it. Wing-membrane count is 18 versus 16. None of these specimen or spacing values were set equal to their references."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [270, 293], note: "peak_spacing_um nearest neighbour, CV, and KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [520, 560], note: "measurement rows for r, RMSE, wing count, Neumann wavelength, saturated spacing", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Unchanged from pass 1. Crossref-checked DOI 10.1038/nature08896, specimen SHA-256, MA Hanson, CC BY-SA 4.0. The sibling slot's DOI 10.1038/nature08994 is a different paper and is not used."
+        evidence:
+          - {file: datasets/drosophila_guttifera_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Werner, Koseki, Turing, Schnakenberg", supports: true}
+          - {file: datasets/drosophila_guttifera_turing_wavelength_s0/drosophila_guttifera_turing_wavelength_s0_reference.json, lines: [1, 30], note: "2.12e-6 m, 0 Ma, specimen hash, Neumann control now described", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Docstring, dispersion(), integrate_neumann(), and the Lean discriminant are the same law. Pass 2's new measurements name the control they come from. Spieth 1981 is not cited in the code as a wavelength source."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [1, 40], note: "PDE, k_c, chronospecies, and the 2.12 µm calibration", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3187_drosophila_guttifera_turing_wavelength_s0.lean, lines: [43, 68], note: "four theorems, zero sorry, 2120 nm and the discriminant", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Same seed, hash pin, and --self-test. The self-test now also requires the wing mask to beat the global count, a Neumann wavelength inside 1.4-2.8 µm, and a positive saturated spacing. Pass 2 re-rendered the PNG and the 12-frame GIF."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [722, 770], note: "self-test including the pass-2 assertions", supports: true}
+          - {file: models/2026-delphi10000-drosophila-guttifera-turing-wavelength-s0.py, lines: [68, 74], note: "SHA-256 pin checked on load", supports: true}
+    remediation:
+      - id: R4
+        item: "Independent second assessor. Pass 2 is still scored by the builder alone."
+      - id: R5
+        item: "The saturated spacing (1.33 µm) and the zero-flux centroid (1.77 µm) both sit short of 2.12 µm. A weakly nonlinear amplitude expansion, or a fit of Du and Dv to a real micrograph, would be the next measurement. No such micrograph is in this slot."
