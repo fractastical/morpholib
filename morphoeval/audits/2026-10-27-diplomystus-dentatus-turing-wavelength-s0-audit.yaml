@@ -1,0 +1,137 @@
+# MorphoEval Pass 1 — Diplomystus dentatus, 184.3 µm Turing wavelength, slot 3170.
+audit:
+  id: 2026-10-27-diplomystus-dentatus-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Parent commit at the start of the loop. New slot files are not in 0c76d15d; loci were checked with --no-verify-loci."
+  publisher_orcid: "https://github.com/fractastical/morpholib#unsigned-loop-3170"
+  publisher_note: "No ~/.nanopub/profile.yml and no ORCID in this environment. dct:creator is the repository URI, not a person. The graph is unsigned."
+references:
+  turing1952:
+    doi: 10.1098/rstb.1952.0012
+    title: "Turing 1952, The chemical basis of morphogenesis"
+    year: 1952
+  schnakenberg1979:
+    doi: 10.1016/0022-5193(79)90042-0
+    title: "Schnakenberg 1979, Simple chemical reaction systems with limit cycle behaviour"
+    year: 1979
+  murray1981:
+    doi: 10.1016/0022-5193(81)90334-9
+    title: "Murray 1981, A pre-pattern formation mechanism for animal coat markings"
+    year: 1981
+  grande1982:
+    url: "http://hdl.handle.net/2246/5342"
+    title: "Grande 1982, American Museum Novitates 2728, revision of Diplomystus"
+    year: 1982
+  kondo1995:
+    doi: 10.1038/376765a0
+    title: "Kondo and Asai 1995, A reaction-diffusion wave on the skin of Pomacanthus"
+    year: 1995
+  nakamasu2009:
+    doi: 10.1073/pnas.0808622106
+    title: "Nakamasu et al. 2009, zebrafish pigment-cell Turing patterns"
+    year: 2009
+  smith2008:
+    doi: 10.1130/B26073.1
+    title: "Smith, Carroll and Singer 2008, Eocene Green River Formation lake system"
+    year: 2008
+simulations:
+  - id: delphi10000-diplomystus-dentatus-turing-wavelength-s0
+    name: "Diplomystus dentatus detail-tier Turing wavelength (184.3 µm, 51.5 Ma)"
+    organism: "Diplomystus dentatus (Green River Eocene armored herring)"
+    script: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py
+    output: docs/media/diplomystus_dentatus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/diplomystus_dentatus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, grande1982, kondo1995, nakamasu2009, smith2008]
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) onset wavenumber k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c."
+        - "Schnakenberg (1979) kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Grande (1982) redescribes Diplomystus dentatus from the Fossil Butte Member: dorsal scutes usually 22-36, maximum length about 65 cm, ellimmichthyid rather than a clupeid."
+        - "Kondo & Asai (1995) and Nakamasu et al. (2009) show teleost skin can select a Turing pigment wavelength."
+        - "Smith, Carroll & Singer (2008) reconstruct the Eocene Green River lake system. Descouens' CC BY-SA 4.0 photograph is a Fossil Lake specimen with caption size 48 cm."
+      reconstructed_in_script:
+        - "a=0.128, b=0.764, D_v/D_u=9.17, with D_u solved so the onset wavelength is 184.3 µm. Neumann explicit Euler on a flank window. These constants belong to slot 3170, not to the 7.56 mm sibling."
+        - "Discrete-Laplacian growth rates versus the analytic eigenvalue (Pearson r = 1.000, RMSE = 0.00033) and a diffusivity sweep of expressed wavelength (Pearson r = 0.997)."
+        - "Equal-diffusion ablation (linearised std ratio 0.031) and a 20 µm predecessor mode with negative growth rate."
+        - "Segmentation of the Descouens photograph: aspect ratio, circularity, and a high-pass major-axis spacing used as an organ-scale contrast to 0.1843 mm."
+      transfer_boundary:
+        - "Pigment kinetics are transferred from the teleost Turing literature onto a Diplomystus flank. The 184.3 µm value is the catalogued detail tier, not a melanophore count on the slab."
+        - "51.5 Ma is the Ypresian chronoseries datum. The series contains one Diplomystus age (1/1); the predecessor and successor compared here are scales, not other chronospecies."
+      does_not_claim:
+        - "That the fossil photograph resolves 184 µm ocelli, or that a, b, and D were measured in Diplomystus tissue."
+        - "That dorsal scute counts (22-36) are the same pattern as the detail-tier wave."
+        - "A new radiometric date for Fossil Lake."
+    summary: >-
+      Pass 1. Schnakenberg reaction-diffusion on a no-flux flank, with D_u chosen so the
+      Turing onset wavelength is 184.3 µm at 51.5 Ma. The rendered field's radial peak is
+      186.0 µm. Dispersion Pearson r is 1.000 (RMSE 0.00033) and the diffusivity sweep
+      Pearson r is 0.997. Equal diffusion collapses a linear perturbation (std ratio 0.031).
+      A 20 µm chromatophore is sub-wavelength and its lowest mode decays. The Descouens
+      Fossil Lake photograph is the specimen; its major-axis spacing is an organ-scale
+      contrast, not a fit to 184.3 µm. The growth GIF ends on that photograph (12 frames, 960×640).
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The script integrates the Schnakenberg system and the onset formula, and the discrete Laplacian reproduces analytic growth rates at r=1.000. Kinetics are a transfer, not a Diplomystus measurement, so this is not a perfect source identity."
+        evidence:
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [1, 40], note: "Equations, Neumann conditions, 184.3 µm and 51.5 Ma", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [62, 102], note: "Jacobian, D_u solved from k_c, analytic sigma", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [125, 237], note: "Dispersion probe and Neumann flank integrator", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The comparison figure places the real Fossil Lake specimen beside a 2.2 mm flank field with a 184.3 µm scale bar. The field is a labyrinth of ocelli, not a drawing of the ribs. The GIF carries that field on the fish and ends on the photograph."
+        evidence:
+          - {file: docs/media/diplomystus_dentatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, flank field, dispersion fit, diffusivity sweep", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [469, 594], note: "Comparison layout and 12-frame GIF whose last frame is the specimen", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Scaling both diffusivities by s^2 moves the measured wavelength along the predicted line (sweep r=0.997) from about 130 µm to about 280 µm. Equal diffusion is the off-switch and does not produce a wavelength."
+        evidence:
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [300, 318], note: "Five-point diffusivity sweep", supports: true}
+          - {file: docs/media/diplomystus_dentatus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Sweep panel tracks the 1:1 line", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Radial FFT wavelength 186.0 µm versus 184.3 µm, dispersion RMSE 0.00033, sweep RMSE reported, KS between fossil and field orientations, and a segmented flank spacing that is intentionally not equal to 0.1843 mm."
+        evidence:
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [239, 266], note: "Radial wavelength estimator", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [326, 425], note: "Specimen segmentation, spacing, orientation KS", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [596, 676], note: "measure_morphoeval records value and a distinct reference", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-resolved DOIs for Turing, Schnakenberg, Murray, Kondo, Nakamasu, and Smith; Grande 1982 via the AMNH handle; specimen SHA-256, creator, and CC BY-SA 4.0 URL."
+        evidence:
+          - {file: datasets/diplomystus_dentatus_turing_wavelength_s0/paper_citations.bib, lines: [1, 71], note: "BibTeX with DOIs and the Grande handle", supports: true}
+          - {file: datasets/diplomystus_dentatus_turing_wavelength_s0/diplomystus_dentatus_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 184.3 µm, age 51.5 Ma, specimen block", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [84, 92], note: "SHA-256 pin of reference, specimen, scout, bib, and README", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "The module docstring and analytic_sigma map onto the onset formula. Lean states the scale inequalities (detail versus 7.56 mm, half-wave predecessor, sixteen waves in the window). Not every numerical choice cites a numbered equation in Turing 1952."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3170_diplomystus_dentatus_turing_wavelength_s0.lean, lines: [21, 44], note: "Five theorems, zero sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-diplomystus-dentatus-turing-wavelength-s0.yaml, lines: [1, 40], note: "Laws linked to Lean and to the script", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Deterministic seed 3170, --self-test gates on Pearson r>0.98, wavelength error, ablation ratio, and predecessor sigma. SHA-256 pins. No separate pinned requirements file beyond the repo stack."
+        evidence:
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [53, 70], note: "Pinned hashes, seed, and slot constants", supports: true}
+          - {file: models/2026-delphi10000-diplomystus-dentatus-turing-wavelength-s0.py, lines: [683, 722], note: "--self-test assertions and GIF geometry check", supports: true}
+          - {file: datasets/diplomystus_dentatus_turing_wavelength_s0/README.md, lines: [1, 40], note: "Invocation and claim boundary", supports: true}
+    remediation:
+      - id: R1
+        item: "The flank field is an isotropic labyrinth. A dorsoventral anisotropy trial is still needed to see whether rib-aligned stripes can be selected without leaving the 184.3 µm onset wavelength."
+      - id: R2
+        item: "The 48 cm caption calibration of flank spacing has no uncertainty. Report a resampled interval."
+      - id: R3
+        item: "Single builder-assessor. Do not invent a second provider score."
+      - id: R4
+        item: "The equal-diffusion ablation is linearised. Add a small-amplitude nonlinear control that stays inside the fixed-point basin."
