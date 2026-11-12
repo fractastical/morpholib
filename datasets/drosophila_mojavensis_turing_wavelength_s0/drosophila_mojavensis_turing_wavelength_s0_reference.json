@@ -1,0 +1,93 @@
+{
+  "schema_version": "morphoeval-reference-2.4-detail-scale",
+  "slot": 3194,
+  "sim_id": "delphi10000-drosophila-mojavensis-turing-wavelength-s0",
+  "organism": "Drosophila mojavensis",
+  "common_name": "Sonoran Desert Organ-Pipe Cactus Fly (Cactophilic Detoxification & Cuticular Epicuticle)",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.38e-06,
+    "size_human": "2.4 µm",
+    "log10_size_m_catalog": -5.623,
+    "log10_size_m_exact": -5.623423,
+    "scale_tier": "3_subcellular_um",
+    "scale_tier_num": 3,
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila mojavensis (2.4 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "chronoseries_index": "23/41",
+    "fossil_lineage_group": "Subgenus Drosophila virilis–repleta–guttifera Radiation",
+    "predecessor": "Drosophila miranda",
+    "successor": "Drosophila novamexicana"
+  },
+  "aristotelian_categories": {
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Entoma (Arthropoda)",
+    "biological_genus": "Drosophila",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "parameters": {
+    "kinetics": "schnakenberg",
+    "a": 0.37,
+    "b": 0.71,
+    "gamma": 4.0,
+    "diffusion_ratio_R": 80.0,
+    "lambda_target_m": 2.38e-06,
+    "grid_n": 72,
+    "pixels_per_wavelength": 6,
+    "seed": 3194,
+    "boundary_pass1": "periodic",
+    "predecessor_lambda_nm": 3237,
+    "focal_lambda_nm": 2380,
+    "successor_lambda_nm": 1948,
+    "note": "Du and Dv are derived in the script so that argmax_k sigma(k) equals 2*pi/lambda_target_m. They are not copied from slot 2981 (alpha_scale 1.33, beta_offset 0.412, 96 µm)."
+  },
+  "equations": {
+    "schnakenberg": "du/dt = gamma*(a - u + u^2 v) + Du * lap(u); dv/dt = gamma*(b - u^2 v) + Dv * lap(v)",
+    "steady_state": "u0 = a + b; v0 = b / u0^2",
+    "jacobian": "f_u = gamma*(-1 + 2*u0*v0); f_v = gamma*u0^2; g_u = gamma*(-2*u0*v0); g_v = gamma*(-u0^2)",
+    "dispersion": "sigma(k) = largest real eigenvalue of J - k^2 diag(Du, Dv)",
+    "selected_wavelength": "k_star = argmax sigma(k); lambda_star = 2*pi/k_star",
+    "leading_order_kc": "k_c^2 = (Dv*f_u + Du*g_v) / (2*Du*Dv)  (Murray form; reported alongside k_star)",
+    "chronospecies_square_law": "s = (lambda_nm / 2380)^2; Du' = s*Du; Dv' = s*Dv; lambda' = lambda_star * sqrt(s)"
+  },
+  "specimens": {
+    "canonical_plate": {
+      "file": "drosophila_mojavensis_turing_wavelength_s0_specimen.jpg",
+      "sha256": "f68e7b21de8d6b97f1a79c44f509ee41bc5c9f3439783d507c046c03dae5efae",
+      "source": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_mojavensis.jpg",
+      "role": "image-fitness target and composite substrate"
+    },
+    "wikimedia_habitus": {
+      "file": "drosophila_mojavensis_wikimedia_female.png",
+      "sha256": "7615839cbc7962708d325b16caeec0e7e22b3ff848243c9e29e1ead0849b7eff",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Drosophila_mojavensis_female.png",
+      "license": "Public domain",
+      "width": 225,
+      "height": 99,
+      "role": "real CC/PD taxonomic illustration; too small to be the 480 px fitness target"
+    }
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 dispersion mechanism and diffusion-driven instability",
+      "Schnakenberg 1979 two-species kinetics",
+      "Matzkin et al. 2006/2012 and Allan & Matzkin 2019: D. mojavensis host shifts among cactus species, with transcriptional and genomic differentiation",
+      "Drosophila 12 Genomes Consortium 2007: D. mojavensis genome in the repleta group"
+    ],
+    "reconstructed_in_script": [
+      "Absolute Du, Dv calibrated so the most-unstable wavelength is the catalog detail length 2.38e-06 m (2.4 µm)",
+      "Chronospecies wavelengths 3237 nm (D. miranda) and 1948 nm (D. novamexicana) via lambda proportional to sqrt(D) at fixed Jacobian and R=80",
+      "Composite of the saturated activator onto the canonical gallery plate for the animation's last frame"
+    ],
+    "does_not_claim": [
+      "That 2.38 µm was measured on a D. mojavensis SEM or ocellus in the cited papers",
+      "That D. miranda is the phylogenetic ancestor of D. mojavensis (campaign chronoseries order only)",
+      "That the gallery plate's printed 100 µm bar is the phenomenon scale of this slot",
+      "That DOI 10.1534/genetics.106.059444 is a Matzkin cactus paper"
+    ]
+  }
+}
