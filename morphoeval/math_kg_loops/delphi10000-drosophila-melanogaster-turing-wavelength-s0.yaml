@@ -1,0 +1,64 @@
+sim_id: delphi10000-drosophila-melanogaster-turing-wavelength-s0
+slot: 3192
+organism: Drosophila melanogaster
+phenomenon_size_m: 2.736e-06
+log10_size_m: -5.563
+size_human: "2.7 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila melanogaster (2.7 µm, detail scale s0)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Drosophila chronoseries 21/41; predecessor Drosophila mauritiana; successor Drosophila miranda"
+math_family: Reaction-Diffusion & Turing Dispersion (Schnakenberg 1979)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: "Schnakenberg (1979) RD; k_c = argmax sigma(k); lambda_c = 2 pi / k_c = 2.736 µm at solved gamma"
+  lambda_target_m: 2.736e-06
+  gamma_solved: 1.032078223984858
+  a: 0.11
+  b: 0.97
+  Du: 0.035
+  Dv: 1.62
+  grid_resolution: [128, 96]
+  dt: 0.00115
+  steps: 4200
+  seed: 3192
+  predecessor: {species: Drosophila mauritiana, a: 0.16, b: 0.72, Du: 0.055, Dv: 1.15, lambda_um: 3.2427}
+  successor: {species: Drosophila miranda, a: 0.07, b: 1.25, Du: 0.020, Dv: 2.20, lambda_um: 2.2420}
+  inputs:
+    - datasets/drosophila_melanogaster_turing_wavelength_s0/drosophila_melanogaster_turing_wavelength_s0_reference.json
+    - datasets/drosophila_melanogaster_turing_wavelength_s0/Drosophila_melanogaster_specimen.jpg
+equations:
+  - law_name: Turing dispersion eigenvalue
+    formula: "sigma(k) = 1/2 * (tr A(k) + sqrt(tr A(k)^2 - 4 det A(k)))"
+    lean_decl: MathOfBiology.Loop_3192.lamMelanogasterNm
+    lean_theorem: MathOfBiology.Loop_3192.chronospecies_wavelength_order
+    lean_locus: morphoeval/lean/loops/Loop_3192_drosophila_melanogaster_turing_wavelength_s0.lean#L18-L20
+    variables: "A(k) = J - k^2 diag(Du, Dv); J is the gamma-scaled Schnakenberg Jacobian"
+    role: "Selects the 2.736 µm detail-scale wavelength for Holocene D. melanogaster"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py#L102-L128
+  - law_name: Critical wavelength and eight-wave patch
+    formula: "lambda_c = 2 pi / k_c; 2736 nm * 8 = 21888 nm"
+    lean_decl: MathOfBiology.Loop_3192.eight_wavelengths_span_patch
+    lean_theorem: MathOfBiology.Loop_3192.eight_wavelengths_span_patch
+    lean_locus: morphoeval/lean/loops/Loop_3192_drosophila_melanogaster_turing_wavelength_s0.lean#L23-L25
+    variables: "k_c = argmax sigma(k); patch length 21.888 µm"
+    role: "Converts the selected wavenumber into the assigned 2.7 µm scale"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py#L131-L143
+  - law_name: Chronospecies wavelength gaps at 0 Ma
+    formula: "lambda_mau - lambda_mel = 507 nm; lambda_mel - lambda_mir = 494 nm"
+    lean_decl: MathOfBiology.Loop_3192.holocene_wavelength_gaps
+    lean_theorem: MathOfBiology.Loop_3192.holocene_wavelength_gaps
+    lean_locus: morphoeval/lean/loops/Loop_3192_drosophila_melanogaster_turing_wavelength_s0.lean#L28-L31
+    variables: "shared gamma; species differ in a, b, Du, Dv only"
+    role: "Predecessor mauritiana is longer; successor miranda is shorter; age offset is zero"
+    source_citation: "True 1997 DOI:10.1111/j.1558-5646.1997.tb03664.x; Richards 2005 DOI:10.1101/gr.3059305"
+    code_locus: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py#L153-L169
