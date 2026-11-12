@@ -1,0 +1,107 @@
+{
+  "schema_version": "morphoeval-reference-3.0-detail-scale",
+  "slot": 3185,
+  "sim_id": "delphi10000-drosophila-ficusphila-turing-wavelength-s0",
+  "organism": "Drosophila ficusphila",
+  "common_name": "Fig-Breeding Oriental Sophophora Fly (Longitudinal Sex-Comb Tooth Array)",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.072e-06,
+    "log10_size_m": -5.684,
+    "size_human": "2.1 µm",
+    "scale_tier": "3_subcellular_um",
+    "scale_tier_num": 3,
+    "scale_tier_count": 8,
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength of the longitudinal sex-comb tooth array at the 2.1 µm detail scale"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "fossil_lineage_group": "Sophophora suzukii–biarmipes Wing-Spot Clade",
+    "chronoseries": "Drosophila 14/41",
+    "predecessor": "Drosophila eugracilis",
+    "successor": "Drosophila grimshawi",
+    "note": "All three names are extant Holocene species. The predecessor/successor order is the project chronoseries, not a claim that eugracilis is a stratigraphic ancestor of ficusphila."
+  },
+  "aristotelian_categories": {
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Entoma (Arthropoda)",
+    "biological_genus": "Drosophila",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "state_variables": {
+    "u": "activator (tooth-ridge pigment precursor) concentration, dimensionless Schnakenberg units",
+    "v": "inhibitor concentration, dimensionless Schnakenberg units",
+    "domain": "flat periodic patch of tarsal epithelium, Lx = 8 λ_c, Ly = 6 λ_c"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg (1979): R_u = a - u + u^2 v, R_v = b - u^2 v",
+    "pde": "∂_t u = D_u ∇²u + R_u(u,v); ∂_t v = D_v ∇²v + R_v(u,v)",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "dispersion": "σ(k) = largest real eigenvalue of J - k^2 diag(D_u, D_v)",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "wavelength": "λ_c = 2π / k_c"
+  },
+  "boundary_conditions": {
+    "type": "periodic",
+    "justification": "The detail patch is an interior piece of the tarsomere, far from the joint on the scale of one 2.072 µm ridge. No-flux edges would pin a boundary layer that this tier does not resolve."
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "diffusion_ratio_r": 20.0,
+    "lambda_fic_um": 2.072,
+    "lambda_fic_m": 2.072e-06,
+    "density_ratio_eugracilis": 0.6666666667,
+    "density_ratio_grimshawi": 0.5,
+    "lambda_eug_um": 3.108,
+    "lambda_grim_um": 4.144,
+    "spiral_charge_m": 2,
+    "grid": [128, 96],
+    "wavelengths_across_domain": [8, 6],
+    "seed": 3185,
+    "note": "D_u and D_v are derived in the script so that k_c equals 2π/2.072 µm⁻¹ at r=20. They are not the alpha_scale/beta_offset pair of slot 2821."
+  },
+  "empirical_claims": [
+    {
+      "claim": "Longitudinal sex combs, oriented on the proximo-distal leg axis, evolved more than once. In some lineages a transverse bristle row rotates about 90 degrees; in others the bristles are born already longitudinal.",
+      "source_doi": "10.1073/pnas.0807875106",
+      "used_as": "reported_in_source"
+    },
+    {
+      "claim": "Sex-specific bristle traits, including sex combs, are spatially restricted by HOX-dependent doublesex expression.",
+      "source_doi": "10.1371/journal.pbio.1001131",
+      "used_as": "reported_in_source"
+    },
+    {
+      "claim": "A homogeneous morphogen field can become unstable at a finite critical wavenumber k_c.",
+      "source_doi": "10.1098/rstb.1952.0012",
+      "used_as": "reported_in_source"
+    },
+    {
+      "claim": "The 2.072 µm figure is the assigned detail-tier wavelength for this slot. It is not a tooth spacing measured in Tanaka et al. (2009) or Kopp (2011).",
+      "used_as": "transfer_boundary"
+    },
+    {
+      "claim": "At this tier the focal comb is assigned linear density 1, the reduced-tooth predecessor 2/3, and the picture-wing successor 1/2, which sets λ = 2.072, 3.108 and 4.144 µm through D_u only.",
+      "used_as": "reconstructed_in_script"
+    }
+  ],
+  "specimen_image": {
+    "file": "drosophila_ficusphila_specimen.jpg",
+    "sha256": "8a0ea6252701fd69640d9a0512243daf5ad701e55cb2b7019f7ed1e16429858c",
+    "source_path": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_ficusphila.jpg",
+    "license_note": "Repository species-gallery asset used because Wikimedia Commons returned no bitmap for Drosophila ficusphila on 2026-10-27. Stylized sepia spiral plate, not an SEM.",
+    "bytes": 95190
+  },
+  "external_datasets": [
+    {
+      "name": "FlyBase",
+      "url": "https://flybase.org/",
+      "doi": "10.1093/genetics/iyad035"
+    }
+  ]
+}

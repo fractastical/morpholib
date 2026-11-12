@@ -1,0 +1,193 @@
+# Pass 1 audit — Drosophila ficusphila Turing wavelength, 2.1 µm, Holocene 0 Ma.
+# Builder and assessor are the same agent (Grok 4.7). Not a dual-assessor consensus.
+
+audit:
+  id: 2026-10-27-drosophila-ficusphila-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 1)"
+  publisher_orcid: "https://github.com/fractastical/morpholib"
+  publisher_github: "https://github.com/fractastical"
+  license: "https://creativecommons.org/licenses/by/4.0/"
+  domain: morphogenesis
+  checkpoint:
+    repository: "https://github.com/fractastical/morpholib"
+    commit: "0c76d15d"
+    note: "Pass 1 working tree on top of 0c76d15d. Slot files are new; no existing tracked file is edited."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  tanaka2009:
+    title: "Distinct developmental mechanisms underlie the evolutionary diversification of Drosophila sex combs"
+    authors: "Tanaka K, Barmina O, Kopp A"
+    venue: "PNAS 106:4764-4769 (2009)"
+    doi: "10.1073/pnas.0807875106"
+  tanaka2011:
+    title: "Evolution of sex-specific traits through changes in HOX-dependent doublesex expression"
+    authors: "Tanaka K, Barmina O, Sanders LE, Arbeitman MN, Kopp A"
+    venue: "PLoS Biology 9:e1001131 (2011)"
+    doi: "10.1371/journal.pbio.1001131"
+  kopp2011:
+    title: "Drosophila sex combs as a model of evolutionary innovations"
+    authors: "Kopp A"
+    venue: "Evolution & Development 13:504-522 (2011)"
+    doi: "10.1111/j.1525-142X.2011.00507.x"
+
+simulations:
+  - id: delphi10000-drosophila-ficusphila-turing-wavelength-s0
+    name: "Drosophila ficusphila longitudinal sex-comb Turing wavelength at 2.1 µm"
+    organism: "Drosophila ficusphila"
+    script: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py
+    output: docs/media/drosophila_ficusphila_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, tanaka2009, tanaka2011, kopp2011]
+    model_spec:
+      model: "Schnakenberg (1979) with Turing (1952) k_c"
+      a: 0.1
+      b: 0.9
+      diffusion_ratio: 20
+      lambda_fic_um: 2.072
+      grid: [128, 96]
+      seed: 3185
+      inputs:
+        - datasets/drosophila_ficusphila_turing_wavelength_s0/drosophila_ficusphila_turing_wavelength_s0_reference.json
+        - datasets/drosophila_ficusphila_turing_wavelength_s0/drosophila_ficusphila_specimen.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): a reaction-diffusion system can be unstable at a finite critical wavenumber."
+        - "Schnakenberg (1979): two-species kinetics with a homogeneous steady state and a limit-cycle regime; the Jacobian used here is the standard linearisation of R_u = a - u + u^2 v, R_v = b - u^2 v."
+        - "Tanaka, Barmina & Kopp (2009): longitudinal sex combs evolve by about 90 degrees of rotation of a transverse row, or by bristles that arise already longitudinal."
+        - "Tanaka et al. (2011) and Kopp (2011): sex-comb teeth are a recent, sex-specific bristle innovation under doublesex and Scr."
+      reconstructed_in_script:
+        - "The assigned detail-tier wavelength λ_c = 2.072 µm (2.072e-6 m, log10 = -5.684) is imposed by choosing D_u at diffusion ratio 20."
+        - "Predecessor D. eugracilis is given linear density 2/3 and successor D. grimshawi density 1/2, at geological age 0 Ma, producing λ = 3.108 µm and 4.144 µm."
+        - "Spiral charge m = 2 is a render choice so the growing mode has the same two-arm layout as the gallery plate."
+      transfer_boundary:
+        - "No cited sex-comb paper reports a 2.072 µm Turing wavelength, a Schnakenberg parameter table, or a measured tooth-ridge spacing at this tier."
+        - "The chronoseries order (eugracilis before ficusphila before grimshawi) is the project series of extant species, not a stratigraphic lineage."
+      does_not_claim:
+        - "That the gallery plate is an SEM or a light micrograph of a sex-comb tooth."
+        - "That 2.072 µm was measured on D. ficusphila cuticle."
+        - "That the 100 µm sibling slot's alpha/beta power law is this model."
+    summary: >
+      Pass 1 implements Schnakenberg–Turing dispersion at 2.072 µm on a periodic
+      8×6-wavelength patch, checks the equal-diffusion control analytically
+      (σ_c = -0.1), and fits Euler growth rates to the closed-form eigenvalue
+      (Pearson r = 0.99999994, RMSE = 5.2e-4). The GIF is 16 frames at 800×600.
+      Computer-vision similarity of the last frame to the gallery plate is 81.9.
+      Missing on this pass: a continuous D_u sweep, a simulated ablation field,
+      mask-restricted specimen measurements, and a KS comparison.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >
+          The code uses the Schnakenberg steady state (u0, v0) = (1, 0.9),
+          the Jacobian (f_u, f_v, g_u, g_v) = (0.8, 1, -1.8, -1), and the
+          Turing wavenumber k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v).
+          Self-test locks λ_c to 2.072 µm and rejects the equal-diffusion
+          control. Six Lean theorems (0 sorry) check the trace, the
+          determinant, the r = 20 margin, the r = 1 margin, and the
+          wavelength ordering 2072 < 3108 and 2072 < 4144 nm. The spiral
+          charge is not part of the published kinetics.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [81, 89], note: "dispersion_sigma: largest real eigenvalue of J - k^2 D", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [91, 133], note: "trace, det, cross term, k_c, unstable-band roots, equal-diffusion guard", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3185_drosophila_ficusphila_turing_wavelength_s0.lean, lines: [14, 56], note: "six theorems, 0 sorry: trace, det, r=20 unstable, r=1 stable, wavelength order, ridge counts", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [230, 245], note: "spiral charge m=2 is a render choice, not a measured topological index", supports: false}
+      specimen-match:
+        value: 78
+        rationale: >
+          The last GIF frame is a sepia two-arm spiral on the same brown
+          ground as the gallery plate. Official CV similarity is 81.9
+          (12-bin orientation, 24-bin radial FFT, structure-tensor
+          coherency, occupancy) at 800×600 and 16 frames. The plate itself
+          is a stylized pigment field with a 100 µm scale bar, not a
+          micrograph of teeth, so the match is to that plate and not to an
+          SEM. The simulated spiral has more turns than the plate because
+          the domain holds eight critical wavelengths.
+        evidence:
+          - {file: docs/media/drosophila_ficusphila_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate beside the final Schnakenberg field, dispersion overlay, chronospecies bars", supports: true}
+          - {file: docs/media/drosophila_ficusphila_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame 800x600 growth GIF, last frame scored at CV 81.9", supports: true}
+          - {file: datasets/drosophila_ficusphila_turing_wavelength_s0/README.md, lines: [27, 29], note: "plate is a stylized gallery asset, not an SEM at 2.1 µm", supports: false}
+      parameter-expressivity:
+        value: 68
+        rationale: >
+          D_u is the knob that sets λ at fixed Jacobian and fixed ratio
+          r = 20. The pass renders three densities (eugracilis 2/3,
+          ficusphila 1, grimshawi 1/2) and the bars increase in the right
+          direction: 3.108, 2.072, 4.144 µm, with 19.3, 12.9 and 9.7 ridges
+          per 40 µm. There is no continuous sweep, so monotonicity is shown
+          at three points only.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [72, 78], note: "du_for_wavelength is the monotone map λ -> D_u", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [136, 165], note: "three chronospecies only; no Du sweep is computed or drawn", supports: false}
+      morphometric-validation:
+        value: 72
+        rationale: >
+          Analytic σ(k) versus late-window Euler growth on the critical
+          eigenmode: Pearson r = 0.99999994, RMSE = 5.22e-4 (reference
+          threshold 0.98 and tolerance 0.05; the measured numbers are not
+          copies of those references). The 12-point argmax wavelength is
+          2.4508 µm against the assigned 2.072 µm, so the grid is too coarse
+          to locate k_c. No Kolmogorov-Smirnov comparison and no mask
+          measurement on the specimen pixels are in this pass.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [167, 228], note: "numeric_growth_rates: eigenmode Euler versus closed-form σ(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [381, 426], note: "measure_morphoeval records wavelength 2.4508 vs reference 2.072, r vs 0.98, RMSE vs 0.05", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [350, 378], note: "core_metrics has no KS statistic and no specimen-mask coherency", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >
+          Seed DOI 10.1073/pnas.0807875106 plus Turing, Schnakenberg, Tanaka
+          2011 and Kopp 2011 are in the bib and the reference JSON. The
+          specimen file is SHA-256 pinned (8a0ea625…, 95190 bytes) to the
+          gallery fallback after Wikimedia returned no bitmap. OpenAlex was
+          queried; slot 3185 is absent from the 100-slot campaign file, and
+          that failure is written in the scout manifest rather than hidden.
+        evidence:
+          - {file: datasets/drosophila_ficusphila_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "six BibTeX entries with DOIs", supports: true}
+          - {file: datasets/drosophila_ficusphila_turing_wavelength_s0/drosophila_ficusphila_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.072e-6 m, age 0 Ma, state variables, equations, boundary condition", supports: true}
+          - {file: datasets/drosophila_ficusphila_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "slot 3185 lookup failed; follow-up OpenAlex DOIs recorded; collision_detected false", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >
+          dispersion_sigma, du_for_wavelength and the chronospecies table
+          are each named in the math-KG record with a Lean declaration and
+          a DOI. The PDE stepper cites Schnakenberg production terms
+          a - u + u^2 v and b - u^2 v directly. The band-edge quadratic in
+          turing_diagnostics is commented more densely than it is tested.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-ficusphila-turing-wavelength-s0.yaml, lines: [36, 75], note: "four laws pinned to Lean theorems and code loci", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [250, 268], note: "PDE update is a - u + u^2 v and b - u^2 v", supports: true}
+      repro-package:
+        value: 86
+        rationale: >
+          --self-test checks the specimen hash, the steady state, Turing
+          instability, λ_c, the stable equal-diffusion eigenvalue, Pearson
+          r > 0.98, and the chronospecies order. Seed 3185, grid 128×96,
+          and 3600 steps are constants. The run prints frame count and
+          writes a metrics JSON. Dependencies are the repo scientific stack
+          (numpy, Pillow, matplotlib); this pass does not pin a per-script
+          lockfile.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [428, 468], note: "self_test exits non-zero on any failed invariant", supports: true}
+          - {file: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py, lines: [40, 55], note: "pinned specimen hash, seed 3185, grid, step count, frame count", supports: true}
+    remediation:
+      - "R1 parameter-regime sweep: vary D_u over at least eight values at fixed Jacobian and show that λ_c is monotone in sqrt(D_u), and draw that curve."
+      - "R2 negative control: integrate the equal-diffusion PDE (D_u = D_v) from the same spiral seed and report that the field variance collapses, next to the analytic σ_c = -0.1."
+      - "R3 specimen CV segmentation: border-contrast mask on the real gallery plate; report foreground fraction, circularity and structure-tensor coherency for the plate and for the GIF last frame, with value != reference."
+      - "R4 goodness-of-fit: Kolmogorov-Smirnov statistic between plate and simulation luminance, plus a finer k-grid so the numeric wavelength is close to 2.072 µm but not copied onto the reference."
+      - "R5 single assessor: this pass is builder-scored. A second provider is not available in this run; do not invent one."

@@ -1,0 +1,75 @@
+sim_id: delphi10000-drosophila-ficusphila-turing-wavelength-s0
+slot: 3185
+organism: Drosophila ficusphila
+phenomenon_size_m: 2.072e-06
+log10_size_m: -5.684
+size_human: "2.1 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength of the longitudinal sex-comb tooth array
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora suzukii–biarmipes Wing-Spot Clade"
+predecessor: Drosophila eugracilis
+successor: Drosophila grimshawi
+math_family: Reaction-Diffusion & Turing Dispersion (1. Chemical Turing / RD)
+model_spec:
+  model: "Schnakenberg (1979) kinetics with Turing (1952) dispersion k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)"
+  a: 0.1
+  b: 0.9
+  diffusion_ratio: 20
+  lambda_fic_um: 2.072
+  lambda_eug_um: 3.108
+  lambda_grim_um: 4.144
+  density_eug: 0.6666666667
+  density_grim: 0.5
+  grid: [128, 96]
+  steps: 3600
+  seed: 3185
+  inputs:
+    - datasets/drosophila_ficusphila_turing_wavelength_s0/drosophila_ficusphila_turing_wavelength_s0_reference.json
+    - datasets/drosophila_ficusphila_turing_wavelength_s0/drosophila_ficusphila_specimen.jpg
+    - datasets/drosophila_ficusphila_turing_wavelength_s0/paper_citations.bib
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Schnakenberg Jacobian trace is negative
+    formula: "tr J = f_u + g_v = -0.2 < 0 at (a, b) = (0.1, 0.9)"
+    lean_decl: MathOfBiology.Loop_3185.trace_milli
+    lean_theorem: MathOfBiology.Loop_3185.trace_is_negative
+    lean_locus: morphoeval/lean/loops/Loop_3185_drosophila_ficusphila_turing_wavelength_s0.lean#L14-L17
+    variables: "f_u = 0.8, g_v = -1 at the homogeneous steady state u0 = 1, v0 = 0.9"
+    role: "Homogeneous state of the 2.072 µm ficusphila ridge field is stable to uniform perturbations"
+    source_citation: "Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py#L81-L89
+  - law_name: Critical wavenumber at diffusion ratio 20
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 2.072 µm"
+    lean_decl: MathOfBiology.Loop_3185.turing_margin
+    lean_theorem: MathOfBiology.Loop_3185.focal_ratio_is_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3185_drosophila_ficusphila_turing_wavelength_s0.lean#L29-L34
+    variables: "r = 20, milli-Jacobian f_u = 800, g_v = -1000, det scale = 1000"
+    role: "Selects the 2.1 µm detail-scale wavelength of the longitudinal sex-comb tooth array"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py#L72-L78
+  - law_name: Equal diffusion does not select a wavelength
+    formula: "at r = 1, (f_u + g_v)^2 < 4 det, so sigma_max < 0"
+    lean_decl: MathOfBiology.Loop_3185.turing_margin
+    lean_theorem: MathOfBiology.Loop_3185.equal_diffusion_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3185_drosophila_ficusphila_turing_wavelength_s0.lean#L36-L38
+    variables: "r = 1 versus r = 20"
+    role: "Negative control for the 2.072 µm instability"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py#L91-L133
+  - law_name: Packed comb is the short-wavelength state at 0 Ma
+    formula: "lambda_fic = 2072 nm < lambda_eug = 3108 nm and lambda_fic < lambda_grim = 4144 nm"
+    lean_decl: MathOfBiology.Loop_3185.lam_fic_nm
+    lean_theorem: MathOfBiology.Loop_3185.focal_wavelength_is_shortest
+    lean_locus: morphoeval/lean/loops/Loop_3185_drosophila_ficusphila_turing_wavelength_s0.lean#L42-L48
+    variables: "density 1 versus 2/3 (eugracilis) and 1/2 (grimshawi); same Jacobian"
+    role: "What changes at 2.072 µm relative to the predecessor and the successor"
+    source_citation: "Tanaka, Barmina & Kopp (2009) DOI:10.1073/pnas.0807875106"
+    code_locus: models/2026-delphi10000-drosophila-ficusphila-turing-wavelength-s0.py#L136-L165
