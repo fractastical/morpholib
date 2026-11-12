@@ -1,0 +1,80 @@
+sim_id: delphi10000-drosophila-berryi-turing-wavelength-s0
+slot: 3173
+organism: Drosophila berryi
+phenomenon_size_m: 1.754e-06
+log10_size_m: -5.756
+size_human: "1.8 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila berryi
+  (Miocene Dominican Amber Fossil Fruit Fly), detail scale 1.754 µm
+geological_age_ma: 19.0
+geological_period: Early Miocene (Burdigalian Dominican Amber)
+fossil_lineage_group: "Cenozoic Amber Drosophilid Chronospecies (44 Ma Eocene → 0 Ma)"
+chronoseries_index: "2/41"
+predecessor: Drosophila succini
+successor: Drosophila affinis
+external_datasets:
+- name: Paleobiology Database (PBDB) — Drosophila
+  url: https://paleobiodb.org/classic/checkTaxonInfo?taxon_name=Drosophila
+  doi: 10.1093/molbev/msg236
+- name: Biodiversity Heritage Library — Grimaldi 1987 American Museum Novitates 2880
+  url: https://www.biodiversitylibrary.org/item/171121
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe
+  Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+- law_name: Berryi detail wavelength positivity
+  formula: lambda_c(berryi) = 1.754e-6 m > 0
+  lean_decl: MathOfBiology.Loop_3173.berryiLambdaNm
+  lean_theorem: MathOfBiology.Loop_3173.berryi_wavelength_positive
+  lean_locus: morphoeval/lean/loops/Loop_3173_drosophila_berryi_turing_wavelength_s0.lean#L10-L13
+  lean_code: 'def berryiLambdaNm : Int := 1754
+
+    theorem berryi_wavelength_positive : berryiLambdaNm > 0 := by decide'
+  variables: "berryiLambdaNm: classical critical wavelength in nanometres at 19 Ma"
+  role: "Pins the 1.8 µm detail-scale phenomenon size (1.754 µm) for Drosophila berryi"
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py
+- law_name: Miocene chronoseries contraction exceeds the later Holocene step
+  formula: "lambda(succini, 2040 nm) - lambda(berryi, 1754 nm) > lambda(berryi) - lambda(affinis, 1718 nm)"
+  lean_decl: MathOfBiology.Loop_3173.chronoseriesGap
+  lean_theorem: MathOfBiology.Loop_3173.miocene_gap_exceeds_holocene_gap
+  lean_locus: morphoeval/lean/loops/Loop_3173_drosophila_berryi_turing_wavelength_s0.lean#L16-L22
+  lean_code: 'def chronoseriesGap (older newer : Int) : Int := older - newer
+
+    theorem miocene_gap_exceeds_holocene_gap : chronoseriesGap 2040 1754 > chronoseriesGap 1754 1718 := by decide'
+  variables: "older, newer: detail wavelengths in nanometres along the amber chronoseries"
+  role: "Formalizes the 44 Ma → 19 Ma → 0 Ma contraction at the 1–2 µm tier"
+  source_citation: "Grimaldi (1987) https://www.biodiversitylibrary.org/item/171121; Grimaldi (1995) DOI:10.1021/bk-1995-0617.ch011"
+  code_locus: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py
+- law_name: Inhibitor diffuses faster than the activator
+  formula: "D_v / D_u > 1 with D_v = 1.721 and D_u = 0.03686 (integer encoding 1721/37)"
+  lean_decl: MathOfBiology.Loop_3173.diffusionRatioMilli
+  lean_theorem: MathOfBiology.Loop_3173.berryi_inhibitor_diffuses_faster
+  lean_locus: morphoeval/lean/loops/Loop_3173_drosophila_berryi_turing_wavelength_s0.lean#L25-L31
+  lean_code: 'def diffusionRatioMilli (dvMilli duMilli : Int) : Int := dvMilli / duMilli
+
+    theorem berryi_inhibitor_diffuses_faster : diffusionRatioMilli 1721 37 > 1 := by decide'
+  variables: "dvMilli, duMilli: diffusivities scaled by 1000 and rounded"
+  role: "Turing band sign condition for wavenumber k_c at the berryi detail scale"
+  source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py
+- law_name: Conserved subcellular mode count
+  formula: "N = lambda_tissue / lambda_detail ≈ 55.872 (scaled integer 55872)"
+  lean_decl: MathOfBiology.Loop_3173.scaledModeCount
+  lean_theorem: MathOfBiology.Loop_3173.mode_count_near_fifty_six
+  lean_locus: morphoeval/lean/loops/Loop_3173_drosophila_berryi_turing_wavelength_s0.lean#L34-L40
+  lean_code: 'def scaledModeCount : Int := 55872
+
+    theorem mode_count_near_fifty_six : scaledModeCount > 55000 ∧ scaledModeCount < 56000 := by decide'
+  variables: "scaledModeCount: 1000 N for N = 98 µm / 1.754 µm"
+  role: "What stays fixed while absolute k_c rises from succini to affinis"
+  source_citation: "Murray (1981) DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-drosophila-berryi-turing-wavelength-s0.py
