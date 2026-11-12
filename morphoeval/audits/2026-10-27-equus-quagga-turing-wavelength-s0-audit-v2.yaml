@@ -1,0 +1,139 @@
+# MorphoEval audit v2 — Equus quagga Turing wavelength s0, Pass 2, 2026-10-27
+# Fixes Pass-1 R1 (second body region), R2 (explicit mode-quantization ratio),
+# and R3 (anisotropy probe; continuous k_fast seed was rejected because it
+# lowered specimen CV from 92 to 83). R4, a second assessor, stays open.
+audit:
+  id: 2026-10-27-equus-quagga-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-equus-quagga-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. Slot-3221 files are new relative to the checkpoint commit."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  murray1981:
+    title: "A Pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+    year: 1981
+  bard1977:
+    title: "A unity underlying the different zebra striping patterns"
+    authors: "Bard JBL"
+    venue: "Journal of Zoology 183:527-539 (1977)"
+    doi: 10.1111/j.1469-7998.1977.tb04204.x
+    year: 1977
+  bard1981:
+    title: "A model for generating aspects of zebra and other mammalian coat patterns"
+    authors: "Bard JBL"
+    venue: "Journal of Theoretical Biology 93:363-385 (1981)"
+    doi: 10.1016/0022-5193(81)90109-0
+    year: 1981
+  staddon2024:
+    title: "How the zebra got its stripes: Curvature-dependent diffusion orients Turing patterns on three-dimensional surfaces"
+    authors: "Staddon MF"
+    venue: "Physical Review E 110:034402 (2024)"
+    doi: 10.1103/PhysRevE.110.034402
+    year: 2024
+simulations:
+  - id: delphi10000-equus-quagga-turing-wavelength-s0
+    name: "Equus quagga Holocene Turing wavelength at 1.9 mm (detail s0)"
+    organism: "Equus quagga"
+    script: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py
+    output: docs/media/equus_quagga_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-equus-quagga-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, bard1977, bard1981, staddon2024]
+    summary: >-
+      Pass 2 keeps the Pass-1 Schnakenberg field (lambda(k_fast) pinned at 1.883 mm,
+      age 0 Ma, Pearson r = 0.997, RMSE = 0.067 mm). The nominal FFT is 2.032 mm,
+      quantization ratio 1.079 against the analytical fastest mode. A rump crop from
+      the same Namutoni photograph has gradient -72.5 deg (stripes nearly horizontal
+      where the pattern wraps the hindquarter) while the simulation stays at +2.5 deg.
+      That mismatch is reported, not fitted away. An anisotropy probe gives k_measured/k_fast
+      of 0.93, 1.00, and 0.73 at aniso 1.5, 3.2, and 8. Seeding the field at k_fast made
+      the wavelength exact and dropped GIF-to-flank CV from 92.1 to 83, so the noise-seeded
+      nominal render is unchanged. Equus scotti remains the equal-diffusion control.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion, Schnakenberg 1979 kinetics, Murray 1981 coat pre-pattern."
+        - "Bard 1977: about 0.4 mm spacing, stripes perpendicular to the dorsal line, third week, plains zebra."
+        - "Staddon 2024: curvature-dependent diffusion can orient stripes on a 3-D body."
+      reconstructed_in_script:
+        - "1.883 mm is the slot detail length (10^(-2.725) m), pinned to k_fast at gamma 1.15. Growth factor 4.707 from Bard's 0.40 mm is reconstructed."
+        - "Pass 2 adds a rump crop and an anisotropy probe. The rump orientation is not reproduced."
+        - "Equus scotti is only the equal-diffusion ablation."
+      transfer_boundary:
+        - "The photograph is an adult flank and rump. It does not measure the 1.883 mm fetal wavelength."
+        - "A straight periodic patch does not transfer to the rump, where stripes turn."
+      does_not_claim:
+        - "Does not claim the 1.883 mm length was calipered on a fetus in this loop."
+        - "Does not claim the simulation matches rump stripe orientation."
+        - "Does not claim a second assessor scored this pass."
+        - "Does not claim Equus scotti's coat is known."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "Unchanged Schnakenberg PDE, onset numerator, and gamma-scaled growth-rate peak. Pass 2 did not replace the kinetics with a curvature law; the rump failure shows that limit."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [110, 176], note: "onset k_c and k_fast", supports: true}
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [747, 776], note: "anisotropy probe, nominal field not replaced", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "Flank GIF versus the Namutoni barrel remains a near-vertical stripe match (CV 92.1, gradients -2.5 and +2.5 deg), with broken dashes. The new rump crop is a counterexample: its stripes run nearly horizontally (-72.5 deg) and the same field does not follow them."
+        evidence:
+          - {file: docs/media/equus_quagga_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720x540 flank animation", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/equus_quagga_rump_crop.jpg, lines: [0, 0], note: "rump stripes turn relative to the barrel", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: "Gamma still shortens wavelength monotonically (r = 0.997). The anisotropy probe moves k_measured/k_fast from 0.93 at aniso 1.5 through 1.00 at 3.2 to 0.73 at 8, so the orientation parameter is not decorative. Equal diffusion still kills the pattern."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [408, 426], note: "gamma sweep", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/equus_quagga_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "aniso_probe ratios", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pearson r = 0.997, RMSE = 0.067 mm, KS D = 0.32. Quantization ratio 1.079 is stored against reference 1, so the 2.032 versus 1.883 mm gap is explicit. Rump angle -72.5 versus simulation 2.5 and rump period 19.9 versus 17.1 px are unequal specimen metrics. Flank period 18.3 versus 32.0 px likewise."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [713, 745], note: "rump segmentation and period", supports: true}
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [778, 810], note: "quantization and rump rows for measure_morphoeval", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Same DOI set and SHA-pinned Namutoni photograph. The rump crop is taken from that same file with an explicit box."
+        evidence:
+          - {file: datasets/equus_quagga_turing_wavelength_s0/paper_citations.bib, lines: [1, 65], note: "citations", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/equus_quagga_turing_wavelength_s0_reference.json, lines: [63, 74], note: "specimen SHA-256, license, crop", supports: true}
+      code-traceability:
+        value: 85
+        rationale: "Pass-2 rump and anisotropy functions cite the remediation they answer. Lean still checks the onset sign, the scotti control, and the ten-stripe window, not the rump angle."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [690, 694], note: "Pass-2 metrics attached in main", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean, lines: [12, 33], note: "theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Same seed, self-test, and command. Pass 2 adds two short integrations and a crop; the self-test still passes."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [635, 679], note: "self-test", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/README.md, lines: [1, 24], note: "how to run; 1.9 mm and 0 Ma", supports: true}
+    remediation:
+      - id: R4
+        item: "Still one assessor. An independent second score was not run."
+      - id: R5
+        item: "Rump stripes are nearly horizontal and the straight-patch model does not follow them. A curvature-dependent diffusivity (Staddon 2024) on a body mesh would be the next mechanism, not a higher anisotropy on this rectangle."
