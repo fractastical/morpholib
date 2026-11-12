@@ -1,0 +1,79 @@
+# MorphoEval audit — T1917-030 (Pass 2), supersedes Pass 1
+
+audit:
+  id: 2026-10-31-t1917-030-the-spiral-shells-of-the-foram-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  supersedes_audit_id: 2026-10-31-t1917-030-the-spiral-shells-of-the-foram-audit
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 remediation; cloud loop thompson1917-t1917-030)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: foraminifera-surface-tension-geometry
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 35d30f4cf
+
+simulations:
+  - id: thompson1917-t1917-030
+    name: "Thompson (1917) T1917-030 — unilocular Lagena Delaunay fit (Pass 2)"
+    script: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py
+    output: docs/media/t1917_030_the_spiral_shells_of_the_foram_comparison.png
+    extra_outputs:
+      - docs/media/t1917_030_the_spiral_shells_of_the_foram_growth.gif
+      - datasets/thompson_1917/t1917-030/t1917_030_metrics.json
+      - datasets/thompson_1917/t1917-030/result.json
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Thompson Ch. XII reuses Ch. V surface-tension catalogue for monothalamic Lagena before coiling"
+      reconstructed_in_script:
+        - "26 unilocular silhouettes (13 Fig. 84 + 13 Fig. 19) + 2 polythalamous controls; adaptive gate"
+      does_not_claim:
+        - "Does not fit spiral chamber angles (T1917-029); spindle Lagena refuted by bead aspect bound"
+    summary: >-
+      Pass 2 adds free-form floor gate, ellipsoid null and sphere-cylinder ablation, B/t parameter sweep,
+      CV nRMSE and KS statistics. Verdict mixed: 8/26 compatible; flask-like 8/21; spindles 0/5.
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: "Full E7/E8 composite catalogue with comparators and sweep invariants."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [437, 525], note: "fit_all + parameter_sweep", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_030.lean, lines: [156, 221], note: "bead_aspect_bound, flask_join", supports: true}
+      specimen-match:
+        value: 64
+        rationale: "Fig. 84 + Fig. 19 CV segmentation with scale bars; polythalamous Fig. 8 controls."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [324, 370], note: "segment_photo Otsu + scale bars", supports: true}
+          - {file: datasets/thompson_1917/t1917-030/kireenko_2022_bdj_e87457_fig19.jpg, lines: [0, 0], note: "primary CC specimen plate", supports: true}
+      parameter-expressivity:
+        value: 68
+        rationale: "SWEEP_B and SWEEP_T exported; GIF animates B and flask neck elongation."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [117, 118], note: "SWEEP_B, SWEEP_T", supports: true}
+          - {file: docs/media/t1917_030_the_spiral_shells_of_the_foram_growth.gif, lines: [0, 0], note: "unduloid family animation", supports: true}
+      morphometric-validation:
+        value: 62
+        rationale: "Median Pearson r 0.95, KS and CV exported; verdict mixed with spindle refutation."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-030/result.json, lines: [36, 55], note: "headline_numbers", supports: true}
+          - {file: datasets/thompson_1917/t1917-030/t1917_030_metrics.json, lines: [1, 40], note: "measure_morphoeval records", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Pre-scouted Fig. 19 verified MATCH; IA Fig. 84 + Ch. XII leaf pinned."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-030/scout_manifest.json, lines: [10, 35], note: "dataset vetting", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "Reference JSON E1-E8 and math_kg yaml cross-walk."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-030.yaml, lines: [54, 90], note: "equations block", supports: true}
+      repro-package:
+        value: 76
+        rationale: "Deterministic self-test; ~25s full run; measure_morphoeval hook."
+        evidence:
+          - {file: thompson/claims/t1917-030_the-spiral-shells-of-the-foraminifera.py, lines: [629, 676], note: "measure_morphoeval", supports: true}
+    overall:
+      value: 68.7
+    remediation: []
