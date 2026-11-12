@@ -1,0 +1,112 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3153,
+  "sim_id": "delphi10000-cooksonia-pertoni-turing-wavelength-s0",
+  "organism": "Cooksonia pertoni",
+  "common_name": "Silurian Dichotomous Sporophyte Stem (Oldest Vascular Tracheids)",
+  "taxonomy": "III. Phyta (Embryophyta) -> Angiospermae & Gymnospermae -> Cooksonia",
+  "lineage": "Paleobotanical Vascular & Leaf Fossil Series",
+  "chronoseries_index": "1/1",
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength in Cooksonia pertoni (1.3 µm, detail scale)",
+    "phenomenon_size_m": 1.339e-06,
+    "size_human": "1.3 µm",
+    "log10_size_m": -5.873,
+    "scale_tier": "3_subcellular_um",
+    "note": "Assigned detail scale. Not a length measured by Edwards, Davies & Axe 1992."
+  },
+  "paleobiology": {
+    "geological_age_ma": 425.0,
+    "geological_period": "Late Silurian (Wenlock-Ludlow, 425 Ma)",
+    "predecessor": {
+      "name": "pre-vascular cooksonioid axis",
+      "change": "Equal diffusion, sigma_max < 0, no selected 1.3 µm band."
+    },
+    "successor": {
+      "name": "Rhynia gwynne-vaughanii",
+      "geological_age_ma": 407.0,
+      "geological_period": "Early Devonian (Pragian Rhynie Chert, 407 Ma)",
+      "change": "Longer activator diffusion length raises lambda_c from 1.339 µm to about 1.695 µm."
+    }
+  },
+  "state_variables": ["u activator (wall-polymer precursor)", "v inhibitor / depleted substrate"],
+  "boundary_conditions": "Periodic on the unrolled tracheid circumference; Neumann along the axis.",
+  "equations": {
+    "pde": "du/dt = D_u Laplacian(u) + a - u + u^2 v; dv/dt = D_v Laplacian(v) + b - u^2 v",
+    "steady_state": "u* = a + b; v* = b / (a + b)^2",
+    "jacobian": "f_u = 3/4, f_v = 576/625, g_u = -7/4, g_v = -576/625 at a = 3/25, b = 21/25",
+    "dispersion": "sigma_+(k) = largest real-part eigenvalue of J - k^2 diag(D_u, D_v)",
+    "selected_wavenumber": "k_c = argmax_k Re sigma_+(k)",
+    "wavelength": "lambda_c = 2 pi / k_c, scaled so lambda_c = 1.339e-6 m"
+  },
+  "parameters": {
+    "a": 0.12,
+    "b": 0.84,
+    "D_u": 0.055,
+    "D_v": 0.55,
+    "D_ratio": 10.0,
+    "critical_ratio_approx": 8.84,
+    "seed": 3153,
+    "grid": [72, 96],
+    "n_waves_around_cylinder": 4
+  },
+  "empirical_claims": [
+    "Edwards, Davies & Axe 1992 demonstrated a vascular conducting strand in Cooksonia pertoni, with tracheids that bear annular to spiral thickenings.",
+    "Edwards 2003 reviews annular, spiral and scalariform-like walls in early tracheophytes and states that few fossils are identical to extant xylem.",
+    "Turing 1952: a homogeneous steady state stable without diffusion can be unstable with diffusion, selecting a finite wavenumber.",
+    "This script's 1.339 µm wavelength is the assigned detail scale, not a measurement copied from those papers."
+  ],
+  "pass2_results": {
+    "specimen_branch_angle_deg": 69.96807044554417,
+    "nmnh_branch_angle_deg": 68.02644679133982,
+    "specimen_radial_pearson_r": 0.9881768150459699,
+    "note": "Quadratic peak on a 0.5 degree template grid. Wall bands imprinted after the shell-power match."
+  },
+  "pass1_results": {
+    "k_c": 2.356076519129782,
+    "sigma_max": 0.0432958576459348,
+    "lambda_um": 1.339,
+    "predecessor_sigma_max": -0.0859375,
+    "successor_lambda_um": 1.6951508989035793,
+    "dispersion_pearson_r": 0.9999999869331747,
+    "dispersion_rmse": 0.00014018000131689752,
+    "specimen_radial_pearson_r": 0.9865141981721708,
+    "specimen_gray_ks": 0.02826646090534979,
+    "model_branch_angle_deg": 64.36539859660269,
+    "specimen_branch_angle_deg": 70.0,
+    "nmnh_branch_angle_deg": 67.5
+  },
+  "specimen": {
+    "file": "cooksonia_pertoni_amgueddfa_specimen.jpg",
+    "sha256": "aa48bf1c9b50b41dc7f1ef6c6fc8b73b112b59e09f2a8d6ebb4d2aa8f97a0d57",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Amgueddfa_Cymru_-_Cooksonia_pertoni_-_211800.jpeg",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "credit": "Amgueddfa Cymru – National Museum Wales, via Wikimedia Commons",
+    "description": "Silurian early land plant fossil (Cooksonia pertoni)"
+  },
+  "second_specimen": {
+    "file": "cooksonia_pertoni_nmnh_specimen.jpg",
+    "sha256": "6c6d03579c80de68583cb5268dd7f4bba568f8f3497c243b69c5f761dc69fe56",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Cooksonia_NMNH.jpg",
+    "license": "CC BY-SA 4.0",
+    "role": "template-angle sensitivity check, not the fitness target"
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Vascular strand and annular/spiral tracheids in C. pertoni (Edwards, Davies & Axe 1992).",
+      "Turing dispersion relation and Schnakenberg kinetics."
+    ],
+    "reconstructed_in_script": [
+      "Parameters chosen so the fastest mode is 1.339 µm.",
+      "Successor diffusion-length shift.",
+      "Isotomous axis on a spectrum-matched matrix for comparison with the museum photograph."
+    ],
+    "does_not_claim": [
+      "That 1.3 µm was measured on the fossil.",
+      "That the photograph resolves wall bands.",
+      "That Cooksonia had animal-style ocelli.",
+      "That the 73 µm sibling parameters apply here."
+    ]
+  }
+}
