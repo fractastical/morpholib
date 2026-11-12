@@ -1,0 +1,146 @@
+{
+  "schema_version": "morphoeval-delphi10000-reference-1.0",
+  "slot": 3111,
+  "sim_id": "delphi10000-anchiornis-huxleyi-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Anchiornis huxleyi",
+    "common_name": "Late Jurassic four-winged paravian dinosaur",
+    "aristotelian_path": "I. Enaima (Vertebrata) -> Aves (Ornithes) -> Anchiornis",
+    "holotype": "IVPP V14378",
+    "formation": "Tiaojishan Formation",
+    "locality": "Yaolugou, Jianchang County, Liaoning, China",
+    "geological_period": "Late Jurassic (Tiaojishan Fm, 160.0 Ma)",
+    "geological_age_ma": 160.0,
+    "chronoseries_index": "1/1",
+    "chronoseries_note": "Anchiornis huxleyi is a single-horizon chronoseries in this campaign. There is no named predecessor or successor chronospecies. The comparison formalized here is the scale step against the coarser 29 nm molecular envelope of the same taxon (slot 1229), not a temporal species transition."
+  },
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2e-09,
+    "size_human": "2.0 nm",
+    "log10_size_m": -8.699,
+    "scale_tier": "1_molecular_nm",
+    "scale_variant": "detail",
+    "tier_index": "1/8",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength inside an Anchiornis melanosome (oligomer-sheet mode)",
+    "form_class": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c"
+  },
+  "scale_transition_vs_predecessor": {
+    "predecessor_slot": 1229,
+    "predecessor_sim_id": "li-anchiornis-huxleyi-turing-wavelength",
+    "predecessor_wavelength_m": 2.89e-08,
+    "predecessor_wavelength_human": "29 nm",
+    "this_wavelength_m": 2e-09,
+    "wavelength_ratio_predecessor_over_this": 14.45,
+    "what_changes": "At 160.0 Ma the animal is the same single chronospecies. What changes at this detail scale is the selected wavenumber. The 29 nm slot is a melanosome-envelope mode (one longer wavelength across a few tens of nanometres). This 2.0 nm slot is the intra-melanosome oligomer-sheet mode: k_c is larger by a factor of about 14.5, so a 1 micrometre eumelanosome long axis holds about 500 detail wavelengths instead of about 35 envelope wavelengths. No successor chronospecies is defined; the next shorter physical scale (graphite-like pi-stacking near 0.34 nm) is outside this slot.",
+    "successor_chronospecies": null
+  },
+  "lineage": {
+    "fossil_lineage_group": "Theropod-Avian Feather Fossil Series",
+    "cohort": "1. Chemical Turing / RD",
+    "law_family": "Turing Reaction-Diffusion Wavelength Selection"
+  },
+  "governing_model": {
+    "name": "Schnakenberg two-species reaction-diffusion",
+    "reconstruction_note": "Li et al. 2010 do not publish a reaction-diffusion equation. The script reconstructs Turing 1952 wavelength selection with Schnakenberg 1979 kinetics, then pins the critical wavelength to the assigned 2.0 nm detail scale. Parameters below are unique to slot 3111 and are not the 29 nm sibling's (that sibling stores no kinetic parameters).",
+    "equations": [
+      "du/dt = Du * laplacian(u) + a - u + u^2 * v",
+      "dv/dt = Dv * laplacian(v) + b - u^2 * v",
+      "u0 = a + b",
+      "v0 = b / (a + b)^2",
+      "fu = -1 + 2*u0*v0; fv = u0^2; gu = -2*u0*v0; gv = -u0^2",
+      "det(J) = fu*gv - fv*gu = (a + b)^2",
+      "k_c^2 = (Dv*fu + Du*gv) / (2*Du*Dv)",
+      "lambda_c = 2*pi / k_c",
+      "sigma(k) = 0.5 * (tr(J - k^2 D) + sqrt(tr^2 - 4*det(J - k^2 D)))"
+    ],
+    "boundary_conditions": "Periodic boundaries on a square domain (numpy roll Laplacian). The periodic domain is a local patch inside one melanosome, not the whole feather.",
+    "parameters": {
+      "a": 0.062,
+      "b": 1.28,
+      "Du": 0.72,
+      "Dv": 31.5,
+      "dx_dimensionless": 1.0,
+      "dt": 0.004,
+      "steps": 2400,
+      "grid_n": 128,
+      "seed": 3111,
+      "length_unit_m": 2.469108e-10,
+      "length_unit_note": "Metres per dimensionless length, chosen so the analytical lambda_c equals 2.0e-9 m."
+    },
+    "state_variables": {
+      "u": "activator (DHI-like melanin precursor density, dimensionless)",
+      "v": "inhibitor (fast redox/small-molecule density, dimensionless)"
+    },
+    "negative_control": "Equal diffusion Du = Dv = 0.72. Then Dv*fu + Du*gv = fu + gv = trace(J) < 0, so sigma(k) < 0 for every k and the pattern amplitude does not grow."
+  },
+  "empirical_claims": [
+    {
+      "id": "xu2009_horizon",
+      "claim": "Anchiornis huxleyi (holotype IVPP V14378) is a feathered paravian from the Tiaojishan Formation with pennaceous feathers on both forelimbs and hindlimbs.",
+      "source_doi": "10.1007/s11434-009-0009-6",
+      "age_ma": 160.0
+    },
+    {
+      "id": "li2010_melanosomes",
+      "claim": "Preserved melanosome geometry in Anchiornis feathers supports an organism-scale plumage map (dark body, rufous crest, spangled wings). Elongate melanosomes are read as eumelanin and spheroidal melanosomes as pheomelanin. Those organelles are hundreds of nanometres across, not 2 nm.",
+      "source_doi": "10.1126/science.1186290"
+    },
+    {
+      "id": "watt2009_sheet",
+      "claim": "Eumelanin is a stacked oligomeric sheet solid. The in-plane protomolecule is nanometre-scale; this slot's assigned detail wavelength of 2.0 nm is identified with that sheet mode, not quoted as a Li 2010 measurement.",
+      "source_doi": "10.1039/b902507c"
+    },
+    {
+      "id": "turing1952_kc",
+      "claim": "A two-species reaction-diffusion system with sufficiently different diffusivities has a band of unstable wavenumbers and a fastest-growing wavenumber k_c.",
+      "source_doi": "10.1098/rstb.1952.0012"
+    }
+  ],
+  "specimen_image": {
+    "filename": "anchiornis_huxleyi_holotype.jpg",
+    "sha256": "4415de64f740a3c5ef0c075c837dd747fcbc730f9ace950ec46084ae41cdd60b",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Anchiornis_huxleyi_holotype.jpg",
+    "download_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Anchiornis_huxleyi_holotype.jpg?width=1280",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "creator": "Wikimedia Commons user \u7eb3\u74e6\u62c9\u7684\u4ea8\u5229 (Navarre Henry), own work",
+    "date": "2025-07-22",
+    "credit": "Fossil of Anchiornis huxleyi (holotype), temporary display at the Shanghai Natural History Museum, exhibition China's Dinosaur World. CC BY-SA 4.0.",
+    "pixels_as_downloaded": [
+      1280,
+      1280
+    ],
+    "role": "Real photographed holotype slab used as the anatomical specimen. It is not a transmission-electron micrograph of the 2.0 nm sheet."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Xu et al. 2009: Anchiornis huxleyi, holotype IVPP V14378, Tiaojishan Formation, four winged plumage.",
+      "Li et al. 2010: melanosome shape predicts Anchiornis plumage color at the feather scale.",
+      "Turing 1952: critical wavenumber k_c of a two-morphogen reaction-diffusion system.",
+      "Watt, Bothma and Meredith 2009: eumelanin is a stacked oligomeric sheet with nanometre-scale in-plane structure."
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg kinetics with slot-3111 parameters a=0.062, b=1.28, Du=0.72, Dv=31.5.",
+      "Length calibration that places analytical lambda_c at 2.0 nm.",
+      "Linear dispersion, equal-diffusion ablation, Dv sweep, and early-time Fourier growth-rate fit.",
+      "Final animation frame registers the developed field as a weak pigment modulation on the holotype photograph so the image-fitness crop sees the real specimen."
+    ],
+    "transfer_boundary": [
+      "The 2.0 nm figure is the campaign detail-scale target identified with the melanin sheet mode. It is not a length Li et al. 2010 measured on Anchiornis melanosomes.",
+      "Organism-scale plumage spangles are not predicted by a 2 nm periodic domain."
+    ],
+    "does_not_claim": [
+      "That the museum photograph is a 2 nm micrograph.",
+      "That Schnakenberg kinetics are the biosynthetic pathway of Anchiornis melanin.",
+      "That a successor chronospecies of Anchiornis exists in this series.",
+      "That the 29 nm sibling slot's parameters were reused (that slot publishes none)."
+    ]
+  },
+  "measured_nonlinear_wavelength": {
+    "band_weighted_wavelength_nm": 2.5165281967987596,
+    "analytical_wavelength_nm": 2.0,
+    "age_ma": 160.0,
+    "note": "Nonlinear band-weighted wavelength versus the analytical 2.0 nm target. Same 160.0 Ma horizon; the 29 nm envelope is the coarser mode."
+  }
+}
