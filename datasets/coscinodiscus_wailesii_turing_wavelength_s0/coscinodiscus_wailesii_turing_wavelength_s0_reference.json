@@ -1,0 +1,128 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3156,
+  "sim_id": "delphi10000-coscinodiscus-wailesii-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Coscinodiscus wailesii",
+    "authority": "Gran & Angst",
+    "common_name": "Centric diatom",
+    "megiston": "IV. Protista & Monera",
+    "subaltern": "Mineralized Protists (Silica/Calcite)",
+    "genus": "Coscinodiscus"
+  },
+  "scale": {
+    "label": "4.3 mm",
+    "metres": 0.004316,
+    "log10_metres": -2.365,
+    "tier_index": "6/8",
+    "tier_id": "6_organ_mm",
+    "variant": "detail",
+    "quantity": "Turing wavelength lambda_c of a coarse-grained areola / ocellus field",
+    "statement": "The characteristic scale of this slot is 4.3 mm (0.004316 m, log10 = -2.365), tier 6/8 6_organ_mm, detail variant. It is the calibrated Turing wavelength, not the diameter of one valve."
+  },
+  "evolutionary_history": {
+    "horizon": "Holocene (Extant)",
+    "age_Ma": 0,
+    "lineage": "",
+    "chronoseries_name": "Coscinodiscus",
+    "chronoseries_index": "1/1",
+    "predecessor": null,
+    "successor": null,
+    "what_changes_at_this_scale_and_age": "This chronoseries contains a single point: the extant Holocene valve at 0 Ma. There is no predecessor chronospecies and no successor chronospecies to retune the pattern. The comparison that defines the point is therefore the bifurcation itself. Below the Turing threshold the homogeneous steady state of the Schnakenberg kinetics is stable at every wavenumber, which is the pre-pattern state of an unmineralized silica-deposition field. Above threshold the growth-rate peak sigma_+(k) selects a finite wavenumber. At this slot that selected wavelength is calibrated to 4.3 mm. A later chronospecies is not invented; the only quantified continuation is the partial derivative of lambda_sigma with respect to inhibitor diffusivity, reported as a sensitivity of the extant law."
+  },
+  "cohort": {
+    "law_family": "Turing Reaction-Diffusion Wavelength Selection",
+    "cohort_index": "1. Chemical Turing / RD",
+    "form_class": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c = argmax_k sigma_+(k)",
+    "kinetics": "Schnakenberg trimolecular kinetics placed on a spatial domain"
+  },
+  "equations": {
+    "pde": "du/dt = D_u laplacian(u) + a - u + u^2 v;  dv/dt = D_v laplacian(v) + b - u^2 v",
+    "steady_state": "u0 = a + b;  v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0;  f_v = u0^2;  g_u = -2 u0 v0;  g_v = -u0^2",
+    "dispersion": "sigma_+(q) = 0.5 * (tr(q) + sqrt(tr(q)^2 - 4 det(q))), q = k^2, tr(q) = f_u + g_v - (D_u + D_v) q, det(q) = (f_u - D_u q)(g_v - D_v q) - f_v g_u",
+    "wavenumber": "k_c = sqrt(q_c), q_c = argmax_q sigma_+(q), lambda_c = 2 pi / k_c",
+    "rejected_proxy": "q_det = (D_v f_u + D_u g_v) / (2 D_u D_v) minimises det(q). On this parameter branch it shortens lambda as D_v grows, opposite the sigma_+ peak and opposite the early-time simulated spectrum. It is retained only as a negative control on the formula.",
+    "boundary_conditions": "Wavelength-selection runs use periodic boundaries on a square, the setting in which the Fourier dispersion is exact. A second integration clamps the exterior of a disc to (u0, v0), a reconstructed valve margin. The animated GIF is the periodic spot field."
+  },
+  "parameters": {
+    "a": 0.10,
+    "b": 0.90,
+    "D_u": 1.60,
+    "D_v_nominal": 32.0,
+    "D_v_sweep": [16, 20, 24, 28, 32, 40, 48, 64],
+    "D_v_ablation": 1.60,
+    "grid_n_sweep": 128,
+    "grid_n_pattern": 96,
+    "dt_sweep": 0.20,
+    "steps_sweep": 40,
+    "dt_pattern": 0.40,
+    "steps_pattern": 250,
+    "noise_sweep": 0.01,
+    "noise_pattern": 0.05,
+    "seed": 3156,
+    "note": "These Schnakenberg diffusivities are specific to slot 3156. They are not the Cahn-Hilliard epsilon/phi0 pair used by the Sumper diatom-frustule model."
+  },
+  "empirical_claims": [
+    {
+      "id": "schmid1983-architecture",
+      "source_doi": "10.1111/j.0022-3646.1983.00387.x",
+      "claim": "In Coscinodiscus wailesii the cribrum is distal and the foramen is proximal, the reverse of Thalassiosira eccentrica. Valve formation is centrifugal across the valve and proximal-to-distal through the loculus. A rib system outlines prospective areolae during base-layer formation, and cribra form centripetally inside each areola."
+    },
+    {
+      "id": "edwards2001-holocene-record",
+      "source_doi": "10.1017/S0025315401003654",
+      "claim": "C. wailesii was recorded in the English Channel in 1977 and persisted as a member of the north-east Atlantic diatom community through 1995. The chronoseries point used here is that extant Holocene population at 0 Ma."
+    },
+    {
+      "id": "turing1952-wavelength",
+      "source_doi": "10.1098/rstb.1952.0012",
+      "claim": "A homogeneous reaction-diffusion equilibrium can be unstable to stationary waves whose wavelength is selected by the dispersion relation rather than imposed by a template."
+    },
+    {
+      "id": "scale-calibration",
+      "source_doi": null,
+      "claim": "Project Delphi assigns this detail-scale slot the length 4.3 mm (0.004316 m). The nondimensional lambda_c from argmax sigma_+ is scaled so that the nominal Holocene wavelength equals that length. Abstracts retrieved for Schmid & Volcani 1983 and Edwards et al. 2001 do not state a valve diameter; 4.3 mm is therefore not reported as the diameter of one frustule."
+    }
+  ],
+  "specimen": {
+    "filename": "coscinodiscus_wailesii_specimen.jpg",
+    "sha256": "cf556dab9e116068cea62ccde9e852647efad520e12fa3a7ee1f547bdadcfd12",
+    "bytes": 637374,
+    "width": 1350,
+    "height": 1507,
+    "license": "CC BY-SA 4.0",
+    "source_title": "Inner and external plates of a single valve of the centric diatom Coscinodiscus wailesii",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Inner_and_external_plates_of_a_single_valve_of_the_centric_diatom_Coscinodiscus_wailesii.webp",
+    "gallery_fallback": "datasets/species_gallery/IV_Protista_Monera_Mycota/Coscinodiscus_wailesii.jpg",
+    "gallery_sha256_match": true,
+    "notes": "Six-panel SEM of the inner and external plates at three magnifications, with scale bars. Pixel pitch is a property of each panel, not a calibrated nanometre spacing: the bar labels are not transcribed."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952: homogeneous RD equilibria can select stationary wavelengths.",
+      "Schnakenberg 1979: trimolecular kinetics with a well-mixed limit cycle; the rate law used here is that kinetics.",
+      "Schmid and Volcani 1983: centrifugal, proximal-to-distal valve morphogenesis of C. wailesii with distal cribra.",
+      "Edwards et al. 2001: Holocene persistence of C. wailesii in the north-east Atlantic from 1977."
+    ],
+    "reconstructed_in_script": [
+      "Spatial Schnakenberg PDEs, the Jacobian, sigma_+(k), and k_c = argmax sigma_+.",
+      "Calibration of nominal lambda_c to 4.3 mm.",
+      "Periodic spot integration, equal-diffusivity ablation, D_v sweep, and the disc-clamped valve margin.",
+      "Pore segmentation of the vendored SEM panels."
+    ],
+    "transfer_boundary": [
+      "Schnakenberg 1979 is a well-mixed ODE paper. The spatial Turing analysis is a transfer of those kinetics into the Turing 1952 setting.",
+      "The cohort form class 'stripes, spots and ocelli' is realized here as areolar spots. C. wailesii is not claimed to carry animal pigment stripes.",
+      "4.3 mm is the Delphi detail-scale wavelength assigned to this slot."
+    ],
+    "does_not_claim": [
+      "That a single C. wailesii valve is 4.3 mm in diameter.",
+      "That the determinant-minimizer q_det is the selected wavenumber on this branch.",
+      "That SEM scale bars have been converted to nanometres.",
+      "That a predecessor or successor chronospecies was observed.",
+      "That the animated GIF is a re-publication of the micrograph pixels."
+    ]
+  }
+}

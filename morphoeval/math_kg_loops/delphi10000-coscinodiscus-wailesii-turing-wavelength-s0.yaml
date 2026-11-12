@@ -1,0 +1,67 @@
+sim_id: delphi10000-coscinodiscus-wailesii-turing-wavelength-s0
+slot: 3156
+organism: Coscinodiscus wailesii
+age_Ma: 0
+horizon: Holocene (Extant)
+chronoseries: "1/1"
+scale_m: 0.004316
+scale_label: "4.3 mm"
+scale_tier: 6_organ_mm
+math_family: "Turing reaction-diffusion wavelength selection (Schnakenberg kinetics)"
+model_spec:
+  model: "Spatial Schnakenberg (1979) kinetics with Turing (1952) dispersion; k_c = argmax sigma_+(k); nominal wavelength calibrated to 4.3 mm"
+  governing_pde: "du/dt = Du*lap(u) + a - u + u^2*v; dv/dt = Dv*lap(v) + b - u^2*v"
+  dispersion_relation: "sigma_+(q) = 0.5*(tr + sqrt(tr^2 - 4*det)), q=k^2; k_c = sqrt(argmax sigma_+)"
+  rejected_proxy: "q_det = (Dv*fu + Du*gv)/(2*Du*Dv) anti-correlates with the simulated wavelength on this branch"
+  a: 0.10
+  b: 0.90
+  D_u: 1.60
+  D_v: 32.0
+  D_v_sweep: [16, 20, 24, 28, 32, 40, 48, 64]
+  D_v_ablation: 1.60
+  grid_resolution_sweep: [128, 128]
+  grid_resolution_pattern: [96, 96]
+  seed: 3156
+  scale_m: 0.004316
+  age_Ma: 0
+  inputs:
+    - datasets/coscinodiscus_wailesii_turing_wavelength_s0/coscinodiscus_wailesii_turing_wavelength_s0_reference.json
+    - datasets/coscinodiscus_wailesii_turing_wavelength_s0/coscinodiscus_wailesii_specimen.jpg
+    - datasets/coscinodiscus_wailesii_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: "Homogeneous Schnakenberg steady state is linearly stable at k = 0"
+    formula: "u0 = a + b, v0 = b/(a+b)^2, f_u + g_v < 0, det J > 0"
+    lean_decl: "MathOfBiology.Loop_3156.reaction_trace"
+    lean_theorem: "MathOfBiology.Loop_3156.homogeneous_mode_stable"
+    lean_locus: "morphoeval/lean/loops/Loop_3156_coscinodiscus_wailesii_turing_wavelength_s0.lean"
+    variables: "a=0.10, b=0.90, f_u=0.8, g_v=-1"
+    role: "At 0 Ma the pre-pattern state, with no predecessor chronospecies, is this stable homogeneous field."
+    source_citation: "Schnakenberg 1979 JTB 81:389; Turing 1952 Phil Trans R Soc B 237:37"
+    code_locus: "models/2026-delphi10000-coscinodiscus-wailesii-turing-wavelength-s0.py"
+  - law_name: "Turing wavenumber k_c = argmax sigma_+(k), wavelength lengthens with inhibitor diffusivity"
+    formula: "sigma_+(q) = 1/2 (tr + sqrt(tr^2 - 4 det)); k_c = sqrt(argmax sigma_+); lambda(D_v=16) < lambda(D_v=32) < lambda(D_v=64)"
+    lean_decl: "MathOfBiology.Loop_3156.sigma_wavelength_milli"
+    lean_theorem: "MathOfBiology.Loop_3156.inhibitor_diffusion_lengthens_selected_wavelength"
+    lean_locus: "morphoeval/lean/loops/Loop_3156_coscinodiscus_wailesii_turing_wavelength_s0.lean"
+    variables: "D_u=1.60, D_v nominal 32, lambda_sigma milli-length 14086, 16328, 18895"
+    role: "Selects the 4.3 mm Holocene wavelength. The det-minimizer proxy is rejected because it shortens lambda as D_v grows."
+    source_citation: "Turing 1952; Kondo & Miura 2010 Science 329:1616"
+    code_locus: "models/2026-delphi10000-coscinodiscus-wailesii-turing-wavelength-s0.py"
+  - law_name: "Nominal parameters sit in the Turing band; equal diffusivities are the ablation"
+    formula: "D_v f_u + D_u g_v = 24.0 > 0 and discriminant > 0 at D_v=32; drive = -3.2 < 0 at D_v=D_u"
+    lean_decl: "MathOfBiology.Loop_3156.turing_drive"
+    lean_theorem: "MathOfBiology.Loop_3156.nominal_holocene_turing_band"
+    lean_locus: "morphoeval/lean/loops/Loop_3156_coscinodiscus_wailesii_turing_wavelength_s0.lean"
+    variables: "scaled ×10: drive 2400 at Dv=320, drive -32 at Dv=16"
+    role: "Negative control for the extant Holocene pattern: below threshold the field returns to the homogeneous state."
+    source_citation: "Turing 1952 instability conditions"
+    code_locus: "models/2026-delphi10000-coscinodiscus-wailesii-turing-wavelength-s0.py"
+  - law_name: "Holocene organ-millimetre calibration"
+    formula: "lambda_nominal = 4316 micrometres = 4.3 mm, age = 0 Ma, chronoseries length = 1"
+    lean_decl: "MathOfBiology.Loop_3156.wavelength_micrometres"
+    lean_theorem: "MathOfBiology.Loop_3156.holocene_organ_mm_scale"
+    lean_locus: "morphoeval/lean/loops/Loop_3156_coscinodiscus_wailesii_turing_wavelength_s0.lean"
+    variables: "scale 0.004316 m, tier 6_organ_mm detail"
+    role: "Pins the nondimensional lambda_sigma(D_v=32) to the slot length. No successor chronospecies retunes it."
+    source_citation: "Project Delphi slot 3156 scale assignment; Edwards et al. 2001 Holocene record"
+    code_locus: "models/2026-delphi10000-coscinodiscus-wailesii-turing-wavelength-s0.py"
