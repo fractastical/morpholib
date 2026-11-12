@@ -1,0 +1,64 @@
+sim_id: delphi10000-bombyx-mori-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 4.096e-05
+log10_size_m: -4.388
+size_human: "41 µm"
+scale_tier: 4_cellular_10um
+anatomical_structure: "Bombyx mori larval epidermal ocellus / pigment-ring field (detail scale)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: ""
+chronoseries: "Bombyx 1/1 — Holocene extant terminal; predecessor contrast Bombyx mandarina 96 µm stripe"
+equations:
+- law_name: Turing dispersion relation
+  formula: "det(J - k^2 D - σ I) = 0, σ(k) = ½(tr_k + sqrt(tr_k^2 - 4 det_k))"
+  lean_decl: MathOfBiology.Loop_3134.sigma41_x10000
+  lean_theorem: MathOfBiology.Loop_3134.critical_mode_grows
+  lean_locus: morphoeval/lean/loops/Loop_3134_bombyx_mori_turing_wavelength_s0.lean#L43-L45
+  variables: "u activator, v inhibitor, Du, Dv diffusivities (µm²), k wavenumber (rad/µm)"
+  role: "Selects the Holocene domestic ocellus wavelength λ_c = 41 µm"
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Gierer & Meinhardt 1972 DOI:10.1007/BF00289234"
+  code_locus: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py
+- law_name: Critical wavelength
+  formula: "λ_c = 2π / k_c, k_c = argmax_k σ(k) = 2π / 41 µm"
+  lean_decl: MathOfBiology.Loop_3134.kC_rad_per_m
+  lean_theorem: MathOfBiology.Loop_3134.wavelength_wavenumber_identity
+  lean_locus: morphoeval/lean/loops/Loop_3134_bombyx_mori_turing_wavelength_s0.lean#L21-L23
+  variables: "λ_c = 41 µm, k_c = 153248 rad/m"
+  role: "Integer identity λ_c · k_c = 2π for this slot only"
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py
+- law_name: Domestication pitch shift
+  formula: "λ_mandarina − λ_c = 96 µm − 41 µm = 55 µm, with σ(k_96) < 0 < σ(k_41)"
+  lean_decl: MathOfBiology.Loop_3134.lambdaMandarina
+  lean_theorem: MathOfBiology.Loop_3134.domestic_pitch_shorter_than_mandarina
+  lean_locus: morphoeval/lean/loops/Loop_3134_bombyx_mori_turing_wavelength_s0.lean#L26-L28
+  variables: "λ_mandarina = 96 µm predecessor contrast; this chronoseries has no successor"
+  role: "What changes at 0 Ma / 41 µm relative to the wild silkmoth stripe"
+  source_citation: "Yamaguchi et al. 2013 DOI:10.1038/ncomms2778"
+  code_locus: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py
+- law_name: Inhibitor diffusion dominance
+  formula: "Dv / Du = 18 > 1"
+  lean_decl: MathOfBiology.Loop_3134.diffusionRatio
+  lean_theorem: MathOfBiology.Loop_3134.inhibitor_diffuses_faster
+  lean_locus: morphoeval/lean/loops/Loop_3134_bombyx_mori_turing_wavelength_s0.lean#L33-L35
+  variables: "Du ≈ 10.58 µm², Dv ≈ 190.5 µm² after calibration onto λ = 41 µm"
+  role: "Long-range inhibition required for a Turing band"
+  source_citation: "Gierer & Meinhardt 1972 DOI:10.1007/BF00289234"
+  code_locus: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py
+model_spec:
+  model: "Schnakenberg linear dispersion on the Bombyx 41 µm ocellus, plus an axisymmetric Galerkin sideband fitted to the canonical card"
+  lambda_c_um: 41.0
+  lambda_c_m: 4.096e-05
+  age_ma: 0.0
+  a: 0.058
+  b: 0.94
+  diffusion_ratio: 18
+  predecessor_lambda_um: 96.0
+  seed: 3134
+  inputs:
+    - datasets/bombyx_mori_turing_wavelength_s0/bombyx_mori_ocellus_specimen.jpg
+    - datasets/bombyx_mori_turing_wavelength_s0/bombyx_mori_adult_cc0.jpg
+    - datasets/bombyx_mori_turing_wavelength_s0/bombyx_mori_turing_wavelength_s0_reference.json
+    - datasets/bombyx_mori_turing_wavelength_s0/paper_citations.bib
+    - datasets/bombyx_mori_turing_wavelength_s0/scout_manifest.json

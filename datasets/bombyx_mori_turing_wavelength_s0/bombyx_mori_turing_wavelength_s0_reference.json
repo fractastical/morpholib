@@ -1,0 +1,90 @@
+{
+  "slot": 3134,
+  "sim_id": "delphi10000-bombyx-mori-turing-wavelength-s0",
+  "organism": "Bombyx mori",
+  "common_name": "Domestic silkmoth",
+  "aristotelian_path": "II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Bombyx",
+  "scale_um": 41.0,
+  "scale_m": 4.096e-05,
+  "log10_size_m": -4.388,
+  "scale_tier": "4_cellular_10um",
+  "scale_variant": "detail",
+  "phenomenon": "Turing pigment stripe / ocellus wavelength",
+  "form": "Stripes, Spots & Ocelli",
+  "cohort": "1. Chemical Turing / RD",
+  "law": "Turing wavenumber k_c",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "lineage": "",
+  "chronoseries": {
+    "index": "1/1",
+    "label": "Holocene (Extant) (0 Ma)",
+    "predecessor": "Bombyx mandarina, pre-domestication Holocene (~0.005 Ma), comparative melanin-stripe pitch 96 µm. Not a second member of this one-point series.",
+    "successor": "None. Extant terminal chronospecies.",
+    "what_changes": "At 0 Ma and 41 µm the domestic diffusivity pair makes σ(k) positive only in a band around 41 µm. The ancestral 96 µm pitch is linearly stable (σ < 0), so the selected epidermal ring is 55 µm shorter than the mandarina contrast pitch. No later chronospecies exists in this series."
+  },
+  "state_variables": [
+    {"symbol": "u", "meaning": "Short-range activator (melanin-promoting, Wnt-adjacent) concentration"},
+    {"symbol": "v", "meaning": "Long-range inhibitor concentration"}
+  ],
+  "equations": [
+    "∂u/∂t = Du ∇²u + γ (a − u + u² v)",
+    "∂v/∂t = Dv ∇²v + γ (b − u² v)",
+    "σ(k) = ½ (tr_k + sqrt(tr_k² − 4 det_k)), tr_k = fu + gv − (Du + Dv) k²",
+    "λ_c = 2π / k_c, k_c = argmax_k σ(k)"
+  ],
+  "boundary_conditions": [
+    "Dispersion assay: periodic line of length several λ_c",
+    "Ocellus: axisymmetric, no-flux at r = 0 by symmetry; far-field fade at the card edge"
+  ],
+  "parameters": {
+    "a": 0.058,
+    "b": 0.94,
+    "steady_state": "u0 = a + b, v0 = b / u0²",
+    "diffusion_ratio_Dv_over_Du": 18,
+    "lambda_c_um": 41.0,
+    "lambda_mandarina_um": 96.0,
+    "seed": 3134,
+    "note": "Du and Dv are scaled together so argmax σ(k) lands on 41.0 µm. They are not taken from any sibling Bombyx slot."
+  },
+  "empirical_claims": [
+    "Yamaguchi et al. 2013 (10.1038/ncomms2778): periodic Wnt1 expression, under ecdysteroid control, generates the twin-spot markings of Bombyx mori larvae.",
+    "Yoda et al. 2014 (10.1038/ncomms5936): Apontic-like modulates several larval colouration patterns in Bombyx.",
+    "Turing 1952 and Gierer & Meinhardt 1972 supply the wavelength-selection law. Neither paper, nor Yamaguchi 2013, reports a 41 µm measurement. 41 µm is this slot's cellular detail scale.",
+    "The canonical ocellus card carries a 100 µm scale bar. Its dark-ring pitch is measured in the script and is allowed to differ from 41 µm."
+  ],
+  "specimens": {
+    "ocellus_card": {
+      "file": "bombyx_mori_ocellus_specimen.jpg",
+      "sha256": "2adf51228d2da684d9c8eb6f510c972b1da829813ca787dd645448cff68d5d97",
+      "source": "datasets/species_gallery/II_Anaima_Invertebrata/Bombyx_mori.jpg",
+      "role": "Scale-appropriate specimen for the 41 µm comparison"
+    },
+    "adult_habitus": {
+      "file": "bombyx_mori_adult_cc0.jpg",
+      "sha256": "76144516fb810472ac1a41bb44dc7da775b02d1bb980976e8d984bce8c85a972",
+      "source": "https://commons.wikimedia.org/wiki/File:Bombyx_mori_-_Naturhistorisches_Museum,_Braunschweig,_Germany_-_DSC04999.JPG",
+      "license": "CC0",
+      "role": "Adult museum specimen; not the cellular-scale fitness target"
+    }
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Wnt1 is expressed periodically in Bombyx larval epidermis and is required for twin-spot markings (Yamaguchi et al. 2013).",
+      "A short-range activator and a long-range inhibitor can select a finite wavelength (Turing 1952; Gierer & Meinhardt 1972)."
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg Jacobian and σ(k) calibrated so the maximum-growth wavelength is 41.0 µm.",
+      "Axisymmetric Galerkin sideband (polynomial envelope plus Fourier rings, including the 41 µm carrier) fitted to the ocellus card.",
+      "Predecessor contrast: σ(2π/96 µm) < 0 < σ(2π/41 µm)."
+    ],
+    "transfer_boundary": [
+      "Segment-scale Wnt1 spots in Yamaguchi et al. are millimetres across. Applying the same wavelength-selection law at 41 µm is a scale transfer, not a measurement those authors published."
+    ],
+    "does_not_claim": [
+      "That 41 µm or 96 µm was read off a fossil or off a published micrograph of Bombyx mandarina.",
+      "That the adult CC0 habitus photograph is a cellular-scale ocellus.",
+      "That a fully nonlinear 2D spot field was fitted pixelwise to the card. The rendered field is the axisymmetric Galerkin projection plus synthetic grain."
+    ]
+  }
+}
