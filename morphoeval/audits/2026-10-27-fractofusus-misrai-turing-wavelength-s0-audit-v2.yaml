@@ -1,0 +1,139 @@
+# MorphoEval audit v2 — Fractofusus misrai Turing wavelength, 63 µm.
+# Supersedes the Pass 1 audit. Closes R1 (saturated-field D_u sweep) and R2
+# (oblique vanes in the render). R3 stays open: still one assessor.
+audit:
+  id: 2026-10-27-fractofusus-misrai-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-fractofusus-misrai-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; R3 still open)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: "https://creativecommons.org/licenses/by/4.0/"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 2 working tree. New slot files are not in 0c76d15d."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  gehling2007:
+    title: "Spindle-shaped Ediacara fossils from the Mistaken Point assemblage, Avalon Zone, Newfoundland"
+    authors: "Gehling JG, Narbonne GM"
+    venue: "Canadian Journal of Earth Sciences 44:367-387 (2007)"
+    doi: 10.1139/e07-003
+    year: 2007
+  hoyalcuthill2014:
+    title: "Fractal branching organizations of Ediacaran rangeomorph fronds reveal a lost Proterozoic body plan"
+    authors: "Hoyal Cuthill JF, Conway Morris S"
+    venue: "PNAS 111:13122-13126 (2014)"
+    doi: 10.1073/pnas.1408542111
+    year: 2014
+  mitchell2015:
+    title: "Reconstructing the reproductive mode of an Ediacaran macro-organism"
+    authors: "Mitchell EG, Kenchington CG, Liu AG, Matthews JJ, Butterfield NJ"
+    venue: "Nature 524:343-346 (2015)"
+    doi: 10.1038/nature14646
+    year: 2015
+simulations:
+  - id: delphi10000-fractofusus-misrai-turing-wavelength-s0
+    name: "Schnakenberg–Turing wavelength for Fractofusus misrai at 63 µm (565 Ma)"
+    organism: "Fractofusus misrai (Ediacaran spindle rangeomorph)"
+    script: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py
+    output: docs/media/fractofusus_misrai_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gehling2007, hoyalcuthill2014, mitchell2015]
+    supersedes_audit_id: 2026-10-27-fractofusus-misrai-turing-wavelength-s0-audit
+    summary: >-
+      Pass 2 of the 63 µm (6.33e-05 m, log10 = -4.199) detail-scale model for
+      Fractofusus misrai at Mistaken Point, 565 Ma (chronoseries 1/1). The
+      linear dispersion fit is unchanged (Pearson r = 0.999999999, RMSE = 0.00375).
+      The saturated Fourier wavelength now lengthens with D_u: 69.8 µm, 82.2 µm,
+      94.0 µm at D_u = 0.08, 0.12, 0.18, above the analytical curve and in the
+      same direction. The nominal saturated peak remains 73.7 µm against the
+      linear 63.3 µm. The render's interior is an oblique chevron of vanes on
+      the siltstone spindle rather than the Pass 1 spot lattice. GIF versus the
+      CC BY photograph scores 84.6 on the orientation / radial-FFT / coherency
+      comparison. Specimen spindle aspect 1.70 versus render 1.12; gradient-angle
+      KS D = 0.121. Equal diffusion and the 2×2 subcritical domain still decay.
+      Fifty-one detail wavelengths fit in the 3.275 mm organ module and fifty-two
+      do not.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: instability at a finite critical wavenumber selects a stationary wavelength."
+        - "Gehling & Narbonne 2007 name Fractofusus misrai from Mistaken Point, mid-Ediacaran ca. 575–560 Ma."
+        - "Hoyal Cuthill & Conway Morris 2014: fractal, self-similar rangeomorph branching consistent with osmotrophy."
+        - "Mitchell et al. 2015: multigenerational stolon-like reproduction plus waterborne propagules."
+      reconstructed_in_script:
+        - "Schnakenberg a=0.09, b=0.85, D_u=0.12, D_v=2.40, grid spacing set so analytical λ_c = 6.33e-05 m. Not the slot 1251 parameters."
+        - "Pass 2 display weights oblique vanes by the activator envelope. The vane angle is a display choice; the wavelength it carries is the model's."
+        - "Three saturated fields measure how the Fourier peak moves with D_u."
+      transfer_boundary:
+        - "Evaluated at 63 µm on one Mistaken Point photograph. Not transferred to Fractofusus andersoni, to the 3.275 mm module's kinetics, or to Cambrian segments."
+      does_not_claim:
+        - "Does not claim a measured 63 µm pigment ocellus. The length is the evaluation scale."
+        - "Does not claim the saturated peak equals 63.3 µm. It is longer, and the shift is plotted."
+        - "Does not claim a second assessor. R3 is open."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Same Schnakenberg–Turing system as Pass 1. The saturated field's Fourier peak now moves with D_u in the direction the dispersion relation predicts, which is a check on the nonlinear integration and not only on the Jacobian formula."
+        evidence:
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [108, 134], note: "Turing conditions and analytical σ(k)", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [266, 292], note: "measured_wavelength_sweep on saturated fields", supports: true}
+      specimen-match:
+        value: 84
+        rationale: "Pass 2 replaces the spot lattice with oblique vanes inside the spindle, which is the rangeomorph reading of the Mistaken Point mould. Bedding colour and the elongate body remain. The fossil's vanes are irregular and cracked; the model's are periodic. Computer-vision similarity of the 12-frame 720×540 GIF against the CC BY photograph is 84.6, up from 79.4."
+        evidence:
+          - {file: docs/media/fractofusus_misrai_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "photograph beside the vane field", supports: true}
+          - {file: docs/media/fractofusus_misrai_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames at 720x540", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [415, 460], note: "render_frames weights vanes over spots", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "Analytical λ_c rises from about 40 µm to about 93 µm as D_u goes from 0.05 to 0.25. The saturated Fourier wavelength at D_u = 0.08, 0.12, 0.18 is 69.8, 82.2, 94.0 µm, also increasing. Equal diffusion and a domain shorter than λ_c both decay."
+        evidence:
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [245, 311], note: "analytical sweep, measured sweep, both ablations", supports: true}
+          - {file: docs/media/fractofusus_misrai_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "both wavelength curves plotted", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Dispersion Pearson r = 0.999999999 against reference threshold 0.98, RMSE = 0.00375. Saturated nominal wavelength 73.7 µm is not forced to 63.3 µm. Specimen aspect 1.70 versus render 1.12. Structure-tensor coherency 0.369 versus 0.454. Gradient-angle KS D = 0.121 on one photograph."
+        evidence:
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [176, 190], note: "dispersion_fit", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [354, 396], note: "spindle mask and KS", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [640, 737], note: "measure_morphoeval, values differ from references", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Unchanged from Pass 1. Crossref-checked DOIs and the SHA-256-pinned CC BY 2.0 Commons photograph by djpmapleferryman."
+        evidence:
+          - {file: datasets/fractofusus_misrai_turing_wavelength_s0/paper_citations.bib, lines: [1, 86], note: "eight bibliographic entries", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [75, 85], note: "SHA-256 lock", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Pass 2 adds measured_wavelength_sweep next to the analytical sweep, and the renderer comment states that the vane angle is display while the wavelength is the model's. The module docstring still carries the PDEs and the 51-versus-52 scale split."
+        evidence:
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [1, 36], note: "equation header", supports: true}
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [266, 292], note: "measured sweep docstring and body", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Self-test now also requires the saturated D_u sweep to be monotonic and to grow. Seed, hashes, frame count, and the 480 px resolution floor are unchanged and still enforced."
+        evidence:
+          - {file: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py, lines: [760, 776], note: "self-test assertions including the measured sweep", supports: true}
+    remediation:
+      - id: R3
+        item: "Still one assessor. A second provider has not scored Pass 2."
+      - id: R4
+        item: "The nonlinear wavelength (73.7 µm at nominal D_u, 82.2 µm on the sweep grid) is not brought back to 63.3 µm by a weakly nonlinear correction. The shift is reported rather than removed."
+      - id: R5
+        item: "Specimen comparison is one unscaled bedding-plane photograph. Branch spacing on the fossil is not in micrometres."
