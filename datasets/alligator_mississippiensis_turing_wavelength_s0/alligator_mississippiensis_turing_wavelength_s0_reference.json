@@ -1,0 +1,104 @@
+{
+  "slot": 3105,
+  "sim_id": "delphi10000-alligator-mississippiensis-turing-wavelength-s0",
+  "organism": "Alligator mississippiensis",
+  "common_name": "American alligator",
+  "aristotelian_place": "I. Enaima (Vertebrata) -> Amphibia & Reptilia (Ootoka) -> Alligator",
+  "scale": {
+    "nominal": "1.5 mm",
+    "metres": 0.001498,
+    "millimetres": 1.498,
+    "log10_m": -2.824,
+    "tier": "6_organ_mm",
+    "variant": "detail",
+    "meaning": "Turing pigment stripe / ocellus wavelength selected by critical wavenumber k_c"
+  },
+  "evolutionary_history": {
+    "horizon": "Holocene (Extant)",
+    "age_ma": 0,
+    "lineage": "",
+    "chronoseries": "Alligator mississippiensis 1/1",
+    "in_series_predecessor": null,
+    "in_series_successor": null,
+    "what_changes_here": "Nothing inside the series moves, because the series has one point. The quantity that exists only at this Holocene terminus is the living integument's pigment wavelength. Fossil congeners such as Alligator olseni preserve osteoderm bone, not the 1.498 mm melanin mode. At this scale, relative to the coarser juvenile tail bands in the photograph, k_c picks a detail wavelength several times shorter than the resolved cream bands once total length is assumed anywhere in 300-600 mm. Relative to a finer cellular chromatophore spacing (tens of micrometres), 1.498 mm is the organ-detail tier, not the cell tier."
+  },
+  "governing_model": {
+    "kinetics": "Schnakenberg 1979 reaction scheme, spatial RD extension as used by Maini, Painter and Chau 1997",
+    "wavelength_law": "Turing 1952 dispersion; Murray 1981 coat-marking critical wavenumber",
+    "equations": {
+      "du_dt": "d_t u = div(D_u grad u) + gamma (a - u + u^2 v)",
+      "dv_dt": "d_t v = div(D_v grad v) + gamma (b - u^2 v)",
+      "steady_state": "u0 = a + b, v0 = b / u0^2",
+      "jacobian_gamma_free": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+      "k_c": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), with f_u and g_v including the factor gamma",
+      "lambda_c": "lambda_c = 2 pi / k_c = 1.498 mm"
+    },
+    "boundary_conditions": "Periodic on a rectangular flank patch. This is a wavelength-selection patch, not a no-flux whole-body boundary and not a cracking front.",
+    "parameters": {
+      "a": 0.13,
+      "b": 0.87,
+      "D_u_mm2_per_time": 0.05,
+      "diffusivity_ratio_Dv_over_Du": 16.4,
+      "anisotropy_fast_over_slow": 1.42,
+      "theta_pass1_rad": 0.0,
+      "theta_pass2": "measured tail-band normal on the rear-tail ROI",
+      "gamma": "fixed so that lambda_c = 1.498 mm exactly at theta = 0",
+      "domain_mm": [17.976, 11.984],
+      "wavelengths_across": [12, 8],
+      "grid": [144, 96],
+      "seed": 3105,
+      "dt": 0.0015
+    },
+    "negative_control": "D_u = D_v = 0.05, anisotropy 1. The diffusion margin D_v f_u + D_u g_v is negative and sigma_max < 0.",
+    "expressivity": "gamma multipliers 0.64, 1.0 and 1.96. lambda scales as gamma^(-1/2)."
+  },
+  "empirical_claims": {
+    "reported_in_source": [
+      "Turing 1952: diffusion-driven instability and a finite critical wavenumber.",
+      "Murray 1981: animal coat markings as a pre-pattern whose spacing is set by that wavenumber.",
+      "Schnakenberg 1979: the two-species reaction scheme used as the kinetics.",
+      "Maini, Painter and Chau 1997: spatial chemical pattern formation, including the RD use of this kinetics class.",
+      "Chang, Wu, Baker, Maini, Alibardi and Chuong 2009: reptile scale patterning sits in an evo-devo and reaction-diffusion discussion; they do not publish a 1.498 mm alligator wavelength.",
+      "Vickaryous and Hall 2008: osteoderms of Alligator mississippiensis are a dermal skeletal lattice, a different structure from a melanin wavelength.",
+      "Sévi photograph: two Miami-Dade juveniles show cream transverse bands on a dark ground."
+    ],
+    "reconstructed_in_script": [
+      "gamma is solved so k_c = 2 pi / 1.498 mm on this patch.",
+      "Anisotropic diffusion selects transverse stripes; an isotropic run is the spot/ocellus neighbour.",
+      "Early-time Fourier growth is compared with the discrete-Laplacian dispersion relation.",
+      "Pass 2 rotates the diffusion tensor onto the measured tail-band normal and reports total-length sensitivity at 300, 450 and 600 mm."
+    ],
+    "transfer_boundary": [
+      "1.498 mm is the assigned detail-tier characteristic scale of slot 3105. The photograph has no scale bar, so it does not by itself measure 1.498 mm.",
+      "Milinkovitch et al. 2013 cracking of crocodilian head scales is a different mechanism and is not simulated.",
+      "The growth GIF blends the simulated field onto the photograph at a recorded opacity. The comparison PNG shows the unblended millimetre field."
+    ],
+    "does_not_claim": [
+      "That alligator head scales are Turing patterns.",
+      "That 1.498 mm was calipered on a named museum specimen in a paper.",
+      "That a fossil chronospecies in this series shifted the wavelength. The series length is 1.",
+      "That the sibling loop milinkovitch-alligator-mississippiensis-turing-wavelength supplied these parameters."
+    ]
+  },
+  "specimen": {
+    "filename": "Alligator_mississippiensis_2_babies.jpg",
+    "sha256": "a4a5ed7f280ee2de43a726ab16d9d681bbb4dd6ac032c141591dc8a7aff276de",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Alligator_mississippiensis_2_babies.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Alligator_mississippiensis_2_babies.jpg",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "credit": "Ianaré Sévi",
+    "description": "Two baby American alligators, Miami-Dade County, Florida",
+    "width": 2800,
+    "height": 1665,
+    "rois_xyxy": {
+      "rear_tail": [1800, 550, 2700, 1100],
+      "fore_flank": [1050, 900, 2000, 1400],
+      "upper_head_neck": [900, 280, 1900, 780]
+    }
+  },
+  "rejected_placeholder": {
+    "path": "datasets/species_gallery/I_Enaima_Vertebrata/Alligator_mississippiensis.jpg",
+    "reason": "Synthetic purple spiral labelled with a 100 micrometre scale bar. Not a photograph of Alligator mississippiensis."
+  }
+}

@@ -1,0 +1,214 @@
+# MorphoEval audit — Alligator mississippiensis 1.498 mm Turing wavelength, pass 2.
+# Supersedes the pass-1 audit. Weighted overall on rubric 0.1.0: 87.6 / 100.
+#   88*0.20 + 82*0.25 + 90*0.10 + 90*0.15 + 92*0.10 + 88*0.08 + 90*0.12 = 87.64
+# R1-R4 from pass 1 are closed in the rendered artifacts. R5 (single assessor) stays open.
+
+audit:
+  id: 2026-10-27-alligator-mississippiensis-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-alligator-mississippiensis-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2; second assessor still absent)"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    note: >-
+      Pass-2 working tree. No publisher ORCID and no ~/.nanopub/profile.yml, so
+      the knowledge-graph builder cannot emit signed or unsigned nanopubs.
+      Commit omitted until this loop's files are the commit being published.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini PK, Painter KJ, Nguyen Phong Chau H"
+    venue: "Journal of the Chemical Society, Faraday Transactions 93:3601-3610 (1997)"
+    doi: 10.1039/a702602a
+  chang2009:
+    title: "Reptile scale paradigm: Evo-Devo, pattern formation and regeneration"
+    authors: "Chang C, Wu P, Baker RE, Maini PK, Alibardi L, Chuong CM"
+    venue: "International Journal of Developmental Biology 53:813-826 (2009)"
+    doi: 10.1387/ijdb.072556cc
+  vickaryous2008:
+    title: "Development of the dermal skeleton in Alligator mississippiensis"
+    authors: "Vickaryous MK, Hall BK"
+    venue: "Journal of Morphology 269:398-422 (2008)"
+    doi: 10.1002/jmor.10575
+  milinkovitch2013:
+    title: "Crocodile head scales are not developmental units but emerge from physical cracking"
+    authors: "Milinkovitch MC, Manukyan L, Debry A, Di-Poi N, Martin S, Singh D, Lambert D, Zwicker M"
+    venue: "Science 339:78-81 (2013)"
+    doi: 10.1126/science.1226265
+    role: claim boundary — head-scale cracking is not this PDE
+  sevi_specimen:
+    title: "Alligator mississippiensis 2 babies"
+    authors: "Sévi I"
+    venue: "Wikimedia Commons, CC BY-SA 3.0, Miami-Dade County, Florida"
+    url: https://commons.wikimedia.org/wiki/File:Alligator_mississippiensis_2_babies.jpg
+
+simulations:
+  - id: delphi10000-alligator-mississippiensis-turing-wavelength-s0
+    name: "Alligator mississippiensis Holocene 1.498 mm Turing wavelength"
+    organism: "Alligator mississippiensis"
+    script: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py
+    output: docs/media/alligator_mississippiensis_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/alligator_mississippiensis_turing_wavelength_s0_growth.gif
+      - datasets/alligator_mississippiensis_turing_wavelength_s0/alligator_mississippiensis_turing_wavelength_s0_metrics_pass2.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-alligator-mississippiensis-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, maini1997, chang2009, vickaryous2008, milinkovitch2013, sevi_specimen]
+    summary: >-
+      Pass 2 closes R1-R4. The diffusion tensor is rotated onto the measured
+      rear-tail band normal (12 degrees). The GIF overlay uses the tight
+      integument mask, so the 1.498 mm field is no longer painted across the
+      rock. Total-length sensitivity at 300, 450 and 600 mm, using a 1528 px
+      major axis on that mask, puts the photographed cream bands at 14.3, 21.5
+      and 28.7 mm (9.6, 14.4 and 19.1 times lambda_c). The upper-neck ROI on the
+      second juvenile has 19 peaks at 57 px (cv 0.42), less regular than the
+      tail. Dispersion Pearson r remains 0.999999998 (RMSE 5.0e-5). Stripe FFT
+      wavelength remains 1.498 mm. Computer-vision similarity of the 12-frame
+      720x480 GIF to the Sévi photograph is 96.0. Overall 87.6/100. The
+      chronoseries is still a single Holocene point at 0 Ma.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 and Murray 1981 supply the critical-wavenumber law."
+        - "The Sévi photograph shows cream transverse bands and has no scale bar."
+        - "Milinkovitch et al. 2013: crocodilian head scales form by cracking, which this script does not integrate."
+      reconstructed_in_script:
+        - "gamma is solved so lambda_c = 1.498 mm. Pass 2 sets theta to the measured 12 degree band normal."
+        - "Photo-band pitch in millimetres is conditional on an assumed total length. It is not a measured scale bar."
+      transfer_boundary:
+        - "Under every assumed total length in 300-600 mm the photographed bands are several times longer than 1.498 mm. The slot scale is the detail mode, not those body bands."
+        - "Fossil alligatorids are outside this 1/1 chronoseries. Osteoderm bone is not this melanin wavelength."
+      does_not_claim:
+        - "That 1.498 mm was calipered on these juveniles."
+        - "That head scales are a Turing pattern."
+        - "A second assessor's score. R5 is still open."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Same Schnakenberg stepper and dispersion test as pass 1 (Pearson r =
+          0.999999998, RMSE = 5.01e-5, equal-diffusion sigma = -1.197). Pass 2
+          additionally points the slow diffusion axis along the measured band
+          normal rather than leaving theta at 0. Lean theorems are unchanged
+          and still have zero sorry. The deduction that remains is that 1.498 mm
+          and the rate constants are the slot's reconstruction, not a published
+          alligator parameter table.
+        evidence:
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [95, 147], note: "gamma chosen so k_c = 2 pi / 1.498 mm; discrete eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [982, 1018], note: "pass 2 rotates theta onto the measured rear-tail normal", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3105_alligator_mississippiensis_turing_wavelength_s0.lean, lines: [15, 49], note: "tiling, stability, Turing inequality, Holocene single point", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The comparison PNG shows the Sévi juveniles, the rear-tail crop (13
+          cream bands, normal 12 degrees), and a stripe field at theta = 12
+          degrees with wavelength 1.498 mm and a drawn 1.498 mm bar. The
+          isotropic panel is a different pattern (47 components). The GIF is 12
+          frames at 720x480. Frame difference is 0.0135. Computer-vision
+          similarity to the photograph is 96.0 (orientation 0.963, radial FFT
+          0.9998, coherency 0.996) with the tight mask, so the rock is no longer
+          striped. The score stays short of 90 because the body bands in the
+          photograph are centimetre-scale under every total-length assumption,
+          and the overlay opacity is still 0.62 on the integument.
+        evidence:
+          - {file: docs/media/alligator_mississippiensis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "pass-2 figure with theta 12 degrees and the total-length bracket", supports: true}
+          - {file: docs/media/alligator_mississippiensis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720x480, tight-mask overlay", supports: true}
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [465, 484], note: "tight_animal_mask keeps the field on dark scutes and adjacent cream", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Gamma multipliers 0.64, 1 and 1.96 still shorten the wavelength
+          monotonically (1.798, 1.498, 1.057 mm), locking to the integer mode
+          nearest lambda_c/sqrt(gamma). Pass 2 reruns that sweep at the measured
+          12 degree angle. Stripe coherency stays above 0.98. The isotropic
+          neighbour remains a spotted field. Equal diffusion still decays
+          (std 0.0120 to 0.00042).
+        evidence:
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [982, 1004], note: "pass-2 sweep repeated at the measured theta", supports: true}
+          - {file: datasets/alligator_mississippiensis_turing_wavelength_s0/alligator_mississippiensis_turing_wavelength_s0_metrics_pass2.json, lines: [0, 0], note: "sweep values and theta_used_rad = 0.2094", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Simulated wavelength 1.498 mm versus nominal 1.5 mm. Dispersion
+          Pearson r = 0.999999998 against reference 1, RMSE = 5.01e-5. Stripe
+          profile versus cos(k_c x) has Pearson r = 0.997. KS distance between
+          specimen and simulation spacing shapes is 0.5. Rear tail: 13 peaks,
+          73 px, cv = 0.126. Fore flank: 19 peaks at 39.5 px. Upper neck: 19
+          peaks at 57 px, cv = 0.42. With the tight-mask major axis of 1528 px,
+          assumed total lengths 300, 450 and 600 mm convert the 73 px pitch to
+          14.34, 21.50 and 28.67 mm, which is 9.57, 14.35 and 19.14 times
+          lambda_c. None of these reference comparisons is a copied value.
+        evidence:
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [515, 531], note: "total-length sensitivity at 300, 450 and 600 mm", supports: true}
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [839, 860], note: "KS on median-normalised spacings", supports: true}
+          - {file: datasets/alligator_mississippiensis_turing_wavelength_s0/alligator_mississippiensis_turing_wavelength_s0_metrics_pass2.json, lines: [0, 0], note: "ratios 9.57, 14.35, 19.14 and upper-neck cv 0.42", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Unchanged from pass 1 and still accurate. Crossref-checked DOIs,
+          Sévi CC BY-SA 3.0 specimen with a runtime SHA-256 check, and an
+          explicit rejection of the synthetic species-gallery spiral. The
+          Milinkovitch citation is the real 2013 Science paper and is used as a
+          negative boundary.
+        evidence:
+          - {file: datasets/alligator_mississippiensis_turing_wavelength_s0/paper_citations.bib, lines: [1, 97], note: "verified citation list", supports: true}
+          - {file: datasets/alligator_mississippiensis_turing_wavelength_s0/alligator_mississippiensis_turing_wavelength_s0_reference.json, lines: [0, 0], note: "0.001498 m, 0 Ma, chronoseries 1/1, specimen digest", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Pass 2's rotation, tight mask and total-length table are separate
+          functions called from run_pass2_extension, and the pass-1 branch
+          still returns theta = 0 so the two renders stay distinguishable.
+          The docstring states which pass does which job. Still no Murray
+          equation number in a comment.
+        evidence:
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [1, 28], note: "docstring states the PDE and the pass split", supports: true}
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [957, 980], note: "render_outputs chooses the dilated or tight mask from the pass flag", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test still passes after the pass-2 code path was added.
+          --pass-id 1 and --pass-id 2 both ran. Pass 1 artifacts are archived
+          under the dataset directory so the supersession is inspectable.
+          Seed, dt and the CFL check are unchanged. No per-script dependency
+          lock file.
+        evidence:
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [1117, 1183], note: "self_test including Pearson r > 0.98", supports: true}
+          - {file: models/2026-delphi10000-alligator-mississippiensis-turing-wavelength-s0.py, lines: [1021, 1026], note: "run_pipeline calls the extension only when pass_id >= 2", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed in pass 2. tight_animal_mask confines the overlay to the juveniles."
+        status: resolved
+      - id: R2
+        item: "Closed in pass 2. theta = 12 degrees, the measured rear-tail band normal."
+        status: resolved
+      - id: R3
+        item: "Closed in pass 2. Bands are 14.3, 21.5 and 28.7 mm at assumed total lengths 300, 450 and 600 mm."
+        status: resolved
+      - id: R4
+        item: "Closed in pass 2. Upper-neck ROI: 19 peaks, 57 px, cv 0.42."
+        status: resolved
+      - id: R5
+        item: "Still open. One assessor (grok-4.7) scored both passes. No second provider."
+        status: open
