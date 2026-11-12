@@ -1,0 +1,162 @@
+# MorphoEval audit — Acropora millepora Turing wavelength, slot 3104, pass 1.
+# Holocene 0 Ma, λ = 385.2 µm, tier 5 primordium, detail variant.
+audit:
+  id: 2026-10-27-acropora-millepora-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent; pass 1)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: dff4f2b508d0d1939f865c2f90f7ffe070e890d6
+    note: "Pass 1 working tree. Raw periodic Schnakenberg field, no dihedral gauge fix."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(81)90334-9"
+  dove2001:
+    title: "Major colour patterns of reef-building corals are due to a family of GFP-like proteins"
+    authors: "Dove, S. G.; Hoegh-Guldberg, O.; Ranganathan, S."
+    venue: "Coral Reefs"
+    doi: "10.1007/pl00006956"
+  lundgren2013:
+    title: "Genotype-environment correlations in corals from the Great Barrier Reef"
+    authors: "Lundgren, P.; Vera, J. C.; Peplow, L.; Manel, S.; van Oppen, M. J. H."
+    venue: "BMC Genetics"
+    doi: "10.1186/1471-2156-14-9"
+  wallace2006:
+    title: "Diverse staghorn corals (Acropora) in high-latitude Eocene assemblages"
+    authors: "Wallace, C. C.; Rosen, B. R."
+    venue: "Proc. R. Soc. B"
+    doi: "10.1098/rspb.2005.3307"
+simulations:
+  - id: delphi10000-acropora-millepora-turing-wavelength-s0
+    name: "Acropora millepora Holocene Turing wavenumber at 385.2 µm (pass 1)"
+    organism: "Acropora millepora"
+    domain: morphogenesis
+    script: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py
+    output: docs/media/acropora_millepora_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/acropora_millepora_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, dove2001, lundgren2013, wallace2006]
+    summary: >-
+      Pass 1 integrates Schnakenberg kinetics (a=0.12, b=0.78, D_v/D_u=15.75) on a
+      periodic 3.082 mm coenenchyme patch and solves D_u so that argmax σ(k) sits on
+      the assigned 385.2 µm Holocene detail scale. The nonlinear FFT peak is 383.6 µm.
+      A diffusivity sweep matches linear theory at Pearson r = 0.999986 (RMSE 4.06 µm).
+      Equal diffusion is stable (σ_max = -0.038) and the activator standard deviation
+      decays. The rendered GIF is the raw periodic field (dihedral 0) and scores
+      cv_sim_similarity 86.1 against the Lundgren et al. 2013 colony photograph.
+      The Murray band center is 319.4 µm and is not the target. The photograph is a
+      colony, not a 385 µm micrograph.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation for a two-species reaction-diffusion system."
+        - "Schnakenberg 1979 kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Dove et al. 2001: reef-coral colour patterns are GFP-like host proteins."
+        - "Lundgren et al. 2013: the CC BY 4.0 Great Barrier Reef colony photograph."
+        - "Wallace and Rosen 2006: Eocene Acropora skeletal diversity, out of this chronoseries."
+      reconstructed_in_script:
+        - "D_u chosen so argmax σ(k) equals 2π/385.2 µm at diffusivity ratio 15.75."
+        - "Eight-wavelength periodic patch, seed 3104, explicit Euler."
+        - "Nonlinear FFT wavelength and the eight-point diffusivity sweep."
+      transfer_boundary:
+        - "385.2 µm is the assigned primordium-tier detail scale (log10 = -3.414), not a published caliper spacing of A. millepora pigment stripes."
+        - "The colony photograph is the computer-vision target. It does not resolve 385 µm."
+      does_not_claim:
+        - "That 385.2 µm was measured on a micrograph of Acropora millepora."
+        - "That the spot field is a segmentation of the Lundgren colony."
+        - "That an in-series chronospecies predecessor or successor exists. The series length is 1, age 0 Ma."
+        - "That the Murray band-center wavelength (319.4 µm) is the selected mode."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          jacobian(), sigma_of_h(), and solve_du() implement the Schnakenberg
+          linearization and set k_c = argmax σ(k) at 385.2 µm. The Murray band
+          center is computed separately and not substituted for k_c. Ten points
+          off because the target length is the slot assignment, not a wavelength
+          fitted to a published stripe measurement.
+        evidence:
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [74, 136], note: "Jacobian, dispersion σ(h), and bisection for D_u", supports: true}
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [150, 194], note: "Periodic explicit Euler of the Schnakenberg PDE", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          The comparison figure places the Lundgren et al. 2013 colony beside the
+          activator field, and the 12-frame 720×540 GIF scores cv_sim_similarity
+          86.1. The field is a spot lattice, not a branch photograph, and pass 1
+          does not gauge-fix its orientation. The colony photo is the wrong
+          physical scale for a 385 µm claim, which caps this score.
+        evidence:
+          - {file: docs/media/acropora_millepora_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass-1 side-by-side; file later overwritten by pass 2", supports: true}
+          - {file: docs/media/acropora_millepora_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540, pass-1 CV 86.1", supports: true}
+          - {file: datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_turing_wavelength_s0_metrics_pass1.json, lines: [1, 20], note: "Pass-1 metrics, dihedral 0", supports: true}
+      parameter-expressivity:
+        value: 82
+        rationale: >-
+          Scaling both diffusivities from 0.55 to 1.70 moves the nonlinear
+          wavelength from about 289 µm to 508 µm in step with linear theory
+          (r = 0.999986). Equal diffusion is a real negative control in the
+          dispersion curve. The nonlinear std(u) time series is not yet on the figure.
+        evidence:
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [300, 330], note: "Diffusivity sweep and equal-diffusion ablation inside analyze()", supports: true}
+      morphometric-validation:
+        value: 78
+        rationale: >-
+          FFT wavelength 383.6 µm versus 385.2 µm, sweep RMSE 4.06 µm, ablation
+          σ_max negative, and specimen coherency 0.427 versus render coherency
+          0.72 (values differ). Pass 1 does not yet report the orientation KS
+          distance. Nominal D_u is tuned, so the sweep, not the single target
+          point, is the validation.
+        evidence:
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [197, 215], note: "dominant_wavelength_um radial FFT", supports: true}
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [377, 450], note: "measure_morphoeval rows with reference values", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Crossref-checked DOIs in paper_citations.bib, SHA-256 of the CC BY 4.0
+          Wikimedia file, and an explicit 0 Ma / 385.2 µm statement in the README
+          and reference JSON. The scout manifest records the OpenAlex/Wikimedia pass.
+        evidence:
+          - {file: datasets/acropora_millepora_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Schnakenberg, Murray, Dove, Lundgren, Wallace DOIs", supports: true}
+          - {file: datasets/acropora_millepora_turing_wavelength_s0/acropora_millepora_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 385.2 µm, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module docstring states k_c = argmax σ(k) and points at Schnakenberg
+          and Turing. peak_wavelength and murray_center_um are separate functions,
+          so the band center cannot be mistaken for the selected mode.
+        evidence:
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [1, 28], note: "Docstring equations and the 385.2 µm / 0 Ma statement", supports: true}
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [116, 144], note: "peak_wavelength versus murray_center_um", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3104, --self-test, and Agg rendering. Dependencies are the repo
+          scientific stack (numpy, scipy, Pillow, matplotlib). Pass 1 self-test
+          passed: Pearson r > 0.98, ablation decay, onset ratio inside the Lean bound.
+        evidence:
+          - {file: models/2026-delphi10000-acropora-millepora-turing-wavelength-s0.py, lines: [673, 720], note: "validate() and --self-test", supports: true}
+    remediation:
+      - "Gauge-fix the eight dihedral copies of the periodic field and keep the copy whose 12-bin Sobel orientation is closest to the colony photograph."
+      - "Add the discrete KS distance between those orientation histograms as a non-circular specimen metric."
+      - "Draw the nonlinear ablation time series (activator standard deviation at D_v = D_u) on the comparison figure, beside the linear dispersion curve."
