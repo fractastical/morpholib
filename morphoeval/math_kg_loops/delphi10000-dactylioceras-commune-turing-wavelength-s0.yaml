@@ -1,0 +1,65 @@
+sim_id: delphi10000-dactylioceras-commune-turing-wavelength-s0
+slot: 3159
+math_family: Turing Reaction-Diffusion Wavelength Selection
+quantitative_law: Turing wavenumber k_c
+form: Stripes, Spots & Ocelli
+phenomenon_size_m: 2.419e-05
+log10_size_m: -4.616
+size_human: 24 µm
+scale_tier: 4_cellular_10um
+detail_variant: true
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Dactylioceras commune (24 µm, detail scale)
+geological_age_ma: 181.0
+geological_period: Early Jurassic (Toarcian, 181 Ma)
+fossil_lineage_group: Cephalopod Fractal Suture Fossil Series
+chronoseries: Dactylioceras 1/1
+organism: Dactylioceras commune
+fractal_suture_dimension_Df: 1.55
+predecessor:
+  binomial: Ceratites nodosus
+  geological_age_ma: 240
+  organ_scale_wavelength_m: 0.001088
+successor:
+  binomial: Placenticeras meeki
+  geological_age_ma: 75
+  organ_scale_wavelength_m: 0.00253
+model_spec:
+  sim_id: delphi10000-dactylioceras-commune-turing-wavelength-s0
+  kinetics: schnakenberg
+  a: 0.04
+  b: 0.96
+  diffusion_ratio: 7.2
+  lambda_c_m: 2.419e-05
+  boundary: periodic detail patch; logarithmic accretion mask on the Whitby photograph
+  seed: 3159
+  inputs:
+    - datasets/dactylioceras_commune_turing_wavelength_s0/dactylioceras_commune_specimen.jpg
+    - datasets/dactylioceras_commune_turing_wavelength_s0/dactylioceras_commune_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Turing critical wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 2.419e-05 m"
+    lean_decl: MathOfBiology.Loop_3159.kcDen
+    lean_theorem: MathOfBiology.Loop_3159.kc_den_positive
+    lean_locus: morphoeval/lean/loops/Loop_3159_dactylioceras_commune_turing_wavelength_s0.lean#L16-L21
+    variables: "D_u, D_v > 0; f_u, g_v from the Schnakenberg Jacobian at (a, b) = (0.04, 0.96)"
+    role: Fixes the 24.19 µm detail-scale pigment/ocellus wavelength for Dactylioceras commune at 181 Ma
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py
+  - law_name: Onset diffusion-ratio threshold
+    formula: "D_v/D_u = 7.2 > 6.724 onset ratio"
+    lean_decl: MathOfBiology.Loop_3159.diffusion_ratio_above_onset
+    lean_theorem: MathOfBiology.Loop_3159.diffusion_ratio_above_onset
+    lean_locus: morphoeval/lean/loops/Loop_3159_dactylioceras_commune_turing_wavelength_s0.lean#L25-L27
+    variables: "integer cross-multiplication 72/10 > 6724/1000"
+    role: Inhibitor diffuses fast enough for a finite unstable band centered on k_c
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py
+  - law_name: Lineage mode count at fixed 24 µm
+    formula: "N = interval_um / 24; N(Dactylioceras rib) > N(Ceratites organ) and N(Placenticeras organ)"
+    lean_decl: MathOfBiology.Loop_3159.modesPerRib
+    lean_theorem: MathOfBiology.Loop_3159.dactylioceras_exceeds_ceratites_at_24um
+    lean_locus: morphoeval/lean/loops/Loop_3159_dactylioceras_commune_turing_wavelength_s0.lean#L30-L42
+    variables: "3484 µm Whitby rib, 1088 µm Ceratites organ wavelength, 2530 µm Placenticeras organ wavelength"
+    role: States what changes at 181 Ma versus the 240 Ma predecessor and the 75 Ma successor when the detail wavelength is held at 24 µm
+    source_citation: "Lutz and Boyajian 1995 DOI:10.1017/S0094837300013336"
+    code_locus: models/2026-delphi10000-dactylioceras-commune-turing-wavelength-s0.py
