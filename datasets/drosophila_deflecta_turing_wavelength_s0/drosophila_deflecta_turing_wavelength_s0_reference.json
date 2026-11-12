@@ -1,0 +1,87 @@
+{
+  "slot": 3181,
+  "sim_id": "delphi10000-drosophila-deflecta-turing-wavelength-s0",
+  "organism": "Drosophila deflecta",
+  "common_name": "Water-Lily Quinaria-Group Fly (Longitudinal Wing Vein & Crossvein Melanin Shading)",
+  "aristotelian": {
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Entoma (Arthropoda)",
+    "genus": "Drosophila",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "scale": {
+    "size_human": "2.6 µm",
+    "phenomenon_size_m": 2.633e-06,
+    "log10_size_m": -5.580,
+    "scale_tier": "3_subcellular_um",
+    "variant": "detail",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila deflecta (2.6 µm, detail scale)"
+  },
+  "evolutionary_history": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "Subgenus Drosophila virilis–repleta–guttifera Radiation",
+    "chronoseries": "Drosophila chronoseries 10/41",
+    "predecessor": "Drosophila cyrtoloma",
+    "successor": "Drosophila elegans",
+    "note": "All three chronospecies are extant (0 Ma). The difference at this tier is the selected wavenumber, not a stratigraphic transition. D. deflecta is taxonomically a quinaria-group fly; the radiation name is the assigned chronoseries bucket."
+  },
+  "state_variables": {
+    "u": "activator (short-range vein-melanin precursor; Wingless-like effective field)",
+    "v": "inhibitor (longer-range crossvein shade suppressor)"
+  },
+  "boundary_conditions": "Neumann zero-flux on a square epithelial patch whose side is 12 analytical wavelengths (~31.6 µm). The reported phenomenon is the wavelength, not the patch size.",
+  "equations": {
+    "kinetics": "du/dt = (a - u + u^2 v) + D_u laplacian(u); dv/dt = (b - u^2 v) + D_v laplacian(v)",
+    "steady_state": "u0 = a + b; v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0; f_v = u0^2; g_u = -2 u0 v0; g_v = -u0^2",
+    "dispersion": "det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c",
+    "forcing_pass2": "du/dt gains kappa(t) (m(x) - u), where m is the segmented specimen luminance mapped into the activator range"
+  },
+  "parameters": {
+    "a": 0.132,
+    "b": 0.780,
+    "D_u_nondim": 0.061,
+    "D_v_nondim": 3.050,
+    "grid_n": 96,
+    "wavelengths_across_patch": 12,
+    "rng_seed": 3181,
+    "length_unit": "chosen so analytical lambda_c equals 2.633e-06 m",
+    "time_unit_s": 1.0
+  },
+  "chronoseries_detail_tier": {
+    "bridge": "lambda_detail(species) = 2.633e-06 * lambda_primordium(species) / lambda_primordium(D. deflecta)",
+    "primordium_m": {
+      "Drosophila cyrtoloma": 0.0002076,
+      "Drosophila deflecta": 0.0001088,
+      "Drosophila elegans": 0.0001011
+    },
+    "detail_m": {
+      "Drosophila cyrtoloma": 5.023996323529412e-06,
+      "Drosophila deflecta": 2.633e-06,
+      "Drosophila elegans": 2.446657169117647e-06
+    }
+  },
+  "empirical_claims": [
+    "Turing (1952) gives the diffusion-driven instability and the critical wavenumber; Schnakenberg (1979) supplies the two-species kinetics used here.",
+    "Werner et al. (2010) showed that Wingless at vein intersections paints polka-dot spots in D. guttifera. That is the nearest vein-associated pigmentation mechanism for a quinaria-group wing. It was not measured at 2.633 µm in D. deflecta.",
+    "Prud'homme et al. (2006) showed that the D. elegans male apical wing spot evolved by cis-regulatory changes at yellow. That spot is the successor morphology in this chronoseries.",
+    "The gallery tile used as the specimen is a sepia spiral ocellus. Pass 2 asks the forced Schnakenberg field to track that image. The pure, unforced field is a stripe/spot pattern at lambda_c and is not a pixel copy of the tile."
+  ],
+  "specimen": {
+    "file": "drosophila_deflecta_turing_wavelength_s0_specimen.jpg",
+    "sha256": "d7c1f825d40ea1287ef58e077a7c77c8643220d741ecb99d09b491822aaf7a2c",
+    "source": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_deflecta.jpg",
+    "license_note": "Project gallery fallback. Wikimedia Commons query for Drosophila deflecta returned no CC still photograph.",
+    "gallery_scale_bar": "100 µm drawn on the tile; modeled phenomenon scale remains 2.633 µm"
+  },
+  "primary_doi": "10.1038/nature08896",
+  "does_not_claim": [
+    "Does not claim a wet-lab measurement of a 2.633 µm Turing wavelength on a D. deflecta wing.",
+    "Does not claim D. deflecta belongs phylogenetically to the virilis–repleta–guttifera radiation.",
+    "Does not claim the unforced Schnakenberg field reproduces the gallery spiral phase."
+  ]
+}
