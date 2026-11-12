@@ -1,0 +1,150 @@
+audit:
+  id: 2026-10-27-drosophila-bipectinata-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, loop 3178 pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: "https://w3id.org/delphi/agent/loop-3178-unsigned"
+  license: https://creativecommons.org/licenses/by/4.0/
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: >
+      Pass 1 scores the Schnakenberg/Turing solver and the first render.
+      The Du sweep, finite-amplitude ablation, two-threshold specimen segmentation,
+      and held-out dispersion GoF were not yet accepted as evidenced. Line numbers
+      refer to the final script, which contains the later fixes; this audit records
+      the first-pass judgment and the open remediation list.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81:389-400"
+    doi: 10.1016/0022-5193(79)90042-0
+  kopp2002:
+    title: "Evolution of male sexual characters in the Oriental Drosophila melanogaster species group"
+    authors: "Kopp, A. and True, J. R."
+    venue: "Evolution & Development 4:278-291"
+    doi: 10.1046/j.1525-142x.2002.02017.x
+  mishra2006:
+    title: "Unique phenotypes and variation in the sex comb patterns in the Drosophila bipectinata species complex"
+    authors: "Mishra, P. K. and Singh, B. N."
+    venue: "European Journal of Entomology 103:805-815"
+    doi: 10.14411/eje.2006.110
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel, N., Prud'homme, B., Wittkopp, P. J., Kassner, V. A. and Carroll, S. B."
+    venue: "Nature 433:481-487"
+    doi: 10.1038/nature03235
+
+simulations:
+  - id: delphi10000-drosophila-bipectinata-turing-wavelength-s0
+    name: "Drosophila bipectinata Turing wavelength at 1.92 µm (Holocene, 0 Ma)"
+    organism: Drosophila bipectinata
+    script: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py
+    output: docs/media/drosophila_bipectinata_turing_wavelength_s0_growth.gif
+    domain: morphogenesis
+    status: evaluated
+    phenomenon_size_m: 1.92e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: Holocene (Extant)
+    source_refs: [turing1952, schnakenberg1979, kopp2002, mishra2006, gompel2005]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 selects a finite critical wavenumber from a two-species reaction-diffusion system."
+        - "Schnakenberg 1979 gives the kinetics a - u + u^2 v and b - u^2 v."
+        - "Kopp & True 2002 and Mishra & Singh 2006 describe D. bipectinata paired oblique sex combs. They do not report a 1.92 µm wavelength."
+      reconstructed_in_script:
+        - "gamma is solved so the continuous focal wavelength is 1.92 µm at D_u = 0.0504 µm^2/s and delta = 31.5."
+        - "Predecessor and successor wavelengths follow from D_u factors 25/16 and 16/25 at geological age 0 Ma."
+      transfer_boundary:
+        - "The gallery JPEG is a stand-in specimen, not a micrograph of the 1.92 µm field."
+      does_not_claim:
+        - "That 1.92 µm was measured by Kopp, Mishra, or Hurtado-Gonzales."
+        - "That D. biarmipes and D. buzzatii are stratigraphic ancestors."
+        - "That the catalog DOI 10.1111/j.1525-142X.2005.05044.x is a Kopp paper. Crossref maps it to Kerr, Roalson & Rodgers 2005 on zebrafish myostatin."
+    summary: >
+      Pass 1 implements the continuous Turing wavenumber for Schnakenberg kinetics
+      on a periodic 15.36 µm patch and renders a 13-frame 640×480 melanin overlay.
+      Expressivity, ablation, specimen segmentation, and dispersion GoF are present
+      in the script but were not yet the basis of the score. Overall is the weighted
+      mean of the seven dimension scores below.
+    remediation:
+      - "Add an explicit seven-point D_u sweep and show that lambda increases with sqrt(D_u)."
+      - "Add a finite-amplitude equal-diffusion ablation and report its amplification against the Turing run."
+      - "Segment the pinned specimen image at two contrast thresholds and report coherency."
+      - "Report even-mode Pearson r, held-out odd-mode RMSE, and a KS distance, each with value distinct from its reference."
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >
+          steady_state and focal_transport implement Schnakenberg kinetics and the
+          Turing formula for k_c, and gamma is solved so lambda_c is 1.92 µm.
+          The 1.92 µm target is the assigned rung, not a published species parameter,
+          so this is not a line-by-line reproduction of a bipectinata methods section.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [68, 102], note: "Jacobian, gamma solve, and k_c wavelength"}
+          - {file: morphoeval/lean/loops/Loop_3178_drosophila_bipectinata_turing_wavelength_s0.lean, lines: [40, 42], note: "equal-diffusion numerator is negative"}
+      parameter-expressivity:
+        value: 72
+        rationale: >
+          Chronoseries wavelengths are defined, but Pass 1 does not yet treat the
+          seven-point sweep as demonstrated expressivity. The score stays below the
+          pass-2 value until monotonicity is checked on the rendered sweep.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [104, 134], note: "chronoseries and du_sweep definitions"}
+      specimen-match:
+        value: 74
+        rationale: >
+          The GIF paints the activator as melanin on the pinned gallery image, and a
+          side-by-side PNG is written. Pass 1 does not yet accept a computer-vision
+          score as specimen evidence, and the JPEG is not a 1.92 µm micrograph.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [345, 398], note: "melanin paint and GIF/PNG render"}
+          - {file: docs/media/drosophila_bipectinata_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "13-frame 640x480 animation"}
+      morphometric-validation:
+        value: 70
+        rationale: >
+          The dispersion comparison exists, but Pass 1 does not yet score Pearson r,
+          held-out RMSE, KS, or the two-threshold specimen segmentation. Those are
+          the open remediation items.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [163, 219], note: "eigenmode growth versus discrete sigma(k)"}
+      source-traceability:
+        value: 84
+        rationale: >
+          DOIs were checked on OpenAlex. The catalog DOI 10.1111/j.1525-142X.2005.05044.x
+          was rejected because Crossref assigns it to a zebrafish myostatin paper.
+          The specimen SHA-256 is pinned. No CC photograph was found on GBIF or iNaturalist.
+        evidence:
+          - {file: datasets/drosophila_bipectinata_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Schnakenberg, Kopp & True, Mishra & Singh"}
+          - {file: datasets/drosophila_bipectinata_turing_wavelength_s0/drosophila_bipectinata_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 1.92e-6 m, age 0 Ma, specimen sha256"}
+      code-traceability:
+        value: 78
+        rationale: >
+          The script header and focal_transport cite the wavenumber formula.
+          Pass 1 does not yet tie each measurement name back to a held-out split.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [1, 30], note: "scale, age, chronoseries, and law stated in the module docstring"}
+      repro-package:
+        value: 80
+        rationale: >
+          --self-test, seed 3178, and the specimen hash check are present.
+          Pass 1 had not yet re-run the test after the ablation perturbation was required.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-bipectinata-turing-wavelength-s0.py, lines: [580, 606], note: "self-test gates on wavelength order, Pearson r, GIF size, and non-circular metrics"}
