@@ -1,0 +1,66 @@
+sim_id: delphi10000-columba-livia-turing-wavelength-s0
+slot: 3151
+organism: Columba livia
+age_Ma: 0
+scale_um: 256
+scale_m: 0.000256
+log10_m_tier_label: -3.592
+tier: 5_primordium_100um
+math_family: Turing reaction-diffusion wavelength selection
+form: Stripes, spots and ocelli
+law: Turing wavenumber k_c
+model_spec:
+  model: Schnakenberg (1979) kinetics with k_c fixed at the 256 um detail scale of Columba livia
+  a: 0.1
+  b: 0.9
+  Du: 1.0
+  Dv: 10.0
+  Dv_stripe_y: 2.5
+  time_scale_S: 30.0
+  gamma0: 0.44060733933434637
+  length_unit_um: 16.0
+  grid_n: 64
+  lambda_c_um: 256.0
+  seed: 3151
+  age_Ma: 0.0
+  inputs:
+    - datasets/columba_livia_turing_wavelength_s0/columba_livia_turing_wavelength_s0_reference.json
+    - datasets/columba_livia_turing_wavelength_s0/columba_livia_specimen.jpg
+    - datasets/columba_livia_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Schnakenberg critical wavenumber
+    formula: k_c^2 = gamma * (Dv * f_u + Du * g_v) / (2 * Du * Dv)
+    lean_decl: MathOfBiology.Loop_3151.kc_numerator
+    lean_theorem: MathOfBiology.Loop_3151.loop3151_uniform_stable_and_critical_mode_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3151_columba_livia_turing_wavelength_s0.lean#L40-L56
+    variables: f_u, f_v, g_u, g_v, Du, Dv, q = k^2
+    role: Selects the 256 um pigment wavelength on the Holocene rock-dove vane patch
+    source_citation: Schnakenberg (1979) doi:10.1016/0022-5193(79)90042-0; Turing (1952) doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: det(J - k^2 D) > 0 when Dv = Du
+    lean_decl: MathOfBiology.Loop_3151.rd_det
+    lean_theorem: MathOfBiology.Loop_3151.loop3151_equal_diffusion_ablation_has_positive_determinant
+    lean_locus: morphoeval/lean/loops/Loop_3151_columba_livia_turing_wavelength_s0.lean#L58-L66
+    variables: Du, Dv, q
+    role: Negative control. No 256 um repeat when the inhibitor is not the long-range species
+    source_citation: Turing (1952) doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py
+  - law_name: Four wavelengths on the 1024 um domain
+    formula: N * dx / lambda_c = 64 * 16 / 256 = 4
+    lean_decl: MathOfBiology.Loop_3151.lambda_um
+    lean_theorem: MathOfBiology.Loop_3151.loop3151_domain_holds_four_critical_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3151_columba_livia_turing_wavelength_s0.lean#L68-L76
+    variables: grid_n, length_unit_um, lambda_c_um
+    role: Integer mode n = 4 is the only unstable wavenumber at Dv/Du = 10
+    source_citation: Prum & Williamson (2002) doi:10.1098/rspb.2001.1896
+    code_locus: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py
+  - law_name: Holocene scale succession at 0 Ma
+    formula: age = 0 and successor_packet = 10 * lambda_c
+    lean_decl: MathOfBiology.Loop_3151.age_Ma
+    lean_theorem: MathOfBiology.Loop_3151.loop3151_holocene_extant_scale_succession
+    lean_locus: morphoeval/lean/loops/Loop_3151_columba_livia_turing_wavelength_s0.lean#L78-L97
+    variables: age_Ma, chronoseries_index, lambda_um
+    role: Chronoseries 1/1 has no other species. The neighbouring change is the scale filter around k_c
+    source_citation: Vickrey et al. (2018) doi:10.7554/eLife.34803; Haupaix et al. (2018) doi:10.1126/science.aar4777
+    code_locus: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py
