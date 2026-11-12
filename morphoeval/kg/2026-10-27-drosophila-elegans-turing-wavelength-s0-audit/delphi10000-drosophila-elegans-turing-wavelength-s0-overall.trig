@@ -1,0 +1,78 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-elegans-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-elegans-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-elegans-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Drosophila elegans Schnakenberg Turing wavelength at 1.8 µm (Holocene, 0 Ma) — MorphoEval overall 78.8/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1. Schnakenberg (a, b) = (0.12, 0.88) on a periodic 22-wavelength patch. Du is solved so the linear fastest wavelength is 1.803 µm at r/r_c = 1.06. At that fixed Du, predecessor D. deflecta (r/r_c = 2.65) selects 2.196 µm and successor D. erecta (r/r_c = 1.48) selects 1.940 µm. Continuous-versus-stencil dispersion Pearson r = 0.991, RMSE = 0.0249. The nonlinear FFT wavelength is 1.669 µm and was not retuned. The green-leaf test G > R+18 returns a foreground fraction of 1.0 because the leaf is yellow (R ≈ G). Age 0 Ma, scale 1.8 µm. Overall 78.8/100 (faithfulness 75.6, reproducibility 86.3); rubric morphoeval 0.1.0; checkpoint commit e7f1d7c4b94a5129fd92c9739f2ce6b72bc4ab0f; environment: python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0. Dimension assessments: Model fidelity to source 86, Morphological realism / specimen match 76, Parameter expressivity 62, Morphometric validation 70, Source and data traceability 90, Code-to-model traceability 82, Reproducibility package 86. Output judged: docs/media/drosophila_elegans_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-drosophila-elegans-turing-wavelength-s0.py at e7f1d7c4b94a5129fd92c9739f2ce6b72bc4ab0f, image/png, 718269 B, 1342×902 px, artifact_sha256 024ce5a6b13189dcceb1a0972eb72bfea6149ca8c200536f3fc9708616680792 (sha256 024ce5a6b13189dcceb1a0972eb72bfea6149ca8c200536f3fc9708616680792), spec_fingerprint a12bb3100b597e414ef74972864fc5e5fa6a02a00d315c7492cd5f4151bd913e. Dual provenance: spec_fingerprint: a12bb3100b597e414ef74972864fc5e5fa6a02a00d315c7492cd5f4151bd913e; artifact_sha256: 024ce5a6b13189dcceb1a0972eb72bfea6149ca8c200536f3fc9708616680792; input_dataset_sha256: {datasets/drosophila_elegans_turing_wavelength_s0/README.md=92b2e690554d6b38..., datasets/drosophila_elegans_turing_wavelength_s0/drosophila_elegans_specimen.jpg=ed8dfe6c85be35e1..., datasets/drosophila_elegans_turing_wavelength_s0/drosophila_elegans_turing_wavelength_s0_reference.json=e5d4cbec3c5231fc..., datasets/drosophila_elegans_turing_wavelength_s0/paper_citations.bib=f3905fa5ed82ba4a..., datasets/drosophila_elegans_turing_wavelength_s0/scout_manifest.json=98aa35f7c02c324d...}. Claim boundary: reported_in_source: Yeh, Liou & True 2006: male D. elegans carries an apical wing melanin patch used in courtship, divergent from D. gunungcola. | Turing 1952: diffusion can destabilize a stable homogeneous state at a finite wavenumber. Schnakenberg 1979: the two-species kinetics used here.; reconstructed_in_script: Du is solved so argmax sigma(k) equals 2π/1.803 µm at r/r_c = 1.06. Deflecta and erecta wavelengths are the same law at r/r_c = 2.65 and 1.48.; transfer_boundary: Deflecta and erecta are chronoseries neighbors (11/41), not the sister species in the Yeh and Massey papers.; does_not_claim: The macro photograph does not resolve 1.8 µm granules. | No published granule-spacing measurement for D. deflecta or D. erecta is being reproduced.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: R1: Set NONLINEAR_K_CORRECTION from the measured k_nonlinear/k_linear and re-solve Du so the FFT wavelength is within 2.5% of 1.803 µm.",
+            "remediation needed: R2: Replace the G>R+18 leaf test, which scored foreground fraction 1.0 on this yellow leaf, with a low-B leaf mask, the largest red-eye component circularity, and a scale-bar calibration in mm.",
+            "remediation needed: R3: Sweep r/r_c at fixed Du and show that the linear wavelength changes monotonically.",
+            "remediation needed: R4: Simulate the equal-diffusion ablation and report pattern-std/ablation-std together with a two-sample KS statistic.",
+            "remediation needed: R5: Report the coefficient of variation of the nonlinear wavelength across seeds." ;
+        pk:hasScore "0.788"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second assessor in this pass)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://x.ai> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1038/nature03235>,
+            <https://doi.org/10.1038/nature04597>,
+            <https://doi.org/10.1038/sj.hdy.6800814>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1038/nature03235> dct:date "2005"^^xsd:gYear ;
+        dct:title "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila" .
+    <https://doi.org/10.1038/nature04597> dct:date "2006"^^xsd:gYear ;
+        dct:title "Repeated morphological evolution through cis-regulatory changes in a pleiotropic gene" .
+    <https://doi.org/10.1038/sj.hdy.6800814> dct:date "2006"^^xsd:gYear ;
+        dct:title "Genetics of divergence in male wing pigmentation and courtship behavior between Drosophila elegans and D. gunungcola" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Drosophila elegans Schnakenberg Turing wavelength at 1.8 µm (Holocene, 0 Ma) — MorphoEval overall 78.8/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:49:39Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-elegans-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-elegans-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

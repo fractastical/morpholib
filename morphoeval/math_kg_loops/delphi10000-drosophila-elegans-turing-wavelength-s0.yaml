@@ -1,0 +1,68 @@
+sim_id: delphi10000-drosophila-elegans-turing-wavelength-s0
+slot: 3182
+organism: Drosophila elegans
+phenomenon_size_m: 1.803e-06
+log10_size_m: -5.744
+size_human: "1.8 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila elegans
+  at the 1.8 µm detail scale (apical melanic wing-patch granule lattice)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora suzukii–biarmipes Wing-Spot Clade"
+predecessor: Drosophila deflecta
+successor: Drosophila erecta
+chronoseries: "Drosophila 11/41"
+model_spec:
+  model: "Schnakenberg 1979 kinetics + Turing 1952 dispersion; Du solved for lambda = 1.803 µm at r/r_c = 1.06"
+  a: 0.12
+  b: 0.88
+  elegans_r_over_rc: 1.06
+  deflecta_r_over_rc: 2.65
+  erecta_r_over_rc: 1.48
+  grid_resolution: [220, 160]
+  dt: 0.2
+  steps: 1100
+  seed: 3182
+  inputs:
+    - datasets/drosophila_elegans_turing_wavelength_s0/drosophila_elegans_turing_wavelength_s0_reference.json
+    - datasets/drosophila_elegans_turing_wavelength_s0/drosophila_elegans_specimen.jpg
+    - datasets/drosophila_elegans_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_elegans_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_elegans_turing_wavelength_s0/README.md
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Homogeneous stability of the Schnakenberg state
+    formula: "trace J = f_u + g_v < 0 and det J > 0 at u0 = a + b, v0 = b/u0^2"
+    lean_decl: MathOfBiology.Loop_3182.homogeneous_trace_negative
+    lean_theorem: MathOfBiology.Loop_3182.homogeneous_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3182_drosophila_elegans_turing_wavelength_s0.lean
+    variables: "a = 0.12, b = 0.88, trace = -0.24, det = 1"
+    role: "The 1.8 µm epithelium is stable without diffusion, so any pattern is diffusion-driven."
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-elegans-turing-wavelength-s0.py
+  - law_name: Onset margin and equal-diffusion ablation
+    formula: "(r f_u + g_v)^2 - 4 r det J > 0 iff the ratio is above onset"
+    lean_decl: MathOfBiology.Loop_3182.turingMargin
+    lean_theorem: MathOfBiology.Loop_3182.elegans_turing_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3182_drosophila_elegans_turing_wavelength_s0.lean
+    variables: "elegans R=9934 unstable; ablation R=1000 stable; deflecta R=24836; erecta R=13871"
+    role: "What changes at 0 Ma along the chronoseries is the inhibitor range, not the sign of the trace."
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-elegans-turing-wavelength-s0.py
+  - law_name: Critical wavelength and chronoseries order
+    formula: "lambda = 2 pi / k_max, with k_max = argmax Re sigma(k); deflecta > erecta > elegans"
+    lean_decl: MathOfBiology.Loop_3182.chronospecies_wavelength_order
+    lean_theorem: MathOfBiology.Loop_3182.elegans_wavenumber_brackets_two_pi
+    lean_locus: morphoeval/lean/loops/Loop_3182_drosophila_elegans_turing_wavelength_s0.lean
+    variables: "elegans 1803 nm at r/r_c = 1.06; erecta 1940 nm; deflecta 2196 nm; age 0 Ma"
+    role: "The assigned 1.8 µm scale is the elegans fastest linear wavelength. Neighbors are longer because they sit farther above onset."
+    source_citation: "Yeh, Liou & True 2006 DOI:10.1038/sj.hdy.6800814"
+    code_locus: models/2026-delphi10000-drosophila-elegans-turing-wavelength-s0.py

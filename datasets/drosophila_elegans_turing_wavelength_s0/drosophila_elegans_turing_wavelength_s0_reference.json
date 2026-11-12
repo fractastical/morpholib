@@ -1,0 +1,92 @@
+{
+  "sim_id": "delphi10000-drosophila-elegans-turing-wavelength-s0",
+  "slot": 3182,
+  "organism": "Drosophila elegans",
+  "common_name": "Morning-Glory Flower-Breeding Fly (Apical Melanic Wing Patch & Courtship Semaphore)",
+  "phenomenon": "Turing pigment stripe / ocellus wavelength at the subcellular detail scale",
+  "phenomenon_size_m": 1.803e-06,
+  "phenomenon_scale_human": "1.8 µm",
+  "log10_size_m": -5.744,
+  "scale_tier": "3_subcellular_um",
+  "detail_variant": "s0",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "fossil_lineage_group": "Sophophora suzukii–biarmipes Wing-Spot Clade",
+  "chronoseries_index": "11/41",
+  "predecessor": "Drosophila deflecta",
+  "successor": "Drosophila erecta",
+  "state_variables": {
+    "u": "short-range activator (melanin precursor / Yellow-pathway product), concentration",
+    "v": "long-range inhibitor, concentration"
+  },
+  "boundary_conditions": "periodic on a flat apical-wing epithelial rectangle; no-flux is not used because the patch is an interior sample of a larger blade",
+  "equations": {
+    "kinetics": "Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v",
+    "pde": "dt u = f + Du laplacian u; dt v = g + Dv laplacian v",
+    "homogeneous_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "fu = -1 + 2 u v, fv = u^2, gu = -2 u v, gv = -u^2",
+    "stable_without_diffusion": "fu + gv < 0 and fu*gv - fv*gu > 0",
+    "critical_wavenumber": "k_c^2 = (Dv fu + Du gv) / (2 Du Dv) at onset",
+    "fastest_wavenumber": "k_max = argmax Re sigma(k), sigma from det(J - k^2 D - sigma I) = 0",
+    "wavelength": "lambda = 2 pi / k_max",
+    "onset_ratio": "(r fu + gv)^2 = 4 r det J, r = Dv/Du"
+  },
+  "parameters": {
+    "a": 0.12,
+    "b": 0.88,
+    "note": "Slot-3182 kinetics. Not the textbook (0.10, 0.90) pair and not the slot-2801 101 µm power-law stub.",
+    "elegans_supercriticality_r_over_rc": 1.06,
+    "deflecta_supercriticality_r_over_rc": 2.65,
+    "erecta_supercriticality_r_over_rc": 1.48,
+    "target_wavelength_m": 1.803e-06,
+    "length_unit": "micrometre",
+    "Du_policy": "Solved at the elegans ratio so the linear fastest wavelength equals 1.803 µm. Deflecta and erecta keep that Du and change only r.",
+    "seed": 3182,
+    "grid_pass1": {"nx": 220, "ny": 160, "n_wavelengths_x": 22},
+    "time_step": 0.2,
+    "steps": 1100
+  },
+  "empirical_claims": [
+    {
+      "source": "10.1038/sj.hdy.6800814",
+      "claim": "Male D. elegans and D. gunungcola differ in apical wing melanin and in courtship. The patch is a species-specific semaphore, not a generic cuticle stain."
+    },
+    {
+      "source": "10.1111/evo.13990",
+      "claim": "Wing spots and the mating display that uses them are genetically separable."
+    },
+    {
+      "source": "10.1038/nature04597",
+      "claim": "Repeated wing-spot gains in Drosophila track cis-regulatory changes at the pleiotropic pigment gene yellow."
+    },
+    {
+      "source": "10.1098/rstb.1952.0012",
+      "claim": "A homogeneous chemically stable state can be destabilized by diffusion at a finite critical wavenumber."
+    }
+  ],
+  "claim_boundary": {
+    "reported_in_source": [
+      "D. elegans males have an apical melanic wing patch genetically tied to, but separable from, courtship behavior.",
+      "Turing 1952 dispersion relation and Schnakenberg 1979 two-species kinetics."
+    ],
+    "reconstructed_in_script": [
+      "The 1.8 µm figure is the assigned detail-scale wavelength. Diffusivities are solved so the linear fastest mode equals that wavelength at r/r_c = 1.06.",
+      "Deflecta (2.195 µm class) and erecta (1.940 µm class) wavelengths are the same law at fixed Du with r/r_c = 2.65 and 1.48."
+    ],
+    "transfer_boundary": [
+      "Yeh and Massey compare elegans with gunungcola. Deflecta and erecta enter only as the campaign chronoseries neighbors (11/41), not as measured sister species."
+    ],
+    "does_not_claim": [
+      "Does not claim the macro photograph resolves a 1.8 µm lattice.",
+      "Does not claim a published measurement of melanin-granule spacing in D. deflecta or D. erecta.",
+      "Does not claim the organ-scale spot diameter (slot 2801, ~101 µm)."
+    ]
+  },
+  "specimen": {
+    "file": "drosophila_elegans_specimen.jpg",
+    "source_gallery": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_elegans.jpg",
+    "license_note": "Vendored from the repository species gallery after Wikimedia Commons returned HTTP 403. SHA-256 is pinned by the model script after the file is copied.",
+    "scale_bar": "1 mm drawn on the photograph",
+    "characteristic_body_size_m_manifest": 0.00262
+  }
+}
