@@ -1,0 +1,69 @@
+sim_id: delphi10000-apis-mellifera-turing-wavelength-s0
+organism: Apis mellifera
+age_Ma: 0
+scale_m: 1.12e-5
+scale_label: "11 µm (log10 = -4.951)"
+math_family: Turing Reaction-Diffusion Wavelength Selection
+quantitative_law: "k_c = argmax σ(k), λ_c = 2π / k_c"
+model_spec:
+  model: "Schnakenberg 1979 kinetics with Turing 1952 dispersion, γ solved so λ_c = 11.2 µm"
+  a: 0.1
+  b: 0.9
+  Du: 1.0
+  Dv: 20.0
+  dx_um: 1.4
+  grid: [72, 96]
+  steps: 2800
+  dt: 0.008
+  seed: 3115
+  age_Ma: 0
+  lambda_m: 1.12e-5
+  inputs:
+    - datasets/apis_mellifera_turing_wavelength_s0/apis_mellifera_specimen.jpg
+    - datasets/apis_mellifera_turing_wavelength_s0/apis_mellifera_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg diffusion-ratio threshold at d = 20
+    formula: "(0.8 d - 1)^2 > 4 d, encoded as (4d - 5)^2 > 100 d"
+    lean_decl: MathOfBiology.Loop_3115.turingMarginSq
+    lean_theorem: MathOfBiology.Loop_3115.honeybee_detail_scale_is_turing_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean#L12-L20
+    variables: "d = D_v / D_u = 20 for this 11.2 µm slot"
+    role: "Turing instability condition for the honeybee epidermal window"
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py#L84-L97
+  - law_name: Equal-diffusion ablation
+    formula: "at d = 1 the squared margin fails, and σ(k) < 0"
+    lean_decl: MathOfBiology.Loop_3115.turingMarginSq
+    lean_theorem: MathOfBiology.Loop_3115.equal_diffusion_ablation_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean#L22-L25
+    variables: "d = 1"
+    role: "Developmental predecessor of the patterned state at 0 Ma (no earlier chronospecies is in the 1/1 series)"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py#L253-L267
+  - law_name: Twelve wavelengths on the 134.4 µm window
+    formula: "N = L / λ_c = 134.4 µm / 11.2 µm = 12"
+    lean_decl: MathOfBiology.Loop_3115.twelve_wavelengths_on_epidermal_window
+    lean_theorem: MathOfBiology.Loop_3115.twelve_wavelengths_on_epidermal_window
+    lean_locus: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean#L28-L31
+    variables: "L = 134.4 µm, λ_c = 11.2 µm"
+    role: "Mode count at the detail scale"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py#L98-L106
+  - law_name: Wavenumber gap versus the comb-scale sibling
+    formula: "5200 µm / 11 µm = 472 in natural division"
+    lean_decl: MathOfBiology.Loop_3115.detail_wavenumber_gap_versus_comb
+    lean_theorem: MathOfBiology.Loop_3115.detail_wavenumber_gap_versus_comb
+    lean_locus: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean#L35-L37
+    variables: "λ_comb ≈ 5.2 mm, λ_detail = 11 µm"
+    role: "Shows this slot is not the Camazine comb parameter set"
+    source_citation: "Camazine 1991 DOI:10.1007/BF00172140, scale contrast only"
+    code_locus: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py#L535-L570
+  - law_name: Wavelength falls as γ rises
+    formula: "λ(0.8) > λ(1.0) > λ(1.262) > λ(1.6), with the slot at 11.2 µm"
+    lean_decl: MathOfBiology.Loop_3115.lambdaTenthsUm
+    lean_theorem: MathOfBiology.Loop_3115.wavelength_decreases_as_gamma_rises
+    lean_locus: morphoeval/lean/loops/Loop_3115_apis_mellifera_turing_wavelength_s0.lean#L40-L49
+    variables: "γ"
+    role: "Parameter expressivity of the critical wavelength"
+    source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-apis-mellifera-turing-wavelength-s0.py#L244-L251

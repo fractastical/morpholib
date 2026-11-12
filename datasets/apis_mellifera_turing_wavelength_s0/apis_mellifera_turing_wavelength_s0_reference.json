@@ -1,0 +1,106 @@
+{
+  "slot": 3115,
+  "sim_id": "delphi10000-apis-mellifera-turing-wavelength-s0",
+  "organism": "Apis mellifera",
+  "common_name": "Western honeybee",
+  "aristotelian_place": "II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Apis",
+  "scale": {
+    "label": "11 µm detail variant",
+    "tier_id": "4_cellular_10um",
+    "tier_index": "4/8",
+    "lambda_m": 1.12e-5,
+    "lambda_um": 11.2,
+    "log10_lambda_m": -4.951,
+    "note": "log10(1.12e-5) = -4.9508, which rounds to the assigned -4.951"
+  },
+  "evolutionary_history": {
+    "stage": "Holocene (Extant)",
+    "age_Ma": 0,
+    "lineage": "",
+    "chronoseries": "Apis 1/1",
+    "predecessor_chronospecies": null,
+    "successor_chronospecies": null,
+    "what_changes_at_this_scale": "The sampled series has a single extant point, so there is no fossil predecessor and no younger successor. The developmental predecessor of the patterned epidermis is the sub-threshold state D_v/D_u = 1, where σ(k_c) < 0 and the activator stays spatially flat. Relative to the organ-scale sibling (Camazine 1991 comb, λ ≈ 5.2 mm), k_c here is about 464 times larger. Those comb parameters are not reused."
+  },
+  "cohort": "1. Chemical Turing / RD",
+  "form": "Stripes, Spots & Ocelli",
+  "quantitative_law": "Turing wavenumber k_c = argmax σ(k)",
+  "state_variables": {
+    "u": "activator concentration, steady value u* = a + b = 1",
+    "v": "inhibitor concentration, steady value v* = b / (a+b)^2 = 0.9"
+  },
+  "equations": {
+    "schnakenberg": "du/dt = γ (a - u + u^2 v) + D_u ∇²u; dv/dt = γ (b - u^2 v) + D_v ∇²v",
+    "jacobian_gamma1": {"f_u": 0.8, "f_v": 1.0, "g_u": -1.8, "g_v": -1.0},
+    "dispersion": "σ(k) = 1/2 (tr + sqrt(tr^2 - 4 det)) of J - k̂^2 diag(D_u, D_v)",
+    "discrete_symbol": "k̂^2 = (2 - 2 cos(k Δx)) / Δx^2",
+    "critical_mode": "k_c = argmax σ(k), λ_c = 2π / k_c"
+  },
+  "boundary_conditions": "periodic on an interior epidermal window, 134.4 µm by 100.8 µm (12 by 9 critical wavelengths)",
+  "initial_condition": "homogeneous steady state plus N(0, 0.02^2) noise, seed 3115",
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "D_u_um2": 1.0,
+    "D_v_um2": 20.0,
+    "d_ratio": 20.0,
+    "gamma_solved": 1.26184673961252,
+    "dx_um": 1.4,
+    "grid": [72, 96],
+    "dt": 0.008,
+    "steps": 2800,
+    "seed": 3115
+  },
+  "run_results": {
+    "k_c_per_m": 561231.5065638676,
+    "lambda_c_um": 11.195353848981688,
+    "log10_lambda_c": -4.9509621752219255,
+    "nonlinear_wavelength_um": 10.995574287564276,
+    "pearson_r_dispersion": 0.9999999890930121,
+    "rmse_dispersion": 7.474503176100838e-05,
+    "ablation_sigma_max": -0.12868365329464018,
+    "turing_vs_ablation_std_ratio": 272.3459178989242,
+    "relative_gap_vs_ribi_8_7_um": 0.2868222814921481,
+    "wavenumber_ratio_vs_5_2_mm_comb": 464.47839614046535,
+    "pattern": "saturated spot lattice at the critical wavelength (Schnakenberg above threshold); not a retuning of the millimetre comb"
+  },
+  "empirical_claims": [
+    "Turing 1952: two-morphogen diffusion-driven instability; k_c is the fastest-growing wavenumber.",
+    "Schnakenberg 1979: the cubic activator-inhibitor kinetics used here.",
+    "Murray 1981: coat-marking prepattern; wavelength set by the ratio of reaction rate to diffusion.",
+    "Ribi, Warrant and Zeil 2011: honeybee ocellar rhabdom sheets average 8.7 µm long and 1 µm wide; ventral retinula cells about 25 µm with dense screening pigment; dorsal cells about 60 µm with sparse pigment. This is the nearest published cellular length, not a measured chemical wavelength.",
+    "Ogawa, Ribi, Zeil and Hemmi 2017: worker lateral ocelli about 1100 photoreceptors, median about 1350; the retina is split into dorsal and ventral sub-retinae.",
+    "Camazine 1991: comb self-organization at cell scale (~5 mm). Cited only as the scale contrast. Parameters are not copied."
+  ],
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing dispersion and the diffusion-driven instability condition",
+      "Schnakenberg kinetics and the (a, b) steady state",
+      "Ribi et al. rhabdom 8.7 µm × 1 µm and pigmented ventral retina"
+    ],
+    "reconstructed_in_script": [
+      "γ solved so the discrete dispersion peaks at 1.12e-5 m",
+      "explicit-Euler integration on the 134.4 µm window",
+      "cuticle-masked composite of that field onto the Severns photograph"
+    ],
+    "transfer_boundary": [
+      "No honeybee paper measured a chemical Turing wavelength of 11.2 µm. The length is the assigned detail scale, placed next to the 8.7 µm rhabdom long axis (relative gap 0.287)."
+    ],
+    "does_not_claim": [
+      "That the spot lattice is optically resolved in the Severns photograph",
+      "That ocellar rhabdoms are a Schnakenberg pattern",
+      "That this parameter set is the Camazine comb model"
+    ]
+  },
+  "specimen": {
+    "file": "apis_mellifera_specimen.jpg",
+    "sha256": "7dcd58fa1f1da3ad6a7766b77998d900687de0e81f54a86cccb55d3e97d35ab4",
+    "source_url": "https://commons.wikimedia.org/wiki/File:European_honey_bee_extracts_nectar.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/1d/European_honey_bee_extracts_nectar.jpg",
+    "creator": "John Severns (Severnjc)",
+    "license": "Public domain",
+    "width": 1620,
+    "height": 1280,
+    "gallery_fallback_not_used": "datasets/species_gallery/II_Anaima_Invertebrata/Apis_mellifera.jpg is a synthetic amber field, not a specimen photograph"
+  }
+}
