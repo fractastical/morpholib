@@ -1,0 +1,108 @@
+{
+  "schema_version": "morphoeval-reference-3.0-delphi10000-detail",
+  "slot": 3190,
+  "sim_id": "delphi10000-drosophila-kikkawai-turing-wavelength-s0",
+  "organism": "Drosophila kikkawai",
+  "common_name": "Circumtropical Montium Fly (Bric-a-brac Polymorphic Female Tergite Dimorphism)",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.343e-06,
+    "log10_size_m": -5.630,
+    "size_human": "2.3 µm",
+    "scale_tier": "3_subcellular_um",
+    "scale_tier_num": 3,
+    "scale_tier_count": 8,
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila kikkawai (2.3 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "fossil_lineage_group": "Sophophora ananassae–montium Clade",
+    "chronoseries_index": 19,
+    "chronoseries_length": 41,
+    "predecessor": "Drosophila hydei",
+    "successor": "Drosophila mauritiana"
+  },
+  "specimen": {
+    "file": "Drosophila_kikkawai_specimen.jpg",
+    "sha256": "1025334f37e7770aefc4092e3b6ee7b0e3c86c6df76def8da35bcfd263fe8518",
+    "source": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_kikkawai.jpg",
+    "license_note": "Repository species-gallery plate. Wikimedia Commons search on 2026-10-27 returned no Drosophila kikkawai photograph.",
+    "plate_scale_bar": "100 µm printed on the gallery plate; that bar is not the 2.3 µm model wavelength"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "pde": [
+      "du/dt = Du * laplacian(u) + a - u + u^2 v",
+      "dv/dt = Dv * laplacian(v) + b - u^2 v"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": {
+      "f_u": "-1 + 2 u0 v0",
+      "f_v": "u0^2",
+      "g_u": "-2 u0 v0",
+      "g_v": "-u0^2"
+    },
+    "critical_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+    "selected_wavelength": "lambda = 2 pi / k_sigma where k_sigma maximises the growth rate of the linearised system",
+    "boundary_conditions": "periodic on a square of side L = 46.86 µm (twenty focal wavelengths)"
+  },
+  "parameters": {
+    "a": 0.07,
+    "b_focal": 0.94,
+    "b_light_morph": 0.71,
+    "b_dark_morph": 1.18,
+    "Du": 0.02,
+    "Dv_kikkawai": 1.364,
+    "Dv_hydei_predecessor": 4.47,
+    "Dv_mauritiana_successor": 0.413,
+    "domain_um": 46.86,
+    "grid_n": 160,
+    "dt": 0.007,
+    "steps": 1600,
+    "seed": 3190,
+    "note": "Detail-scale diffusivities for slot 3190. They are not the alpha_scale=1.18, beta_offset=0.252 pair of the 93 µm sibling."
+  },
+  "chronospecies_prediction": {
+    "units": "micrometres",
+    "mauritiana_successor_um": 1.82,
+    "kikkawai_focal_um": 2.343,
+    "hydei_predecessor_um": 3.056,
+    "ordering": "lambda(mauritiana) < lambda(kikkawai) < lambda(hydei) at 0 Ma",
+    "mechanism": "Increasing inhibitor diffusivity Dv shifts the growth-rate peak to a longer wavelength. The repleta predecessor is assigned the longer-range inhibitor; the melanogaster-subgroup successor the shorter-range inhibitor. This ordering is a property of the Schnakenberg dispersion at these parameters, not a published morphometric."
+  },
+  "empirical_claims": [
+    {
+      "id": "gibert1999",
+      "claim": "Abdominal pigmentation in D. kikkawai is a major-gene polymorphism that interacts with sex, abdominal segment, and growth temperature.",
+      "doi": "10.1023/a:1003704315194",
+      "used_as": "The major-gene axis is reconstructed as the Schnakenberg substrate parameter b (light 0.71, focal 0.94, dark 1.18). The paper does not report a micrometre wavelength."
+    },
+    {
+      "id": "yassin2016",
+      "claim": "The pdm3 locus is a hotspot for recurrent evolution of female-limited colour dimorphism in Drosophila, including montium-group species.",
+      "doi": "10.1016/j.cub.2016.07.016",
+      "used_as": "Clade context for female tergite dimorphism. This script does not claim to have mapped pdm3 or bric-a-brac."
+    },
+    {
+      "id": "turing1952",
+      "claim": "A reaction-diffusion system can be unstable at a finite critical wavenumber while the homogeneous state is stable.",
+      "doi": "10.1098/rstb.1952.0012"
+    },
+    {
+      "id": "schnakenberg1979",
+      "claim": "The two-species activator-substrate mass-action system used here.",
+      "doi": "10.1016/0022-5193(79)90042-0"
+    }
+  ],
+  "render": {
+    "gif": "docs/media/drosophila_kikkawai_turing_wavelength_s0_growth.gif",
+    "png": "docs/media/drosophila_kikkawai_turing_wavelength_s0_comparison.png",
+    "frames": 12,
+    "width": 640,
+    "height": 480,
+    "envelope_weight_final": 0.28,
+    "plate_rgb_weight_final": 0.55,
+    "note": "The GIF grows the Schnakenberg activator and fades in the pinned tergite plate so the detail-scale carrier sits on the anatomical envelope. The comparison PNG shows the pure field."
+  }
+}

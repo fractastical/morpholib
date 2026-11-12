@@ -1,0 +1,131 @@
+audit:
+  id: 2026-10-27-drosophila-kikkawai-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 1)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 baseline. New slot files are not in this parent commit; the knowledge-graph build uses --no-verify-loci and records that limit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  gibert1999:
+    title: "Phenotypic plasticity of abdominal pigmentation in Drosophila kikkawai"
+    authors: "Gibert P, Moreteau B, David JR"
+    venue: "Genetica 105(2):165-176"
+    doi: 10.1023/a:1003704315194
+    year: 1999
+  yassin2016:
+    title: "The pdm3 locus is a hotspot for recurrent evolution of female-limited color dimorphism in Drosophila"
+    authors: "Yassin A, Delaney EK, Reddiex AJ, et al."
+    venue: "Current Biology 26(18):2412-2422"
+    doi: 10.1016/j.cub.2016.07.016
+    year: 2016
+  conner2021:
+    title: "A phylogeny for the Drosophila montium species group"
+    authors: "Conner WR, Delaney EK, Bronski MJ, et al."
+    venue: "Molecular Phylogenetics and Evolution 158:107061"
+    doi: 10.1016/j.ympev.2020.107061
+    year: 2021
+simulations:
+  - id: delphi10000-drosophila-kikkawai-turing-wavelength-s0
+    name: "Drosophila kikkawai Turing wavelength at 2.3 µm (detail, 0 Ma)"
+    organism: "Drosophila kikkawai"
+    script: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py
+    output: docs/media/drosophila_kikkawai_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gibert1999, yassin2016, conner2021]
+    summary: >-
+      Pass 1. Schnakenberg activator-substrate kinetics on a 46.86 µm periodic
+      patch, with inhibitor diffusivity set so the linear growth-rate peak is
+      2.344 µm (campaign detail scale 2.343e-06 m, Holocene 0 Ma). A single-mode
+      PDE growth assay tracks that peak across five diffusivities at Pearson
+      r = 0.9993. The saturated hero field that is drawn, however, has a radial
+      FFT wavelength of 2.182 µm (6.9% short of 2.343 µm). Chronoseries at the
+      same a, b, Du: D. mauritiana 1.820 µm, D. kikkawai 2.344 µm, D. hydei
+      3.056 µm. GIF 12 frames at 640×480, cv_sim_similarity 94.4 against the
+      pinned gallery plate. Wikimedia Commons had no species photograph.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) showed a reaction-diffusion system can be unstable at a finite wavenumber. Schnakenberg (1979) supplied the activator-substrate kinetics used here."
+        - "Gibert, Moreteau & David (1999) showed abdominal pigmentation in D. kikkawai depends on a major gene interacting with sex, segment, and temperature. Yassin et al. (2016) identified pdm3 as a hotspot for female-limited colour dimorphism in Drosophila."
+      reconstructed_in_script:
+        - "The 2.343 µm length is the MorphoEval detail-tier assignment for slot 3190, realised as the Schnakenberg growth-rate peak at Du=0.020, Dv=1.364, a=0.070, b=0.940."
+        - "Predecessor D. hydei (Dv=4.470, λ≈3.056 µm) and successor D. mauritiana (Dv=0.413, λ≈1.820 µm) differ only in inhibitor range. The light/dark major-gene axis is reconstructed as b=0.710 versus b=1.180."
+      transfer_boundary:
+        - "The ordering is a property of this dispersion relation at 0 Ma. It is not a measured fossil or morphometric series, and it does not transfer to the 93 µm tergite-band slot."
+      does_not_claim:
+        - "Does not claim Gibert et al. or Yassin et al. measured a 2.3 µm pigment wavelength."
+        - "Does not claim the gallery plate is a light micrograph of that carrier. Commons returned no D. kikkawai photograph on 2026-10-27."
+        - "Does not claim the saturated hero field's FFT peak (2.182 µm) already equals the linear prediction. That gap is remediation R1."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The script integrates the Schnakenberg PDE and the Turing growth-rate peak, with parameters derived so the linear peak sits on 2.344 µm. The field that is actually rendered saturates at an FFT wavelength of 2.182 µm, so the drawn pattern is not yet the critical mode."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [86, 107], note: "Jacobian and growth_rate", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [138, 167], note: "periodic Schnakenberg integrator", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [212, 233], note: "hero FFT returns 2.182 µm, off the 2.343 µm target", supports: false}
+      specimen-match:
+        value: 78
+        rationale: "The 12-frame 640×480 GIF scores cv_sim_similarity 94.4 against the pinned plate because the render fades the activator onto that plate. The plate is a repository gallery image with a 100 µm bar, not a 2.3 µm micrograph, so the visual match is to the envelope rather than to a measured carrier."
+        evidence:
+          - {file: docs/media/drosophila_kikkawai_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [366, 394], note: "envelope weight 0.28 and plate RGB weight 0.55", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "Inhibitor diffusivity, substrate load b, and the equal-diffusion ablation each move a different observable: wavelength along the chronoseries, dark-versus-light wavelength, and pattern amplitude. The comparison figure shows all three."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [109, 120], note: "peak_wavelength used for hydei, kikkawai, mauritiana, light, dark", supports: true}
+          - {file: docs/media/drosophila_kikkawai_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "dispersion, sweep, ablation, and morph panels", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: "Pearson r = 0.9993 between the analytic peak and the integer mode the PDE amplifies, with RMSE 0.193 µm. Orientation KS against the plate is 0.110 and the two coherencies are not equal. The hero field's own FFT (2.182 µm versus 2.343 µm) is the measurement that still fails a 3% band."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [169, 210], note: "mode_growth_rate and numerical_selected_wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [302, 330], note: "plate versus field orientation KS and coherency", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [288, 292], note: "hero FFT wavelength not yet inside 3% of 2.343 µm", supports: false}
+      source-traceability:
+        value: 88
+        rationale: "Five DOIs were checked on Crossref or OpenAlex on 2026-10-27, including Gibert 1999 for this species. The sibling slot's Mol. Biol. Evol. DOI was rejected because it resolves to a plant paper. The specimen SHA-256 is pinned. Commons had no species photograph, and that miss is written in the scout manifest."
+        evidence:
+          - {file: datasets/drosophila_kikkawai_turing_wavelength_s0/paper_citations.bib, lines: [1, 53], note: "five verified citations", supports: true}
+          - {file: datasets/drosophila_kikkawai_turing_wavelength_s0/drosophila_kikkawai_turing_wavelength_s0_reference.json, lines: [1, 40], note: "2.343e-06 m, 0 Ma, specimen SHA-256", supports: true}
+          - {file: datasets/drosophila_kikkawai_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "Commons miss and sibling collision check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Jacobian, integrator, mode assay, ablation, and render are separate functions. Lean theorems state the wavelength order, the mode count, the diffusion gap, and the dark-morph activator inequality. The render weights are constants inside render_gif rather than entries read back from the reference JSON."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3190_drosophila_kikkawai_turing_wavelength_s0.lean, lines: [14, 48], note: "four theorems, no incomplete proofs", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-kikkawai-turing-wavelength-s0.yaml, lines: [1, 40], note: "model_spec and law loci", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Self-test checks the wavelength band, chronoseries order, ablation, Pearson gate, GIF geometry, CV gate, and the Lean text. Seed 3190 and the specimen digest are fixed. Pass 1 had not yet been re-measured by measure_outputs.py."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [72, 84], note: "specimen pin and scale/age guards", supports: true}
+          - {file: models/2026-delphi10000-drosophila-kikkawai-turing-wavelength-s0.py, lines: [549, 610], note: "self-test gate list", supports: true}
+          - {file: datasets/drosophila_kikkawai_turing_wavelength_s0/README.md, lines: [1, 29], note: "states 2.3 µm and 0 Ma and the run command", supports: true}
+    remediation:
+      - id: R1
+        item: "Seed the hero activator on Fourier mode m=20 so the rendered field's radial FFT wavelength lies within 3% of 2.343 µm. Pass 1 measures 2.182 µm on that field."
+      - id: R2
+        item: "Put the corrected hero wavelength in the comparison-figure title and keep the pure field visible beside the plate."
+      - id: R3
+        item: "Re-run image fitness after the retune. cv_sim_similarity must stay at or above 58 and the GIF must stay at least 12 frames and 480 px."
+      - id: R4
+        item: "Record signing as unavailable if ~/.nanopub/profile.yml is still absent. Do not invent a trusty URI."
