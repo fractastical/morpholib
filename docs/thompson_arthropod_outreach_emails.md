@@ -2,7 +2,7 @@
 
 ## 1. Visual Assets, Pre-Registered Benchmarks & Executable Scripts
 
-- **Crab Carapace Paradox Resolution (`Scholtz, Knötel & Baum 2020` Audit):**
+- **Response to Scholtz, Knötel & Baum (2020) on the crab carapaces:**
   - **Script:** [`thompson/run_crab_carapace_paradox_audit.py`](../thompson/run_crab_carapace_paradox_audit.py)
   - **Summary JSON:** [`thompson_crab_carapace_audit_summary.json`](../thompson_crab_carapace_audit_summary.json)
   - **Outreach Plate:** [`docs/outreach_fig9_crab_carapace_paradox_resolution.png`](./outreach_fig9_crab_carapace_paradox_resolution.png)
@@ -20,7 +20,7 @@
 ## 2. Email Draft 1 — Prof. Gerhard Scholtz (Humboldt-Universität zu Berlin) & Dr. Daniel Baum / Dr. Daniel Knötel (Zuse Institute Berlin)
 
 **To:** `gerhard.scholtz@rz.hu-berlin.de`, `baum@zib.de`  
-**Subject:** Resolving the 8-landmark vs. lateral-margin discrepancy in D'Arcy Thompson's 1917 Fig. 369 crab carapaces (testing your 2020 *Zoomorphology* 3D laser-scanned dataset)  
+**Subject:** Your 2020 crab-carapace test of Thompson's Fig. 369: does adding six lateral-margin landmarks change your conclusion?  
 **Attachments:**
 1. `docs/outreach_fig9_crab_carapace_paradox_resolution.png` (inline + attached)
 2. `docs/outreach_fig10_complete_arthropod_atlas.png` (inline + attached)
@@ -30,7 +30,7 @@
 
 Dear Professor Scholtz, Dr. Baum, and Dr. Knötel,
 
-Your 2020 paper in *Zoomorphology* (*"D'Arcy Thompson's 'on growth and form' and the computer-assisted-transformation of crab carapaces,"* `139:299–314`) is one of the most rigorous quantitative tests of D'Arcy Thompson's 1917 transformation grids ever published. In testing Thompson's famous six brachyuran/anomuran carapaces (Fig. 369, p. 744: *Geryon* $\to$ *Corystes*, *Scyramathia* [*Rochinia*], *Paralomis* [*Lithodes*], *Lupa* [*Portunus*], and *Chorinus* [*Leptomithrax*]) across both Thompson's drawings and 3D laser-scanned museum specimens, you discovered a striking puzzle:
+Your 2020 paper in *Zoomorphology* (*"D'Arcy Thompson's 'on growth and form' and the computer-assisted-transformation of crab carapaces,"* `139:299–314`) is the quantitative test of Thompson's Fig. 369 that our analysis starts from. In testing Thompson's famous six brachyuran/anomuran carapaces (Fig. 369, p. 744: *Geryon* $\to$ *Corystes*, *Scyramathia* [*Rochinia*], *Paralomis* [*Lithodes*], *Lupa* [*Portunus*], and *Chorinus* [*Leptomithrax*]) across both Thompson's drawings and 3D laser-scanned museum specimens, you found the following:
 1. When Thin-Plate Splines (TPS) were fitted to **8 homologous internal/axial landmarks**, the warped grids failed to reproduce Thompson's radiating fans on spider crabs (*Rochinia*, *Leptomithrax*) and king crabs (*Lithodes*), producing oval/rectangular distortions instead.
 2. Conversely, when a fine 32-pixel B-spline was forced to register the outer silhouettes including sharp anterolateral teeth and rostral horns, the coordinate grid **folded over itself with crossing lines ($\det J < 0$)**.
 
@@ -41,7 +41,7 @@ While conducting a parallel study on D'Arcy Thompson's 1917 fish transformations
 2. **Recovering Thompson's 1917 Fig. 369 Grids with 100% Diffeomorphic Bijectivity ($\det J > 0$):**
    On p. 745 of *On Growth and Form*, Thompson explicitly described his crab transformation as a low-dimensional **bilinear-logarithmic coordinate fan** (converging/diverging transverse ordinates $x' = a_1 u + f_1 u v + t_x$ paired with logarithmic longitudinal spacing $y' = d_1 v + f_2 v^2 + c_2 u^2 + t_y$). When we augment your 8 axial/cardiac landmarks with 6 homologous lateral hepatic and branchial margin points (14 landmarks total, avoiding local spine tips that cause B-spline folding), Thompson's 8-parameter carapace law recovers **both Thompson's 1917 drawings ($R^2 = 95.8\%\text{–}99.4\%$ on spider and king crabs; $+38.4\text{ to }+59.4$ percentage points over a 4-parameter rectangular box stretch)** and **your real 3D laser-scanned crabs ($R^2 = 79.0\%\text{–}95.3\%$; $+27.8\text{ to }+63.1$ percentage points over a 4p box stretch on *Rochinia*, *Lithodes*, and *Leptomithrax*)**, while cutting lateral-margin RMS error by **$1.85\times\text{ to }7.13\times$** with **$100\%$ positive Jacobian determinant ($\min \det J > 0$, zero grid folding)**!
 
-We would be honored to hear your thoughts on these results — and if you are interested in collaborating on a short follow-up note or comparative arthropod-vertebrate synthesis, we would be delighted to share all our code and explore co-authoring together.
+The one thing we would ask you to judge: are the six lateral-margin landmarks we added homologous across these genera by your criteria? If not, our result does not stand against yours. We will record your answer, either way, in our validation log.
 
 With warm regards,
 
@@ -107,7 +107,7 @@ Using our pre-registered phylogenetic morphospace pipeline ([`fractastical/morph
 3. **Direct Confirmation of Hansen & Houle (2008) Per-Landmark Evolvability Across Clades:**
    Per-landmark among-taxon divergence strongly tracks per-landmark within-taxon variance in both hornets (**Spearman $\rho = 0.62, p = 0.005$**) and bees (**Spearman $\rho = 0.62, p = 0.006$**), while per-landmark digitizing noise does not predict where Thompson's global grid fails ($\rho = -0.22$ and $-0.39$).
 
-We would be delighted to hear your feedback on this synthesis and explore a joint follow-up note comparing Dipteran and Hymenopteran wing evolvability in Thompson's coordinate basis.
+The one thing we would ask you to judge: is projecting your P-matrix onto Thompson's seven modes a legitimate use of it, or does the projection discard the structure your evolvability measures depend on? We will record your answer, either way, in our validation log.
 
 With warm regards,
 
