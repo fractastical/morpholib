@@ -130,11 +130,11 @@ For the last 30 years, evolutionary biologists tried to test Thompson’s idea o
 When we audited the morphometrics literature across **three independent datasets scaling up to 10,303 fish species (`440` families)**, we uncovered two methodological traps that had hidden Thompson’s law for a century:
 
 1. **Trap #1 — The "17-Dot Head Seesaw":**
-   Standard fish databases ([Claverie & Wainwright 2014](https://doi.org/10.1111/evo.12502); [Friedman et al. 2019](https://doi.org/10.1093/sysbio/syz029)) don't trace the whole outline of the fish—they measure **17 dots on the skeleton**, with **9 of those 17 dots (53%) packed inside the head and jaws** and **0% on the outer dorsal, anal, or tail fins**. Because jaws evolve rapidly for diet while the body evolves for swimming, fitting a global rubber sheet to those 17 dots lets the 9 head dots pull the back of the sheet the wrong way—making the warped fish silhouette look **worse than no warp at all** (`40.6% → 56.2%` mismatch on *Scarus* → *Pomacanthus*)!
+   Standard fish databases ([Claverie & Wainwright 2014](https://doi.org/10.1371/journal.pone.0112732); [Friedman et al. 2020](https://doi.org/10.1098/rspb.2020.1053)) don't trace the whole outline of the fish—they measure **17 dots on the skeleton**, with **9 of those 17 dots (53%) packed inside the head and jaws** and **0% on the outer dorsal, anal, or tail fins**. Because jaws evolve rapidly for diet while the body evolves for swimming, fitting a global rubber sheet to those 17 dots lets the 9 head dots pull the back of the sheet the wrong way—making the warped fish silhouette look **worse than no warp at all** (`40.6% → 56.2%` mismatch on *Scarus* → *Pomacanthus*)!
 
 ![](https://fractastical.github.io/morpholib/guide_step2_17dot_head_trap.png)
 
-*Plate X — The 17-dot head seesaw. Nine of the seventeen standard skeletal landmarks sit in the head and jaws and none on the outer fins, so a global rubber sheet fitted to them is pulled the wrong way at the back of the body. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 2; landmarks from Claverie & Wainwright (2014) / Friedman et al. (2019).*
+*Plate X — The 17-dot head seesaw. Nine of the seventeen standard skeletal landmarks sit in the head and jaws and none on the outer fins, so a global rubber sheet fitted to them is pulled the wrong way at the back of the body. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 2; landmarks from Claverie & Wainwright (2014) / Friedman et al. (2020).*
 
 ![](https://fractastical.github.io/morpholib/media/thompson_1917_silhouette_paradox_summary.gif)
 
@@ -169,7 +169,7 @@ When we audited the morphometrics literature across **three independent datasets
 
 How does a living tissue actually store a target coordinate in that morphospace? The three wet-lab results are valid. A planarian remembers a two-headed target after the drug is gone, a scrambled tadpole face moves back to the froglet layout along paths it was never shown, and a sculpted clump of frog skin assembles daughters with no change in its genome. What we built afterwards is a set of reduced equations, to test whether ordinary physics already produces those attractors. The equations reproduce them. The points held back below are about what the equations leave out, not about whether the experiments happened:
 
-### Claim 5 — Two-headed planarians remember a voltage ([Oviedo et al. 2010](https://doi.org/10.1016/j.ydbio.2009.12.012); [Beane et al. 2011](https://doi.org/10.1016/j.chembiol.2010.11.012); [Pietak & Levin 2016](https://doi.org/10.3389/fphys.2016.00178)/[2017](https://doi.org/10.1098/rsif.2017.0425); [Cervera, Levin & Mafé 2021](https://doi.org/10.1016/j.biosystems.2021.104511))
+### Claim 5 — Two-headed planarians remember a voltage ([Oviedo et al. 2010](https://doi.org/10.1016/j.ydbio.2009.12.012); [Beane et al. 2011](https://doi.org/10.1016/j.chembiol.2010.11.012); [Pietak & Levin 2016](https://doi.org/10.3389/fbioe.2016.00055)/[2017](https://doi.org/10.1098/rsif.2017.0425); [Cervera, Levin & Mafé 2021](https://doi.org/10.1016/j.biosystems.2021.104511))
 
 Block the gap junctions of a cut planarian for 48 hours and it grows two heads. Wash the drug out, wait weeks, cut it again in plain water, and it grows two heads again. Nothing in the DNA changed.
 
@@ -179,7 +179,7 @@ The model says why, in one sentence. Serotonin is positively charged, so it drif
 
 *Plate XIV — Two-headed memory in a reaction–diffusion planarian. Transient gap-junction blockade lets the posterior pole flip from `−60 mV` to `−20 mV`; after washout the symmetric* `2H0T` *state is a stable attractor that survives re-cutting with no genetic change. Provenance: [`models/2021-Cervera–Levin–Mafe.py`](https://github.com/fractastical/morpholib/blob/main/models/2021-Cervera–Levin–Mafe.py) (1D) and [`models/2017-pietak-bioelectric-morphogen-coupling.py`](https://github.com/fractastical/morpholib/blob/main/models/2017-pietak-bioelectric-morphogen-coupling.py) (405-cell 2D Voronoi Scharfetter–Gummel).*
 
-### Claim 6 — The Picasso tadpole finds its face ([Vandenberg, Adams & Levin 2012](https://doi.org/10.1016/j.ydbio.2012.01.027); [Pezzulo & Levin 2015](https://doi.org/10.1098/rsif.2015.0772); [Pinet et al. 2019](https://doi.org/10.1242/dev.175950))
+### Claim 6 — The Picasso tadpole finds its face ([Vandenberg, Adams & Levin 2012](https://doi.org/10.1002/dvdy.23770); [Pezzulo & Levin 2015](https://doi.org/10.1039/c5ib00221d); [Pinet et al. 2019](https://doi.org/10.1242/dev.175893))
 
 Scramble a tadpole’s eyes, jaws, and nostrils and they do not crawl back along the paths they were pushed. They take new paths, faster the further they are from home, until the froglet face is normal. Block the enzymes that remodel tissue and they stop. A model that treats the normal face as a target the tissue descends toward (`dV/dt ≤ 0`) reproduces both the correction and the arrest.
 
