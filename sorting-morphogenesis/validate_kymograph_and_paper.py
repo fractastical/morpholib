@@ -261,6 +261,9 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             aggs.append(float(rc.aggregation_trace[-1]))
         cross_stats[lbl] = (float(np.mean(srts)), float(np.mean(aggs)))
 
+    # status is EXECUTED when the comparison has been run and relative_error_pct
+    # stored. It is not a pass/fail cutoff: a large error, including one injected
+    # by hand, still returns EXECUTED. The error itself is the result.
     benchmarks: List[Dict[str, object]] = [
         {
             "benchmark_id": "fig4a_bubble_swaps",
@@ -270,7 +273,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(cell_sw["B"])), 1),
             "traditional_baseline": round(float(np.mean(trad_sw["B"])), 1),
             "relative_error_pct": round(abs(float(np.mean(cell_sw["B"])) - 2448.8) / 2448.8 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig4a_insertion_swaps",
@@ -280,7 +283,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(cell_sw["I"])), 1),
             "traditional_baseline": round(float(np.mean(trad_sw["I"])), 1),
             "relative_error_pct": round(abs(float(np.mean(cell_sw["I"])) - 2482.8) / 2482.8 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig4a_selection_swap_ratio",
@@ -290,7 +293,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(cell_sw["S"]) / max(1.0, np.mean(trad_sw["S"]))), 2),
             "traditional_baseline": 1.00,
             "relative_error_pct": round(abs(float(np.mean(cell_sw["S"]) / max(1.0, np.mean(trad_sw["S"]))) - 11.06) / 11.06 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig4b_bubble_step_speedup",
@@ -300,7 +303,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(trad_tot["B"]) / np.mean(cell_tot["B"])), 2),
             "traditional_baseline": 1.00,
             "relative_error_pct": round(abs(float(np.mean(trad_tot["B"]) / np.mean(cell_tot["B"])) - 1.50) / 1.50 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig4b_insertion_step_speedup",
@@ -310,7 +313,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(trad_tot["I"]) / np.mean(cell_tot["I"])), 2),
             "traditional_baseline": 1.00,
             "relative_error_pct": round(abs(float(np.mean(trad_tot["I"]) / np.mean(cell_tot["I"])) - 2.03) / 2.03 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig4b_selection_step_overhead",
@@ -320,7 +323,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(cell_tot["S"]) / np.mean(trad_tot["S"])), 2),
             "traditional_baseline": 1.00,
             "relative_error_pct": round(abs(float(np.mean(cell_tot["S"]) / np.mean(trad_tot["S"])) - 1.17) / 1.17 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig5c_selection_immovable_f3",
@@ -330,7 +333,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(immov_err["S"][3])), 2),
             "traditional_baseline": round(float(np.mean(immov_err["B"][3])), 2),
             "relative_error_pct": round(abs(float(np.mean(immov_err["S"][3])) - 3.00) / 3.00 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig5c_bubble_immovable_f3",
@@ -340,7 +343,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(immov_err["B"][3])), 2),
             "traditional_baseline": 5.50,
             "relative_error_pct": round(abs(float(np.mean(immov_err["B"][3])) - 5.50) / 5.50 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig7a_bubble_dg_f3",
@@ -350,7 +353,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean(dg_by_f["B"][3])), 3),
             "traditional_baseline": 0.21,
             "relative_error_pct": round(abs(float(np.mean(dg_by_f["B"][3])) - 0.37) / 0.37 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig7b_insertion_dg_mean",
@@ -360,7 +363,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(float(np.mean([np.mean(dg_by_f["I"][f]) for f in (0, 1, 2, 3)])), 3),
             "traditional_baseline": 1.14,
             "relative_error_pct": round(abs(float(np.mean([np.mean(dg_by_f["I"][f]) for f in (0, 1, 2, 3)])) - 1.14) / 1.14 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig8a_unique_chimera_peak_agg",
@@ -370,7 +373,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(agg_stats["unique_B+S"][0], 3),
             "traditional_baseline": 0.500,
             "relative_error_pct": round(abs(agg_stats["unique_B+S"][0] - 0.645) / 0.645 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig8d_duplicate_chimera_final_agg",
@@ -380,7 +383,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(agg_stats["duplicate_B+S"][1], 3),
             "traditional_baseline": 0.500,
             "relative_error_pct": round(abs(agg_stats["duplicate_B+S"][1] - 0.690) / 0.690 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig9_cross_purpose_bi_sortedness",
@@ -390,7 +393,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(cross_stats["B(inc)+I(dec)"][0], 2),
             "traditional_baseline": 50.00,
             "relative_error_pct": round(abs(cross_stats["B(inc)+I(dec)"][0] - 73.73) / 73.73 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
         {
             "benchmark_id": "fig9_cross_purpose_hierarchy",
@@ -400,7 +403,7 @@ def run_quantitative_paper_validation(n: int = 100, reps: int = 20, seed: int = 
             "replicated_value": round(cross_stats["B(dec)+S(inc)"][0], 2),
             "traditional_baseline": 50.00,
             "relative_error_pct": round(abs(cross_stats["B(dec)+S(inc)"][0] - 42.50) / 42.50 * 100.0, 2),
-            "status": "VERIFIED",
+            "status": "EXECUTED",
         },
     ]
 
@@ -435,7 +438,8 @@ def render_standalone_kymograph_and_validation_figure(
     fig.text(
         0.5, 0.922,
         "Adaptive Behavior 33(1):25–54 (doi:10.1177/10597123241269740) · Audited against Zhangtaining/cell_research@1fd2bd59 · "
-        "14/14 Published Benchmarks Verified",
+        f"{len(benchmarks)}/{len(benchmarks)} benchmarks executed. "
+        "EXECUTED means the comparison ran and the relative error was stored. It is not an error cutoff.",
         color="#94a3b8", fontsize=9.5, ha="center",
     )
 
@@ -574,7 +578,7 @@ def render_standalone_kymograph_and_validation_figure(
             str(b["metric"])[:34],
             f"{b['published_value']}",
             f"{b['replicated_value']}",
-            "✓ PASS",
+            "RAN",
         ])
     for b in benchmarks[11:]:
         table_rows.append([
@@ -582,7 +586,7 @@ def render_standalone_kymograph_and_validation_figure(
             str(b["metric"])[:34],
             f"{b['published_value']}",
             f"{b['replicated_value']}",
-            "✓ PASS",
+            "RAN",
         ])
 
     y_top = 0.94
@@ -594,7 +598,7 @@ def render_standalone_kymograph_and_validation_figure(
         if not is_hdr and r_idx % 2 == 1:
             ax_f.add_patch(Rectangle((0.0, y_pos - 0.02), 1.0, dy, facecolor="#16223b", edgecolor="none", alpha=0.65, transform=ax_f.transAxes))
         for c_idx, val in enumerate(row):
-            col = "#facc15" if is_hdr else ("#4ade80" if c_idx == 4 else "#e2e8f0")
+            col = "#facc15" if (is_hdr or c_idx == 4) else "#e2e8f0"
             fw = "bold" if (is_hdr or c_idx in (0, 4)) else "normal"
             ax_f.text(col_x[c_idx], y_pos, val, transform=ax_f.transAxes, color=col, fontsize=7.2 if not is_hdr else 7.6, fontweight=fw, va="center")
 
@@ -786,6 +790,7 @@ def main() -> int:
                 "final_aggregation": round(kymo["chimera_dup"]["final_agg"], 4),
             },
         },
+        "benchmark_status_meaning": "EXECUTED means the replicate comparison was run and relative_error_pct was stored. It is not a pass/fail cutoff on that error.",
         "benchmarks": benchmarks,
     }
     ref_json.write_text(json.dumps(ref_payload, indent=2), encoding="utf-8")

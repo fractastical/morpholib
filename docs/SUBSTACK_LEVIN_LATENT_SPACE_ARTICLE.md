@@ -52,7 +52,7 @@ The line-by-line walkthrough is [a separate page](https://fractastical.github.io
 4. **[Claim 4, `96.1%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-4). Thompson’s morphospace.** Nature does not redesign every bone. A few growth knobs bend the coordinate grid of the body like a sheet of rubber, from parrotfish to angelfish, from puffer to sunfish. We tested that on three datasets — 791, then 6,614, then 10,303 species, across 440 families — on 600-point whole-body outlines rather than the usual 17 skull dots, and locked a [blind prediction](https://registry.knowledgepixels.com/np/RAilN4nbRHp3e3ZHqlbIgeL3UGPRV_KtQHtJD3gzVVdqw) on 5,180 species before opening them. The body swims along that sheet. The head eats. The one hypothesis that lost is still in the record.
 5. **[Claim 5, `95.0%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-5). Two-headed planarians remember a voltage.** Block the gap junctions of a cut planarian for 48 hours and it grows two heads. Wash the drug out, wait weeks, cut it again in plain water, and it grows two heads again. Nothing in the DNA changed.
 6. **[Claim 6, `95.0%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-6). The Picasso tadpole finds its face.** Scramble the eyes, jaws, and nostrils and they do not crawl back along the paths they were pushed. They take new paths, faster the further they are from home, until the froglet face is normal.
-7. **[Claim 7, `90.1%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-7). Xenobots copy themselves with no genetic change.** A C-shaped mouth of about `105°` sweeps loose cells into a daughter, then another.
+7. **[Claim 7, `90.1%`](https://fractastical.github.io/morpholib/substack_levin_latent_space_claims.html#claim-7). Xenobots copy themselves with no genetic change.** A C-shaped mouth of about `65°` sweeps loose cells into a daughter, then another. The efficiency curve in the model is centered at `65°`.
 
 The `−2.2` points on Claims 5–7 are gaps in our reduced equations, not a finding that the worm, the tadpole, or the xenobot failed.
 
@@ -72,9 +72,11 @@ Nathan Sweet (*Sweet Rationalism*) asked for a decisive comparison:
 
 > *"Joel Dietz points in the right direction by proposing a predictive morphospace language connecting bioelectric patterns to downstream gene-expression cascades and morphology. A knowledge graph, however, can encode `D` or `D + P`. Platonic ingress begins earning evidence only when at least one `P`-specific relation improves held-out prediction, intervention, compression, or comparative model performance beyond the best `D`-only account.*
 >
-> *The decisive experiment would make `P` itself measurable at the edges: specify its hard core and bridge principle before observation; define a `P`-linked variable, topology, relation, or invariant independently of the residual; identify outcomes that materially separate `D + P` from serious rivals; use negative controls and held-out embodiments; replicate the advantage independently. Most important, freeze the update rule. A failed bridge must cost `P` something. A repair must buy fresh risk."*
+> *The decisive experiment would make `P` itself measurable at the edges: specify its hard core and bridge principle before observation; define a `P`-linked variable, topology, relation, or invariant independently of the residual; identify outcomes that materially separate `D + P` from serious rivals; use negative controls and held-out embodiments; replicate the advantage independently. Most important, freeze the update rule. A failed bridge must cost `P` something. A repair must buy fresh risk.*
+>
+> *Symmetry cuts both ways. If `D`-only rivals require a growing heap of bespoke repairs while a pre-specified `D + P` model repeatedly predicts held-out results, my confidence should move toward `P`. Skepticism that permits only one side to lose is advocacy with a lab notebook."*
 
-That is the test this article runs. It is also, in fewer words, the pair of questions the [Platonic vs non-Platonic](https://bioelectricity.net/great-debates#platonic) debate leaves open: what distinctive, testable predictions a Platonic account adds beyond physical and developmental models, and what would count as evidence against it.
+That is the test this article runs, both prongs of it. The sorting, fish, and hornet results below are the first prong: what `D` already does, and where adding a non-physical edge changes the prediction by nothing. They are not a case in which confidence moves toward `P`. It is also, in fewer words, the pair of questions the [Platonic vs non-Platonic](https://bioelectricity.net/great-debates#platonic) debate leaves open: what distinctive, testable predictions a Platonic account adds beyond physical and developmental models, and what would count as evidence against it.
 
 On the sorting arrays the local rules already do the work. Adding a non-physical edge changes the prediction by nothing. The [signed claim](https://registry.knowledgepixels.com/np/RAH6FDLaacsq28cjx2NVRYRANqOThwHaHwE58ByxqIWI8) records the zero.
 
@@ -88,7 +90,7 @@ A latent space is not a sticker that collects credit from a label. Define the in
 
 ## So Have We Abandoned Dualism? Yes. But Not the Way You Think.
 
-One of the points Levin makes as he responds to AI-generated prose—including the [36,000 words Nathan Sweet originally sent him](https://thoughtforms.life/qa-from-the-internet-and-recent-presentations-4/), containing every possible argument one could make against his positions—is that AI tends to be locked to old categories and, by consequence, traps you inside of them. In his [recent post on the subject](https://x.com/drmichaellevin/status/2114794440896487530) he put it this way:
+One of the points Levin makes, answering a long comment he describes as over 36,000 words from Nathan Sweet ([the post](https://thoughtforms.life/qa-from-the-internet-and-recent-presentations-4/); Sweet disputes the count, and the clarifications below say what I can check), is that AI tends to be locked to old categories and, by consequence, traps you inside of them. In his [recent post on the subject](https://x.com/drmichaellevin/status/2114794440896487530) he put it this way:
 
 > *"The problem is that currently, the AI’s seem to be making the same kind of logical errors (from my perspective of course) and expressing the same kind of preconceptions that are prevalent in status quo human thinkers… Right now the LLMs are trapped in the same attractors of thinking that have held several fields back for decades; perhaps not surprisingly. That will change; let’s go AIs—read the papers, follow new directions, be not afraid of ancient philosophical ‘category errors’."*
 
@@ -141,7 +143,19 @@ The seven claims in *Ingressing Minds* average to `77.6%`. That is the whole of 
 1. **On all seven claims, the mathematical free lunch reads 88.1%.** Permutations have no local minima, so local swaps converge (Claims 1–2). Two speeds of motion separate a mixture into clumps (Claim 3). Eight coordinate knobs channel 150 million years of fish bodies (Claim 4). Voltage, a descending target, and a fluid current do the work the dualist language gives to an outside pattern (Claims 5–7).
 2. **Non-physical ingress is `0.0%` earned.** Calling delayed gratification or chimeric clustering *"side-quests—not predicted, explained, or produced by that medium"* is the sentence that does not survive [line 74](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/InsertionSortCell.py#L74). The behavior is in the code. *On Dualism* is where that sentence stops being a verdict about everything else.
 
-We don't need non-physical ghosts beaming into the machine, and we don't need reductionist dismissals that wave away real emergent phenomena without checking the math. All the tools to test the mathematics of life are sitting right at our fingertips.
+We don't need non-physical ghosts beaming into the machine, and we don't need reductionist critics who wave away real emergent phenomena without checking the math. All the tools to test the mathematics of life are sitting right at our fingertips. Nathan Sweet was not the person that phrase was aimed at.
+
+---
+
+## Clarifications
+
+1. Nathan Sweet was not specifically intended by “reductionist blog critics,” and I have changed the wording to “reductionist critics.”
+2. Nathan pointed out that several DOI references were mislinked. That has been corrected.
+3. Nathan also pointed out that “verified” would usually mean the underlying test was run and the results were checked, rather than, as the code was written, recording only that the test was run. The errors themselves were already reported in the saved results. The label is now `EXECUTED`: the comparison ran and the relative error was stored. It is not a cutoff, so a large error still returns `EXECUTED`.
+4. The second prong of his test has been restored. That is the symmetrical half of `D` versus `D + P`: if a pre-specified `D + P` model keeps beating `D`-only rivals that need a growing pile of repairs, his confidence should move toward `P`.
+5. Placing `0.50` next to his name was unclear, because Sweet had withdrawn the stability explanation. The figure is no longer attached to his name.
+6. The 36,000-word figure comes from Levin’s page. Sweet disputes it and says he sent closer to 17,000 words. He also states that a disability requires him to use an AI transcriber. I have no way to verify either point.
+7. The xenobot mouth was written as `105°`. The model uses `65°`, and the efficiency peak is centered at `65°` in the formula. The text now says `65°`.
 
 ---
 
@@ -211,7 +225,7 @@ We don't need non-physical ghosts beaming into the machine, and we don't need re
 
 ## Appendix — How This Was Audited
 
-How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and the "Nothing New Here" blog critics have strong priors?
+How do you keep yourself honest when testing high-profile scientific claims—especially when both the "Platonic Space" camp and reductionist critics have strong priors?
 
 The methodology used in this article—which we call the **Adversarial Epistemic Loop (AEL)**—was developed across three successive evaluation systems in Project Delphi:
 1. **Stage 1 — NeuroEval ([Zenodo `10.5281/zenodo.20622878`](https://doi.org/10.5281/zenodo.20622878)):** Built first to evaluate data transparency, reproducibility, and neural-coding rigor in computational and biohybrid/wetware neuroscience papers.
