@@ -2,7 +2,7 @@
 
 *Companion to [Auditing Michael Levin’s Ingressing Minds: 88.1% on the Math, 0% on the Ghosts (77.6++% Overall)](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html). The scores are locked. This page is the audit that produced them.*
 
-*Sixteen plates. Each caption names the script, dataset, or engraving it was built from. Return to the [main article](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html) for the score, the dualism essay, and the conclusion.*
+*Sixteen plates. Each caption links the script, dataset, or engraving it was built from. Return to the [main article](https://fractastical.github.io/morpholib/substack_levin_latent_space_article.html) for the score, the dualism essay, and the conclusion.*
 
 ---
 
@@ -17,7 +17,7 @@ They gave the cells three classical computer-science "personalities" (**algotype
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig1_three_personalities.png)
 
-*Plate I — The three algotypes as a line of numbered jerseys: Bubble (neighbor swap), Insertion (wait for a sorted left line, plus the* `prev = -1` *frozen-cell reset), and Selection (a long-range* `target` *pointer that jumps clean over a frozen brick-wall cell). Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 1.*
+*Plate I — The three algotypes as a line of numbered jerseys: Bubble (neighbor swap), Insertion (wait for a sorted left line, plus the* `prev = -1` *frozen-cell reset), and Selection (a long-range* `target` *pointer that jumps clean over a frozen brick-wall cell). Provenance: [the illustrated guide](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 1.*
 
 Before testing the philosophical claims, we ported [their exact GitHub commit](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) into **four independent languages: Python 3, C++20, JavaScript (Node.js), and the Lean 4 theorem prover** (`0 sorry`).
 
@@ -25,24 +25,24 @@ First, credit where credit is due: **all 14 of the empirical curves published in
 
 ![](https://fractastical.github.io/morpholib/media/zhang_sorting_morphogenesis.gif)
 
-*Plate II — Space-time kymograph of a self-sorting array: each row is one time step, each column one cell, colour its value; the frozen defects are the vertical scars the sort must work around. Provenance: [`sorting-morphogenesis/run_experiments.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/run_experiments.py), validated against the paper’s figures by [`validate_kymograph_and_paper.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/validate_kymograph_and_paper.py).*
+*Plate II — Space-time kymograph of a self-sorting array: each row is one time step, each column one cell, colour its value; the frozen defects are the vertical scars the sort must work around. Provenance: [the sorting experiments](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/run_experiments.py), validated against the paper’s figures by [the kymograph check](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/validate_kymograph_and_paper.py).*
 
 ![](https://fractastical.github.io/morpholib/media/zhang_multilang_port_verification.png)
 
-*Plate III — Four-language port verification. Python 3, C++20, and Node.js produce bit-for-bit identical kymographs (`0` cell mismatches) against the upstream commit; the Lean 4 column lists the theorems machine-checked with `0 sorry`. Provenance: [`sorting-morphogenesis/verify_multilang_ports.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/verify_multilang_ports.py).*
+*Plate III — Four-language port verification. Python 3, C++20, and Node.js produce bit-for-bit identical kymographs (`0` cell mismatches) against the upstream commit; the Lean 4 column lists the theorems machine-checked with `0 sorry`. Provenance: [the four-language check](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/verify_multilang_ports.py).*
 
 Now look at the first philosophical claim Levin makes about this code in *Ingressing Minds* (Section 6.3, p. 22) when a few cells in the array are "frozen" (broken and refusing to move):
 
 > *"The critical thing is that we did not add steps to the algorithm to check whether a swap had been completed, or to do specific things if an operation failed."*
 
 **What we found in the code (Panel A):**
-For **Bubble** sort, Levin’s statement is true. The only place [`BubbleSortCell.py`](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/BubbleSortCell.py) looks at a `FREEZE` flag is to decline a swap with a frozen neighbor. The frozen cell is a brick wall, and the sorting rule is unchanged. **Selection** sort ([`SelectionSortCell.py`](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/SelectionSortCell.py)) is the same: its pointer jumps straight across an immovable defect, and the one `FREEZE` branch in the upstream code only nudges that pointer past a frozen target so it does not get stuck. A skip, not a rewrite (rule `[U4]` in our port guide).
+For **Bubble** sort, Levin’s statement is true. The only place [the bubble-sort cell](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/BubbleSortCell.py) looks at a `FREEZE` flag is to decline a swap with a frozen neighbor. The frozen cell is a brick wall, and the sorting rule is unchanged. **Selection** sort ([the selection-sort cell](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/SelectionSortCell.py)) is the same: its pointer jumps straight across an immovable defect, and the one `FREEZE` branch in the upstream code only nudges that pointer past a frozen target so it does not get stuck. A skip, not a rewrite (rule `[U4]` in our port guide).
 
 **Insertion sort is the counterexample.** Here the authors did not skip the frozen cell. They rewrote the algorithm’s own correctness test so it could see through one.
 
 Remember Insertion sort’s rule: a cell at position `p` refuses to move left unless the entire prefix `0 .. p − 1` to its left is already sorted. If a single frozen cell wearing `#99` sits near the front of the line, then the left side is *never* sorted—which under pure Insertion sort would permanently paralyze every cell to the right of `#99`!
 
-When we opened [`InsertionSortCell.py` (lines 68–82)](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/InsertionSortCell.py#L68-L82), we found **3 lines of explicit broken-cell exception handling**:
+When we opened [the insertion-sort cell, lines 68–82](https://github.com/Zhangtaining/cell_research/blob/1fd2bd5921c1f6b423a71f691d5189106a8a1020/modules/multithread/InsertionSortCell.py#L68-L82), we found **3 lines of explicit broken-cell exception handling**:
 
 ```python
 for i in range(self.current_position[0]):
@@ -58,7 +58,7 @@ When we deleted those 3 lines of code (`without_explicit_freeze_reset` in **Pane
 
 ![](https://fractastical.github.io/morpholib/media/zhang_levin_platonic_claims_audit.png)
 
-*Plate IV — The three-ablation Platonic-claims audit. Panel A: Insertion sort’s final error with and without the explicit* `FREEZE` *reset (`4.90 → 21.95`). Panel B: the two rulers,* `I(v)` *(strictly downhill, `0/192` uphill steps) versus* `E(v)` *(47 illusory uphill ticks). Panel C: algotype aggregation on unique keys and on duplicate keys with strict versus non-strict ties. Provenance: [`sorting-morphogenesis/audit_platonic_space_claims.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/audit_platonic_space_claims.py); metrics locked in [`figures/platonic_claims_ablation_metrics.json`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json).*
+*Plate IV — The three-ablation Platonic-claims audit. Panel A: Insertion sort’s final error with and without the explicit* `FREEZE` *reset (`4.90 → 21.95`). Panel B: the two rulers,* `I(v)` *(strictly downhill, `0/192` uphill steps) versus* `E(v)` *(47 illusory uphill ticks). Panel C: algotype aggregation on unique keys and on duplicate keys with strict versus non-strict ties. Provenance: [the three-ablation audit](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/audit_platonic_space_claims.py); metrics locked in [the locked metrics](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json).*
 
 > **Verdict — Claim 1: Partially Refuted.** Bubble and Selection sort genuinely get defect tolerance for free from decentralized execution (their only frozen-cell logic is a swap-precondition skip that treats a frozen cell as a wall); Insertion sort relies on an explicit 3-line `if status == FREEZE: prev = -1` exception handler that rewrites its own prefix-sorted test to see through that wall.
 
@@ -81,7 +81,7 @@ Four cells are enough to see it. Start with `[2, 4, 1, 3]`. Ruler 1 sees three o
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig2_two_rulers_illusion.png)
 
-*Plate V — The two rulers, step by step, on `[2, 4, 1, 3] → [2, 1, 4, 3]`: every out-of-order pair drawn as an arch above (Ruler 1,* `I`*: `3 → 2`, strictly downhill) and the neighbor-step cliffs below (Ruler 2,* `E`*: `1 → 2`, the paper’s ruler going up while the cells move closer to sorted). Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 2.*
+*Plate V — The two rulers, step by step, on `[2, 4, 1, 3] → [2, 1, 4, 3]`: every out-of-order pair drawn as an arch above (Ruler 1,* `I`*: `3 → 2`, strictly downhill) and the neighbor-step cliffs below (Ruler 2,* `E`*: `1 → 2`, the paper’s ruler going up while the cells move closer to sorted). Provenance: [the illustrated guide](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 2.*
 
 > **Verdict — Claim 2: Optical Illusion of the Ruler.** The sorting cells never move against their dynamical gradient. They slide 100% deterministically downhill on their true Lyapunov energy `I(v)` (`ΔI = −1` on every single swap), while the observer watches them through a blurry neighbor-drop ruler `E(v)`.¹
 
@@ -101,13 +101,13 @@ Both halves of that rebuttal fail. Panel C is the measurement; Plate VI is the p
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig3_sports_cars_vs_pedestrians.png)
 
-*Plate VI — Sports cars versus pedestrians. Top: on unique numbers, fast Selection cells teleport left and compress slow Bubble cells into a contiguous wave. Bottom: on duplicate numbers, Selection packs the left half of every plateau, giving* `S B | S B` *anti-clustering at `C = 2` and* `SSSSS | BBBBB` *cliques at `C = 10`. Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 3.*
+*Plate VI — Sports cars versus pedestrians. Top: on unique numbers, fast Selection cells teleport left and compress slow Bubble cells into a contiguous wave. Bottom: on duplicate numbers, Selection packs the left half of every plateau, giving* `S B | S B` *anti-clustering at `C = 2` and* `SSSSS | BBBBB` *cliques at `C = 10`. Provenance: [the illustrated guide](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 3.*
 
 And here are the real computer-experiment curves side by side—showing **(A)** the smooth downhill slide on Ruler 1 (`I(v)`, `0` uphill steps) vs. the 47 illusory bumps on Ruler 2 (`E(v)`), and **(B)** how the `C = 2` Anti-Clustering dip (`0.477 < 0.50`) and `C = 10` Clique peak (`0.659`) refute the flat `0.50` that follows if equal keys stay in their starting order:
 
 ![](https://fractastical.github.io/morpholib/media/zhang_13yo_fig4_real_data_curves.png)
 
-*Plate VII — The measured curves. (A) Ruler 1* `I(v)` *slides smoothly downhill while Ruler 2* `E(v)` *shows its 47 illusory bumps. (B) Final `B + S` aggregation across copies-per-key `C`: the `C = 2` anti-clustering dip (`0.477`) and the `C = 10` clique peak (`0.659`) against the flat `0.50` that follows if equal keys stay in their starting order. Provenance: [`sorting-morphogenesis/render_13yo_illustrations.py`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 4, from [`figures/platonic_claims_ablation_metrics.json`](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json).*
+*Plate VII — The measured curves. (A) Ruler 1* `I(v)` *slides smoothly downhill while Ruler 2* `E(v)` *shows its 47 illusory bumps. (B) Final `B + S` aggregation across copies-per-key `C`: the `C = 2` anti-clustering dip (`0.477`) and the `C = 10` clique peak (`0.659`) against the flat `0.50` that follows if equal keys stay in their starting order. Provenance: [the illustrated guide](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/render_13yo_illustrations.py), Illustrated Guide 4, from [the locked metrics](https://github.com/fractastical/morpholib/blob/main/sorting-morphogenesis/figures/platonic_claims_ablation_metrics.json).*
 
 > **Verdict — Claim 3: Empirically Vindicated (via Kinematic Phase Separation).** The clustering is 100% real and refutes a textbook-stability account of it—yet it is also 100% produced and predicted by the kinematic transport equations of the two algorithms without needing non-physical ghosts. ([Try the live `C = 2` Sorting Morphogenesis Simulator on bioelectricity.net here!](https://bioelectricity.net/sorting-morphogenesis))
 
@@ -123,7 +123,7 @@ The second major pillar Levin invokes for his latent space is **D’Arcy Wentwor
 
 ![](https://fractastical.github.io/morpholib/guide_step1_1917_rubber_sheet.png)
 
-*Plate IX — The still of the four families that open the main article. Thompson’s coordinate grids redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
+*Plate IX — The still of the four families that open the main article. Thompson’s coordinate grids redrawn from* On Growth and Form *Figs. 373–382: oblique shear (Scarus → Pomacanthus), coaxial circles, the bilinear fan, and the radial flare (Diodon → Mola mola). Provenance: [the fish guide](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 1.*
 
 For the last 30 years, evolutionary biologists tried to test Thompson’s idea on computer landmark databases—and concluded he was mostly wrong across fish families. **Why did their tests fail?**
 
@@ -134,11 +134,11 @@ When we audited the morphometrics literature across **three independent datasets
 
 ![](https://fractastical.github.io/morpholib/guide_step2_17dot_head_trap.png)
 
-*Plate X — The 17-dot head seesaw. Nine of the seventeen standard skeletal landmarks sit in the head and jaws and none on the outer fins, so a global rubber sheet fitted to them is pulled the wrong way at the back of the body. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 2; landmarks from Claverie & Wainwright (2014) / Friedman et al. (2020).*
+*Plate X — The 17-dot head seesaw. Nine of the seventeen standard skeletal landmarks sit in the head and jaws and none on the outer fins, so a global rubber sheet fitted to them is pulled the wrong way at the back of the body. Provenance: [the fish guide](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 2; landmarks from Claverie & Wainwright (2014) / Friedman et al. (2020).*
 
 ![](https://fractastical.github.io/morpholib/media/thompson_1917_silhouette_paradox_summary.gif)
 
-*Plate XI — The silhouette paradox, animated: fitting the 17 skull-heavy landmarks makes the warped Scarus outline a worse match to Pomacanthus than no warp at all (`40.6% → 56.2%` mismatch), while fitting the 600-point outline directly recovers Thompson’s grid. Provenance: [`thompson/generate_summary_animation_gif.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_summary_animation_gif.py), from [`thompson/1917-thompson-silhouette-area-paradox.py`](https://github.com/fractastical/morpholib/blob/main/thompson/1917-thompson-silhouette-area-paradox.py).*
+*Plate XI — The silhouette paradox, animated: fitting the 17 skull-heavy landmarks makes the warped Scarus outline a worse match to Pomacanthus than no warp at all (`40.6% → 56.2%` mismatch), while fitting the 600-point outline directly recovers Thompson’s grid. Provenance: [the silhouette animation](https://github.com/fractastical/morpholib/blob/main/thompson/generate_summary_animation_gif.py), from [the silhouette comparison](https://github.com/fractastical/morpholib/blob/main/thompson/1917-thompson-silhouette-area-paradox.py).*
 
 2. **Trap #2 — The "Plain Box Stretch" Illusion vs. True Thompson Curves:**
    When we switch to a **600-point whole-body outline**, if you only ask a computer to overlap two *unlabeled black shadows*, a trivial **Rectangular Box Stretch** (stretching height vs. width with *zero* slant or curve) can "cheat" by stretching the middle of a pufferfish’s belly straight up to cover the back fins of an ocean sunfish!
@@ -146,7 +146,7 @@ When we audited the morphometrics literature across **three independent datasets
 
 ![](https://fractastical.github.io/morpholib/guide_step3_box_cheat_vs_curves.png)
 
-*Plate XII — The box-stretch cheat versus true Thompson curves. On unlabeled shadows a plain rectangular stretch can fake a match by pushing a pufferfish belly up over a sunfish fin; on homologous perimeter anatomy (fin base to fin base, fin tip to fin tip) it collapses to a `2.4%` match while the shear, coaxial, fan, and flare grids gain `+13%` to `+48%` and stay un-folded. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 3.*
+*Plate XII — The box-stretch cheat versus true Thompson curves. On unlabeled shadows a plain rectangular stretch can fake a match by pushing a pufferfish belly up over a sunfish fin; on homologous perimeter anatomy (fin base to fin base, fin tip to fin tip) it collapses to a `2.4%` match while the shear, coaxial, fan, and flare grids gain `+13%` to `+48%` and stay un-folded. Provenance: [the fish guide](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 3.*
 
 3. **Two rules, and a test we could not un-fail:**
    Three datasets — 791, then 6,614, then 10,303 species, across 440 families — say the same thing twice.
@@ -159,7 +159,7 @@ When we audited the morphometrics literature across **three independent datasets
 
 ![](https://fractastical.github.io/morpholib/guide_step4_outside_vs_inside_rules.png)
 
-*Plate XIII — The two rules of fish evolution. Outside: whole-body change across 440 families runs along Thompson’s coordinate highway (`93.5%–98.9%` alignment). Inside: sister species on the same reef rewire jaws, snouts, and eyes `3.3×–9.3×` faster than their bodies. Provenance: [`thompson/generate_13yo_visual_guide.py`](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 4; datasets of 791, 6,614, and 10,303 species.*
+*Plate XIII — The two rules of fish evolution. Outside: whole-body change across 440 families runs along Thompson’s coordinate highway (`93.5%–98.9%` alignment). Inside: sister species on the same reef rewire jaws, snouts, and eyes `3.3×–9.3×` faster than their bodies. Provenance: [the fish guide](https://github.com/fractastical/morpholib/blob/main/thompson/generate_13yo_visual_guide.py), step 4; datasets of 791, 6,614, and 10,303 species.*
 
 > **Verdict — Claim 4: Strongly Confirmed.** Across 10,303 species, Thompson’s and Levin’s core thesis—that macroevolution navigates a low-dimensional geometric coordinate manifold while local modules handle rapid ecological competition—is a quantitative law of vertebrate evolution. ([Explore the interactive 10,303-Species Fish Morphospace on bioelectricity.net here!](https://bioelectricity.net/bioelectric-morphospace))
 
@@ -177,7 +177,7 @@ The model says why, in one sentence. Serotonin is positively charged, so it drif
 
 ![](https://fractastical.github.io/morpholib/media/cervera_levin_mafe_gj_block.gif)
 
-*Plate XIV — Two-headed memory in a reaction–diffusion planarian. Transient gap-junction blockade lets the posterior pole flip from `−60 mV` to `−20 mV`; after washout the symmetric* `2H0T` *state is a stable attractor that survives re-cutting with no genetic change. Provenance: [`models/2021-Cervera–Levin–Mafe.py`](https://github.com/fractastical/morpholib/blob/main/models/2021-Cervera–Levin–Mafe.py) (1D) and [`models/2017-pietak-bioelectric-morphogen-coupling.py`](https://github.com/fractastical/morpholib/blob/main/models/2017-pietak-bioelectric-morphogen-coupling.py) (405-cell 2D Voronoi Scharfetter–Gummel).*
+*Plate XIV — Two-headed memory in a reaction–diffusion planarian. Transient gap-junction blockade lets the posterior pole flip from `−60 mV` to `−20 mV`; after washout the symmetric* `2H0T` *state is a stable attractor that survives re-cutting with no genetic change. Provenance: [the planarian model](https://github.com/fractastical/morpholib/blob/main/models/2021-Cervera–Levin–Mafe.py) (1D) and [the electrodiffusion model](https://github.com/fractastical/morpholib/blob/main/models/2017-pietak-bioelectric-morphogen-coupling.py) (405-cell 2D Voronoi Scharfetter–Gummel).*
 
 ### Claim 6 — The Picasso tadpole finds its face ([Vandenberg, Adams & Levin 2012](https://doi.org/10.1002/dvdy.23770); [Pezzulo & Levin 2015](https://doi.org/10.1039/c5ib00221d); [Pinet et al. 2019](https://doi.org/10.1242/dev.175893))
 
@@ -185,7 +185,7 @@ Scramble a tadpole’s eyes, jaws, and nostrils and they do not crawl back along
 
 ![](https://fractastical.github.io/morpholib/media/xenopus_craniofacial_remap_growth.gif)
 
-*Plate XV — The Picasso tadpole corrects its face. Scrambled eyes, jaws, and nostrils move along novel paths with speed proportional to their defect until the normal froglet layout is reached (`dV/dt ≤ 0`), and arrest when MMP remodeling is blocked by GM6001. Provenance: [`models/2019-bischof-xenopus-craniofacial-remap.py`](https://github.com/fractastical/morpholib/blob/main/models/2019-bischof-xenopus-craniofacial-remap.py), Pass 3 with 3D Maxwell cartilage rods and MMP-2/MMP-9 zymography fields.*
+*Plate XV — The Picasso tadpole corrects its face. Scrambled eyes, jaws, and nostrils move along novel paths with speed proportional to their defect until the normal froglet layout is reached (`dV/dt ≤ 0`), and arrest when MMP remodeling is blocked by GM6001. Provenance: [the tadpole model](https://github.com/fractastical/morpholib/blob/main/models/2019-bischof-xenopus-craniofacial-remap.py), Pass 3 with 3D Maxwell cartilage rods and MMP-2/MMP-9 zymography fields.*
 
 ### Claim 7 — Xenobots copy themselves with no genetic change ([Kriegman, Blackiston, Levin & Bongard 2020](https://doi.org/10.1073/pnas.1910837117), [2021](https://doi.org/10.1073/pnas.2112672118))
 
@@ -193,7 +193,7 @@ Sculpt ciliated frog-skin spheroids into a C-shaped mouth of about `65°` and se
 
 ![](https://fractastical.github.io/morpholib/media/xenobot_evolutionary_biobots_growth.gif)
 
-*Plate XVI — Kinematic self-replication. A C-shaped ciliated spheroid (`θ ≈ 65°`) sweeps dissociated cells into its mouth pocket until adhesion binds them into a motile daughter, for `3–4` generations versus `1` for a sphere and `0` for a slab. The efficiency peak is centered at `65°` in the sweep formula. Provenance: [`models/2020-kriegman-xenobot-evolutionary-biobots.py`](https://github.com/fractastical/morpholib/blob/main/models/2020-kriegman-xenobot-evolutionary-biobots.py), 8×8×7 voxel lattice and 2D regularized-Stokeslet squirmer.*
+*Plate XVI — Kinematic self-replication. A C-shaped ciliated spheroid (`θ ≈ 65°`) sweeps dissociated cells into its mouth pocket until adhesion binds them into a motile daughter, for `3–4` generations versus `1` for a sphere and `0` for a slab. The efficiency peak is centered at `65°` in the sweep formula. Provenance: [the xenobot model](https://github.com/fractastical/morpholib/blob/main/models/2020-kriegman-xenobot-evolutionary-biobots.py), 8×8×7 voxel lattice and 2D regularized-Stokeslet squirmer.*
 
 > **Verdict — Claims 5–7: The laboratory results are valid.** The two-headed memory, the face that finds itself, and the kinematic self-replication are published experimental results. A standard biophysical model reproduces each one, with a named attractor: bistable voltage memory, descent toward a target face, a hydrodynamic capture optimum. The `−2.2` points across the three are the gaps in our reduced equations. They are not a deduction against the experiments.
 
