@@ -22,7 +22,7 @@ $$\tau_H \frac{\partial H}{\partial t} = \text{Ca}_{\text{ss}}(V)(1 - c_T T) - H
 
 | File | Description | SHA-256 |
 |---|---|---|
-| `schmidtea_mediterranea_specimen.jpg` | Dorsal whole-mount photograph of *Schmidtea mediterranea* (Wikimedia Commons `File:Smediterranea.jpg`, CC BY 2.5, 1493×564 px) showing anterior head, bilateral eyespots (ocelli), pigmented trunk, and tapering tail (`1H1T` wild-type polarity) | `466029cc0561067890bb0f69d224d8f799745eeb67a0699246107611737fb546` |
-| `scout_manifest.json` | Step 1 OpenAlex & Wikimedia Commons scout dossier (`morphoeval/scout_literature.py --slot 81`) | `9de72183ede698f04d87a137a1e4d3a235dbcac613bf9da6e5c553eef9d94294` |
+| `schmidtea_mediterranea_specimen.jpg` | Dorsal bright-field whole-mount of *Schmidtea mediterranea* (720×500 px PlanformDB photograph vendored at commit `398c37e0`; supersedes the Pass 1–2 Wikimedia `File:Smediterranea.jpg` composite) with automated segmentation length 626 px (`1H1T` wild-type polarity) | `0dde9f5e83a87dd9bdc3627e19ebc891cb4f8e99cf632fe637bccf082abfb990` |
+| `scout_manifest.json` | Step 1 scout dossier plus `committed_specimen` record for the vendored PlanformDB photograph (`morphoeval/scout_literature.py --slot 81`) | `8f66f6190b32be14c7b31601bc2084f1595f44e65290df46f513331172d8e6ed` |
 | `paper_citations.bib` | BibTeX entries for Beane et al. (2011), Oviedo et al. (2010), Pietak & Levin (2017), and Durant et al. (2017) | `4978cdbc97ad314e55b71348a3fd0a831887eaf7bad4b10a76e834070964277f` |
 | `planarian_hk_atpase_anterior_reference.json` | Canonical bioelectric parameters, bistable $V_{\text{mem}}$ attractors, 5 experimental regeneration regimes (`1H1T`, `0H2T` SCH-28080, `2H0T` ivermectin, `2H0T` 8-octanol, `0H2T` nifedipine), and SHA-256 locks | verified at runtime |
