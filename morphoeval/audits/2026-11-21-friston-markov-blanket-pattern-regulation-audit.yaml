@@ -1,0 +1,142 @@
+# MorphoEval audit — Friston, Levin, Sengupta & Pezzulo (2015) Markov-blanket FEP pattern regulation, 2026-11-21 (v1)
+#
+# Slot 3101 / Levin-channel concept C07: Variational Free Energy Gradient Flow Across a Markov Blanket.
+# Complements Slot 084 (Pezzulo limb homeostat) with an explicit blanket partition + GJ sensory pooling.
+
+audit:
+  id: 2026-11-21-friston-markov-blanket-pattern-regulation-audit
+  rubric_version: 0.1.0
+  date: "2026-11-21"
+  assessor:
+    id: composer-2-cloud-agent
+    label: "Composer 2 cloud agent (builder self-audit of new FEP deliverable)"
+    homepage: https://cursor.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: pending
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.5"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      New isolated FEP deliverable implementing Friston et al. (2015) Markov-blanket
+      free-energy pattern regulation (C07), zero-conflict with existing Slot 084 files.
+
+references:
+  friston2015:
+    title: "Knowing one's place: a free-energy approach to pattern regulation"
+    authors: "Friston K, Levin M, Sengupta B, Pezzulo G"
+    venue: "Journal of the Royal Society Interface 12(105):20141383 (2015)"
+    doi: 10.1098/rsif.2014.1383
+  pezzulo2015:
+    title: "Re-membering the body: applications of computational neuroscience to the top-down control of regeneration of limbs and other complex organs"
+    authors: "Pezzulo G, Levin M"
+    venue: "Journal of the Royal Society Interface 12(110):20150772 (2015)"
+    doi: 10.1098/rsif.2015.0772
+  pezzulo2016:
+    title: "Top-down models in biology: explanation and control of complex living systems above the molecular level"
+    authors: "Pezzulo G, Levin M"
+    venue: "Journal of the Royal Society Interface 13(124):20160555 (2016)"
+    doi: 10.1098/rsif.2016.0555
+
+simulations:
+  - id: friston-markov-blanket-pattern-regulation
+    name: "Friston et al. (2015) Variational Free Energy gradient flow across a Markov blanket for AP pattern regulation"
+    organism: "Ambystoma mexicanum (axolotl) AP bioelectric / morphological field"
+    script: 2015-friston-markov-blanket-pattern-regulation.py
+    output: docs/media/friston_markov_blanket_pattern_regulation_comparison.png
+    extra_outputs:
+      - docs/media/friston_markov_blanket_pattern_regulation_flow.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Friston, Levin, Sengupta & Pezzulo (2015) free-energy approach to pattern regulation with Markov blankets and coupled perception–action gradient flow on Variational Free Energy"
+        - "Levin-channel concept C07: Variational Free Energy Gradient Flow Across a Markov Blanket (Friston & Pezzulo guest talks)"
+      reconstructed_in_script:
+        - "Explicit four-partition {eta, s, a=morph, mu} on a 32-cell AP lattice with gap-junctional sensory pooling and five FEP regimes (intact, GJ-block, Pi_s=0 arrest, rewritten setpoint, open-loop)"
+        - "Lean 4 Loop_3101 theorems for VFE target equilibrium, action stop / precision arrest, and canonical regime asymptotics"
+      transfer_boundary:
+        - "Recovered AP phenotype field compared to Ambystoma specimen column-mean intensity proxy (Pearson r ≈ 0.68)"
+      does_not_claim:
+        - "Full hierarchical deep-parametric active inference / SPM generative models, or single-cell transcriptomic regeneration trajectories"
+    source_refs:
+      - friston2015
+      - pezzulo2015
+      - pezzulo2016
+    summary: >-
+      Implements Friston et al. (2015) Markov-blanket FEP pattern regulation as a new
+      zero-conflict deliverable (Slot 3101). Intact recovery reaches RMSE 0.0024 / F 0.0011
+      with Lyapunov dF/dt ≤ 0; Pi_s=0 arrests at scrambled RMSE 1.013; rewritten mirrored
+      setpoint recovers with r≈1.0; open-loop frozen mismatched beliefs retain F≈69.1;
+      specimen AP proxy correlates at r=0.682. Eight-check --self-test PASS.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Faithfully implements Friston et al. (2015) VFE, coupled perception–action ODEs,
+          Markov-blanket partition with empirical partial-correlation diagnostic, and
+          gap-junctional sensory pooling; Lean 4 Loop_3101 locks the three load-bearing laws.
+        evidence:
+          - {file: models/2015-friston-markov-blanket-pattern-regulation.py, lines: [1, 45], note: "Module docstring mapping equations to Friston 2015 / C07", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3101_friston_markov_blanket_pattern_regulation.lean, lines: [1, 105], note: "Three Lean theorems: VFE zero, action arrest, regime asymptotics", supports: true}
+      specimen-match:
+        value: 72
+        rationale: >-
+          Ambystoma specimen AP intensity proxy correlates with recovered FEP morphology at
+          Pearson r=0.682 (above 0.50 reference threshold). This is a 1D profile proxy, not a
+          full articulated limb silhouette match.
+        evidence:
+          - {file: docs/media/friston_markov_blanket_pattern_regulation_comparison.png, lines: [0, 0], note: "Panel E specimen vs intact FEP overlay", supports: true}
+          - {file: datasets/friston_markov_blanket_pattern_regulation/ambystoma_mexicanum_pattern_specimen.jpg, lines: [0, 0], note: "Vendored CC BY-SA 3.0 Ambystoma specimen", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Pi_s sweep, g_gj block, kappa_mu open-loop ablation, and mirrored setpoint rewrite
+          each produce visually and quantitatively distinct regimes in the six-panel figure.
+        evidence:
+          - {file: models/2015-friston-markov-blanket-pattern-regulation.py, lines: [300, 380], note: "Five regimes + 11-point Pi_s sweep", supports: true}
+          - {file: docs/media/friston_markov_blanket_pattern_regulation_comparison.png, lines: [0, 0], note: "Panels A–D,F show regime contrasts", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Six MorphoEval measurements cover intact RMSE, GJ roughness contrast, precision
+          ablation, rewritten setpoint correlation, open-loop residual F, and specimen r.
+        evidence:
+          - {file: morphoeval/audits/2026-11-21-friston-markov-blanket-pattern-regulation-audit.measurements.yaml, lines: [1, 80], note: "Six quantitative measurements with references", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Primary DOI 10.1098/rsif.2014.1383, secondary Pezzulo 2015 DOI, bib file, scout
+          dossier, and C07 video IDs are vendored under datasets/friston_markov_blanket_pattern_regulation/.
+        evidence:
+          - {file: datasets/friston_markov_blanket_pattern_regulation/paper_citations.bib, lines: [1, 40], note: "Friston 2015 / Pezzulo 2015 / 2016 bib entries", supports: true}
+          - {file: datasets/friston_markov_blanket_pattern_regulation/scout_manifest.json, lines: [1, 40], note: "Scout dossier with DOIs and C07 linkage", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Math KG loop YAML maps each Lean theorem and formula to code loci; module docstring
+          restates Eqs. (2.1)–(2.6) style VFE and Lyapunov decay.
+        evidence:
+          - {file: morphoeval/math_kg_loops/friston-markov-blanket-pattern-regulation.yaml, lines: [1, 90], note: "Three equation entries with lean_code and code_locus", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seed=2015, SHA-256 locks on specimen/scout/bib, 8-check --self-test,
+          PNG+GIF artifacts, and bitwise two-run determinism.
+        evidence:
+          - {file: models/2015-friston-markov-blanket-pattern-regulation.py, lines: [700, 770], note: "8-check --self-test suite", supports: true}
+          - {file: docs/media/friston_markov_blanket_pattern_regulation_flow.gif, lines: [0, 0], note: "Animated FEP Lyapunov flow GIF", supports: true}
+    remediation:
+      - "Couple the AP lattice FEP controller to a 2D Sox9/BMP/Wnt digit-condensation PDE in an autopod paddle domain (Pezzulo Slot 084 remediation item 1)."
+      - "Replace the 1D specimen intensity proxy with articulated forelimb CV landmarks shared with Slot 084."
