@@ -1,0 +1,97 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "friston-markov-blanket-pattern-regulation",
+  "slot": 3101,
+  "title": "Friston, Levin, Sengupta & Pezzulo (2015) Variational Free Energy Gradient Flow Across a Markov Blanket for Morphogenetic Pattern Regulation",
+  "primary_papers": [
+    {
+      "citation": "Friston K, Levin M, Sengupta B, Pezzulo G (2015) Knowing one's place: a free-energy approach to pattern regulation. J. R. Soc. Interface 12(105):20141383",
+      "doi": "10.1098/rsif.2014.1383"
+    },
+    {
+      "citation": "Pezzulo G, Levin M (2015) Re-membering the body: applications of computational neuroscience to the top-down control of regeneration of limbs and other complex organs. J. R. Soc. Interface 12(110):20150772",
+      "doi": "10.1098/rsif.2015.0772"
+    }
+  ],
+  "levin_channel_concept": {
+    "id": "C07",
+    "speaker": "Karl Friston & Giovanni Pezzulo",
+    "topic": "Variational Free Energy Gradient Flow Across a Markov Blanket",
+    "videos": ["dFDEoma219Y", "Fwa82X7tkUI", "Kho_NyODrSE"]
+  },
+  "governing_equations": {
+    "markov_blanket_partition": "States {eta, s, a, mu} with blanket B={s,a}; conditional independence mu ⊥ eta | B",
+    "variational_free_energy": "F(mu, s) = (1/2) * Pi_s * ||s - g(mu)||^2 + (1/2) * Pi_p * ||mu - mu_star||^2",
+    "gap_junction_sensory_map": "s = (1-alpha)*morph + alpha*neighbor_mean(morph), alpha=clip(g_gj,0,0.49)",
+    "perception_ode": "dmu/dt = kappa_mu * Pi_s * (s - mu) - kappa_mu * Pi_p * (mu - mu_star)",
+    "action_ode": "dmorph/dt = -kappa_a * Pi_s * (morph - mu)",
+    "lyapunov_dissipation_law": "dF/dt = -(1/kappa_mu) * ||dmu/dt||^2 - (1/kappa_a) * ||dmorph/dt||^2 <= 0  (when s≈morph)"
+  },
+  "canonical_parameters": {
+    "n_cells": 32,
+    "Pi_s_wt": 2.0,
+    "Pi_p_wt": 4.0,
+    "kappa_a": 0.55,
+    "kappa_mu": 0.90,
+    "g_gj_wt": 0.35,
+    "t_max": 24.0,
+    "dt": 0.04,
+    "seed": 2015
+  },
+  "experimental_regimes": [
+    {
+      "id": "intact_fep_pattern_recovery",
+      "description": "Scrambled AP morphological field recovers the stored target gradient under intact Markov-blanket active inference (Pi_s>0, g_gj>0)",
+      "Pi_s": 2.0,
+      "g_gj": 0.35,
+      "kappa_mu": 0.90,
+      "expected_final_rmse": 0.05,
+      "expected_final_F": 0.05
+    },
+    {
+      "id": "gap_junction_block_sensory_uncoupling",
+      "description": "Setting g_gj=0 abolishes spatial sensory averaging; pattern still recovers but with higher residual spatial roughness",
+      "Pi_s": 2.0,
+      "g_gj": 0.0,
+      "kappa_mu": 0.90,
+      "expected_final_rmse": 0.12
+    },
+    {
+      "id": "sensory_precision_ablation_arrest",
+      "description": "Pi_s=0 abolishes action and perception updates driven by sensory PE; morphology arrests near the scrambled initial state",
+      "Pi_s": 0.0,
+      "g_gj": 0.35,
+      "kappa_mu": 0.90,
+      "expected_final_rmse": 0.80
+    },
+    {
+      "id": "rewritten_bioelectric_setpoint",
+      "description": "Rewriting mu_star to a mirrored AP gradient drives regeneration to the new target morphology without genomic change",
+      "Pi_s": 2.0,
+      "g_gj": 0.35,
+      "kappa_mu": 0.90,
+      "setpoint": "mirrored",
+      "expected_final_corr_to_mirrored": 0.95
+    },
+    {
+      "id": "open_loop_no_belief_update",
+      "description": "kappa_mu=0 freezes internal beliefs; action alone cannot correct a mismatched prior, leaving residual free energy",
+      "Pi_s": 2.0,
+      "g_gj": 0.35,
+      "kappa_mu": 0.0,
+      "expected_final_F": 0.20
+    }
+  ],
+  "specimen_provenance": {
+    "file": "datasets/friston_markov_blanket_pattern_regulation/ambystoma_mexicanum_pattern_specimen.jpg",
+    "species": "Ambystoma mexicanum",
+    "source": "Wikimedia Commons File:Ambystoma mexicanum 1.jpg",
+    "license": "CC BY-SA 3.0",
+    "sha256": "fe57ed2c5909e7af46ae0f3d35fb7e2eac68ab1d07e1351c4cd6966bebb6500f"
+  },
+  "sha256_digests": {
+    "datasets/friston_markov_blanket_pattern_regulation/scout_manifest.json": "06610a7266305f51db2ea833e6e8f5cc9173bc7a9203e68aa57c4bd52975130f",
+    "datasets/friston_markov_blanket_pattern_regulation/paper_citations.bib": "6cf9993b8a313c427e077bd3279513b004ac7231b2ea976cf7eacbd6add686b5",
+    "datasets/friston_markov_blanket_pattern_regulation/ambystoma_mexicanum_pattern_specimen.jpg": "fe57ed2c5909e7af46ae0f3d35fb7e2eac68ab1d07e1351c4cd6966bebb6500f"
+  }
+}
