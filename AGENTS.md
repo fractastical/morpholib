@@ -215,7 +215,9 @@ By default, the batch publisher targets `waves/` and planform-generated files; `
 
 ## Cursor Cloud specific instructions
 
-- Cloud agents start from `.cursor/environment.json`: its `install` step pip-installs `requirements.txt`, `cursor-sdk`, and `pytest` into the system Python. There is no `venv/` in the cloud VM — use `python3` directly, not `venv/bin/python`.
-- Validate changes with `python3 -m compileall .` and, where relevant, `python3 -m pytest tests/ -q`. Most other validation is script-specific smoke testing (run the touched script's `--self-test` if it has one).
+- Cloud agents start from `.cursor/environment.json`. `install` puts `requirements.txt`, `cursor-sdk`, `pytest`, and `openpyxl` into the user site-packages (system site-packages are not writable) and installs Lean 4 with `elan`, symlinked onto `/usr/local/bin`. There is no `venv/` — use `python3` directly, not `venv/bin/python`. Login shells include `~/.local/bin`; `lean` is also on `/usr/local/bin` for non-login shells.
+- There is no long-running service to start. Morphology scripts are one-shot commands (`python3 models/<script>.py --self-test`). They select the Matplotlib Agg backend when `DISPLAY` is unset.
+- `PLANFORM_DB_PATH` is required only by `models/1900-planformDB_parser.py`. `CURSOR_API_KEY` is required only when `morphoeval/cloud_orchestrator.py` dispatches cloud agents.
+- Validate changes with `python3 -m compileall .` and, where relevant, `python3 -m pytest tests/ -q`. Most other validation is script-specific smoke testing (run the touched script's `--self-test` if it has one). `lean morphoeval/lean/MathOfBiology.lean` checks the core Lean proofs.
 - Cloud-agent loop/PR work must keep strict zero-conflict isolation: create only new, uniquely named files and never modify or delete existing tracked files on `main` (see `morphoeval/cloud_orchestrator.py`).
 - Do not commit secrets. `CURSOR_API_KEY` comes from the Cursor dashboard / repo secrets, never from a file in this repo.
