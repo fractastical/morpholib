@@ -1,0 +1,218 @@
+# MorphoEval audit v2 — Euplectella aspergillum 34.3 µm Turing wavenumber.
+# Supersedes the Pass 1 audit. Builder and assessor remain the same agent.
+# Pass 2 fixes the osculum alias (R1) and moves structure-tensor coherency
+# from 0.192 to 0.313 (R2). Image radial Pearson stays 0.948, below 0.98 (R3).
+# Dispersion Pearson remains 0.999989.
+
+audit:
+  id: 2026-10-27-euplectella-aspergillum-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-euplectella-aspergillum-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-euplectella-aspergillum-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 remediation; second assessor not run)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: ed31c961
+    note: >-
+      Pass 2 render commit ed31c961. Python 3.12.3, numpy 2.5.4, scipy 1.18.1,
+      Pillow 13.0.0, matplotlib 3.11.2. No ~/.nanopub/profile.yml, so the KG is unsigned.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  aizenberg2005:
+    title: "Skeleton of Euplectella sp.: structural hierarchy from the nanoscale to the macroscale"
+    authors: "Aizenberg J, Weaver JC, Thanawala MS, Sundar VC, Morse DE, Fratzl P"
+    venue: "Science 309:275-278 (2005)"
+    doi: 10.1126/science.1112255
+  weaver2007:
+    title: "Hierarchical assembly of the siliceous skeletal lattice of the hexactinellid sponge Euplectella aspergillum"
+    authors: "Weaver JC, Aizenberg J, et al."
+    venue: "Journal of Structural Biology 158:93-106 (2007)"
+    doi: 10.1016/j.jsb.2006.10.027
+  monn2015:
+    title: "New functional insights into the internal architecture of the laminated anchor spicules of Euplectella aspergillum"
+    authors: "Monn MA, Weaver JC, Zhang T, Aizenberg J, Kesari H"
+    venue: "PNAS 112:4976-4981 (2015)"
+    doi: 10.1073/pnas.1415502112
+  sundar2003:
+    title: "Fibre-optical features of a glass sponge"
+    authors: "Sundar VC, Yablon AD, Grazul JL, Ilan M, Aizenberg J"
+    venue: "Nature 424:899-900 (2003)"
+    doi: 10.1038/424899a
+
+simulations:
+  - id: delphi10000-euplectella-aspergillum-turing-wavelength-s0
+    name: "Euplectella aspergillum Turing wavenumber at 34.3 µm (Holocene, detail s0)"
+    organism: "Euplectella aspergillum"
+    script: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py
+    output: docs/media/euplectella_aspergillum_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/euplectella_aspergillum_turing_wavelength_s0_growth.gif
+      - datasets/euplectella_aspergillum_turing_wavelength_s0/euplectella_aspergillum_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-euplectella-aspergillum-turing-wavelength-s0-audit
+    source_refs: [turing1952, aizenberg2005, weaver2007, monn2015, sundar2003]
+    summary: >-
+      Same Schnakenberg law as Pass 1 (a=0.1, b=0.9, D_u=1, D_v=30, λ_c=3.43e-05 m,
+      k_c=183183 m^-1, age 0 Ma). Dispersion Pearson r=0.999989, RMSE=0.00396,
+      equal-diffusion σ_max=−0.1025, γ-sweep ratio 2. Pass 2 resamples the lattice
+      at the mid-tube radius and leaves the osculum lip bare. CV similarity rises
+      from 81.8 to 86.4 on the 12-frame 960×720 GIF. Coherency rises from 0.192 to
+      0.313 (specimen 0.505). Orientation KS falls from 0.075 to 0.045. Image radial
+      Pearson is 0.948 and does not clear 0.98. Weighted score 85.1/100.
+    claim_boundary:
+      reported_in_source:
+        - "Aizenberg et al. 2005: seven hierarchical levels and a cylindrical square lattice reinforced by diagonal ridges."
+        - "Weaver et al. 2007: assembly of the siliceous lattice of E. aspergillum."
+        - "Turing 1952: dispersion relation and critical wavenumber."
+      reconstructed_in_script:
+        - "Schnakenberg linearisation and σ(k), calibrated to λ_c=3.43e-05 m."
+        - "Four-mode amplitude equations on |k|=k_c, drawn with a fixed reference radius."
+        - "Equal-diffusion ablation, γ sweep, specimen-crop Pearson, RMSE, and KS."
+      transfer_boundary:
+        - "Cohort wording 'pigment stripe / ocellus' names a skeletal-lattice wavelength. The portrait magnifies λ_c."
+      does_not_claim:
+        - "That this sponge has ocelli or pigment stripes."
+        - "That the image radial Pearson exceeded 0.98. It is 0.948."
+        - "That Monn et al. 2015 lamella thicknesses were fitted, or that a second specimen was scored."
+        - "A chronospecies split. Holocene only, 0 Ma, chronoseries 1/1."
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Osculum alias from a local-radius circumferential coordinate."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Portrait coherency moved from 0.192 to 0.313; the photograph remains 0.505."
+        status: resolved
+        novelty_n: 0.4
+        contradiction_c: 0.3
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N4
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Only one public-domain photograph is vendored."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N5
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Pass 2 is still scored by the builder."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0.0
+        depth_d: 0.5
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Unchanged Schnakenberg Jacobian, Turing inequality, and four-mode
+          critical-circle planform, with seven Lean theorems and zero sorry.
+          Pass 2 does not alter the law. The portrait is still an amplitude-equation
+          rendering rather than a saturated 2D PDE, which is why this is not 95.
+        evidence:
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [105, 149], note: "jacobian and sigma_of_k", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3224_euplectella_aspergillum_turing_wavelength_s0.lean, lines: [22, 48], note: "seven theorems, 0 sorry", supports: true}
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [390, 416], note: "reference-radius sampling is a display map of the same k_c, not a new mechanism", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The remediated GIF keeps the tube fan and the square-plus-diagonal
+          lattice, and the osculum lips are now smooth silica instead of horizontal
+          bands. CV similarity against the Okeanos photograph is 86.4 (was 81.8),
+          on 12 frames at 960×720. The mesh is still periodic and the photograph's
+          irregular weave is not reproduced. Score rises from 74 to 80 for the
+          rim fix, and stops there because the portrait is still a diagram of the animal.
+        evidence:
+          - {file: docs/media/euplectella_aspergillum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, remediated portrait, dispersion", supports: true}
+          - {file: docs/media/euplectella_aspergillum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 960x720, CV 86.4", supports: true}
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [390, 416], note: "mid-tube radius, bare cap, softened pores, mild blur", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          γ sweep remains strictly monotone with λ(0.25)/λ(1)=2, and the D_v sweep
+          is in the metrics JSON. Orthogonal amplitudes both stay positive, so the
+          square planform is the selected state rather than a stripe takeover.
+          Pass 2 adds a geometric control (local radius versus reference radius)
+          that removes the rim alias without retuning k_c.
+        evidence:
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [268, 303], note: "gamma_sweep and dv_sweep", supports: true}
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [390, 401], note: "reference radius versus the Pass 1 local radius", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          Dispersion Pearson r=0.999989 and RMSE=0.00396, with equal-diffusion
+          σ_max=−0.1025. On the remediated GIF crop: radial Pearson 0.948
+          (was 0.955), unit-vector RMSE 0.013, orientation KS 0.045 (was 0.075),
+          coherency 0.313 against the specimen's 0.505 (was 0.192). The image
+          radial correlation does not exceed 0.98. The dispersion correlation does.
+          Specimen mask circularity 0.341 is not a self-comparison to 1.
+        evidence:
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [185, 266], note: "numerical growth rates and equal-diffusion control", supports: true}
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [490, 521], note: "Pearson, RMSE, and KS on the fitness crops", supports: true}
+          - {file: datasets/euplectella_aspergillum_turing_wavelength_s0/euplectella_aspergillum_turing_wavelength_s0_metrics.json, lines: [1, 40], note: "Pass 2 image_gof block", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Unchanged from Pass 1. Five Crossref-resolved DOIs, public-domain Okeanos
+          JPEG SHA-256 574b8094… checked at runtime, scout notes the 51 µm sibling
+          is a different slot.
+        evidence:
+          - {file: datasets/euplectella_aspergillum_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "five DOIs", supports: true}
+          - {file: datasets/euplectella_aspergillum_turing_wavelength_s0/euplectella_aspergillum_turing_wavelength_s0_reference.json, lines: [70, 95], note: "specimen licence and hashes", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Docstring equations still map onto jacobian, sigma_of_k, and lattice_phi.
+          The Pass 2 comment at the reference-radius block states why arc length
+          is not the local radius. Lean integers are unchanged.
+        evidence:
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [1, 45], note: "governing equations and the 34.3 µm calibration", supports: true}
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [390, 401], note: "comment tying the display map to a single λ_c", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test still passes on the remediated script (r>0.98, ablation
+          σ_max<0, monotone γ sweep, Lean bounds, age 0 Ma, log10=−4.465).
+          GIF remains 12 frames at 960×720. Hashes unchanged. No per-script lockfile.
+        evidence:
+          - {file: models/2026-delphi10000-euplectella-aspergillum-turing-wavelength-s0.py, lines: [777, 809], note: "self_test assertions", supports: true}
+          - {file: datasets/euplectella_aspergillum_turing_wavelength_s0/README.md, lines: [1, 26], note: "invocation, 34 µm, 0 Ma", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved in this pass: circumferential arc uses the mid-tube radius; osculum lips are unpatterned."
+        status: resolved
+      - id: R2
+        item: "Partly resolved: coherency 0.192 → 0.313. Specimen coherency is still 0.505. Not closed by pasting the photograph."
+        status: resolved
+      - id: R3
+        item: "Image radial Pearson is 0.948, not above 0.98. Dispersion Pearson is 0.999989 and is the law's goodness-of-fit."
+        status: open
+      - id: R4
+        item: "Second specimen still absent."
+        status: open
+      - id: R5
+        item: "Independent second assessor still absent."
+        status: open
