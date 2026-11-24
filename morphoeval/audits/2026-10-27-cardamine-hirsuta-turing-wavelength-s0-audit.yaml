@@ -1,0 +1,200 @@
+# MorphoEval Pass 1 — Cardamine hirsuta Turing wavelength, slot 3140.
+# Single assessor (grok-4.7). Scores withhold full credit for the
+# diffusivity sweep, the equal-diffusion ablation, and the specimen
+# segmentation until measure_outputs fingerprints them (R1–R4).
+audit:
+  id: 2026-10-27-cardamine-hirsuta-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent Pass 1; second assessor pending)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Base commit when the loop was scored. Slot 3140 files are new in the working tree on top of this commit, so blob URLs at this commit do not yet contain them. Evidence is pinned by path and line in the loop commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan Mathison"
+    venue: "Philosophical Transactions of the Royal Society of London B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  kierzkowski2019:
+    title: "A Growth-Based Framework for Leaf Shape Development and Diversity"
+    authors: "Kierzkowski, Runions, Vuolo, Strauss, and others"
+    venue: "Cell 177(6):1405-1418 (2019)"
+    doi: 10.1016/j.cell.2019.05.011
+  vlad2014:
+    title: "Leaf Shape Evolution Through Duplication, Regulatory Diversification, and Loss of a Homeobox Gene"
+    authors: "Vlad, Kierzkowski, Rast, Vuolo, and others"
+    venue: "Science 343(6172):780-783 (2014)"
+    doi: 10.1126/science.1248384
+  fusterpons2024:
+    title: "The trichome pattern diversity of Cardamine shares genetic mechanisms with Arabidopsis but differs in environmental drivers"
+    authors: "Fuster-Pons, Murillo-Sanchez, Mendez-Vigo, Marcer, and others"
+    venue: "Plant Physiology 196(4):2730-2748 (2024)"
+    doi: 10.1093/plphys/kiae213
+    role: "Related periodic epidermal pattern. Not a measurement of a 154.1 µm pigment wavelength."
+simulations:
+  - id: delphi10000-cardamine-hirsuta-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength on Cardamine hirsuta at 154 µm (Pass 1)"
+    organism: "Cardamine hirsuta (hairy bittercress)"
+    domain: morphogenesis
+    script: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py
+    output: docs/media/cardamine_hirsuta_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/cardamine_hirsuta_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kierzkowski2019, vlad2014, fusterpons2024]
+    summary: >-
+      Holocene (0 Ma) detail-scale Schnakenberg model with slot coefficients
+      a=0.10, b=0.90, D_u=0.04, D_v=0.42. Classical lambda_c is pinned at
+      154.1 µm (k_c^2 = 185/21). Self-test dispersion Pearson r = 0.9999,
+      RMSE = 0.00156, equal-diffusion sigma_max = -0.102, and a monotonic
+      rise in selected wavelength from 164 µm to 217 µm as D_v/D_u goes from
+      10.5 to 40. Nonlinear spacing on two seeds is 173.4 µm, 12% longer than
+      the classical law. The 12-frame 720x540 GIF scores CV similarity 96.0
+      against the public-domain plant. Pass 1 does not yet treat those
+      sidecar measurements as the scored record.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a finite critical wavenumber from reaction and diffusion."
+        - "Schnakenberg (1979) supplies the kinetics a - u + u^2 v and b - u^2 v."
+        - "Kierzkowski et al. (2019) and Vlad et al. (2014) describe Cardamine hirsuta leaflet growth and the RCO domain-size difference from Arabidopsis."
+        - "Fuster-Pons et al. (2024) describe a lateral-inhibition trichome pattern in Cardamine."
+      reconstructed_in_script:
+        - "Neumann Schnakenberg integration, the dispersion fit, the diffusivity sweep, and the equal-diffusion ablation."
+        - "Physical calibration that sets the classical wavelength equal to 154.1 µm."
+        - "Pigment-ocellus readout of activator u inside the photographed leaf mask."
+      transfer_boundary:
+        - "154.1 µm is the slot scale assigned to the classical wavenumber, not a length quoted from the Cardamine papers."
+        - "Trichome spacing is a related epidermal periodicity, not the pigment field drawn here."
+      does_not_claim:
+        - "That the whole-plant photograph resolves 154 µm ocelli."
+        - "That a named fossil chronospecies precedes or follows this Holocene terminal (series 1/1, age 0 Ma)."
+        - "That the nonlinear spacing of 173.4 µm falsifies or confirms a published Cardamine measurement."
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          The script implements Schnakenberg kinetics, the Jacobian at
+          (u0, v0) = (1, 0.9), and k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v).
+          Trace is negative and the squared Turing inequality holds. The
+          pigment-ocellus reading of u is a reconstruction, so this is not a
+          line-by-line reproduction of a Cardamine pigment paper.
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [93, 118], note: "Jacobian and classical wavenumber", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [144, 163], note: "Neumann Schnakenberg integrator", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean, lines: [13, 28], note: "Integer identities for k_c^2, the Turing gap, the diffusion ratio, and the trace", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          The GIF is the public-domain plant, with a mild ocellus modulation
+          inside the leaf mask, and the comparison figure places that plant
+          beside the field. Computer-vision similarity of the last frame is
+          96.0, but the photograph cannot show a 154 µm pattern, and Pass 1
+          does not yet score the segmentation metrics.
+        evidence:
+          - {file: docs/media/cardamine_hirsuta_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, patterned field, and ablation panel", supports: true}
+          - {file: docs/media/cardamine_hirsuta_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames at 720x540", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [312, 336], note: "Leaf-mask pigment modulation", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: >-
+          Five inhibitor diffusivities are swept and the selected wavelength
+          increases from 163.9 µm to 217.4 µm. Pass 1 records the curve but
+          leaves the monotonicity flag for the measurement sidecar (R1).
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [226, 239], note: "parameter_sweep over D_v", supports: true}
+          - {file: docs/media/cardamine_hirsuta_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Sweep panel", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          Dispersion Pearson r is 0.9999 and RMSE is 0.00156 on nine
+          wavenumbers. Nonlinear spacing is 173.4 µm against the 154.1 µm
+          law, which is reported rather than forced to match. Segmentation,
+          KS, and the ablation standard deviation are implemented and are
+          not yet the scored sidecar (R2–R4).
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [183, 217], note: "Linear-window growth-rate fit", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [165, 181], note: "Autocorrelation spacing", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [692, 710], note: "Self-test gates on r, ablation, sweep, frames, and CV", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Crossref-checked DOIs, a SHA-256-pinned public-domain Commons
+          photograph, and the scout manifest are in the dataset directory.
+          The 154.1 µm scale and 0 Ma age are stated in the reference JSON
+          and the README.
+        evidence:
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing 1952 and Schnakenberg 1979", supports: true}
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/cardamine_hirsuta_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 154.1 µm, age 0 Ma, specimen SHA-256", supports: true}
+          - {file: datasets/cardamine_hirsuta_turing_wavelength_s0/README.md, lines: [1, 20], note: "Scale and age stated in the dataset README", supports: true}
+      code-traceability:
+        value: 82
+        rationale: >-
+          Equation comments point at the wavenumber law, the Neumann
+          integrator, and the dispersion fit. The Lean file proves the
+          integer forms of those identities, including the Holocene
+          terminal condition 1 - 1 = 0.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-cardamine-hirsuta-turing-wavelength-s0.yaml, lines: [1, 40], note: "Equations linked to the Lean theorems", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3140_cardamine_hirsuta_turing_wavelength_s0.lean, lines: [32, 45], note: "Eight wavelengths, cell cutoff, Holocene terminus", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test checks the hashes, the dispersion correlation, the
+          ablation sign, sweep monotonicity, GIF length, and resolution.
+          Seeds 3140 and 3141 are fixed. Dependencies are the repo
+          scientific stack (numpy, scipy, pillow, matplotlib).
+        evidence:
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [52, 76], note: "Pinned dataset hashes and slot coefficients", supports: true}
+          - {file: models/2026-delphi10000-cardamine-hirsuta-turing-wavelength-s0.py, lines: [666, 712], note: "CLI and self-test", supports: true}
+    remediation:
+      - id: R1
+        item: "Score the five-point D_v sweep monotonicity from the measurement sidecar, not only from the figure."
+      - id: R2
+        item: "Score the equal-diffusion ablation (sigma_max < 0 and a falling field standard deviation) as a negative control."
+      - id: R3
+        item: "Record specimen segmentation (foreground fraction, aspect, circularity, coherency) with references that are not copies of the measured values."
+      - id: R4
+        item: "Record dispersion Pearson r, RMSE, and the specimen-versus-render orientation KS statistic."
+      - id: R5
+        item: "Independent second assessor. This Pass 1 score is a single-agent reading."
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Fingerprint the D_v sweep in the measurement sidecar."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Fingerprint ablation, segmentation, Pearson r, RMSE, and KS."
+        status: open
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 2
+        age_days_a: 0
+      - id: N3
+        need_type: independent_assessor
+        target_dimension: specimen-match
+        description: "A second assessor has not scored this loop."
+        status: open
+        novelty_n: 0
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
