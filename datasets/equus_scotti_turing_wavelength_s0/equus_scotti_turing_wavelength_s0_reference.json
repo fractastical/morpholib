@@ -1,0 +1,116 @@
+{
+  "sim_id": "delphi10000-equus-scotti-turing-wavelength-s0",
+  "slot": 3220,
+  "organism": "Equus scotti",
+  "common_name": "Pleistocene Giant Ice-Age Horse Chronospecies",
+  "aristotelian_taxonomy": "I. Enaima (Vertebrata) -> Mammalia (Zootoka) -> Equus",
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength, detail variant",
+    "phenomenon_size_m": 0.0001643,
+    "phenomenon_size_um": 164.3,
+    "log10_size_m": -3.784,
+    "scale_tier": "5_primordium_100um",
+    "tier_index": "5/8",
+    "human_label": "164 µm"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.6,
+    "geological_period": "Middle Pleistocene (Irvingtonian, 0.6 Ma)",
+    "fossil_lineage_group": "Equid Autopod & Dental Chronospecies",
+    "equus_chronoseries": "1/2",
+    "predecessor": {
+      "taxon": "Pliohippus pernix",
+      "age_ma": 8.5,
+      "period": "Late Miocene (Hemphillian, 8.5 Ma)",
+      "catalog_linear_proxy": 0.215,
+      "lambda_um_hypothesis": 198.6883720930233,
+      "scaling": "lambda_plio = lambda_scotti * (L_scotti / L_plio) with catalog lengths 0.260 and 0.215"
+    },
+    "focal": {
+      "taxon": "Equus scotti",
+      "age_ma": 0.6,
+      "catalog_linear_proxy": 0.260,
+      "lambda_um": 164.3
+    },
+    "successor": {
+      "taxon": "Equus quagga",
+      "age_ma": 0.0,
+      "lambda_um_bard1977": 400.0,
+      "note": "Bard 1977: equid stripe initiation spacing about 0.4 mm, week 3 in E. burchelli (plains zebra / quagga group)."
+    }
+  },
+  "governing_model": {
+    "kinetics": "Schnakenberg 1979",
+    "equations": [
+      "du/dt = Du * laplacian(u) + gamma * (a - u + u^2 v)",
+      "dv/dt = Dv * laplacian(v) + gamma * (b - u^2 v)"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "fu = -1 + 2 u0 v0, fv = u0^2, gu = -2 u0 v0, gv = -u0^2",
+    "growth_rate": "sigma_+(k) = largest eigenvalue of J - k^2 diag(Du, Dv)",
+    "turing_wavenumber_kc": "k_c = argmax_{k>0} sigma_+(k), lambda_c = 2 pi / k_c",
+    "murray_stationary_wavenumber": "k_m^2 = (Dv fu + Du gv) / (2 Du Dv)",
+    "boundary_conditions": "periodic on a rectangular dermal patch (spectral Fourier method)",
+    "necessary_conditions": [
+      "trace(J) < 0",
+      "det(J) > 0",
+      "Dv fu + Du gv > 0",
+      "(Dv fu + Du gv)^2 > 4 Du Dv det(J)"
+    ]
+  },
+  "parameter_table": {
+    "a": 0.10,
+    "b": 0.90,
+    "gamma": 1.0,
+    "Dv_over_Du": 20.0,
+    "target_lambda_um": 164.3,
+    "target_lambda_m": 0.0001643,
+    "grid_waves_x": 8,
+    "grid_waves_y": 6,
+    "cells_per_wave": 14,
+    "seed": 3220,
+    "time_step": 0.05,
+    "n_steps": 1000,
+    "notes": "Du and Dv are solved at runtime so argmax sigma_+(k) equals 2 pi / 164.3 µm. They are not copied from the 8.8 mm sibling slot."
+  },
+  "empirical_claims": [
+    {
+      "id": "bard1977_spacing",
+      "statement": "At pattern initiation the body stripes of the main zebra species are equally spaced at about 0.4 mm, perpendicular to the dorsal line. Species differ by the embryonic week at which that pattern is fixed (week 3 E. burchelli, week 4 E. zebra, week 5 E. grevyi).",
+      "source_doi": "10.1111/j.1469-7998.1977.tb04204.x",
+      "used_as": "Successor Equus quagga initiation wavelength, 400 µm, against which the 164.3 µm Irvingtonian follicular mode is shorter."
+    },
+    {
+      "id": "bard1981_inhibition",
+      "statement": "Zebra stripes are produced by inhibition of melanin on a dark background, not by stimulation of pigment in the white bands.",
+      "source_doi": "10.1016/0022-5193(81)90109-0",
+      "used_as": "Sign of the coat readout: high activator darkens the flank overlay."
+    },
+    {
+      "id": "murray1981_domain",
+      "statement": "Mammalian coat markings are a Turing pre-pattern whose mode count is set by domain size relative to the chemical wavelength.",
+      "source_doi": "10.1016/0022-5193(81)90334-9",
+      "used_as": "Eight follicular wavelengths on the 1.31 mm Equus scotti patch."
+    },
+    {
+      "id": "macfadden1986_size",
+      "statement": "Equid body size increases from Hyracotherium to Equus (Cope's law).",
+      "source_doi": "10.1017/s0094837300003109",
+      "used_as": "Justification for scaling the predecessor follicular wavelength with the catalog linear-size ratio, not as a measured Pliohippus coat spacing."
+    }
+  ],
+  "specimen": {
+    "filename": "equus_scotti_specimen.jpg",
+    "sha256": "b23e72ef92962964eb9c3d83baf1b5292b0039e3e345c143b115b4fc33e14a99",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Equus_scotti.jpg",
+    "license": "Public domain",
+    "creator": "Robert Bruce Horsfall",
+    "year": 1905,
+    "pixel_size": [1652, 1117]
+  },
+  "claim_boundary_summary": {
+    "reported_in_source": "Turing dispersion, Schnakenberg kinetics, Bard 0.4 mm zebra initiation spacing, Murray domain-size mode count, MacFadden equid size increase.",
+    "reconstructed_in_script": "Diffusivities that place argmax sigma_+ at 164.3 µm, the Pliohippus 198.7 µm scaling, and the flank overlay on the Horsfall plate.",
+    "does_not_claim": "A measured 164 µm stripe on an Equus scotti fossil, or that Equus scotti is the direct ancestor of Equus quagga."
+  }
+}

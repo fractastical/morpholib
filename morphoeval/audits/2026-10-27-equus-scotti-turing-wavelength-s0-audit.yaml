@@ -1,0 +1,194 @@
+# Pass 1 — Equus scotti follicular Turing wavelength, 164 µm, Irvingtonian 0.6 Ma.
+# Slot 3220. Scores describe the script as committed, including the gaps listed
+# under remediation. They are uncalibrated rubric ratings, not probabilities.
+
+audit:
+  id: 2026-10-27-equus-scotti-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (primary pass-1 assessor)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 613cdbbd89d39feb2d3ec526d962fb10569c7a9c
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 of loop 3220. The script solves Schnakenberg kinetics so that the
+      fastest linear mode sits at 164.3 µm and renders that field on the
+      Horsfall plate. It does not yet sweep the chronoseries, run the
+      equal-diffusion ablation, or segment the specimen.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  bard1977:
+    title: "A unity underlying the different zebra striping patterns"
+    authors: "Bard JBL"
+    venue: "Journal of Zoology 183:527-539 (1977)"
+    doi: 10.1111/j.1469-7998.1977.tb04204.x
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  macfadden1986:
+    title: "Fossil horses from Eohippus (Hyracotherium) to Equus: scaling, Cope's Law, and the evolution of body size"
+    authors: "MacFadden BJ"
+    venue: "Paleobiology 12:355-369 (1986)"
+    doi: 10.1017/s0094837300003109
+
+simulations:
+  - id: delphi10000-equus-scotti-turing-wavelength-s0
+    name: "Equus scotti follicular Turing wavelength at 164 µm (Irvingtonian, 0.6 Ma)"
+    organism: "Equus scotti"
+    script: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py
+    output: docs/media/equus_scotti_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/equus_scotti_turing_wavelength_s0_growth.gif
+    phenomenon_size_m: 0.0001643
+    scale_tier: 5_primordium_100um
+    geological_age_ma: 0.6
+    geological_period: "Middle Pleistocene (Irvingtonian, 0.6 Ma)"
+    fossil_lineage_group: "Equid Autopod & Dental Chronospecies"
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, bard1977, murray1981, macfadden1986]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics, places k_c = argmax sigma_+(k)
+      at 164.3 µm (measured linear peak 164.37 µm; nonlinear radial-FFT peak
+      167.94 µm; Murray stationary wavelength 130.6 µm), and fits IMEX
+      single-mode growth to the analytical dispersion at Pearson r = 0.993.
+      The Horsfall 1905 public-domain restoration is the specimen. The script
+      does not sweep Pliohippus or Equus quagga, does not run Du = Dv, and
+      does not segment the plate.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and a dispersion relation for chemical wavelength selection."
+        - "Schnakenberg 1979: activator-substrate kinetics du/dt and dv/dt with the u^2 v nonlinearity."
+        - "Bard 1977: zebra initiation spacing about 0.4 mm, fixed at different embryonic weeks; week 3 for the plains-zebra / quagga pattern."
+        - "Murray 1981: coat mode count is set by domain size relative to the chemical wavelength."
+        - "MacFadden 1986: equid body size increases from Hyracotherium to Equus."
+      reconstructed_in_script:
+        - "Du and Dv at Dv/Du = 20 are solved so argmax sigma_+ equals 2*pi/164.3 µm."
+        - "The predecessor wavelength 198.7 µm is the focal wavelength times the catalog linear-size ratio 0.260/0.215. It is not a measured Pliohippus coat spacing."
+        - "The flank ocelli are a visualization of the 164 µm field on a whole-animal plate."
+      transfer_boundary:
+        - "164.3 µm is the assigned phenomenon scale of slot 3220, not a length measured on an Equus scotti fossil."
+        - "Equus chronoseries 1/2 (scotti then quagga) is the campaign order. Scotti is a North American caballoid; quagga is a zebra."
+      does_not_claim:
+        - "That a 164 µm stripe was measured on Equus scotti."
+        - "That the Horsfall drawing's pencil grain is a melanocyte field."
+        - "That Equus scotti is the direct ancestor of Equus quagga."
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: >-
+          schnakenberg_jacobian, sigma_plus, and diffusivity_for_wavelength
+          implement the published Jacobian and define k_c as argmax sigma_+,
+          which the run places at 164.37 µm. The spectral IMEX step is the
+          same update used for the single-mode growth test. Murray's
+          determinant stationary point is computed separately (130.6 µm) and
+          not confused with k_c. The equal-diffusion failure and the
+          predecessor/successor diffusivities are stated in the Lean file and
+          the reference JSON but are not executed.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [58, 113], note: "Jacobian, sigma_+, and the diffusivity solve for lambda = 164.3 µm", supports: true}
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [159, 186], note: "Periodic spectral IMEX of the Schnakenberg PDE", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3220_equus_scotti_turing_wavelength_s0.lean, lines: [28, 34], note: "Equal-diffusion Turing condition is proved and not yet run in the script", supports: false}
+      specimen-match:
+        value: 71
+        rationale: >-
+          The specimen is Horsfall's 1905 public-domain restoration, SHA-256
+          pinned, shown beside the activator and as a feathered flank overlay
+          in the comparison figure and in a 12-frame GIF (960×649). The
+          overlay is visibly an ocellus field, feathered so the torso window
+          is not a hard rectangle. No measurement is taken from the plate
+          itself: foreground, coherency, and the radial spectrum of the
+          drawing are not compared with the simulation. The plate is a whole
+          animal; 164 µm is below its resolution, and the figure says so.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [262, 304], note: "Feathered flank paint and 12-frame GIF on the Horsfall plate", supports: true}
+          - {file: docs/media/equus_scotti_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Four-panel comparison: plate, activator, overlay, dispersion", supports: true}
+          - {file: docs/media/equus_scotti_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame flank-growth GIF, 960×649", supports: true}
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [344, 388], note: "measure_morphoeval has no specimen-image segmentation", supports: false}
+      parameter-expressivity:
+        value: 58
+        rationale: >-
+          One kinetic point is exercised: a=0.10, b=0.90, Dv/Du=20, target
+          164.3 µm. The diffusivity solver is monotone in the target
+          wavelength, but the script never varies Dv/Du, the predecessor
+          198.7 µm target, or the Bard 400 µm successor target, so a reader
+          cannot see the wavelength move.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [213, 252], note: "run_science reads a single parameter row and simulates one patch", supports: false}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          IMEX growth versus analytical sigma_+ gives Pearson r = 0.99341
+          (reference 1) and RMSE = 0.037 (reference 0) on the 32 real-eigenvalue
+          wavenumbers. The nonlinear radial-FFT wavelength is 167.94 µm
+          against the assigned 164.3 µm, so the comparison is not a copy of
+          the reference. Complex-eigenvalue wavenumbers are excluded and
+          counted. There is no KS test and no measurement on the specimen image.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [128, 157], note: "Dispersion fit restricted to real eigenpairs", supports: true}
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [189, 211], note: "Parabolic radial-FFT wavelength of the matured activator", supports: true}
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [344, 388], note: "Four measurements; specimen KS and coherency absent", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          scout_manifest.json records OpenAlex and Crossref hits and the
+          Wikimedia source. paper_citations.bib and the reference JSON carry
+          DOIs for Turing 1952, Schnakenberg 1979, Bard 1977, Murray 1981,
+          and MacFadden 1986. Five dataset files are SHA-256 pinned, including
+          the Horsfall JPEG. The 164 µm scale and 0.6 Ma age are stated in
+          the README and the reference JSON.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [33, 52], note: "SHA-256 pins for the reference JSON, specimen, scout manifest, bib, and README", supports: true}
+          - {file: datasets/equus_scotti_turing_wavelength_s0/equus_scotti_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 0.0001643 m and age 0.6 Ma", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Each modelling step is a named function tied to a formula in the
+          module docstring and in the math-KG YAML. Loop_3220 proves the
+          sign of the determinant, the trace, the Dv/Du = 20 drive, the
+          equal-diffusion failure, the wavelength order, and the eight-mode
+          count, with no sorry. The integer Jacobian is the 10× scaling of
+          the floating-point entries the script uses.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [1, 16], note: "Docstring names the kinetics, the wavenumber, the scale, and the sibling slot that was not copied", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3220_equus_scotti_turing_wavelength_s0.lean, lines: [19, 46], note: "Five theorems, zero sorry, slot-specific integers", supports: true}
+      repro-package:
+        value: 81
+        rationale: >-
+          --self-test checks the Turing inequalities, the linear peak within
+          1 µm of 164.3, Pearson r > 0.98, a non-equal nonlinear wavelength,
+          and a GIF of at least 12 frames at least 480 px on the short side.
+          The seed is 3220. Dataset hashes are verified before the solve.
+          The self-test does not yet assert the ablation or the chronoseries.
+        evidence:
+          - {file: models/2026-delphi10000-equus-scotti-turing-wavelength-s0.py, lines: [397, 424], note: "Deterministic self-test and render", supports: true}
+    remediation:
+      - "Sweep the chronoseries: Pliohippus pernix at 198.7 µm (Dv/Du = 12), Equus scotti at 164.3 µm (Dv/Du = 20), Equus quagga at the Bard 1977 initiation spacing of 400 µm (Dv/Du = 30), and show that the selected wavelength moves monotonically."
+      - "Add the equal-diffusion negative control Du = Dv and report that the maximum growth rate for k > 0 is negative."
+      - "Segment the Horsfall plate (foreground fraction, structure-tensor coherency, radial spectrum) and compare those measurements with the simulated activator. Do not score a metric whose value is copied from its reference."
+      - "Extend goodness-of-fit with a KS statistic between the specimen radial spectrum and the simulated radial spectrum, and keep Pearson r and RMSE on the dispersion curve."
