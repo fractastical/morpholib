@@ -1,0 +1,227 @@
+# MorphoEval audit — slot 3192, Pass 1.
+# Drosophila melanogaster detail-scale Turing wavelength (2.736e-06 m, 0 Ma).
+# Builder and assessor are the same agent (Grok 4.7). No second provider scored this script.
+
+audit:
+  id: 2026-10-27-drosophila-melanogaster-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent cloud loop; no second provider)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Loop files are new on top of 0c76d15d. Python 3.12, numpy 2.5, scipy 1.18,
+      Pillow 13, matplotlib 3.11. Lean 4 is not installed on this VM, so the
+      decide proofs were not kernel-checked here.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  wittkopp2002:
+    title: "Reciprocal functions of the Drosophila Yellow and Ebony proteins in the development and evolution of pigment patterns"
+    authors: "Wittkopp PJ, True JR, Carroll SB"
+    venue: "Development 129:1849-1858 (2002)"
+    doi: 10.1242/dev.129.8.1849
+  true1997:
+    title: "Quantitative genetic analysis of divergence in male secondary sexual traits between Drosophila simulans and Drosophila mauritiana"
+    authors: "True JR, Liu J, Stam LF, Zeng Z-B, Laurie CC"
+    venue: "Evolution 51:816-832 (1997)"
+    doi: 10.1111/j.1558-5646.1997.tb03664.x
+  richards2005:
+    title: "Comparative genome sequencing of Drosophila pseudoobscura"
+    authors: "Richards S et al."
+    venue: "Genome Research 15:1-18 (2005)"
+    doi: 10.1101/gr.3059305
+
+simulations:
+  - id: delphi10000-drosophila-melanogaster-turing-wavelength-s0
+    name: "Drosophila melanogaster Schnakenberg Turing wavelength at 2.736 µm (Holocene, 0 Ma)"
+    organism: "Drosophila melanogaster"
+    script: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py
+    output: docs/media/drosophila_melanogaster_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_melanogaster_turing_wavelength_s0_growth.gif
+      - datasets/drosophila_melanogaster_turing_wavelength_s0/drosophila_melanogaster_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo2010, wittkopp2002, true1997, richards2005]
+    provenance:
+      spec_fingerprint: 995c7441a1e86dd55fbe8e523c9fea39052280d57b46ba75e4b98b1e0c116683
+      artifact_sha256: a5198e44d82533312ce2e385854f8ba7c3d9601826b8b99d7df8ea883615039b
+      input_dataset_sha256:
+        datasets/drosophila_melanogaster_turing_wavelength_s0/drosophila_melanogaster_turing_wavelength_s0_reference.json: 553df65dcc62824ec221f51c20bd30de8eba4b9d16593a06498d52b2cb686622
+        datasets/drosophila_melanogaster_turing_wavelength_s0/Drosophila_melanogaster_specimen.jpg: 2a66a100d8405cc95d2c17474a8a55ade755e5580a5d47f6863dc22342cdf05b
+    summary: >-
+      Schnakenberg reaction-diffusion on an 8-by-6-wavelength periodic patch.
+      Gamma is solved so the analytic critical wavelength of D. melanogaster is
+      2.736 µm (2.736e-06 m, log10=-5.563, tier 3_subcellular_um). At that same
+      gamma, reconstructed wavelengths are 2.242 µm (D. miranda, successor) and
+      3.243 µm (D. mauritiana, predecessor), all at 0 Ma. Numerical dispersion
+      Pearson r = 0.9999999989, RMSE = 4.62e-5. Nonlinear FFT wavelength is
+      2.799 µm (2.3% longer than the linear target). Equal-diffusion ablation
+      std is 7.8e-5 against a patterned std of 0.117. The growth GIF is 16
+      frames at 768x576; its last frame is the Karwath male with activator
+      darkening at amplitude 0.16 and scores CV similarity 96.0 against that
+      photograph.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a finite wavelength by diffusion-driven instability."
+        - "Schnakenberg (1979) kinetics are f = a - u + u^2 v and g = b - u^2 v."
+        - "Wittkopp, True and Carroll (2002) place Drosophila melanin via Yellow and Ebony."
+        - "True et al. (1997) quantify morphological divergence of D. mauritiana from the simulans complex."
+        - "Richards et al. (2005) compare the D. pseudoobscura genome with D. melanogaster."
+        - "The Karwath photograph is an adult male D. melanogaster under CC BY-SA 2.5."
+      reconstructed_in_script:
+        - "Gamma = 1.032078 is solved so argmax sigma(k) = 2 pi / 2.736 per micrometre."
+        - "Mauritiana (a=0.16, b=0.72, Du=0.055, Dv=1.15) and miranda (a=0.07, b=1.25, Du=0.020, Dv=2.20) wavelengths at that shared gamma."
+        - "Explicit-Euler periodic integration, radial-FFT wavelength, and eigenvector growth-rate correlation."
+        - "Registration of the steady activator onto the photograph at amplitude 0.16."
+      transfer_boundary:
+        - "2.736 µm is the assigned detail scale for this slot, not a published melanin-granule spacing."
+        - "Chronospecies wavelengths are reconstructions. True 1997 and Richards 2005 do not report these micrometre values."
+        - "Richards 2005 sequenced D. pseudoobscura. D. miranda is in that obscura clade; the paper is not a miranda pigment micrograph."
+      does_not_claim:
+        - "That adult abdominal stripes or ommatidia have wavelength 2.736 µm."
+        - "That the spot lattice is a photograph of an ocellus."
+        - "That a near-unit dispersion correlation validates the nonlinear field against an electron micrograph."
+        - "A second independent assessor."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The script implements Schnakenberg kinetics, the gamma-scaled Jacobian,
+          sigma(k), the Turing margin h^2 - 4 Du Dv det(J), and gamma solved so
+          k_c matches 2 pi / 2.736 µm^-1. The equal-diffusion control has a
+          negative margin and a collapsed field. Deduction: the integrator is
+          explicit Euler, and the kinetics are Schnakenberg rather than a
+          Drosophila-specific transport law. Yellow and Ebony are cited as the
+          biological context, not as separate state variables.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [102, 150], note: "Jacobian, sigma(k), gamma bisection, Turing margin", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [178, 205], note: "periodic explicit-Euler Schnakenberg update", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3192_drosophila_melanogaster_turing_wavelength_s0.lean, lines: [18, 42], note: "five decide theorems, zero sorry; Lean binary absent on this VM", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The comparison figure places the Karwath adult male beside the steady
+          activator. The growth GIF (16 frames, 768x576) ends on that photograph
+          darkened where the activator is high (amplitude 0.16). Computer-vision
+          similarity of that last frame to the pinned file is 96.0. The lattice
+          itself is a spot field at the 2.7 µm scale; it is not a portrait of the
+          fly and not an ocellus micrograph. The score credits the registered
+          animal and the correct form class (spots), and withholds the rest.
+        evidence:
+          - {file: docs/media/drosophila_melanogaster_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, activator lattice, chronospecies bars, dispersion scatter", supports: true}
+          - {file: docs/media/drosophila_melanogaster_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16-frame GIF; last frame is the registered male; CV 96.0", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [399, 446], note: "cuticle darkening and GIF assembly; PDE frames are stamped, the specimen frame is not", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Scaling gamma by 0.65, 0.85, 1, 1.25, 1.6 and 2.05 moves analytic
+          lambda strictly from 3.394 µm down to 1.911 µm. Chronospecies parameters
+          move lambda the other way at fixed gamma: miranda 2.242 µm, melanogaster
+          2.737 µm, mauritiana 3.243 µm, and the self-test rejects a broken order.
+          Du and Dv are not given their own one-parameter sweeps beyond that trio.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [312, 329], note: "gamma sweep asserts strict decrease of lambda", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [84, 88], note: "slot-specific (a, b, Du, Dv) for the three species", supports: true}
+          - {file: docs/media/drosophila_melanogaster_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "bar chart of the three wavelengths and the gamma-scale annotation", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          Dispersion goodness-of-fit on 13 patterned-band modes: Pearson r =
+          0.9999999989 (reference 1, not equal), RMSE = 4.62e-5 (reference 0).
+          The nonlinear FFT wavelength is 2.799 µm against the 2.736 µm target
+          (2.3% long), so the field metric is not a copy of the target. Specimen
+          foreground fraction is 0.505 (reference 0.50, not equal), contour
+          circularity 0.044 against a circle at 1, and structure-tensor coherency
+          0.464. Equal-diffusion std ratio is about 1496 (reference 1). The KS
+          statistic of residuals against an independent normal is 0.726 (p ~ 4e-7):
+          the residuals are tighter and less Gaussian than that reference. That
+          is reported, not hidden, and it is why this dimension is not in the 90s.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [239, 309], note: "eigenvector growth rates, Pearson, RMSE, two-sample KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [332, 379], note: "specimen mask, circularity, coherency, body-third luminances", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [614, 710], note: "measure_morphoeval rows; values differ from reference_value", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Six DOIs are in the bib and were resolved through OpenAlex or Crossref
+          on 2026-10-27 (Turing, Schnakenberg, Kondo & Miura, Wittkopp et al.,
+          True et al. Evolution 1997, Richards et al. 2005). The specimen is
+          André Karwath's Commons file, CC BY-SA 2.5, SHA-256 pinned and checked
+          at runtime. Deduction: Richards 2005 is a pseudoobscura genome paper
+          used as clade context for miranda, which the claim boundary states.
+        evidence:
+          - {file: datasets/drosophila_melanogaster_turing_wavelength_s0/paper_citations.bib, lines: [1, 75], note: "six DOIs", supports: true}
+          - {file: datasets/drosophila_melanogaster_turing_wavelength_s0/drosophila_melanogaster_turing_wavelength_s0_reference.json, lines: [1, 70], note: "scale 2.736e-06 m, age 0 Ma, specimen SHA-256 and Commons URL", supports: true}
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [81, 81], note: "pinned SHA-256 checked in run_study and self_test", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module docstring states the PDE, the dispersion formula, and the
+          three parameter rows. Jacobian, sigma, gamma solve, simulator, FFT,
+          and the GoF each occupy a named function. The Lean module records the
+          wavelength order, the 8-wave patch, the nanometre gaps, the diffusion
+          inequality, and u0 = a + b, with zero sorry. Deduction: Lean was not
+          executed here (no lean binary), and there is no line map onto numbered
+          equations of Turing 1952.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [1, 48], note: "docstring equation map, scale 2.736e-06 m, age 0 Ma", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3192_drosophila_melanogaster_turing_wavelength_s0.lean, lines: [13, 42], note: "definitions and five theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-melanogaster-turing-wavelength-s0.yaml, lines: [1, 64], note: "equation records point at the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          Seed 3192, documented --self-test, runtime SHA-256 check, and a
+          known-good note for Python 3.12 / numpy 2.5 / scipy 1.18 / Pillow 13 /
+          matplotlib 3.11. Self-test covers wavelength order, negative Turing
+          margin under equal diffusion, monotone gamma sweep, pattern-versus-
+          ablation std, and dispersion r > 0.98. Deduction: dependencies are not
+          a per-script lockfile, and Lean was not run.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-melanogaster-turing-wavelength-s0.py, lines: [767, 801], note: "self_test assertions", supports: true}
+          - {file: datasets/drosophila_melanogaster_turing_wavelength_s0/README.md, lines: [1, 40], note: "scale, age, parameter table, invocation", supports: true}
+    remediation:
+      - "Sweep the specimen foreground luminance quantile (currently 0.70) and report whether foreground fraction and circularity stay stable."
+      - "Integrate a saturated 1D Schnakenberg field for mauritiana and miranda and check that the nonlinear wavelengths keep the linear order miranda < melanogaster < mauritiana."
+    needs:
+      - id: N3192-mask
+        need_type: specimen_comparison
+        target_dimension: morphometric-validation
+        description: "Single luminance quantile for the specimen mask; sweep it."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N3192-nonlinear-chrono
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Chronospecies wavelengths are linear k_c only; confirm after nonlinear saturation."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0.1
+        depth_d: 1.0
+        age_days_a: 0
