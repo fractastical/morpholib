@@ -1,0 +1,193 @@
+# MorphoEval audit v2 — Gasterosteus doryssus_early, 33 µm, 10.02 Ma, slot 3229.
+# Closes Pass-1 R1 (successor PDE), R2 (four-seed CV), R3 (diffusion-ratio sweep).
+# R4 (second assessor) stays open. Scores are uncalibrated rubric ratings.
+audit:
+  id: 2026-10-27-gasterosteus-doryssus-early-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-early-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor still absent)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 2 of loop 3229. Same working tree as Pass 1 plus the successor integration,
+      four-seed ensemble, and diffusion-ratio sweep. Lean 4 is not installed here.
+      Nanopub signing profile ~/.nanopub/profile.yml is absent, so the trig files are unsigned.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  bell2006:
+    title: "Inferring natural selection in a fossil threespine stickleback"
+    authors: "Bell MA, Travis MP, Blouw DM"
+    venue: "Paleobiology 32(4):562-577 (2006)"
+    year: 2006
+    doi: 10.1666/05026.1
+  hunt2008:
+    title: "Evolution toward a new adaptive optimum: phenotypic evolution in a fossil stickleback lineage"
+    authors: "Hunt G, Bell MA, Travis MP"
+    venue: "Evolution 62(3):700-710 (2008)"
+    year: 2008
+    doi: 10.1111/j.1558-5646.2007.00310.x
+  stuart2020:
+    title: "Inferred genetic architecture underlying evolution in a fossil stickleback lineage"
+    authors: "Stuart YE, Travis MP, Bell MA"
+    venue: "Nature Ecology & Evolution (2020)"
+    year: 2020
+    doi: 10.1038/s41559-020-01287-x
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "PNAS 106:8429-8434 (2009)"
+    year: 2009
+    doi: 10.1073/pnas.0808622106
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    year: 2010
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength of Gasterosteus doryssus_early at 33 µm (10.02 Ma)"
+    organism: "Gasterosteus doryssus_early"
+    script: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_doryssus_early_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-early-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, bell2006, hunt2008, stuart2020, nakamasu2009, kondo2010]
+    summary: >-
+      Pass 2 closes R1–R3. Successor doryssus_mid PDE wavelength is 43.11 µm
+      (analytic 41.71 µm), longer than the early nonlinear wavelength 33.87 µm.
+      Four seeds give λ = 33.87, 32.77, 33.17, 34.46 µm, CV = 0.0223.
+      At fixed D_u, σ_max is -0.085 when D_v/D_u = 1 and +0.186 at the locked
+      ratio 12.277; above threshold λ lengthens from 30.47 µm (ratio 8.5) to
+      39.20 µm (ratio 28). Dispersion Pearson r remains 0.9947. GIF CV remains
+      85.9 on 12 frames at 640×480. Gallery high-pass band remains 81.08 µm.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation and Schnakenberg (1979) kinetics."
+        - "Hunt, Bell & Travis (2008) and Bell, Travis & Blouw (2006): pelvic reduction along the Truckee G. doryssus series, complete pelvis at the start."
+        - "Stuart, Travis & Bell (2020): Pitx1 in that fossil lineage. Nakamasu et al. (2009) and Kondo & Miura (2010): teleost chromatophore Turing patterns."
+      reconstructed_in_script:
+        - "Early-chronospecies Schnakenberg field at λ near 32.86 µm, equal-diffusion ablation, D_u sweep, diffusion-ratio sweep, four-seed ensemble, and a successor integration at D_u × (41.50/32.86)^2."
+        - "m=2 ocellus GIF whose amplitude follows RMS(u), CV 85.9 against the gallery photograph."
+      transfer_boundary:
+        - "32.86 µm is the assigned cellular-detail rung, not a spacing published by Bell, Hunt, or Stuart."
+        - "The successor diffusivity scaling is a model of wavelength lengthening tied to pelvic reduction, not a measurement at 10.01 Ma."
+        - "The gallery spiral is not a Truckee thin section. Its 81.08 µm band is not λ_c."
+      does_not_claim:
+        - "An emergent PDE spiral, a second assessor, a machine-checked Lean build, or a signed nanopublication."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Pass 1's Schnakenberg integrator and the r = 0.9947 dispersion test are unchanged.
+          Pass 2 adds a real successor integration: at the scaled diffusivity the nonlinear
+          wavelength is 43.11 µm against an analytic peak of 41.71 µm, and it is longer than
+          the early field (33.87 µm). The deduction that remains is the GIF carrier: an imposed
+          m=2 spiral whose amplitude follows RMS(u), not a spiral that the PDE itself selected (-8),
+          and a, b still are not a stickleback fit (-4).
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [148, 191], note: "Explicit-Euler Schnakenberg", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [216, 278], note: "Dispersion Pearson r = 0.9947, RMSE = 0.0259", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [520, 533], note: "Successor PDE at scaled D_u, FFT wavelength 43.11 µm", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          GIF CV similarity remains 85.9 (12 frames, 640×480) against the gallery ocellus,
+          and the comparison figure now labels the four-seed CV and the mid PDE wavelength.
+          The same deductions as Pass 1 still apply: the photograph is a project gallery
+          image (-8) and its high-pass band is 81.08 µm rather than 32.86 µm (-6). The raw
+          activator field is not a drawing of that spiral (-4).
+        evidence:
+          - {file: docs/media/gasterosteus_doryssus_early_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, CV 85.9", supports: true}
+          - {file: docs/media/gasterosteus_doryssus_early_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass-2 figure with seed CV and mid PDE wavelength in the title", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [309, 373], note: "Specimen scale bar, Otsu, coherency, 81.08 µm band", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Three controls now move the wavelength in the expected direction. D_u at fixed
+          ratio lengthens λ from 27.65 µm to 41.71 µm. The diffusion ratio at fixed D_u
+          is stable at ratio 1 (σ_max = -0.085) and, once unstable, lengthens λ from
+          30.47 µm at ratio 8.5 to 39.20 µm at ratio 28. Four seeds stay inside
+          32.77–34.46 µm. Equal diffusion still collapses the pattern (std ratio 2.16e-4).
+          Deduction: a and b themselves are not swept (-6); angular charge m is fixed at 2 (-4).
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [280, 289], note: "D_u sweep", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [291, 307], note: "Equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [502, 548], note: "Four-seed ensemble and diffusion-ratio sweep", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          Dispersion r = 0.9947, RMSE = 0.0259, KS = 0.182. Early nonlinear λ = 33.87 µm
+          versus 32.86 µm. Seed CV = 0.0223. Successor PDE 43.11 µm versus analytic
+          41.71 µm (3.4% longer; both longer than the early field). Specimen metrics
+          remain non-circular: high-pass band 81.08 µm versus λ_c 32.86 µm, Otsu
+          foreground 0.291 versus 0.5, coherency 0.198 versus 0.5. Deduction: the
+          specimen comparison is a reported mismatch, and there is still one photograph (-6).
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [216, 278], note: "Pearson, RMSE, KS", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [705, 731], note: "Successor PDE wavelength, seed CV, ratio-sweep sigma", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [309, 373], note: "Specimen segmentation", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Unchanged DOIs and SHA-256 pins from Pass 1. The reference JSON states the
+          33 µm scale and the 10.02 Ma age, and it says the paleontological papers do
+          not contain that pigment spacing. Deduction: still no scanned page image of
+          Hunt 2008 (-9, the score stays off 100 for that reason).
+        evidence:
+          - {file: datasets/gasterosteus_doryssus_early_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Primary DOIs", supports: true}
+          - {file: datasets/gasterosteus_doryssus_early_turing_wavelength_s0/gasterosteus_doryssus_early_turing_wavelength_s0_reference.json, lines: [1, 50], note: "Scale 3.286e-05 m and age 10.02 Ma", supports: true}
+          - {file: datasets/gasterosteus_doryssus_early_turing_wavelength_s0/README.md, lines: [1, 30], note: "Chronoseries table", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Pass-2 functions are named for the remediation items they close (seed_ensemble,
+          successor_pde, delta_sweep) and the math-KG file still points at the Jacobian,
+          sigma(k), and the six Lean theorems. Deduction: Lean was not executed (-6);
+          the GIF wavenumber k_img = 6 is a pixel-grid constant, which the docstring
+          separates from k_c (-4). The docstring separation is why this is not lower.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [1, 40], note: "Docstring separates k_c from the GIF carrier", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [502, 548], note: "Pass-2 functions", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3229_gasterosteus_doryssus_early_turing_wavelength_s0.lean, lines: [33, 55], note: "Six theorems, zero sorry, not machine-checked in this image", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test passed after the Pass-2 additions: r > 0.98, ablation ratio < 0.05,
+          monotonic D_u sweep, successor PDE longer than the early field, seed CV < 0.08
+          (measured 0.0223), ratio-1 σ_max < 0, GIF frames >= 10, side >= 480, CV >= 58.
+          SHA-256 pins still match. Deduction: no second-assessor script and no Lean
+          binary in the image (-6); matplotlib cache is outside the repo (-4).
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-early-turing-wavelength-s0.py, lines: [94, 102], note: "SHA-256 check", supports: true}
+          - {file: datasets/gasterosteus_doryssus_early_turing_wavelength_s0/simulation_results.json, lines: [1, 40], note: "Pass-2 numeric record: r, CV, successor, seeds", supports: true}
+    remediation:
+      - "R4 remains open: a second assessor from another provider has not scored this slot."
+      - "The gallery photograph is still a project spiral, not a Truckee Formation thin section. A CC fossil image at this scale was not found."
+      - "The GIF carrier is still an imposed m=2 spiral. Replacing it with a PDE-emergent spiral would have to keep CV similarity at or above 58."
+      - "Lean 4 is not installed in this image, so the six decide-theorems were not executed."
