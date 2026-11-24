@@ -1,0 +1,119 @@
+{
+  "schema_version": "morphoeval-reference-loop3206-1.0",
+  "slot": 3206,
+  "sim_id": "delphi10000-drosophila-subobscura-turing-wavelength-s0",
+  "organism": "Drosophila subobscura",
+  "common_name": "Palearctic Latitudinal Wing-Size Cline Fly (50-Year Global Bergmann Cline)",
+  "phenomenon_scale": {
+    "phenomenon_size_m": 2.97e-6,
+    "log10_size_m": -5.527,
+    "size_human": "3.0 µm",
+    "scale_tier": "3_subcellular_um",
+    "scale_tier_short": "1–10 µm (subcellular, detail)",
+    "scale_tier_num": 3,
+    "scale_variant": "detail",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila subobscura (3.0 µm, detail scale)"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "fossil_lineage_group": "Sophophora obscura & willistoni Clade",
+    "chronoseries": "Drosophila 35/41",
+    "predecessor": {
+      "species": "Drosophila simulans",
+      "slot": 2701,
+      "phenomenon_size_m": 8.256e-5,
+      "size_human": "83 µm",
+      "note": "Cellular-scale pigment stripe of the melanogaster-subgroup sister. Kinetics are not copied; only this wavelength enters the wavenumber ratio."
+    },
+    "successor": {
+      "species": "Drosophila suzukii",
+      "slot": 2781,
+      "phenomenon_size_m": 9.845e-5,
+      "size_human": "98 µm",
+      "note": "Wing-spot melanin scale of the suzukii–biarmipes clade. Kinetics are not copied."
+    },
+    "same_species_other_scale": {
+      "slot": 2901,
+      "phenomenon_size_m": 0.0001241,
+      "size_human": "124 µm",
+      "note": "Primordium-scale sibling. This slot is the 3.0 µm detail variant and does not reuse its power-law parameters."
+    }
+  },
+  "aristotelian_categories": {
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Entoma (Arthropoda)",
+    "biological_genus": "Drosophila",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "governing_model": {
+    "name": "Schnakenberg reaction-diffusion on a periodic cuticle patch",
+    "state_variables": {
+      "u": "activator (pigment-precursor morphogen), nondimensional concentration",
+      "v": "inhibitor, nondimensional concentration"
+    },
+    "equations": {
+      "reaction_diffusion": "du/dt = a - u + u^2 v + Du ∇²u ; dv/dt = b - u^2 v + Dv ∇²v",
+      "homogeneous_steady_state": "u0 = a + b ; v0 = b / (a + b)^2",
+      "jacobian": "f_u = -1 + 2 u0 v0 ; f_v = u0^2 ; g_u = -2 u0 v0 ; g_v = -u0^2",
+      "dispersion_determinant": "det(J - k^2 D) = Du Dv k^4 - (Dv f_u + Du g_v) k^2 + (f_u g_v - f_v g_u)",
+      "critical_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+      "critical_wavelength": "lambda_c = 2 pi / k_c",
+      "physical_pin": "The nondimensional wavelength is scaled so lambda_c maps to 2.97e-6 m."
+    },
+    "boundary_conditions": "Periodic (2-torus) on a square patch whose side is 6 critical wavelengths (17.82 µm). This is the two-dimensional extension of Turing's isolated ring: no external morphogen flux, pattern selected by the intrinsic wavenumber.",
+    "instability_conditions": [
+      "trace(J) = f_u + g_v < 0",
+      "det(J) > 0",
+      "Dv f_u + Du g_v > 0",
+      "(Dv f_u + Du g_v)^2 > 4 Du Dv det(J)"
+    ]
+  },
+  "parameters": {
+    "a": 0.085,
+    "b": 1.06,
+    "Du": 0.041,
+    "Dv": 0.53,
+    "seed": 3206,
+    "grid_n": 72,
+    "domain_wavelengths": 6,
+    "lambda_c_m": 2.97e-6,
+    "note": "Du and Dv are in units of 10^-3 in the Lean diffusion product (41 × 530). They are not the alpha/beta power-law coefficients of slots 2701, 2781, or 2901."
+  },
+  "empirical_claims": [
+    {
+      "id": "huey2000_cline",
+      "source_doi": "10.1126/science.287.5451.308",
+      "claim": "In ancestral Old World Drosophila subobscura, wing length increases clinally with latitude. In North America no wing-length cline was detected one decade after introduction; after two decades a cline had evolved and largely converged on the ancestral cline."
+    },
+    {
+      "id": "gilchrist2004_south_america",
+      "source_doi": "10.1111/j.0014-3820.2004.tb00410.x",
+      "claim": "South American populations, founded in the late 1970s, likewise evolved a positive latitudinal wing-size cline."
+    },
+    {
+      "id": "turing1952_wavenumber",
+      "source_doi": "10.1098/rstb.1952.0012",
+      "claim": "A homogeneous morphogen field can be unstable to a finite band of wavenumbers, so a characteristic wavelength is selected."
+    }
+  ],
+  "transfer_boundary": "Huey, Gilchrist and coauthors measured wing length, not a 3 µm pigment lattice. The 3.0 µm wavelength is the assigned subcellular detail scale for this loop. Applying k_c at that scale is a reconstruction, not a result reported by those papers.",
+  "specimen": {
+    "file": "drosophila_subobscura_specimen.jpg",
+    "sha256": "5366640b506b531749072d3e4097e68630b8132fd433df786b50e2e16c89711d",
+    "width": 8000,
+    "height": 4497,
+    "bytes": 4792720,
+    "creator": "Martin Cooper",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Drosophila_(Sophophora)_subobscura_(male)_collage.jpg",
+    "file_url": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Drosophila_%28Sophophora%29_subobscura_%28male%29_collage.jpg",
+    "flickr_credit": "https://www.flickr.com/photos/m-a-r-t-i-n/23734393432/",
+    "date": "2015-12-02",
+    "locality": "Ipswich, Suffolk, England, near Christchurch Park",
+    "identification": "Male Drosophila subobscura; Paul Beuk confirmed the obscura-group diagnosis (single large seta on the palpus)."
+  }
+}
