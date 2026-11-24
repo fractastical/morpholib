@@ -1,0 +1,100 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3167,
+  "sim_id": "delphi10000-dickinsonia-costata-turing-wavelength-s0",
+  "organism": {
+    "binomial": "Dickinsonia costata",
+    "common_name": "Ediacaran glide-symmetric segmented proarticulate",
+    "aristotelian_path": "II. Anaima (Invertebrata) -> Zoophyta & Vermes (Cnidaria/Platyhelminthes) -> Dickinsonia",
+    "lineage": "Ediacaran-Cambrian Bodyplan Fossil Series"
+  },
+  "phenomenon_scale": {
+    "phenomenon_size_m": 5.564e-05,
+    "size_human": "56 µm",
+    "log10_size_m": -4.255,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength along a Dickinsonia module septum"
+  },
+  "paleobiology": {
+    "geological_period": "Late Ediacaran (White Sea, 558 Ma)",
+    "geological_age_ma": 558.0,
+    "chronoseries": "Dickinsonia costata 1/1",
+    "chronoseries_index": "1/1",
+    "predecessor_chronospecies": null,
+    "successor_chronospecies": null,
+    "scale_predecessor": "Tier 3 subcellular (<10 µm): a shorter pitch would sit inside one epithelial cell and would not set the septal pigment repeat.",
+    "scale_successor": "Tier 6 organ module pitch 2.2 mm (2.21e-3 m) at the same 558 Ma White Sea horizon. That sibling selects how many modules fit on the body. This slot selects how many 56 µm pigment wavelengths fit on one septum (39)."
+  },
+  "cohort": {
+    "id": "1. Chemical Turing / RD",
+    "law": "Turing Reaction-Diffusion Wavelength Selection",
+    "form": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "reaction": {
+      "f": "a - u + u^2 v",
+      "g": "b - u^2 v"
+    },
+    "pde": [
+      "du/dt = Du * laplacian(u) + a - u + u^2 v",
+      "dv/dt = Dv * laplacian(v) + b - u^2 v"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": {
+      "f_u": "-1 + 2 u0 v0",
+      "f_v": "u0^2",
+      "g_u": "-2 u0 v0",
+      "g_v": "-u0^2"
+    },
+    "dispersion_determinant": "det(J - k^2 D) = Du Dv k^4 - (Dv f_u + Du g_v) k^2 + (f_u g_v - f_v g_u)",
+    "critical_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+    "critical_wavelength": "lambda_c = 2 pi / k_c",
+    "selected_wavelength": "The nonlinear pattern selects k_m = argmax sigma(k), near k_c when the inhibitor/activator diffusivity ratio is just above onset. The length unit is fixed so the measured k_m at the reference diffusivity equals 56 µm."
+  },
+  "state_variables": [
+    {"symbol": "u", "role": "activator (pigment-promoting morphogen)", "units": "nondimensional"},
+    {"symbol": "v", "role": "inhibitor", "units": "nondimensional"}
+  ],
+  "boundary_conditions": {
+    "domain": "Periodic rectangular patch of a single module septum, about 7 selected wavelengths long",
+    "bc": "Periodic (Fourier spectral diffusion). The linear dispersion law itself does not depend on this choice; periodicity makes the measured wavenumber comparable to sigma(k).",
+    "initial_condition": "Homogeneous steady state plus Gaussian noise of amplitude 0.005, RNG seed 3167"
+  },
+  "parameter_table": {
+    "a": 0.12,
+    "b": 0.88,
+    "Du_reference": 0.05,
+    "Dv_reference": 0.55,
+    "diffusivity_ratio_Dv_over_Du": 11.0,
+    "note": "These nondimensional diffusivities are the cellular-tier set. They are not the organ-tier diffusivities of the 2.2 mm sibling. Holding reaction rates fixed, D_organ / D_cell ≈ (2200/56)^2 = 1521 using integer division, or (2.21e-3 / 5.564e-5)^2 ≈ 1578 using the exact metre values.",
+    "seed": 3167,
+    "diffusion_scale_sweep": [0.55, 0.8, 1.0, 1.35, 1.8, 2.4, 3.2, 4.2],
+    "ablation": "Du = Dv = 0.05 (equal diffusion, below the Turing threshold)"
+  },
+  "empirical_claims": [
+    "Bobrovskiy et al. 2018: White Sea Dickinsonia preserves cholesteroids and is interpreted as an animal. They do not report a 56 µm pigment wavelength.",
+    "Evans et al. 2017: more than 900 Dickinsonia costata specimens keep an ovoid outline by terminal addition and predictable module expansion.",
+    "Evans et al. 2021: module addition in D. costata is posterior. Repeated units change with growth in a way compared to morphogen gradients.",
+    "Hoekzema et al. 2017: a quantitative developmental study treats Dickinsonia as a metazoan.",
+    "Turing 1952 and Schnakenberg 1979 supply the dispersion law and the two-species kinetics. The 56 µm pitch is this slot's cellular-tier assignment, anchored by the length unit of the simulation, and is coarser than a subcellular tier and finer than the 2.2 mm module pitch."
+  ],
+  "specimen": {
+    "file": "dickinsonia_costata_turing_wavelength_s0_specimen.jpg",
+    "sha256": "9cde902e8577ea737c95a5807287f08ee1752c6ac649b56b9ed546ee354ba5f6",
+    "source_url": "https://commons.wikimedia.org/wiki/File:DickinsoniaCostata.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/DickinsoniaCostata.jpg",
+    "creator": "Verisimilus",
+    "license": "CC BY 2.5",
+    "license_url": "https://creativecommons.org/licenses/by/2.5/"
+  },
+  "sibling_not_copied": {
+    "script": "models/2018-bobrovskiy-dickinsonia-costata-turing-wavelength.py",
+    "their_scale_m": 0.00221,
+    "their_tier": "6_organ_mm",
+    "why_distinct": "Same binomial and same 558 Ma horizon, different tier. This file's Du, Dv, domain size, and selected wavelength are the 56 µm septal pitch."
+  }
+}

@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dickinsonia-costata-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dickinsonia-costata-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dickinsonia-costata-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Dickinsonia costata cellular Turing wavelength, 56 µm, White Sea 558 Ma (Pass 1) — MorphoEval overall 69.2/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 runs Schnakenberg kinetics at Du=0.05, Dv=0.55 on a periodic septal patch and anchors the measured spectral peak at 5.564e-5 m (55.64 µm, the 56 µm cellular tier). k_c=2.587, linear fastest k_m=2.467, measured k=2.558 (ratio 1.037). The animation is a 12-frame spot field at 720x540, not the fossil. No diffusivity sweep, no equal-diffusion control, and no specimen ellipse are in the Pass 1 metrics. Overall 69.2/100 (faithfulness 61.6, reproducibility 86.8); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d; environment: . Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 52, Parameter expressivity 55, Morphometric validation 55, Source and data traceability 90, Code-to-model traceability 84, Reproducibility package 86. Output judged: docs/media/dickinsonia_costata_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py at 0c76d15d, image/png, 700140 B, 1440×984 px, artifact_sha256 fd889af7f5a33470176528fe09732ad7646a1709adc873f960f5704e6edf8102 (sha256 fd889af7f5a33470176528fe09732ad7646a1709adc873f960f5704e6edf8102), spec_fingerprint fd86eb9ab09aa054555305e9405e0ca0d623d01f76b8fb3f7e4bc2a4741557ec. Dual provenance: spec_fingerprint: fd86eb9ab09aa054555305e9405e0ca0d623d01f76b8fb3f7e4bc2a4741557ec; artifact_sha256: fd889af7f5a33470176528fe09732ad7646a1709adc873f960f5704e6edf8102; input_dataset_sha256: {datasets/dickinsonia_costata_turing_wavelength_s0/README.md=2eab73577d2f595b..., datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_reference.json=654790d69ff50dc8..., datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_specimen.jpg=9cde902e8577ea73..., datasets/dickinsonia_costata_turing_wavelength_s0/paper_citations.bib=5eef4d2dd1042991..., datasets/dickinsonia_costata_turing_wavelength_s0/scout_manifest.json=7d02cb51fc7fd66f...}. Claim boundary: reported_in_source: Turing 1952 dispersion relation and critical wavenumber. | Schnakenberg 1979 two-species kinetics. | Bobrovskiy et al. 2018: White Sea Dickinsonia preserves cholesteroids; age 558 Ma. | Evans et al. 2017 and 2021: ovoid outline and posterior module addition.; reconstructed_in_script: Nondimensional Du, Dv, a, b for a 56 µm pitch, distinct from the 2.2 mm sibling. | Spectral integration and a single-run wavenumber measurement.; transfer_boundary: 56 µm is this slot's cellular-tier assignment, not a length Bobrovskiy or Evans measured on the fossil. | Evans' morphometrics are mostly South Australian; the age pin is the White Sea horizon.; does_not_claim: That the centimetre-scale modules in the photograph are 56 µm apart. | That the Pass 1 spot lattice is a fitted rendering of this specimen.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "open need [morphometric_validation/morphometric-validation, pressure P=1.9]: Add RMSE, KS, and CV for the wavenumber sweep, plus specimen aspect, circularity, coherency, and ridge spacing with references that are not the measured values.",
+            "open need [parameter_sweep/model-fidelity, pressure P=1.4]: Report the equal-diffusion ablation on the same grid (noise must decay).",
+            "open need [parameter_sweep/parameter-expressivity, pressure P=1.7]: Deliver the diffusivity-factor sweep and the Pearson correlation of measured versus linear wavenumbers.",
+            "open need [specimen_comparison/specimen-match, pressure P=2.3]: Render the growth GIF so the terminal frame is the real fossil and overlay a segmented ellipse on the comparison figure.",
+            "remediation needed: {'id': 'R1', 'item': 'Terminal GIF frame is a spot field. Fit the animation to the CC BY 2.5 fossil and draw the specimen ellipse.'}",
+            "remediation needed: {'id': 'R2', 'item': 'Pass 1 metrics omit the sqrt(D) sweep and its Pearson r.'}",
+            "remediation needed: {'id': 'R3', 'item': 'No equal-diffusion negative control in the Pass 1 artifact.'}",
+            "remediation needed: {'id': 'R4', 'item': 'No KS/RMSE/CV and no real-specimen contour metrics yet.'}" ;
+        pk:hasScore "0.692"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1017/pab.2021.31>,
+            <https://doi.org/10.1098/rspb.2017.1348>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.aat7228>,
+            <https://doi.org/10.1371/journal.pone.0176874> .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1017/pab.2021.31> dct:title "Ediacara growing pains: modular addition and development in Dickinsonia costata" .
+    <https://doi.org/10.1098/rspb.2017.1348> dct:title "Quantitative study of developmental biology confirms Dickinsonia as a metazoan" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.aat7228> dct:title "Ancient steroids establish the Ediacaran fossil Dickinsonia as one of the earliest animals" .
+    <https://doi.org/10.1371/journal.pone.0176874> dct:title "Highly regulated growth and development of the Ediacara macrofossil Dickinsonia costata" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Dickinsonia costata cellular Turing wavelength, 56 µm, White Sea 558 Ma (Pass 1) — MorphoEval overall 69.2/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:46:35Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-dickinsonia-costata-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-dickinsonia-costata-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,59 @@
+sim_id: delphi10000-dickinsonia-costata-turing-wavelength-s0
+slot: 3167
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 5.564e-05
+log10_size_m: -4.255
+size_human: 56 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Dickinsonia costata (56 µm septal pitch, White Sea 558 Ma)
+geological_age_ma: 558.0
+geological_period: Late Ediacaran (White Sea, 558 Ma)
+fossil_lineage_group: Ediacaran-Cambrian Bodyplan Fossil Series
+chronoseries: Dickinsonia costata 1/1
+model_spec:
+  sim_id: delphi10000-dickinsonia-costata-turing-wavelength-s0
+  kinetics: schnakenberg-1979
+  parameters:
+    a: 0.12
+    b: 0.88
+    Du: 0.05
+    Dv: 0.55
+    lambda_m: 5.564e-05
+    age_ma: 558
+    seed: 3167
+    n_waves: 7
+    points_per_wavelength: 12
+  inputs:
+    - datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_specimen.jpg
+    - datasets/dickinsonia_costata_turing_wavelength_s0/dickinsonia_costata_turing_wavelength_s0_reference.json
+    - datasets/dickinsonia_costata_turing_wavelength_s0/paper_citations.bib
+    - datasets/dickinsonia_costata_turing_wavelength_s0/scout_manifest.json
+    - datasets/dickinsonia_costata_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing dispersion determinant
+    formula: det(J - k^2 D) = Du Dv k^4 - (Dv f_u + Du g_v) k^2 + (f_u g_v - f_v g_u)
+    lean_decl: MathOfBiology.Loop_3167.law1_invariant
+    lean_theorem: MathOfBiology.Loop_3167.law1_positive_scaling
+    lean_locus: morphoeval/lean/loops/Loop_3167_dickinsonia_costata_turing_wavelength_s0.lean#L10-L16
+    variables: du, dv positive diffusivities at the 56 µm cellular pitch
+    role: Sign condition on the diffusivity product inside the dispersion polynomial
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py
+  - law_name: Critical wavelength cancellation
+    formula: lambda_c = 2 pi / k_c with k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)
+    lean_decl: MathOfBiology.Loop_3167.law2_balance
+    lean_theorem: MathOfBiology.Loop_3167.law2_exact_cancellation
+    lean_locus: morphoeval/lean/loops/Loop_3167_dickinsonia_costata_turing_wavelength_s0.lean#L18-L24
+    variables: lam the critical wavelength; kExtra an auxiliary offset that cancels
+    role: The onset wavelength is fixed by k_c alone
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py
+  - law_name: Septal mode count at 56 µm versus the 2200 µm organ module
+    formula: N = floor(2200 / 56) = 39; D scales by N^2 = 1521 at fixed reaction time
+    lean_decl: MathOfBiology.Loop_3167.stripesPerSeptum
+    lean_theorem: MathOfBiology.Loop_3167.septum_holds_39_cellular_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3167_dickinsonia_costata_turing_wavelength_s0.lean#L26-L44
+    variables: cellularPitchUm = 56; organModuleUm = 2200; whiteSeaAgeMa = 558
+    role: Scale separation between this cellular tier and the organ-tier sibling at 558 Ma
+    source_citation: Evans 2017 DOI:10.1371/journal.pone.0176874
+    code_locus: models/2026-delphi10000-dickinsonia-costata-turing-wavelength-s0.py
