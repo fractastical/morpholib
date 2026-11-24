@@ -1,0 +1,205 @@
+# MorphoEval audit v2 — Canis lupus Turing wavelength, detail scale.
+# Closes pass-1 items R1, R2, R3, and R5. R4 (second assessor) stays open.
+audit:
+  id: 2026-10-27-canis-lupus-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-canis-lupus-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor still not run)"
+    model_label: "Grok 4.7"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. REMEDIATION_PASS = 2. Unsigned: no ~/.nanopub/profile.yml."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(79)90042-0"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(81)90334-9"
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science"
+    doi: "10.1126/science.1179047"
+  martin2007:
+    title: "PTEN-mediated apical segregation of phosphoinositides controls epithelial morphogenesis through Cdc42"
+    authors: "Martín-Belmonte, F. et al."
+    venue: "Cell"
+    doi: "10.1016/j.cell.2006.11.051"
+  candille2007:
+    title: "A β-defensin mutation causes black coat color in domestic dogs"
+    authors: "Candille, S. I. et al."
+    venue: "Science"
+    doi: "10.1126/science.1147880"
+simulations:
+  - id: delphi10000-canis-lupus-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 1.781 µm on a Holocene Canis lupus (MDCK) apical patch"
+    organism: "Canis lupus (Canine, MDCK)"
+    script: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py
+    output: docs/media/canis_lupus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/canis_lupus_turing_wavelength_s0_growth.gif
+      - datasets/canis_lupus_turing_wavelength_s0/canis_lupus_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-canis-lupus-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, kondo2010, martin2007, candille2007]
+    model_spec:
+      model: "Schnakenberg reaction-diffusion, Turing wavenumber k_c, lambda_c = 1.781e-6 m"
+      a: 0.10
+      b: 1.10
+      gamma: 40.0
+      Du: 0.8
+      Dv: 9.6
+      grid_resolution: [80, 80]
+      seed: 3139
+      age_ma: 0.0
+      remediation_pass: 2
+      inputs:
+        - datasets/canis_lupus_turing_wavelength_s0/canis_lupus_turing_wavelength_s0_specimen.jpg
+        - datasets/canis_lupus_turing_wavelength_s0/canis_lupus_turing_wavelength_s0_reference.json
+    claim_boundary:
+      reported_in_source:
+        - "Turing dispersion relation and a finite unstable band of wavenumbers"
+        - "Schnakenberg trimolecular kinetics"
+        - "Murray coat pre-patterns are centimetre-scale"
+        - "MDCK cells are a polarized canine epithelium"
+        - "Domestic-dog black coat is a beta-defensin allele, not a measured micrometre wavelength"
+      reconstructed_in_script:
+        - "a=0.10, b=1.10, gamma=40, D_u=0.8, D_v=9.6 chosen so lambda_c = 1.781e-6 m"
+        - "Time unit of 1 s used only to quote an equivalent diffusivity"
+        - "Periodic 8-wavelength patch as one apical face"
+        - "Diffusivity-ratio sweep and the two negative controls"
+      transfer_boundary:
+        - "Murray 1981 is not a measurement of Canis lupus at 1.8 µm"
+        - "The gallery micrograph has no scale bar; KS = 0.38 compares area shapes, not micrometres"
+      does_not_claim:
+        - "That Holocene wolf coat spots have wavelength 1.781 µm"
+        - "That each histological polygon is one Turing spot"
+        - "That a second assessor scored this pass"
+        - "That the nanopublications were signed"
+    summary: >-
+      Pass 2 turns on the diffusivity sweep, the equal-diffusion and gamma=0
+      controls, and the KS area comparison that pass 1 left gated. Ratios
+      D_v/D_u of 6 and 8 are linearly stable; 12, 18 and 30 are unstable and
+      lambda_c falls from 1.781 µm to 1.697 µm. Pattern activator std is 0.259;
+      equal diffusion falls to 2.9e-15 and gamma=0 to 6.9e-4. Dispersion Pearson
+      r remains 0.9935 (RMSE 1.002). Specimen-versus-spot area KS is 0.378
+      (p = 9.2e-9): the micrograph's domain areas are not the spot lattice, and
+      that mismatch is reported rather than fitted away. The GIF is unchanged
+      in kind: 16 frames, 640×480, CV similarity 96.0 against the canonical
+      micrograph. Age 0 Ma, scale 1.781e-6 m. Signing keys are not on this machine.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Schnakenberg kinetics, the Jacobian, and the Turing k_c formula are
+          unchanged and still integrate on the periodic patch with a clip
+          fraction of 0. Pass 2 adds the two controls the dispersion relation
+          predicts: equal diffusion quenches (std 2.9e-15) and gamma=0 only
+          diffuses the seed (std 6.9e-4) against a patterned std of 0.259.
+          The 1 s time unit used to quote D_phys remains a reconstruction.
+        evidence:
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [72, 96], note: "Jacobian, k_c^2, continuum sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [383, 387], note: "Equal-diffusion and gamma=0 integrations", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The GIF last frame is the canonical micrograph modulated by the
+          activator (CV similarity 96.0, 16 frames, 640×480). The still figure
+          shows the micrograph, the spot lattice, and the product, and now
+          labels the micrograph as having no scale bar. Deducted because the
+          polygons are the photograph, and because the KS test says their area
+          distribution is not the lattice's.
+        evidence:
+          - {file: docs/media/canis_lupus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16 frames at 640x480", supports: true}
+          - {file: docs/media/canis_lupus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, lattice, overlay, sweep, controls", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [438, 438], note: "xlabel states pixel spacing is not 1.781 µm", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          The sweep is now executed and drawn. D_v/D_u = 6 and 8 have a negative
+          Turing margin and no wavelength; 12, 18 and 30 are unstable and
+          lambda_c decreases from 1.781 µm to 1.733 µm to 1.697 µm. Equal
+          diffusion and gamma=0 are separate switches and both collapse the
+          activator standard deviation, in the direction the mechanism requires.
+        evidence:
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [239, 269], note: "sweep_diffusion_ratio", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [456, 483], note: "Sweep bars and labelled control bars on the figure", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Dispersion Pearson r = 0.99352 against a reference of 1, RMSE = 1.002
+          against 0, saturated k_meas/k_c = 0.976 against 1, and peak spacing
+          1.754e-6 m against 1.781e-6 m. Specimen nearest-neighbour spacing is
+          8.94 px against the model wavelength in micrometres (different
+          quantity, stated as such). KS = 0.378 against a reference of 0, so
+          the area shapes do not match; that is the score's ceiling.
+        evidence:
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [128, 157], note: "Finite-difference versus continuum dispersion", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [390, 421], note: "Median-normalised KS on domain areas", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [579, 700], note: "measure_morphoeval rows, value != reference", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Same Crossref-checked DOIs and the same SHA-256-pinned gallery
+          specimen as pass 1. The reference JSON states 1.781e-6 m and 0 Ma.
+          The pass-2 metrics file records the sweep, controls, and KS beside
+          those sources. No signature is claimed.
+        evidence:
+          - {file: datasets/canis_lupus_turing_wavelength_s0/paper_citations.bib, lines: [1, 88], note: "Crossref-verified citations", supports: true}
+          - {file: datasets/canis_lupus_turing_wavelength_s0/canis_lupus_turing_wavelength_s0_reference.json, lines: [1, 48], note: "Scale and age in the reference header", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Docstring equations, named functions, and the four Lean theorems
+          still match. Pass 2's sweep and controls are the same functions the
+          pass-1 audit named as gated; the figure now calls them. The coat-scale
+          ratio remains an order-of-magnitude transfer from Murray, labelled as
+          such in the footer.
+        evidence:
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [1, 36], note: "Docstring equations", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3139_canis_lupus_turing_wavelength_s0.lean, lines: [19, 50], note: "Four theorems, zero sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test still passes (lambda exactly 1.781e-6 m, Pearson r > 0.98,
+          equal-diffusion eigenvalue negative). Seed 3139. REMEDIATION_PASS = 2
+          is the switch that reproduces this figure. Nanopub signing was not
+          run because ~/.nanopub/profile.yml is absent.
+        evidence:
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [49, 49], note: "REMEDIATION_PASS = 2", supports: true}
+          - {file: models/2026-delphi10000-canis-lupus-turing-wavelength-s0.py, lines: [709, 743], note: "self_test", supports: true}
+    remediation:
+      - id: R1
+        item: "Closed in this pass. Sweep is executed, plotted (ratios 6 and 8 stable; 12, 18, 30 unstable), and written to the sidecar."
+        status: closed
+      - id: R2
+        item: "Closed in this pass. Equal-diffusion std 2.9e-15 and gamma=0 std 6.9e-4 are drawn against the patterned std 0.259."
+        status: closed
+      - id: R3
+        item: "Closed in this pass. KS = 0.378 (p = 9.2e-9) on median-normalised areas; value is not the reference 0."
+        status: closed
+      - id: R4
+        item: "Open. No independent second assessor. This score is still the builder's."
+        status: open
+      - id: R5
+        item: "Closed in this pass. The specimen panel and the footer state that nearest-neighbour spacing is in pixels and is not 1.781 µm."
+        status: closed
+      - id: R6
+        item: "Open residual, not a pass-1 miss. KS = 0.38 means the micrograph's domain areas are a different shape from the spot lattice. Forcing the PDE to copy those polygons would erase the claim boundary."
+        status: open

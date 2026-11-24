@@ -1,0 +1,138 @@
+{
+  "schema_version": "morphoeval-model-reference-1.0",
+  "slot": 3139,
+  "sim_id": "delphi10000-canis-lupus-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Canis lupus",
+    "common_catalog_name": "Canine (MDCK)",
+    "megiston": "I. Enaima (Vertebrata)",
+    "subaltern": "Mammalia (Zootoka)",
+    "genus": "Canis",
+    "lineage": "",
+    "model_system_note": "Madin-Darby canine kidney (MDCK) epithelium is the canine cell system attached to this catalog entry. Coat-color genetics of the domestic dog (Canis lupus familiaris) are a separate, coarser phenotype."
+  },
+  "evolutionary_history": {
+    "stage": "Holocene (Extant)",
+    "age_ma": 0.0,
+    "chronoseries": "Canis",
+    "chronoseries_index": 1,
+    "chronoseries_length": 1,
+    "predecessor": null,
+    "successor": null,
+    "what_changes_at_this_scale": "Relative to a Murray (1981) mammalian coat pre-pattern of order 2 cm, this detail-scale (s0) slot selects lambda_c = 1.781 um, so k_c is larger by a factor of about 1.1e4. The domain that supports a small integer number of modes shrinks from the flank to one MDCK apical face (14.248 um = 8 wavelengths). k_c is set by diffusivities and the reaction rate; chronospecies would change the mode count only by changing domain length L. This Canis series contains only the Holocene extant stage, so there is no predecessor chronospecies to subtract."
+  },
+  "scale": {
+    "label": "1.8 µm",
+    "metres": 1.781e-6,
+    "log10_m": -5.749,
+    "tier": "3_subcellular_um",
+    "tier_index": "3/8",
+    "variant": "detail",
+    "seed": "s0",
+    "quantity": "Turing pigment stripe / ocellus wavelength, instantiated here as the subcellular Schnakenberg wavelength on an MDCK apical cortex"
+  },
+  "cohort": {
+    "law_family": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c"
+  },
+  "equations": {
+    "pde": [
+      "du/dt = D_u * laplacian(u) + gamma * (a - u + u^2 * v)",
+      "dv/dt = D_v * laplacian(v) + gamma * (b - u^2 * v)"
+    ],
+    "steady_state": ["u0 = a + b", "v0 = b / (a + b)^2"],
+    "jacobian": {
+      "f_u": "gamma * (-1 + 2*u0*v0)",
+      "f_v": "gamma * u0^2",
+      "g_u": "gamma * (-2*u0*v0)",
+      "g_v": "gamma * (-u0^2)"
+    },
+    "dispersion": "sigma(k) = tr(J_k)/2 + sqrt((tr/2)^2 - det(J_k)), J_k = J - k^2 diag(D_u, D_v)",
+    "critical_wavenumber": "k_c^2 = (D_v*f_u + D_u*g_v) / (2*D_u*D_v)",
+    "wavelength": "lambda_c = 2*pi / k_c = 1.781e-6 m"
+  },
+  "state_variables": {
+    "u": "short-range activator (membrane-associated), dimensionless concentration",
+    "v": "long-range inhibitor (cytosolic), dimensionless concentration"
+  },
+  "boundary_conditions": {
+    "domain": "periodic square patch, side L = 8 * lambda_c = 14.248 um",
+    "justification": "Turing (1952) used a periodic ring. A periodic patch is the local tangent-plane sample of an MDCK apical cortex, not a claim that the cyst is a torus."
+  },
+  "parameters": {
+    "a": 0.10,
+    "b": 1.10,
+    "gamma": 40.0,
+    "D_u_dimensionless": 0.8,
+    "D_v_dimensionless": 9.6,
+    "diffusion_ratio": 12,
+    "time_unit_s": 1.0,
+    "grid_n": 80,
+    "dt": 0.0008,
+    "t_final": 10.0,
+    "seed": 3139,
+    "n_wavelengths": 8,
+    "note": "Dimensionless D and gamma are a unique (a, b, ratio, gamma) tuple for slot 3139, scaled so the determinant formula for k_c lands on 1.781 um when one dimensionless length is L0 = lambda_c * k_c / (2*pi) metres and the time unit is 1 s. They are not copied from a sibling slot."
+  },
+  "empirical_claims": [
+    {
+      "claim": "A two-species reaction-diffusion system can be unstable to a finite band of wavenumbers while the homogeneous state remains stable.",
+      "source": "Turing 1952, Phil. Trans. R. Soc. B 237:37-72",
+      "doi": "10.1098/rstb.1952.0012"
+    },
+    {
+      "claim": "The Schnakenberg trimolecular reactions produce a stable limit cycle in a well-mixed reactor and, with diffusion, a Turing instability when the inhibitor diffuses sufficiently faster than the activator.",
+      "source": "Schnakenberg 1979, J. Theor. Biol. 81:389-400",
+      "doi": "10.1016/0022-5193(79)90042-0"
+    },
+    {
+      "claim": "Mammalian coat markings can be read as a Turing pre-pattern whose wavelength is set on the embryonic flank, at centimetre scale, not at 1.8 um.",
+      "source": "Murray 1981, J. Theor. Biol. 88:161-199",
+      "doi": "10.1016/0022-5193(81)90334-9"
+    },
+    {
+      "claim": "MDCK cells, a canine kidney line, build a polarized cyst whose apical cortex is a few cell-diameters across; PTEN/Cdc42 segregate apical phosphoinositides.",
+      "source": "Martin-Belmonte et al. 2007, Cell 128:383-397; Bryant and Mostov 2008, Nat. Rev. Mol. Cell Biol. 9:887-901",
+      "doi": "10.1016/j.cell.2006.11.051"
+    },
+    {
+      "claim": "Black coat color in domestic dogs is caused by a beta-defensin mutation at CBD103, a genetic switch, not a measured 1.781 um Turing wavelength.",
+      "source": "Candille et al. 2007, Science 318:1418-1423",
+      "doi": "10.1126/science.1147880"
+    }
+  ],
+  "specimen": {
+    "file": "datasets/canis_lupus_turing_wavelength_s0/canis_lupus_turing_wavelength_s0_specimen.jpg",
+    "source_copy_of": "datasets/species_gallery/I_Enaima_Vertebrata/Canis_lupus.jpg",
+    "sha256": "8dd4a5b3caa19a6f06509a0acce3b4040493b8b1dbdd37cc608378b858e7a60c",
+    "license_note": "Vendored from the project species gallery entry for Canis lupus (catalog common name Canine (MDCK)). Wikimedia Commons CC portraits of wolves were scouted and were not substituted, because image fitness is scored against this canonical gallery micrograph. The micrograph has no scale bar.",
+    "width_px": 1145,
+    "height_px": 1419
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing dispersion relation and the finite unstable band of wavenumbers",
+      "Schnakenberg kinetics and the requirement that the inhibitor diffuse faster",
+      "Murray coat pre-patterns are centimetre-scale",
+      "MDCK cysts are polarized canine epithelia",
+      "Dog black coat is a beta-defensin allele"
+    ],
+    "reconstructed_in_script": [
+      "Numerical values a=0.10, b=1.10, gamma=40, D_u=0.8, D_v=9.6 chosen so lambda_c equals 1.781e-6 m",
+      "Time unit of 1 s used to quote an equivalent D_phys",
+      "Periodic 8-wavelength patch as the apical-face domain",
+      "Operator-split Fourier integrator"
+    ],
+    "transfer_boundary": [
+      "Murray 1981 wavelengths are not measurements of Canis lupus at 1.8 um",
+      "The gallery micrograph is not a calibrated 1.781 um field"
+    ],
+    "does_not_claim": [
+      "That Holocene wolf coat spots have wavelength 1.781 um",
+      "That each histological polygon in the gallery image is one Turing spot",
+      "That a Pleistocene canid cell diameter was measured in this slot",
+      "That the simulation was cryptographically signed"
+    ]
+  }
+}
