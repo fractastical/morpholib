@@ -1,0 +1,146 @@
+# Pass 1 — Chlamydomonas reinhardtii 10.32 nm Turing pigment stripe, slot 3146.
+# First reading. The Schnakenberg solver, onset wavenumber k_c, and fastest-mode
+# calibration to 10.32 nm are in place. Morphometrics were not yet accepted:
+# the unfiltered cell median was 1.29 um because debris and one merged cluster
+# dominated the distribution. Weighted overall 77.6.
+audit:
+  id: 2026-10-27-chlamydomonas-reinhardtii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: https://github.com/fractastical/morpholib
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider in this cloud loop)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree on top of origin/main. No nanopub profile; publisher_orcid is the repository URL, not a personal ORCID. Nanopubs are unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  foster1980:
+    title: "Light antennas in phototactic algae"
+    authors: "Foster, K. W. and Smyth, R. D."
+    year: 1980
+    doi: 10.1128/mr.44.4.572-630.1980
+  dieckmann2003:
+    title: "Eyespot placement and assembly in the green alga Chlamydomonas"
+    authors: "Dieckmann, C. L."
+    year: 2003
+    doi: 10.1002/bies.10259
+  schmidt2006:
+    title: "Proteomic analysis of the eyespot of Chlamydomonas reinhardtii"
+    authors: "Schmidt, M. et al."
+    year: 2006
+    doi: 10.1105/tpc.106.041749
+  kreimer2008:
+    title: "The green algal eyespot apparatus: a primordial visual system and more?"
+    authors: "Kreimer, G."
+    year: 2008
+    doi: 10.1007/s00294-008-0224-8
+  boyd2011:
+    title: "EYE2 and EYE3 play interdependent roles in eyespot assembly"
+    authors: "Boyd, J. S., Mittelmeier, T. M., Lamb, M. R. and Dieckmann, C. L."
+    year: 2011
+    doi: 10.1091/mbc.e10-11-0918
+  kato2012:
+    title: "Crystal structure of the channelrhodopsin light-gated cation channel"
+    authors: "Kato, H. E. et al."
+    year: 2012
+    doi: 10.1038/nature10870
+simulations:
+  - id: delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at the 10.32 nm Chlamydomonas eyespot pigment stripe (Pass 1)"
+    organism: "Chlamydomonas reinhardtii (Holocene, 0 Ma)"
+    script: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py
+    output: docs/media/chlamydomonas_reinhardtii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - foster1980
+      - dieckmann2003
+      - schmidt2006
+      - kreimer2008
+      - boyd2011
+      - kato2012
+    summary: >-
+      Reference parameters a=0.07, b=0.95, Du=1, Dv=36 (not slot 195's
+      1.63/0.43/14/10/140). The spatial unit sets lambda(k_max)=10.32 nm.
+      Onset lambda(k_c)=6.99 nm. Linear-regime finite differences track the
+      analytical fastest mode at Pearson r=0.9997, RMSE=0.20 nm, across
+      Dv in {18,24,32,36,44,58,76}. Age 0 Ma. Unfiltered SEM cell median
+      was 1.29 um and is not accepted in this pass.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a homogeneous steady state can be unstable to a finite critical wavenumber k_c."
+        - "Schnakenberg 1979: activator-inhibitor kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Dieckmann 2003 and Kreimer 2008: the Chlamydomonas eyespot is stacked carotenoid granules under the plasma membrane."
+        - "Foster and Smyth 1980: the eyespot stack acts as a quarter-wave light antenna."
+        - "Boyd et al. 2011: EYE2 and EYE3 are required for eyespot assembly."
+        - "Kato et al. 2012: channelrhodopsin is the light-gated channel associated with the eyespot."
+      reconstructed_in_script:
+        - "Jacobian, onset k_c, and argmax of the linear growth rate sigma(k) for the Schnakenberg system."
+        - "Spatial calibration so the reference fastest wavelength is 10.32 nm = 1.032e-8 m (log10 = -7.986)."
+        - "Explicit finite-difference check of that wavelength on a periodic six-stripe patch (61.92 nm)."
+      transfer_boundary:
+        - "A continuum reaction-diffusion description at 10 nm is a reduced model of pigment aggregation, not a measured morphogen pair."
+        - "The chronoseries is 1/1 (Holocene only). The 3.2 nm monomer and the ~93 nm quarter-wave spacing are scale neighbors, not fossil chronospecies."
+      does_not_claim:
+        - "Does not claim that 10.32 nm was read off an electron micrograph as a published lattice constant."
+        - "Does not claim to replace the EYE2/EYE3 assembly pathway."
+        - "Does not claim the SEM resolves the 10 nm stripe. The GIF keeps the real cell silhouettes and modulates their interior."
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: "Equations 1-4 (Schnakenberg kinetics, Jacobian, onset k_c, fastest mode) are implemented and the reference state is Turing-unstable. The Dv=Du control and the autocatalysis ablation are in the file; this pass does not yet credit them."
+        evidence:
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [91, 153], note: "jacobian, onset_wavenumber, growth_rate, fastest_mode", supports: true}
+      specimen-match:
+        value: 70
+        rationale: "The comparison figure places the Dartmouth SEM beside the modulated frame, but Pass 1 had not yet separated orientation, radial-FFT, and coherency, so the silhouette match is only partly credited."
+        evidence:
+          - {file: docs/media/chlamydomonas_reinhardtii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, modulated frame, segmentation, activator lattice, dispersion curve", supports: true}
+          - {file: docs/media/chlamydomonas_reinhardtii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 1024x1049, pattern emerging inside segmented cells", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "Dv from 18 to 76 lengthens the analytical stripe monotonically, and the finite-difference points follow it. The saturated-versus-linear shift is computed but not yet used as a second regime in the score."
+        evidence:
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [279, 295], note: "dispersion_sweep over seven Dv values", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: "Pearson r=0.9997 and RMSE=0.20 nm are computed. The first cell median, before the 3-12 um window, was 1.29 um because debris and one merged cluster dominated. This pass does not accept a cell-size comparison until that window is the reported value."
+        evidence:
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [209, 248], note: "linear-regime wavelength measurement", supports: true}
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [342, 386], note: "cell_morphometrics; Pass 1 does not yet score the 3-12 um window", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Foster and Smyth, Dieckmann, Schmidt, Kreimer, Boyd, and Kato. Specimen is the public-domain Dartmouth SEM, SHA-256 pinned."
+        evidence:
+          - {file: datasets/chlamydomonas_reinhardtii_turing_wavelength_s0/paper_citations.bib, lines: [1, 71], note: "eight DOIs", supports: true}
+          - {file: datasets/chlamydomonas_reinhardtii_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "collision check against slot 195 and Wikimedia source", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "The module docstring names equations 1-4 and the functions follow that order. Pass 1 does not yet pin the ablation and the negative control to the score."
+        evidence:
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [1, 45], note: "docstring maps kinetics, Jacobian, and k_c to the papers", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3146, --self-test checks Turing conditions, the 10.32 nm calibration, age 0 Ma, and Pearson r>0.98. Full render is deterministic. No second environment has re-run it."
+        evidence:
+          - {file: models/2026-delphi10000-chlamydomonas-reinhardtii-turing-wavelength-s0.py, lines: [653, 678], note: "self_test assertions", supports: true}
+    remediation:
+      - "R1: Restrict SEM diameters to isolated cell bodies between 3 and 12 um so debris and the merged cluster do not set the median (Pass 1 unfiltered median was 1.29 um)."
+      - "R2: Record orientation, radial-FFT, and coherency similarities separately, and keep the negative-control and autocatalysis-ablation sigmas in the scored measurements."
+      - "R3: Credit the saturated-versus-linear wavelength as a second parameter regime, not only the linear Dv sweep."
