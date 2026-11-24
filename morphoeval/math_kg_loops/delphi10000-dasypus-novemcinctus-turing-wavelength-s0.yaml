@@ -1,0 +1,55 @@
+sim_id: delphi10000-dasypus-novemcinctus-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 4.108e-06
+log10_size_m: -5.386
+size_human: 4.1 µm
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Dasypus novemcinctus
+  (Holocene (Extant), 4.1 µm detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Iconic Vertebrate Sensory & Dermal Specializations
+chronoseries_length: 1
+equations:
+- law_name: Schnakenberg homogeneous stability
+  formula: trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0 at u0 = a + b
+  lean_decl: MathOfBiology.Loop_3166.homogeneous_trace_negative
+  lean_theorem: MathOfBiology.Loop_3166.homogeneous_determinant_positive
+  lean_locus: morphoeval/lean/loops/Loop_3166_dasypus_novemcinctus_turing_wavelength_s0.lean#L42-L48
+  lean_code: 'theorem homogeneous_trace_negative : ((800 : Int) + (-1000)) < 0 := by decide'
+  variables: 'a = 0.10, b = 0.90, f_u = 0.800, g_v = -1.000, det = 1.000 at lambda = 4.108 µm'
+  role: Homogeneous steady state is stable before diffusion is added
+  source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-dasypus-novemcinctus-turing-wavelength-s0.py
+- law_name: Turing critical wavenumber
+  formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c
+  lean_decl: MathOfBiology.Loop_3166.turing_discriminant_positive
+  lean_theorem: MathOfBiology.Loop_3166.differential_diffusion_ratio
+  lean_locus: morphoeval/lean/loops/Loop_3166_dasypus_novemcinctus_turing_wavelength_s0.lean#L39-L54
+  lean_code: 'theorem differential_diffusion_ratio : dvMilli > 8 * duMilli := by decide'
+  variables: 'D_u = 0.160 µm^2/τ, D_v = 3.206 µm^2/τ, lambda_c = 4.108 µm, age = 0 Ma'
+  role: Selects the 4.108 µm spot/ocellus wavelength on the Holocene dermal field
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-dasypus-novemcinctus-turing-wavelength-s0.py
+- law_name: Detail-scale mode packing against the primordium wavelength
+  formula: N = floor(lambda_273um / lambda_4.108um) = 66, remainder 1872 nm
+  lean_decl: MathOfBiology.Loop_3166.modePacking
+  lean_theorem: MathOfBiology.Loop_3166.detail_packs_sixty_six_modes
+  lean_locus: morphoeval/lean/loops/Loop_3166_dasypus_novemcinctus_turing_wavelength_s0.lean#L18-L25
+  lean_code: 'theorem detail_packs_sixty_six_modes : modePacking = 66 := by decide'
+  variables: 'lambda_detail = 4108 nm, lambda_primordium = 273000 nm, chronoseries length = 1, age delta = 0 Ma'
+  role: States what changes at 4.1 µm versus the 273 µm scale, with no chronospecies neighbour
+  source_citation: Vickaryous & Hall (2006) DOI:10.1002/jmor.10475
+  code_locus: models/2026-delphi10000-dasypus-novemcinctus-turing-wavelength-s0.py
+model_spec:
+  kinetics: schnakenberg
+  a: 0.10
+  b: 0.90
+  diffusion_ratio: 20
+  lambda_c_m: 4.108e-06
+  geological_age_ma: 0.0
+  grid: 96
+  seed: 3166
+  inputs:
+    - datasets/dasypus_novemcinctus_turing_wavelength_s0/dasypus_novemcinctus_specimen.jpg
+    - datasets/dasypus_novemcinctus_turing_wavelength_s0/dasypus_novemcinctus_turing_wavelength_s0_reference.json
