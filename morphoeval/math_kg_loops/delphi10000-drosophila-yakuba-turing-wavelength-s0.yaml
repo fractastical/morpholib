@@ -1,0 +1,87 @@
+sim_id: delphi10000-drosophila-yakuba-turing-wavelength-s0
+slot: 3212
+organism: Drosophila yakuba
+phenomenon_size_m: 2.157e-06
+log10_size_m: -5.666
+size_human: "2.2 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila yakuba (2.2 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Sophophora melanogaster Subgroup Radiation (0–12 Ma)
+chronoseries: Drosophila 41/41
+predecessor: Drosophila willistoni
+predecessor_lambda_m: 8.63e-05
+wavenumber_ratio_vs_predecessor: 40.01
+math_family: Turing Reaction-Diffusion Wavelength Selection
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: Schnakenberg (1979) activator-substrate kinetics; Turing (1952) wavenumber selection
+  equations:
+    - "du/dt = D_u lap u + a - u + u^2 v"
+    - "dv/dt = D_v lap v + b - u^2 v"
+  steady_state: "u0 = a + b = 1, v0 = b / u0^2 = 0.9"
+  jacobian: {f_u: 0.8, f_v: 1.0, g_u: -1.8, g_v: -1.0}
+  a: 0.10
+  b: 0.90
+  D_u: 1.0
+  D_v: 20.0
+  dt: 0.004
+  grid_resolution: [72, 96]
+  steps: 2600
+  seed: 3212
+  spiral_arms: 3
+  lambda_star_m: 2.157e-06
+  geological_age_ma: 0.0
+  inputs:
+    - datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_turing_wavelength_s0_reference.json
+    - datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_specimen.jpg
+    - datasets/drosophila_yakuba_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_yakuba_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Homogeneous-state trace condition
+    formula: "tr J = f_u + g_v = 0.8 + (-1) = -0.2 < 0"
+    lean_decl: MathOfBiology.Loop_3212.traceScaled
+    lean_theorem: MathOfBiology.Loop_3212.homogeneous_state_stable_trace
+    lean_locus: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    variables: "f_u, g_v at the Schnakenberg steady state (u0, v0) = (1, 0.9)"
+    role: Diffusion-free stability of the yellow/tan homogeneous cuticle
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Inhibitor long-range cross term
+    formula: "D_v f_u + D_u g_v = 20*(0.8) + 1*(-1) = 15 > 0"
+    lean_decl: MathOfBiology.Loop_3212.crossScaled
+    lean_theorem: MathOfBiology.Loop_3212.inhibitor_long_range_cross_positive
+    lean_locus: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    variables: "D_u = 1 (Yellow), D_v = 20 (Ebony/NBAD)"
+    role: Necessary condition for a finite Turing wavenumber at 2.157 µm
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Diffusion-driven instability discriminant
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det J"
+    lean_decl: MathOfBiology.Loop_3212.crossScaled
+    lean_theorem: MathOfBiology.Loop_3212.diffusion_driven_instability_discriminant
+    lean_locus: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    variables: "det J = 1 at this steady state"
+    role: Strict Turing instability of the subcellular pigment field
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Equal-diffusion ablation
+    formula: "D_u = D_v = 1 implies D_v f_u + D_u g_v = -0.2 < 0"
+    lean_decl: MathOfBiology.Loop_3212.equal_diffusion_control_is_stable
+    lean_theorem: MathOfBiology.Loop_3212.equal_diffusion_control_is_stable
+    lean_locus: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    variables: "ablation sets D_u = D_v"
+    role: Negative control; no wavelength is selected
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  - law_name: Chronoseries wavenumber ratio versus D. willistoni
+    formula: "k_yakuba / k_willistoni = 86300 nm / 2157 nm = 40 > 30"
+    lean_decl: MathOfBiology.Loop_3212.yakuba_subcellular_wavenumber_exceeds_willistoni
+    lean_theorem: MathOfBiology.Loop_3212.yakuba_subcellular_wavenumber_exceeds_willistoni
+    lean_locus: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    variables: "λ_yakuba = 2157 nm at 0 Ma; λ_willistoni cellular = 86300 nm"
+    role: What changes at this scale relative to the predecessor; no successor (41/41)
+    source_citation: "Carbone et al. 2005 DOI:10.1534/genetics.105.044412"

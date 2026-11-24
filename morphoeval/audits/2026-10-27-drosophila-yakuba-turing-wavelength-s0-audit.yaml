@@ -1,0 +1,205 @@
+# Pass 1 — Drosophila yakuba subcellular Turing wavelength (slot 3212).
+# Scores are uncalibrated 0-100 rubric ratings, not probabilities.
+# The reported wavelength in this pass was the 3×3 nearest-neighbour spacing
+# of activator beads along a spiral arm (1.332 µm, KS 0.592), which is not λ*.
+
+audit:
+  id: 2026-10-27-drosophila-yakuba-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent, primary assessor, pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 1d40797a1aa1c46f0b61e38c4454905b1b892739
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+      scipy: "1.18.1"
+    note: "Slot 3212 files are in this commit. Shared telemetry indexes were not edited."
+
+references:
+  carbone2005:
+    title: "Quantitative trait loci affecting the difference in pigmentation between Drosophila yakuba and D. santomea"
+    authors: "Carbone MA, Llopart A, deAngelis M, Coyne JA, Mackay TFC"
+    venue: "Genetics 171(1):211-225 (2005)"
+    doi: 10.1534/genetics.105.044412
+  llopart2002:
+    title: "Genetics of a difference in pigmentation between Drosophila yakuba and Drosophila santomea"
+    authors: "Llopart A, Elwyn S, Lachaise D, Coyne JA"
+    venue: "Evolution 56(11):2262-2277 (2002)"
+    doi: 10.1111/j.0014-3820.2002.tb00150.x
+  wittkopp2002:
+    title: "Reciprocal functions of the Drosophila Yellow and Ebony proteins in the development and evolution of pigment patterns"
+    authors: "Wittkopp PJ, True JR, Carroll SB"
+    venue: "Development 129(8):1849-1858 (2002)"
+    doi: 10.1242/dev.129.8.1849
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+
+simulations:
+  - id: delphi10000-drosophila-yakuba-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 2.157 µm on the D. yakuba abdominal cuticle (Holocene, 0 Ma)"
+    organism: "Drosophila yakuba"
+    domain: morphogenesis
+    script: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+    output: docs/media/drosophila_yakuba_turing_wavelength_s0_comparison.png
+    also:
+      - datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_turing_wavelength_s0_reference.json
+      - morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+    status: evaluated
+    source_refs: [carbone2005, llopart2002, wittkopp2002, turing1952, schnakenberg1979]
+    provenance:
+      artifact_sha256: 012a50ed1719b0b98fa95bbf04722cbf783e8f81f6c0fb6e8516a2e59886f126
+      input_dataset_sha256:
+        drosophila_yakuba_specimen.jpg: 71ea43a85af083570030dd876e45722183277abb05367528efa01e838a3c3ac8
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952): diffusion-driven instability and a selected wavenumber. Schnakenberg (1979): the a−u+u²v / b−u²v kinetics."
+        - "Carbone et al. (2005) and Llopart et al. (2002): the yakuba/santomea pigmentation difference is genetic. Wittkopp et al. (2002): Yellow and Ebony act reciprocally on melanin versus NBAD."
+      reconstructed_in_script:
+        - "Linear dispersion (trace, determinant, cross term, discrete σ(q)) and an explicit-Euler Schnakenberg spiral on a 72×96 periodic patch, with λ* pinned to 2.157 µm."
+        - "Yellow = slow activator and Ebony/NBAD = fast substrate is an interpretive reading, not an equation in those papers."
+      transfer_boundary:
+        - "A 16 µm periodic patch is not a whole tergite. The gallery specimen is a sepia gradation field, not a dissected cuticle micrograph at 2.2 µm."
+      does_not_claim:
+        - "Does not claim Carbone et al. measured a 2.157 µm granule spacing, and does not copy the 97 µm cellular-tier yakuba sibling (slot 2731)."
+        - "Pass 1 does not claim the 3×3 bead spacing equals λ*. That estimator is the remediation target."
+    summary: >
+      Pass 1 implements Schnakenberg (a, b, D_u, D_v) = (0.10, 0.90, 1, 20) at
+      geological age 0 Ma and scale 2.2 µm. Dispersion Pearson r = 0.995 against
+      the discrete Laplacian. The equal-diffusion control has σ* = −0.102. The
+      D_v sweep is monotone. The growth GIF is 12 frames at 640×480. The
+      wavelength reported from 3×3 nearest neighbours is 1.332 µm (KS 0.592)
+      because those neighbours sit along a spiral arm. That is not the arm-to-arm
+      period. Predecessor D. willistoni remains at its cellular 86 µm band;
+      the wavenumber ratio is 40.01. No successor (chronoseries 41/41).
+    remediation:
+      - "Replace the 3×3 nearest-neighbour bead spacing (1.332 µm, KS 0.592) with the radial arm-to-arm period and the isotropic FFT ring, and keep the bead statistic only as a labelled diagnostic."
+      - "Re-score morphometric-validation on the corrected wavelength against λ* = 2.157 µm, including the KS distance of the radial periods."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >
+          The script integrates Schnakenberg kinetics and checks tr J < 0, det J > 0,
+          a positive cross term, and the discriminant. A 22-mode linearised integration
+          with the same 5-point Laplacian correlates with the discrete dispersion at
+          r = 0.995 (RMSE 0.039). Parameters are not the slot-2731 power law.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [87, 135]
+            note: "Continuous and discrete dispersion relations and k_c."
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [184, 214]
+            note: "Explicit Euler update du/dt = D_u lap u + a − u + u²v."
+          - file: morphoeval/lean/loops/Loop_3212_drosophila_yakuba_turing_wavelength_s0.lean
+            lines: [16, 36]
+            note: "Trace, cross term, discriminant, and equal-diffusion control, 0 sorry."
+      parameter-expressivity:
+        value: 86
+        rationale: >
+          λ* increases monotonically as D_v runs through 10, 14, 20, 28, 40, and the
+          comparison figure plots that sweep. D_v = 20 is the row pinned to 2.157 µm.
+          The bead-spacing bug does not affect this curve, which is analytic.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [222, 243]
+            note: "D_v sweep and monotonicity check."
+          - file: docs/media/drosophila_yakuba_turing_wavelength_s0_comparison.png
+            lines: [0, 0]
+            note: "Lower-right panel, λ* versus D_v."
+      specimen-match:
+        value: 80
+        rationale: >
+          The final frame is a three-arm tan spiral on the same sepia palette as the
+          vendored gallery specimen, and the GIF grows from a faint seed (mean absolute
+          frame difference 0.20). Pass 1 had not yet separated arm wavelength from bead
+          spacing, so the quantitative overlay was the wrong length. The gallery asset
+          is not a whole-fly photograph.
+        evidence:
+          - file: docs/media/drosophila_yakuba_turing_wavelength_s0_growth.gif
+            lines: [0, 0]
+            note: "12-frame 640×480 growth animation."
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_specimen.jpg
+            lines: [0, 0]
+            note: "SHA-256 71ea43a85af083570030dd876e45722183277abb05367528efa01e838a3c3ac8."
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [409, 428]
+            note: "Fixed-scale sepia map so early frames stay faint."
+      morphometric-validation:
+        value: 74
+        rationale: >
+          Dispersion r = 0.995 and the ablation σ* = −0.102 are solid. The spatial
+          wavelength used 3×3 maxima: mean spacing 7.97 lattice px = 1.332 µm against
+          λ* = 2.157 µm, KS = 0.592. That number describes beads along an arm. Otsu
+          dark-band fraction of the specimen is 0.121, not a copied reference.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [137, 176]
+            note: "Pearson r of measured versus discrete σ(q)."
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [246, 274]
+            note: "Pass-1 nearest-neighbour spacing, retained as a diagnostic."
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_turing_wavelength_s0_metrics.json
+            lines: [73, 78]
+            note: "ks_pass1_nearest_neighbour KS 0.592, mean 7.97 px."
+      source-traceability:
+        value: 90
+        rationale: >
+          Seed DOI 10.1534/genetics.105.044412 plus Turing, Schnakenberg, Wittkopp and
+          Llopart are in the bib and the reference JSON. The specimen SHA-256 matches
+          the species-gallery file. Commons returned only a multi-species immunostain,
+          which was not used. Age 0 Ma and scale 2.2 µm are stated in the README.
+        evidence:
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/paper_citations.bib
+            lines: [1, 30]
+            note: "Carbone 2005 and Llopart 2002."
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/drosophila_yakuba_turing_wavelength_s0_reference.json
+            lines: [1, 40]
+            note: "Scale 2.157e-06 m, age 0 Ma, predecessor willistoni."
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/scout_manifest.json
+            lines: [1, 20]
+            note: "Slot 3212 was not in campaign_100_slots.yaml; OpenAlex/Crossref/Commons were queried directly."
+      code-traceability:
+        value: 86
+        rationale: >
+          Dispersion, the Euler update, the sweep, and the Lean statements are each
+          tied to a named law. The docstring states the Yellow/Ebony reading is
+          interpretive. Pass 1's spacing function was not yet labelled as the wrong
+          geometric feature in the reported metric.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [1, 40]
+            note: "Scale, age, predecessor, and the two PDEs in the module docstring."
+          - file: morphoeval/math_kg_loops/delphi10000-drosophila-yakuba-turing-wavelength-s0.yaml
+            lines: [1, 40]
+            note: "model_spec parameters and Lean loci."
+      repro-package:
+        value: 88
+        rationale: >
+          --self-test checks the Turing inequalities, the monotone sweep, the
+          willistoni wavenumber ratio, the specimen hash, and Pearson r > 0.98.
+          Seed 3212 and dt = 0.004 are fixed. Self-test printed r = 0.99525.
+        evidence:
+          - file: models/2026-delphi10000-drosophila-yakuba-turing-wavelength-s0.py
+            lines: [602, 646]
+            note: "--self-test assertions."
+          - file: datasets/drosophila_yakuba_turing_wavelength_s0/README.md
+            lines: [23, 36]
+            note: "Invocation and output paths."
