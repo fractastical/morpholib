@@ -1,0 +1,113 @@
+# MorphoEval audit — Thompson (1917) T1917-056, Pass 2 (v2 after Step 12 remediation)
+# Supersedes 2026-10-31-t1917-056-on-the-theory-of-transformatio-audit
+
+audit:
+  id: 2026-10-31-t1917-056-on-the-theory-of-transformatio-audit-v2
+  supersedes: 2026-10-31-t1917-056-on-the-theory-of-transformatio-audit
+  supersedes_audit_id: 2026-10-31-t1917-056-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (builder-assessor Pass 2)"
+    homepage: https://deepmind.google
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: local
+    environment:
+      python: "3.12"
+      numpy: "2.x"
+      scipy: "1.x"
+      matplotlib: "3.x"
+      Pillow: "11.x"
+    note: >-
+      Pass 2 default run: lambda sweep, shuffled ablation, KS, dual specimen segmentation.
+      Dryad doi:10.5061/dryad.crjdfn3g3 still not vendored (HTTP 401/403).
+
+references:
+  thompson1917:
+    title: "On Growth and Form, Ch. XVII, pp. 765-767, Figs. 401-402"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917)"
+    url: https://archive.org/details/ongrowthform1917thom
+  wisniewski2026:
+    title: "Phylogenetic analyses reveal that horses deviate from a pervasive pattern of skull shape evolution"
+    authors: "Wisniewski A, Slater GJ"
+    doi: 10.1017/pab.2026.10096
+  dryad_crjdfn3g3:
+    title: "Equid skull GM Dryad package"
+    doi: 10.5061/dryad.crjdfn3g3
+
+simulations:
+  - id: thompson1917-t1917-056
+    name: "Thompson (1917) Eohippus→Equus skull transformation (Fig. 401-402)"
+    organism: "Equidae lateral skull landmarks + gallery specimen anchors"
+    script: thompson/claims/t1917-056_on-the-theory-of-transformations.py
+    output: docs/media/t1917_056_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_056_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-056/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-31-t1917-056-on-the-theory-of-transformatio-audit
+    source_refs: [thompson1917, wisniewski2026, dryad_crjdfn3g3]
+    summary: >-
+      Pass 2: Heilmann stage RMSE ~0.01 on TPS phi_t; equidistance residuals small; homologous TPS
+      beats shuffled labels; KS + lambda sweep + dual specimen segmentation. Verdict mixed — diagram
+      interpolation supported but Dryad fossil GM series not loaded (partial test).
+    claim_boundary:
+      reported_in_source:
+        - "Eohippus and Equus skulls related by coordinate deformation (Fig. 401)"
+        - "Heilmann intermediates on the transformation (Fig. 402)"
+      reconstructed_in_script:
+        - "TPS phi on 18 digitised landmarks; phi_t stage predictions vs drawn intermediates"
+        - "Shuffled-label and lambda sweeps; KS distance null; gallery CV masks"
+      does_not_claim:
+        - "Direct validation of Wisniewski & Slater phylogenetic CREA deviation (Dryad not vendored)"
+        - "That modern fossil equid series lie on a single Thompson grid without residual clade effects"
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          Full E2/E4/E6 pipeline with TPS lambda sweep and ablation; Lean Loop_245 linked in math_kg.
+        evidence:
+          - {file: thompson/claims/t1917-056_on-the-theory-of-transformations.py, lines: [205, 240], note: "full_validation sweeps and KS", supports: true}
+      specimen-match:
+        value: 58
+        rationale: >-
+          Otsu segmentation on both gallery specimens; landmark-in-mask fraction exported; zebra proxy.
+        evidence:
+          - {file: thompson/claims/t1917-056_on-the-theory-of-transformations.py, lines: [225, 245], note: "segment_specimen dual photos", supports: true}
+      parameter-expressivity:
+        value: 76
+        rationale: >-
+          Nine-point lambda grid on primary TPS; equidistance t* search on intermediates.
+        evidence:
+          - {file: thompson/claims/t1917-056_on-the-theory-of-transformations.py, lines: [214, 222], note: "tps_lambda_sweep", supports: true}
+      morphometric-validation:
+        value: 78
+        rationale: >-
+          measure_morphoeval exports RMSE, equidistance residual, KS, shuffled TPS, segmentation fractions.
+        evidence:
+          - {file: thompson/claims/t1917-056_on-the-theory-of-transformations.py, lines: [265, 285], note: "nine metrics", supports: true}
+      source-traceability:
+        value: 86
+        rationale: >-
+          SHA-256 on landmarks and photos; scout manifest records Dryad species match and fetch block.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-056/t1917_056_on_the_theory_of_transformatio_reference.json, lines: [38, 45], note: "inputs_sha256", supports: true}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Docstring, result.json verdict boundary, math_kg yaml.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-056/result.json, lines: [1, 25], note: "dryad_vendored false", supports: true}
+      repro-package:
+        value: 78
+        rationale: >-
+          Deterministic self-test; --pass1 vs default paths; pinned assets enforced.
+        evidence:
+          - {file: thompson/claims/t1917-056_on-the-theory-of-transformations.py, lines: [365, 396], note: "self_test determinism", supports: true}
