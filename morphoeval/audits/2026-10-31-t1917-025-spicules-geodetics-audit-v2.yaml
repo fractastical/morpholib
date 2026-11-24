@@ -1,0 +1,75 @@
+# MorphoEval Pass 2 (v2) — Thompson (1917) T1917-025 (post-remediation)
+
+audit:
+  id: 2026-10-31-t1917-025-spicules-geodetics-audit-v2
+  supersedes: 2026-10-31-t1917-025-spicules-geodetics-audit
+  supersedes_audit_id: 2026-10-31-t1917-025-spicules-geodetics-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Cloud Loop Slot 220 Pass 2)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    commit: 35d30f4cf
+
+references:
+  thompson1917:
+    title: "On Growth and Form (1st ed.), Ch. IX-X"
+    url: https://archive.org/details/ongrowthform1917thom
+
+simulations:
+  - id: thompson1917-t1917-025
+    name: "Thompson (1917) T1917-025 — radiolarian geodesic spherical lattices"
+    script: thompson/claims/t1917-025_spicules-geodetics.py
+    output: docs/media/t1917_025_spicules_geodetics_comparison.png
+    extra_outputs:
+      - docs/media/t1917_025_spicules_geodetics_growth.gif
+      - datasets/thompson_1917/t1917-025/result.json
+    status: evaluated
+    source_refs:
+      - thompson1917
+    summary: >-
+      Pass 2: freq sweep 0-3, skeleton edge extraction on Challenger crop, histogram Pearson r≈0.64,
+      ablation random-chord CV 1.11, mixed verdict (specimen edge CV 0.375 vs model 0.179).
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: Great-circle metric, icosa + Fibonacci kNN refs, Lean-backed chord identities.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [150, 178], note: "geodesic lengths", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_025.lean, lines: [24, 76], note: "unit_chord_sq", supports: true}
+      specimen-match:
+        value: 68
+        rationale: Skeleton morphometrics on pinned Challenger crop; mixed verdict documented.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [210, 240], note: "skeleton_segments", supports: true}
+          - {file: datasets/thompson_1917/t1917-025/result.json, lines: [1, 21], note: "mixed verdict", supports: true}
+      parameter-expressivity:
+        value: 72
+        rationale: "--pass2 enables four-level freq sweep and control panel."
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [268, 295], note: "freqs 0-3 + controls", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: r, RMSE, KS, CV exported in measure_morphoeval and result.json.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [242, 262], note: "compare_specimen_to_model", supports: true}
+      source-traceability:
+        value: 82
+        rationale: SHA-256 locked Commons plates and scout vetting of audit-named missing file.
+        evidence:
+          - {file: datasets/thompson_1917/t1917-025/t1917_025_spicules_geodetics_reference.json, lines: [55, 75], note: "vendored_files", supports: true}
+      code-traceability:
+        value: 71
+        rationale: math_kg_loops yaml maps four equation ids to Lean theorems.
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-025.yaml, lines: [14, 40], note: "equations block", supports: true}
+      repro-package:
+        value: 76
+        rationale: Self-test, pass2 CLI, GIF, result.json artefact.
+        evidence:
+          - {file: thompson/claims/t1917-025_spicules-geodetics.py, lines: [398, 440], note: "CLI + self-test", supports: true}
