@@ -1,0 +1,151 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "sim_id": "delphi10000-ammonia-beccarii-turing-wavelength-s0",
+  "slot": 3108,
+  "organism": {
+    "scientific_name": "Ammonia beccarii",
+    "authority": "Linnaeus, 1758",
+    "common_name": "Benthic foraminifer",
+    "aristotelian_path": "IV. Protista & Monera -> Mineralized Protists (Silica/Calcite) -> Ammonia",
+    "group": "Rotaliida, calcite hyaline test"
+  },
+  "phenomenon_scale": {
+    "label": "31 µm",
+    "phenomenon_size_m": 3.137e-05,
+    "lambda_c_um": 31.37,
+    "log10_size_m": -4.503,
+    "log10_size_m_precise": -4.503485481302255,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": true,
+    "quantity": "Turing critical wavelength lambda_c = 2*pi/k_c",
+    "anatomical_reading": "Selected pustule / pore-cluster spacing on the chamber face. Not a pigment ocellus and not the pore diameter."
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "",
+    "chronoseries_name": "Ammonia",
+    "chronoseries_index": 1,
+    "chronoseries_length": 1,
+    "predecessor_chronospecies": null,
+    "successor_chronospecies": null,
+    "scale_contrast": {
+      "pore_diameter_um": 0.564,
+      "pore_diameter_source": "Subba & Ghosh 2023, Ammonia cf. beccarii, mean of 100 pores on 4 tests (doi:10.2113/gsjfr.53.2.177)",
+      "pore_density_per_um2": 0.155,
+      "derived_mean_pore_spacing_um": 2.5396,
+      "derived_spacing_note": "1/sqrt(pore density); derived here, not a tabulated spacing in the source",
+      "petersen_2016_frame_um2": 562,
+      "petersen_frame_side_um": 23.71,
+      "petersen_note": "562 µm² measurement window on the penultimate chamber (doi:10.1016/j.marmicro.2016.08.001). Side length 23.7 µm is adjacent to this tier and is not λ_c.",
+      "test_diameter_um_caption": 600,
+      "test_diameter_source": "Hillewaert 2012 Wikimedia caption, File:Ammonia_beccarii.jpg",
+      "wavelengths_across_caption_diameter": 19.126,
+      "schoenfeld_2021_living_mean_diameter_um": {
+        "Ammonia_veneta_to_tepida": "173 ± 72 to 199 ± 52",
+        "Ammonia_bellaria": "131 ± 22",
+        "note": "A. beccarii itself was absent from the living fauna and present only in the dead assemblage (doi:10.5194/jm-40-195-2021)"
+      },
+      "what_changes": "Chronoseries 1/1 has no other age. At 0 Ma the extant test carries three nested lengths. The pore mode (0.564 µm) and the whole-test mode (~600 µm) lie outside the Turing band. This slot selects the intermediate wavenumber k_c = 2π/31.37 µm⁻¹. Relative to the pore mode the wavelength lengthens ~56×; relative to a single test-scale patch it shortens ~19×. That is the change at this scale. It is not a parameter copied from any other chronospecies slot."
+    }
+  },
+  "equations": {
+    "kinetics": "Schnakenberg (1979): f = a - u + u^2 v, g = b - u^2 v",
+    "pde": "u_t = Du ∇²u + γ f(u,v); v_t = Dv ∇²v + γ g(u,v)",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2b/(a+b), f_v = (a+b)^2, g_u = -2b/(a+b), g_v = -(a+b)^2",
+    "dispersion": "σ solves det(γ J - k^2 D - σ I) = 0",
+    "critical_wavenumber": "k_c^2 = γ (Dv f_u + Du g_v) / (2 Du Dv)",
+    "critical_wavelength": "lambda_c = 2 π / k_c",
+    "turing_conditions": [
+      "trace(J) < 0",
+      "det(J) > 0",
+      "Dv f_u + Du g_v > 0",
+      "(Dv f_u + Du g_v)^2 > 4 Du Dv det(J)"
+    ],
+    "boundary_conditions": "Periodic square of side L = 600 µm, the Hillewaert caption diameter, standing in for one adult test face."
+  },
+  "parameters": {
+    "a": 0.12,
+    "b": 0.88,
+    "Du_um2_per_tau": 1.0,
+    "Dv_um2_per_tau": 10.4,
+    "gamma_note": "γ is solved so the linear λ_c equals 31.37 µm exactly",
+    "domain_um": 600.0,
+    "grid": [160, 160],
+    "seed": 3108,
+    "why_these_values": "a and b sum to 1 so u0 = 1. Dv/Du = 10.4 sits just above the Turing threshold for this Jacobian (margin ≈ 1.15), which keeps the unstable band near 27–39 µm instead of letting spots coarsen onto a test-scale patch. These numbers are not the 27 µm Globorotalia slot."
+  },
+  "literature_measurements": [
+    {
+      "name": "caption_test_diameter_um",
+      "value": 600,
+      "source": "Hillewaert 2012",
+      "doi_or_url": "https://commons.wikimedia.org/wiki/File:Ammonia_beccarii.jpg"
+    },
+    {
+      "name": "ammonia_cf_beccarii_pore_diameter_um",
+      "value": 0.564,
+      "source": "Subba & Ghosh 2023 Table 1",
+      "doi": "10.2113/gsjfr.53.2.177"
+    },
+    {
+      "name": "ammonia_cf_beccarii_pore_density_per_um2",
+      "value": 0.155,
+      "source": "Subba & Ghosh 2023 Table 1",
+      "doi": "10.2113/gsjfr.53.2.177"
+    },
+    {
+      "name": "ammonia_cf_beccarii_porosity_percent",
+      "value": 3.15,
+      "source": "Subba & Ghosh 2023 Table 1",
+      "doi": "10.2113/gsjfr.53.2.177"
+    },
+    {
+      "name": "petersen_pore_frame_um2",
+      "value": 562,
+      "source": "Petersen et al. 2016",
+      "doi": "10.1016/j.marmicro.2016.08.001"
+    }
+  ],
+  "specimen_image": {
+    "filename": "Ammonia_beccarii_Hillewaert_2012.jpg",
+    "sha256": "c15a90be96e2b088e80f55ac46f810f56c02bf2c7aaccce4bf483e1b7b3d2ade",
+    "width": 2735,
+    "height": 2049,
+    "license": "CC BY-SA 4.0",
+    "attribution": "© Hans Hillewaert / CC BY-SA 4.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ammonia_beccarii.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Ammonia_beccarii.jpg",
+    "gallery_fallback_rejected": "datasets/species_gallery/IV_Protista_Monera_Mycota/Ammonia_beccarii.jpg is a Caryophyllia coral photograph, not Ammonia."
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 dispersion relation and critical wavenumber",
+      "Schnakenberg 1979 two-species kinetics",
+      "Hillewaert caption diameter ~600 µm and the CC BY-SA photograph",
+      "Subba & Ghosh 2023 pore diameter 0.564 µm and pore density 0.155 µm⁻² for Ammonia cf. beccarii",
+      "Petersen et al. 2016 pore frame of 562 µm²",
+      "Hayward et al. 2004 and Schönfeld et al. 2021 taxonomic limits on the name Ammonia beccarii"
+    ],
+    "reconstructed_in_script": [
+      "γ chosen so linear λ_c = 31.37 µm on a 600 µm periodic face",
+      "Dv/Du = 10.4 narrow-band regime",
+      "Nonlinear spot field, γ sweep, equal-diffusion control, and subthreshold ablation",
+      "Segmentation of the Hillewaert plate and mapping of the simulated field onto each test"
+    ],
+    "transfer_boundary": [
+      "Cohort language of pigment stripes and ocelli is transferred onto calcite pustule/pore-cluster spacing",
+      "AFM pore numbers are Ammonia cf. beccarii, not measurements on the photographed North Sea individuals",
+      "The 31 µm tier length is the Delphi detail-scale assignment; it is not a spacing tabulated by Hillewaert, Hayward, or Petersen"
+    ],
+    "does_not_claim": [
+      "That Ammonia beccarii has pigment ocelli or a vertebrate color pattern",
+      "That 31.37 µm equals the pore diameter",
+      "That a predecessor or successor chronospecies exists in this 1/1 series",
+      "That the North Sea photograph is a sequenced Adriatic type specimen",
+      "That the gallery Caryophyllia image is Ammonia"
+    ]
+  }
+}
