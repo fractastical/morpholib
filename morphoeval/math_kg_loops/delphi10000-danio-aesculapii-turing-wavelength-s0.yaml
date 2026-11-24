@@ -1,0 +1,60 @@
+sim_id: delphi10000-danio-aesculapii-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: 1. Chemical Turing / RD
+form: Stripes, Spots & Ocelli
+poson_law: Turing Wavenumber k_c
+organism: Danio aesculapii
+common_name: Panther Danio (Vertical Bar Transition)
+phenomenon_size_m: 2.08e-05
+log10_size_m: -4.682
+size_human: 21 µm
+scale_tier: 4_cellular_10um
+scale_variant: detail_s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Danio aesculapii (21 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Danionin Pigment Evolution Series
+chronoseries_index: 1
+chronoseries_length: 5
+predecessor: null
+successor: Danio albolineatus
+model_spec:
+  model: Schnakenberg Turing system with anisotropic dorsal bars and ventral spot breakup; λ_c pinned at 2.08e-05 m
+  A: 0.14
+  B: 0.98
+  diffusion_ratio: 28.0
+  successor_ratio: 1.2
+  lambda_px: 16
+  grid: [64, 192]
+  seed: 3160
+  inputs:
+    - datasets/danio_aesculapii_turing_wavelength_s0/danio_aesculapii_specimen.png
+    - datasets/danio_aesculapii_turing_wavelength_s0/danio_aesculapii_parichy2015_plate.jpg
+equations:
+- law_name: Turing dispersion determinant
+  formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)
+  lean_decl: MathOfBiology.Loop_3160.detScaled
+  lean_theorem: MathOfBiology.Loop_3160.determinant_positive
+  lean_locus: morphoeval/lean/loops/Loop_3160_danio_aesculapii_turing_wavelength_s0.lean#L11-L16
+  variables: f_u=0.7500, g_v=-1.2544, f_v=1.2544, g_u=-1.7500 at the Schnakenberg steady state u0=1.12
+  role: Sign of det J is the first Turing necessary condition at the 20.8 µm steady state
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py#L96-L114
+- law_name: Critical wavenumber k_c
+  formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 2.08e-05 m
+  lean_decl: MathOfBiology.Loop_3160.aesculapiiDiffusionTrace
+  lean_theorem: MathOfBiology.Loop_3160.aesculapii_above_turing_threshold
+  lean_locus: morphoeval/lean/loops/Loop_3160_danio_aesculapii_turing_wavelength_s0.lean#L18-L23
+  variables: D_u=2.286454, D_v=64.020722 (R=28), distinct from the 1.009 mm organ-scale sibling
+  role: Selects the 21 µm detail wavelength for vertical bars on D. aesculapii
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py#L116-L152
+- law_name: Successor subcriticality at the same cellular scale
+  formula: R_albolineatus = 1.20 < R_c = -g_v/f_u = 1.6725, so D_v f_u + D_u g_v < 0
+  lean_decl: MathOfBiology.Loop_3160.albolineatusDiffusionTrace
+  lean_theorem: MathOfBiology.Loop_3160.albolineatus_below_turing_threshold
+  lean_locus: morphoeval/lean/loops/Loop_3160_danio_aesculapii_turing_wavelength_s0.lean#L25-L30
+  variables: successor D_v = 1.20 D_u with D_u held at the aesculapii value; age 0 Ma for both
+  role: What changes versus Danio albolineatus at 21 µm and 0 Ma — the inhibitor range collapses and the mode does not amplify
+  source_citation: Spiewak et al. 2018 DOI:10.1371/journal.pgen.1007538
+  code_locus: models/2026-delphi10000-danio-aesculapii-turing-wavelength-s0.py#L307-L324
