@@ -1,0 +1,86 @@
+sim_id: delphi10000-acanthostega-gunnari-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 0.0001049
+log10_size_m: -3.979
+size_human: "105 µm"
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Acanthostega gunnari (Late Devonian, Famennian, 365 Ma)
+geological_age_ma: 365.0
+geological_period: Late Devonian (Famennian, 365 Ma)
+fossil_lineage_group: Tetrapod Fin-to-Limb Fossil Transition
+model_spec:
+  model: Schnakenberg reaction-diffusion with Turing wavenumber k_c calibrated to 104.9 µm
+  a: 0.05
+  b: 1.0
+  r_Dv_over_Du: 10.0
+  lambda_um: 104.9
+  grid: [128, 128]
+  seed: 3102
+  inputs:
+    - datasets/acanthostega_gunnari_turing_wavelength_s0/acanthostega_gunnari_brussels_head_specimen.jpg
+    - datasets/acanthostega_gunnari_turing_wavelength_s0/acanthostega_gunnari_turing_wavelength_s0_reference.json
+predecessor:
+  taxon: Tiktaalik roseae
+  age_ma: 375.0
+  change: "Fin-ray anisotropy α = 3.4. Cross-ray r_eff = 10/3.4 is below the Turing threshold (σ < 0). Along-ray r_eff = 34 selects a shorter wavelength. Digit count 0."
+successor:
+  taxon: Ichthyostega stensioei
+  age_ma: 363.0
+  change: "Seven digits; reconstructed Dv × 0.92 lengthens λ relative to the isotropic Acanthostega ocellus at r = 10."
+equations:
+- law_name: Inhibitor-activator diffusivity ratio
+  formula: r = Dv / Du = 10
+  lean_decl: MathOfBiology.Loop_3102.law1_diffusion_ratio
+  lean_theorem: MathOfBiology.Loop_3102.law1_inhibitor_faster
+  lean_locus: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean#L11-L15
+  lean_code: 'def law1_diffusion_ratio (dv du : Int) : Int := dv / du
+
+    theorem law1_inhibitor_faster : law1_diffusion_ratio 10 1 = 10 := by decide'
+  variables: "dv, du: diffusivities at λ = 105 µm. This slot fixes r = 10."
+  role: Necessary condition Dv > Du for diffusion-driven ocelli on Acanthostega dermis at 365 Ma
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py#L98-L140
+- law_name: Turing wavenumber numerator
+  formula: Dv*fu + Du*gv > 0, with fu = 0.905, gv = -1.103 at the Schnakenberg steady state
+  lean_decl: MathOfBiology.Loop_3102.law2_turing_numerator
+  lean_theorem: MathOfBiology.Loop_3102.law2_instability_numerator_positive
+  lean_locus: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean#L19-L23
+  lean_code: 'def law2_turing_numerator (dv du fu gv : Int) : Int := dv * fu + du * gv
+
+    theorem law2_instability_numerator_positive : law2_turing_numerator 10 1 905 (-1103) > 0 := by decide'
+  variables: "fu, gv in thousandths at a = 0.05, b = 1"
+  role: Critical-wavenumber numerator for k_c^2 = (Dv fu + Du gv) / (2 Du Dv) at 104.9 µm
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py#L98-L140
+- law_name: Equal-diffusion ablation
+  formula: r = 1 implies Dv*fu + Du*gv < 0
+  lean_decl: MathOfBiology.Loop_3102.law2_turing_numerator
+  lean_theorem: MathOfBiology.Loop_3102.law3_equal_diffusion_ablation
+  lean_locus: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean#L26-L28
+  lean_code: 'theorem law3_equal_diffusion_ablation : law2_turing_numerator 1 1 905 (-1103) < 0 := by decide'
+  variables: "r = 1 negative control"
+  role: Ablation. Equal diffusion admits no real k_c, so the 105 µm ocellus does not form.
+  source_citation: Murray (1981) DOI:10.1016/0022-5193(81)90334-9
+  code_locus: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py#L98-L140
+- law_name: Digit-corridor mode count
+  formula: N = 4200 µm / 105 µm = 40
+  lean_decl: MathOfBiology.Loop_3102.law4_digit_corridor_mode_count
+  lean_theorem: MathOfBiology.Loop_3102.law4_digit_corridor_mode_count
+  lean_locus: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean#L31-L33
+  lean_code: 'theorem law4_digit_corridor_mode_count : (4200 : Int) / 105 = 40 := by decide'
+  variables: "4200 µm reconstructed width of one of eight Acanthostega digits"
+  role: How many 105 µm wavelengths fit one digit ray after the fin-to-limb split (8 digits, Coates & Clack 1990)
+  source_citation: Coates & Clack (1990) DOI:10.1038/347066a0
+  code_locus: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py#L98-L140
+- law_name: Fin-ray anisotropy drop
+  formula: alpha_Tiktaalik = 3.4 > alpha_Acanthostega = 1
+  lean_decl: MathOfBiology.Loop_3102.law5_anisotropy_excess
+  lean_theorem: MathOfBiology.Loop_3102.law5_fin_ray_anisotropy_drops_at_acanthostega
+  lean_locus: morphoeval/lean/loops/Loop_3102_acanthostega_gunnari_turing_wavelength_s0.lean#L36-L40
+  lean_code: 'def law5_anisotropy_excess (alpha_tenth : Int) : Int := alpha_tenth - 10
+
+    theorem law5_fin_ray_anisotropy_drops_at_acanthostega : law5_anisotropy_excess 34 > law5_anisotropy_excess 10 := by decide'
+  variables: "alpha in tenths: Tiktaalik 34, Acanthostega 10"
+  role: At 365 Ma the cross-ray stripe bias of the 375 Ma fin is lost and the selected pattern is isotropic ocelli at the same |k_c| family.
+  source_citation: Daeschler, Shubin & Jenkins (2006) DOI:10.1038/nature04639
+  code_locus: models/2026-delphi10000-acanthostega-gunnari-turing-wavelength-s0.py#L98-L140
