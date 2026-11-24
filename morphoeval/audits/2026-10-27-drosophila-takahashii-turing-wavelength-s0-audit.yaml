@@ -1,0 +1,184 @@
+# Pass 1 — Drosophila takahashii detail-scale Turing wavelength (slot 3208).
+# Field-mode render. Analytic λ = 2.3615 µm vs target 2.362 µm.
+# PDE vs analytic dispersion Pearson r = 0.9905 (k in [0.6, 5.5] rad/µm).
+# Raw Otsu body circularity = 0.0018 (fragmented grain contour). Simulation
+# coherency was stored as 0 because the field renderer does not composite
+# the plate. Those two gaps are the Pass 2 remediation.
+audit:
+  id: 2026-10-27-drosophila-takahashii-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no independent second assessor)"
+    homepage: "https://x.ai"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 948e555fd733650f05998c84112d9f34e837fe61
+    note: "Pass 1 field render. Python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    doi: 10.1016/0022-5193(81)90334-9
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini, P. K.; Painter, K. J.; Chau, H. N. P."
+    year: 1997
+    doi: 10.1039/a702602a
+  tanaka2009:
+    title: "Distinct developmental mechanisms underlie the evolutionary diversification of Drosophila sex combs"
+    authors: "Tanaka, K.; Barmina, O.; Kopp, A."
+    year: 2009
+    doi: 10.1073/pnas.0807875106
+  kopp2011:
+    title: "Drosophila sex combs as a model of evolutionary innovations"
+    authors: "Kopp, A."
+    year: 2011
+    doi: 10.1111/j.1525-142x.2011.00507.x
+  atallah2014:
+    title: "The making of a pest: the evolution of a fruit-penetrating ovipositor in Drosophila suzukii and related species"
+    authors: "Atallah, J.; Teixeira, L.; Salazar, R.; Zaragoza, G.; Kopp, A."
+    year: 2014
+    doi: 10.1098/rspb.2013.2840
+simulations:
+  - id: delphi10000-drosophila-takahashii-turing-wavelength-s0
+    name: "Drosophila takahashii Schnakenberg Turing wavelength at 2.362 µm (Pass 1 field render)"
+    organism: "Drosophila takahashii"
+    script: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py
+    output: docs/media/drosophila_takahashii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, maini1997, tanaka2009, kopp2011, atallah2014]
+    summary: >-
+      Periodic Schnakenberg integration on a 28.344 µm chart (12 × 2.362 µm).
+      Analytic peak λ = 2.3615 µm, σ_max = 0.0743. Numerical dominant wavelength
+      2.314 µm. Dispersion Pearson r = 0.9905, RMSE = 0.0568, KS = 0.0909 on 22
+      wavenumbers. Equal-diffusion ablation std collapses to ~4e-13 against a
+      patterned std of 0.0475. Dv sweep wavelengths increase from 2.300 to 2.733 µm
+      above onset. Raw Otsu circularity on the gallery plate is 0.0018.
+      GIF is 640×480, 12 frames. CV similarity of the field GIF against the plate
+      is 80.0. Geological age 0 Ma.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and a finite critical wavelength"
+        - "Schnakenberg 1979 two-species kinetics with a cubic autocatalytic term"
+        - "Murray 1981 wavelength set by the diffusion scale"
+        - "Tanaka, Barmina and Kopp 2009 and Kopp 2011 on sex-comb diversification"
+        - "Atallah et al. 2014 on Drosophila suzukii and its close relatives"
+      reconstructed_in_script:
+        - "Parameters a=0.162, b=1.247, Du=0.042744, Dv=0.971570 placing λ_c at 2.362 µm"
+        - "Explicit Euler on a periodic 12-wavelength chart and the radial-FFT wavelength"
+        - "Dispersion Pearson/KS, Dv sweep, and equal-diffusion ablation"
+      transfer_boundary:
+        - "2.362e-06 m is the campaign detail-scale assignment (log10=-5.627), not a quoted takahashii ocellus measurement"
+        - "The suzukii → takahashii → teissieri order is chronoseries index 37/41 at 0 Ma, not an anagenetic fossil series"
+      does_not_claim:
+        - "That a wet-lab paper reports 2.362 µm for a D. takahashii ocellus"
+        - "That D. takahashii carries the D. suzukii apical wing spot"
+        - "That the Pass 1 Otsu contour is a usable body outline"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The script integrates the Schnakenberg system and the Turing dispersion
+          σ(k), and the analytic peak is 2.3615 µm against the 2.362 µm target
+          (within 1%). Explicit Euler and periodic boundaries are a reconstruction.
+          The 2.362 µm length is the slot scale, not a fitted wet-lab constant.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [105, 149], note: "Jacobian at u0=a+b and dispersion peak λ=2π/k_c", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [156, 191], note: "Periodic explicit Euler of the Schnakenberg PDE", supports: true}
+      specimen-match:
+        value: 62
+        rationale: >-
+          The comparison figure places the gallery plate beside the activator field.
+          The 12-frame 640×480 GIF scores CV similarity 80.0 against that plate, but
+          it is a full-frame colormap, and the Otsu overlay is a fragmented grain
+          contour (circularity 0.0018), not the fly body.
+        evidence:
+          - {file: docs/media/drosophila_takahashii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 1 six-panel plate, field, raw Otsu edge, dispersion, sweep, chronoseries", supports: true}
+          - {file: docs/media/drosophila_takahashii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame field colormap, 640×480", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: >-
+          Holding Du fixed, analytic λ_c increases with Dv once σ_max > 0
+          (2.300, 2.361, 2.463, 2.577, 2.733 µm). Dv=0.55 is stable and is the
+          negative end of the same sweep. The transverse-row anisotropy of the
+          sex comb is discussed and not yet a separate simulated regime.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [268, 283], note: "diffusion_sweep reports λ only where σ_max > 0", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          Pearson r = 0.9905, RMSE = 0.0568, KS = 0.0909 between PDE growth rates
+          and analytic σ(k) on 22 wavenumbers in [0.6, 5.5] rad/µm. Measured
+          wavelength 2.314 µm versus reference 2.362 µm. Ablation std ~4e-13 versus
+          patterned std 0.0475. Body circularity 0.0018 is not a usable outline,
+          and field mode recorded simulation coherency as 0.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [221, 266], note: "linear_growth_fit Pearson, RMSE, and KS", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [285, 298], note: "equal-diffusion ablation versus patterned amplitude", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          DOIs were checked on OpenAlex. The specimen SHA-256 is pinned in the
+          reference JSON. Commons returned only D. pseudotakahashii, which was
+          rejected; the gallery plate is the documented fallback. Age 0 Ma and
+          scale 2.362e-06 m are stated in the README and the reference file.
+        evidence:
+          - {file: datasets/drosophila_takahashii_turing_wavelength_s0/paper_citations.bib, lines: [1, 20], note: "Turing 1952 and Schnakenberg 1979 entries", supports: true}
+          - {file: datasets/drosophila_takahashii_turing_wavelength_s0/drosophila_takahashii_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.362e-06 m, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 82
+        rationale: >-
+          The module docstring names the PDE, the dispersion, the 12-wavelength
+          chart, and the chronoseries contrast. jacobian, sigma_of_k, and
+          linear_growth_fit are the code loci for those equations. Section-level
+          pins into Turing 1952 are not reproduced beyond the DOI.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [1, 45], note: "docstring equations and chronoseries contrast", supports: true}
+      repro-package:
+        value: 84
+        rationale: >-
+          --self-test checks the Turing inequalities, the 1% wavelength tolerance,
+          Pearson r > 0.98, ablation collapse, monotonic λ(Dv), and the four
+          integer chronoseries facts. Seed 3208. The Pass 1 GIF meets 12 frames
+          and 640×480. Checkpoint 948e555f.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [722, 770], note: "self_test assertions", supports: true}
+    remediation:
+      - "R1. Replace raw Otsu on the grainy plate (circularity 0.0018) with a smoothed largest-component body mask that excludes the caption band."
+      - "R2. Composite the lattice inside that mask and record a non-zero simulation coherency distinct from the specimen coherency."
+      - "R3. Still one gallery plate and one assessor; do not invent a second specimen or a second scorer."
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Raw Otsu circularity is 0.0018 because grain fragments the contour. Segment the largest smoothed body component and composite the activator into that mask."
+        status: open
+        novelty_n: 1.2
+        contradiction_c: 0.4
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Field mode stored simulation structure-tensor coherency as 0. Measure it on the composited frame and keep the value distinct from the specimen coherency."
+        status: open
+        novelty_n: 1.0
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0

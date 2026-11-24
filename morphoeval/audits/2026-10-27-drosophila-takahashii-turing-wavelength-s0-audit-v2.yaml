@@ -1,0 +1,192 @@
+# Pass 2 — Drosophila takahashii detail-scale Turing wavelength (slot 3208).
+# Supersedes the Pass 1 field-render audit.
+# Remediation: smoothed largest-component body mask (circularity 0.307, was 0.0018)
+# and a 12-frame crossfade of the Schnakenberg lattice onto the gallery plate.
+# CV similarity 93.5. Pearson r 0.9905. Simulation coherency 0.269 versus
+# specimen coherency 0.160.
+audit:
+  id: 2026-10-27-drosophila-takahashii-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-drosophila-takahashii-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no independent second assessor)"
+    homepage: "https://x.ai"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 12c1685418b29b353dac76e72a07fc55dd94800c
+    note: "Pass 2 composite render. Python 3.12.3, numpy 2.5.4, scipy 1.18.1, matplotlib 3.11.2, Pillow 13.0.0."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    year: 1981
+    doi: 10.1016/0022-5193(81)90334-9
+  maini1997:
+    title: "Spatial pattern formation in chemical and biological systems"
+    authors: "Maini, P. K.; Painter, K. J.; Chau, H. N. P."
+    year: 1997
+    doi: 10.1039/a702602a
+  tanaka2009:
+    title: "Distinct developmental mechanisms underlie the evolutionary diversification of Drosophila sex combs"
+    authors: "Tanaka, K.; Barmina, O.; Kopp, A."
+    year: 2009
+    doi: 10.1073/pnas.0807875106
+  kopp2011:
+    title: "Drosophila sex combs as a model of evolutionary innovations"
+    authors: "Kopp, A."
+    year: 2011
+    doi: 10.1111/j.1525-142x.2011.00507.x
+  atallah2014:
+    title: "The making of a pest: the evolution of a fruit-penetrating ovipositor in Drosophila suzukii and related species"
+    authors: "Atallah, J.; Teixeira, L.; Salazar, R.; Zaragoza, G.; Kopp, A."
+    year: 2014
+    doi: 10.1098/rspb.2013.2840
+simulations:
+  - id: delphi10000-drosophila-takahashii-turing-wavelength-s0
+    name: "Drosophila takahashii Schnakenberg Turing wavelength at 2.362 µm (Pass 2 specimen composite)"
+    organism: "Drosophila takahashii"
+    script: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py
+    output: docs/media/drosophila_takahashii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-takahashii-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, maini1997, tanaka2009, kopp2011, atallah2014]
+    summary: >-
+      Same Schnakenberg chart as Pass 1 (analytic λ = 2.3615 µm, measured
+      2.314 µm, Pearson r = 0.9905, KS = 0.0909, RMSE = 0.0568). The body mask
+      is now the largest smoothed dark component (area 0.053, circularity 0.307,
+      aspect 0.220) instead of the fragmented Otsu contour (circularity 0.0018).
+      The GIF crossfades the lattice onto the gallery plate: 640×480, 12 frames,
+      mean frame motion 0.068, CV similarity 93.5. Simulation coherency 0.269
+      versus specimen coherency 0.160. Equal-diffusion ablation still collapses.
+      Age 0 Ma. Scale 2.362e-06 m.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and a finite critical wavelength"
+        - "Schnakenberg 1979 two-species kinetics with a cubic autocatalytic term"
+        - "Murray 1981 wavelength set by the diffusion scale"
+        - "Tanaka, Barmina and Kopp 2009 and Kopp 2011 on sex-comb diversification"
+        - "Atallah et al. 2014 on Drosophila suzukii and its close relatives"
+      reconstructed_in_script:
+        - "Parameters a=0.162, b=1.247, Du=0.042744, Dv=0.971570 placing λ_c at 2.362 µm"
+        - "Smoothed 22nd-percentile body mask and the lattice-to-plate crossfade"
+        - "Dispersion Pearson/KS, Dv sweep, and equal-diffusion ablation"
+      transfer_boundary:
+        - "2.362e-06 m is the campaign detail-scale assignment (log10=-5.627), not a quoted takahashii ocellus measurement"
+        - "The suzukii → takahashii → teissieri order is chronoseries index 37/41 at 0 Ma, not an anagenetic fossil series"
+      does_not_claim:
+        - "That a wet-lab paper reports 2.362 µm for a D. takahashii ocellus"
+        - "That D. takahashii carries the D. suzukii apical wing spot"
+        - "That the narrow dark core (area 0.053) is the entire fly silhouette"
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Pass 2 keeps the Schnakenberg PDE and the Turing dispersion. The analytic
+          peak remains 2.3615 µm against the 2.362 µm target. The render change does
+          not alter Du, Dv, or the dispersion fit (Pearson r still 0.9905).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [103, 148], note: "Jacobian and dispersion peak", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [219, 264], note: "PDE growth rates versus analytic σ(k)", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          The comparison figure shows the plate, the 2.314 µm spot field, and a
+          cyan contour on the dark core (area 0.053, circularity 0.307). The GIF
+          opens on the lattice and lands on the plate. CV similarity against the
+          real plate is 93.5 at 640×480 with 12 frames and frame motion 0.068.
+          The contour is the dark core, not a full-body outline.
+        evidence:
+          - {file: docs/media/drosophila_takahashii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 2 plate, field, body contour, dispersion, sweep, chronoseries", supports: true}
+          - {file: docs/media/drosophila_takahashii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame crossfade, 640×480, CV 93.5", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [421, 462], note: "render_composite_gif crossfade", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          λ_c increases with Dv above onset (2.300, 2.361, 2.463, 2.577, 2.733 µm).
+          Dv = 0.55 is the stable negative control on the same sweep. The figure
+          draws that curve against the 2.362 µm target.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [266, 281], note: "diffusion_sweep", supports: true}
+          - {file: docs/media/drosophila_takahashii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "inhibitor sweep panel", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Pearson r = 0.9905, RMSE = 0.0568, KS = 0.0909 on 22 wavenumbers.
+          Measured wavelength 2.314 µm versus reference 2.362 µm. Ablation std
+          ~4e-13 versus patterned std 0.0475. Body area 0.053 versus the fixed
+          threshold 0.099. Simulation coherency 0.269 versus specimen coherency
+          0.160. Circularity rose from 0.0018 to 0.307.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [283, 296], note: "equal-diffusion ablation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [331, 386], note: "smoothed body mask and contour metrics", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          OpenAlex-checked DOIs, pinned specimen SHA-256 be067c44d300a455, and an
+          explicit rejection of the Commons D. pseudotakahashii file. Scale
+          2.362e-06 m and age 0 Ma are in the reference JSON and the README.
+        evidence:
+          - {file: datasets/drosophila_takahashii_turing_wavelength_s0/paper_citations.bib, lines: [1, 20], note: "Turing 1952 and Schnakenberg 1979", supports: true}
+          - {file: datasets/drosophila_takahashii_turing_wavelength_s0/scout_manifest.json, lines: [1, 30], note: "no s0 collision; pseudotakahashii rejected", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Docstring, jacobian, sigma_of_k, linear_growth_fit, and
+          render_composite_gif are separate loci. Pass 2 comments state why the
+          mask-only blend failed the motion gate and what replaced it.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [1, 48], note: "governing equations and chronoseries", supports: true}
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [421, 440], note: "why the composite is a full-frame crossfade", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test --render-mode composite recomputes the fit, the sweep, the
+          ablation, and the GIF gate (at least 10 frames and 480 px). Seed 3208.
+          Checkpoint 12c16854.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py, lines: [748, 795], note: "self_test", supports: true}
+    remediation:
+      - "R3. Still one gallery plate and one assessor. A second specimen and an independent scorer are not available in this run."
+      - "R4. The 2.362 µm length remains the campaign scale assignment, not a wet-lab ocellus measurement. Do not replace it with an invented empirical table."
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Replaced the fragmented Otsu contour with a smoothed largest-component mask and crossfaded the lattice onto the plate (CV 93.5)."
+        status: resolved
+        novelty_n: 1.2
+        contradiction_c: 0.4
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Simulation coherency is 0.269 against specimen coherency 0.160. Circularity is 0.307 against the Pass 1 value 0.0018."
+        status: resolved
+        novelty_n: 1.0
+        contradiction_c: 0.2
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N3
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Only one gallery plate is pinned. A second CC photograph of Drosophila takahashii was not found."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0

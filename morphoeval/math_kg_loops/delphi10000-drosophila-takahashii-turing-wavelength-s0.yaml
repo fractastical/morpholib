@@ -1,0 +1,67 @@
+sim_id: delphi10000-drosophila-takahashii-turing-wavelength-s0
+slot: 3208
+organism: Drosophila takahashii
+phenomenon_size_m: 2.362e-06
+log10_size_m: -5.627
+size_human: "2.4 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila takahashii (2.4 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora suzukii–biarmipes Wing-Spot Clade"
+chronoseries_index: 37
+chronoseries_of: 41
+predecessor: Drosophila suzukii
+successor: Drosophila teissieri
+model_spec:
+  model: Schnakenberg 1979 kinetics with Turing 1952 dispersion; lambda_c = 2*pi/k_c
+  a: 0.162
+  b: 1.247
+  Du: 0.042744
+  Dv: 0.97157
+  lambda_um: 2.362
+  domain_um: 28.344
+  grid_pattern: [96, 96]
+  grid_gof: [128, 128]
+  seed: 3208
+  inputs:
+    - datasets/drosophila_takahashii_turing_wavelength_s0/Drosophila_takahashii_specimen.jpg
+    - datasets/drosophila_takahashii_turing_wavelength_s0/drosophila_takahashii_turing_wavelength_s0_reference.json
+    - datasets/drosophila_takahashii_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_takahashii_turing_wavelength_s0/paper_citations.bib
+math_family: Reaction-Diffusion and Turing dispersion (1. Chemical Turing / RD)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Twelve wavelengths span the 28.344 µm chart
+    formula: "L = 12 * lambda_c,  12 * 2362 nm = 28344 nm"
+    lean_decl: MathOfBiology.Loop_3208.domainNm
+    lean_theorem: MathOfBiology.Loop_3208.twelve_wavelengths_span_the_chart
+    lean_locus: morphoeval/lean/loops/Loop_3208_drosophila_takahashii_turing_wavelength_s0.lean
+    variables: "lambda_c = 2.362 µm; L = 28.344 µm"
+    role: Domain used for the periodic Schnakenberg integration at this detail scale
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; slot scale 2.362e-06 m"
+    code_locus: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py
+  - law_name: Critical wavelength from the dispersion peak
+    formula: "lambda_c = 2*pi/k_c, k_c = argmax sigma(k), sigma = 0.5*(tr + sqrt(tr^2 - 4*det))"
+    lean_decl: MathOfBiology.Loop_3208.lambdaDetailNm
+    lean_theorem: MathOfBiology.Loop_3208.detail_shorter_than_suzukii_envelope
+    lean_locus: morphoeval/lean/loops/Loop_3208_drosophila_takahashii_turing_wavelength_s0.lean
+    variables: "a=0.162, b=1.247, Du=0.042744, Dv=0.97157"
+    role: Selects the 2.362 µm pigment-lattice wavenumber, 41 times inside the suzukii envelope
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+    code_locus: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py
+  - law_name: Envelope lengthening does not rescale the detail wavelength
+    formula: "lambda_teissieri - lambda_suzukii = 8550 nm and lambda_detail < both envelopes"
+    lean_decl: MathOfBiology.Loop_3208.lambdaTeissieriEnvelopeNm
+    lean_theorem: MathOfBiology.Loop_3208.successor_envelope_lengthens_without_rescaling_detail
+    lean_locus: morphoeval/lean/loops/Loop_3208_drosophila_takahashii_turing_wavelength_s0.lean
+    variables: "suzukii 98450 nm; takahashii 2362 nm; teissieri 107000 nm; age 0 Ma"
+    role: Chronoseries contrast at Holocene 0 Ma, index 37/41
+    source_citation: "Atallah et al. 2014 DOI:10.1098/rspb.2013.2840; Kopp 2011 DOI:10.1111/j.1525-142x.2011.00507.x"
+    code_locus: models/2026-delphi10000-drosophila-takahashii-turing-wavelength-s0.py
