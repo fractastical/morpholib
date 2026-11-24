@@ -1,0 +1,96 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "sim_id": "delphi10000-columba-livia-turing-wavelength-s0",
+  "slot": 3151,
+  "organism": {
+    "scientific_name": "Columba livia",
+    "common_name": "Rock dove",
+    "aristotelian_path": "I. Enaima (Vertebrata) -> Aves (Ornithes) -> Columba"
+  },
+  "evolutionary_history": {
+    "stage": "Holocene (Extant)",
+    "age_Ma": 0,
+    "lineage": "",
+    "chronoseries": "Columba 1/1",
+    "chronoseries_index": 1,
+    "chronoseries_length": 1,
+    "predecessor_chronospecies": null,
+    "successor_chronospecies": null,
+    "what_changes": "No other chronospecies sits in this 1/1 series, so the delta is across scale at age 0 Ma. Below one activator diffusion length (about 24.1 um) perturbations decay. At 256 um the Schnakenberg linearization selects k_c. A ten-wavelength packet (2560 um) is still not the centimetre NDP wing-bar envelope, and it is not the galliform somite stripe prepattern."
+  },
+  "scale": {
+    "lambda_c_um": 256,
+    "lambda_c_m": 0.000256,
+    "log10_m_exact": -3.5917600346881504,
+    "log10_m_tier_label": -3.592,
+    "tier": "5_primordium_100um",
+    "tier_index": "5/8",
+    "variant": "detail",
+    "length_unit_um": 16,
+    "grid_n": 64,
+    "domain_um": 1024,
+    "wavelengths_on_domain": 4,
+    "diffusion_length_um": 24.104277534882097,
+    "successor_packet_um": 2560,
+    "form": "Stripes, spots and ocelli",
+    "law": "Turing wavenumber k_c"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "pde": [
+      "du/dt = Du * laplacian(u) + S * gamma0 * (a - u + u^2 v)",
+      "dv/dt = Dv * laplacian(v) + S * gamma0 * (b - u^2 v)"
+    ],
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "critical_wavenumber": "k_c^2 = gamma * (Dv f_u + Du g_v) / (2 Du Dv)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "boundary_conditions": "Periodic on a 1024 um square patch of feather vane. The patch is not the whole bird and not a free-edge follicle."
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "Du": 1.0,
+    "Dv_isotropic": 10.0,
+    "Dv_stripe_x": 10.0,
+    "Dv_stripe_y": 2.5,
+    "time_scale_S": 30.0,
+    "gamma0": 0.44060733933434637,
+    "length_unit_um": 16.0,
+    "grid_n": 64,
+    "lambda_c_um": 256.0,
+    "seed": 3151,
+    "note": "S multiplies gamma and both diffusivities together. It speeds the clock and does not move k_c. Dv/Du = 10 places only Fourier mode n = 4 inside the unstable band on this grid, which is exactly lambda = 256 um. Stripe anisotropy keeps Dv_y/Du = 2.5 below the Turing threshold so the wavevector lies across the vane."
+  },
+  "empirical_claims": {
+    "reported_in_source": [
+      "Turing 1952: a chemical wavelength is selected where the dispersion relation has positive growth.",
+      "Schnakenberg 1979: the two-species kinetics used here.",
+      "Murray 1981: the same wavelength mechanism can yield stripes or spots.",
+      "Prum and Williamson 2002: within-feather pigment bars, spots and ocelli are reaction-diffusion patterns on the growing vane.",
+      "Vickrey et al. 2018: in Columba livia the macroscopic checker versus bar phenotype tracks NDP alleles.",
+      "Haupaix et al. 2018: periodic longitudinal coloration in galliforms is a somite prepattern."
+    ],
+    "reconstructed_here": [
+      "Parameters are fixed so the linear critical wavelength is exactly 256 um on a 16 um grid. That length is the assigned detail scale. It is not a published rock-dove measurement of 256.000 um.",
+      "Diffusion anisotropy is a reconstructed switch between a stripe (bar element) and an isotropic spot lattice at the same k_c. It is not a measured map from NDP onto a diffusion tensor."
+    ],
+    "does_not_claim": [
+      "That the centimetre wing bars are a single Turing wavelength.",
+      "That galliform somite stripes are this 256 um mode.",
+      "A fossil chronospecies, a change in age, or a predecessor Columba morphology. The series length is 1."
+    ]
+  },
+  "specimen": {
+    "filename": "columba_livia_specimen.jpg",
+    "sha256": "74dfe533e6b396ac7c607cf39ec48ce3b867de1c26b527b027f86f0b61dc357e",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Rock_dove_-_natures_pics.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Rock_dove_-_natures_pics.jpg",
+    "license": "CC BY-SA 2.5",
+    "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+    "creator": "Alan D. Wilson, www.naturespicsonline.com",
+    "credit": "http://www.naturespicsonline.com/galleries/14#5",
+    "description": "Feral rock dove in flight, Burnaby Lake Regional Park, Burnaby, BC, Canada. Shows the two dark wing bars of the wild-type phenotype."
+  },
+  "primary_doi": "10.1098/rspb.2001.1896"
+}

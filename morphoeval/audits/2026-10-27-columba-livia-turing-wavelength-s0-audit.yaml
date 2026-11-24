@@ -1,0 +1,200 @@
+# MorphoEval audit — Columba livia 256 um Turing wavelength, loop 3151, pass 1.
+# The growth GIF was rendered with --render-mode unfitted. CV similarity 57.8.
+
+audit:
+  id: 2026-10-27-columba-livia-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (xAI), primary assessor for loop 3151"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: https://orcid.org/0009-0007-4948-9192
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: >-
+      Pass 1 of loop 3151. The solver, dispersion test, ablation, and specimen
+      segmentation are in the script. The animated GIF was written with
+      --render-mode unfitted, so its last frame is the bare stripe field.
+      Signing keys were not present (~/.nanopub/profile.yml missing); nanopubs
+      from this audit are unsigned. An independent second-company assessor was
+      not run in this session.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    year: 1981
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum RO, Williamson S"
+    year: 2002
+    venue: "Proceedings of the Royal Society B 269:781-792 (2002)"
+    doi: 10.1098/rspb.2001.1896
+  vickrey2018:
+    title: "Introgression of regulatory alleles and a missense coding mutation drive plumage pattern diversity in the rock pigeon"
+    authors: "Vickrey AI, Bruders R, Kronenberg Z, Mackey E, Bohlender RJ, Maclary ET, Maynez R, Osborne EJ, Johnson KP, Huff CD, Yandell M, Shapiro MD"
+    year: 2018
+    venue: "eLife 7:e34803 (2018)"
+    doi: 10.7554/eLife.34803
+  haupaix2018:
+    title: "The periodic coloration in birds forms through a prepattern of somite origin"
+    authors: "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M"
+    year: 2018
+    venue: "Science 361(6408) (2018)"
+    doi: 10.1126/science.aar4777
+
+simulations:
+  - id: delphi10000-columba-livia-turing-wavelength-s0
+    name: "Columba livia Turing wavelength at 256 um (Holocene, chronoseries 1/1)"
+    organism: "Columba livia"
+    script: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py
+    output: docs/media/columba_livia_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/columba_livia_turing_wavelength_s0_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) selects a wavelength where the dispersion relation has a positive growth rate."
+        - "Schnakenberg (1979) supplies the two-species kinetics. Murray (1981) shows the same mechanism can make stripes or spots."
+        - "Prum & Williamson (2002) treat within-feather bars, spots and ocelli as reaction-diffusion patterns."
+        - "Vickrey et al. (2018) map rock-dove checker versus bar to NDP alleles. Haupaix et al. (2018) show galliform longitudinal stripes arise as a somite prepattern."
+      reconstructed_in_script:
+        - "a=0.10, b=0.90, Dv/Du=10, gamma0=pi^2/22.4 and a 16 um grid are chosen so the only unstable mode on a 64-cell domain is n=4, i.e. lambda_c=256 um. That length is the assigned detail scale, not a published rock-dove measurement of 256.000 um."
+        - "Stripe anisotropy (Dv_y/Du=2.5, below threshold) versus isotropic spots is a reconstructed switch at fixed k_c, not a measured NDP-to-diffusion map."
+        - "Pass 1 GIF is the bare melanin field (--render-mode unfitted). Computer-vision similarity to the flight photograph was 57.8."
+      transfer_boundary:
+        - "Periodic 1024 um vane patch at age 0 Ma. The chronoseries has one entry, so there is no other Columba chronospecies to difference. The predecessor scale is the 24.1 um diffusion length; the successor scale is a 2560 um packet, still below the centimetre wing bar."
+      does_not_claim:
+        - "That the two wing bars are one Turing wavelength, or that galliform somite stripes are this 256 um mode."
+        - "A fossil transition, a change in age, or a calibrated micrometre measurement off the photograph (the file has no scale bar)."
+    source_refs:
+      - turing1952
+      - schnakenberg1979
+      - murray1981
+      - prum2002
+      - vickrey2018
+      - haupaix2018
+    summary: >-
+      Pass 1 scores 83.0/100. The Schnakenberg critical wavelength is 256.000 um,
+      only mode n=4 is unstable, and the IMEX growth rates match the analytic
+      dispersion with Pearson r = 0.999889 (unscaled RMSE 0.0511). Equal diffusion
+      drops the field standard deviation from 0.291 to 0.00516. The unfitted GIF
+      (12 frames, 640x480) scores CV similarity 57.8 against the CC BY-SA 2.5
+      rock-dove photograph, so image fitness is suppressed at 63.0.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Implements the Schnakenberg linearization (sigma_plus), the critical-wavenumber
+          formula that pins lambda_c at 256 um, and an IMEX Fourier step. Four Lean theorems
+          with zero sorry cover the determinant sign, the equal-diffusion ablation, the
+          four-wavelength domain, and the Holocene 1/1 scale succession. Parameters are
+          reconstructed for this scale rather than copied from a pigeon-specific published table,
+          which is why the score is not higher.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [94, 141], note: "Analytic growth rate, k_c^2(Dv), and IMEX spectral step of the Schnakenberg PDE", supports: true}
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [173, 220], note: "Eigenmode integrations compared with the closed-form dispersion", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3151_columba_livia_turing_wavelength_s0.lean, lines: [50, 95], note: "Four theorems, zero sorry, namespace MathOfBiology.Loop_3151", supports: true}
+      specimen-match:
+        value: 66
+        rationale: >-
+          The comparison figure shows the Alan D. Wilson flight photograph and a melanin
+          registration, and the script segments that file. The fitness test reads the GIF,
+          which pass 1 rendered unfitted: 12 frames at 640x480, CV similarity 57.8, below
+          the 58 gate. Image fitness is therefore suppressed (63.0). The photograph is a
+          real rock dove with the two wing bars; it is not a micrometre micrograph.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [311, 336], note: "GIF renderer. Pass 1 took the else branch (bare pigment) because --render-mode unfitted", supports: true}
+          - {file: docs/media/columba_livia_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Pass-1 unfitted animation, 12 frames, 640x480, CV similarity 57.8", supports: true}
+          - {file: docs/media/columba_livia_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Six-panel figure with dispersion, Dv sweep, stripes, spots, specimen, and registration", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          At fixed gamma, analytic lambda falls monotonically as Dv rises from 9 to 24
+          (258.1 um to 246.0 um), and the number of unstable grid modes is non-decreasing
+          (1, 1, 3, 3, 4). Anisotropy Dv_y/Du = 2.5 (subcritical) selects stripes; the
+          isotropic tensor at the same Dv/Du = 10 selects spots. Both lock to mode n = 4
+          because that is the only unstable mode on this grid.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [222, 244], note: "Dv sweep of analytic wavelength and unstable-mode count", supports: true}
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [143, 168], note: "Same integrator used for stripe anisotropy, isotropic spots, and the Dv=Du control", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          measure_morphoeval reports Pearson r = 0.999889 against the analytic dispersion
+          (reference 1; unscaled RMSE 0.0511), stripe spacing CV, an ablation ratio of
+          0.0177 against a reference of 0, specimen foreground fraction 0.5577 against a
+          balanced-frame null of 0.5, contour circularity 0.0145 against a circle null of 1,
+          and a luminance KS of 0.387 against identical-distribution 0. The saturated stripe
+          mode is n = 4, so the realized wavelength is 256 um on the 1024 um domain.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [471, 591], note: "Eleven measurements with references, including Pearson r, RMSE, KS, CV, and the ablation ratio", supports: true}
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [246, 293], note: "Specimen silhouette and two-sample KS statistic", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Six Crossref-checked DOIs are vendored in paper_citations.bib and the reference
+          JSON. The specimen is Alan D. Wilson's CC BY-SA 2.5 file, SHA-256
+          74dfe533e6b396ac7c607cf39ec48ce3b867de1c26b527b027f86f0b61dc357e.
+          The first broad OpenAlex query returned no works; the DOIs were resolved by
+          follow-up title queries. The gallery JPEG labeled Columba livia is a synthetic
+          spiral and was not used.
+        evidence:
+          - {file: datasets/columba_livia_turing_wavelength_s0/columba_livia_turing_wavelength_s0_reference.json, lines: [1, 90], note: "Scale 256 um, age 0 Ma, parameters, claim boundary, specimen hash", supports: true}
+          - {file: datasets/columba_livia_turing_wavelength_s0/paper_citations.bib, lines: [1, 60], note: "Six DOIs: Turing 1952, Schnakenberg 1979, Murray 1981, Prum & Williamson 2002, Vickrey 2018, Haupaix 2018", supports: true}
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [81, 83], note: "SHA-256 pin checked in the self-test against the reference JSON", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module docstring names each equation's source. sigma_plus is the Turing
+          growth rate, analytical_kc2 is the critical-wavenumber formula, and the Lean
+          declarations are listed in the math-KG YAML with line loci. The time-scale
+          factor S is documented as a clock, not a biological rate.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [1, 24], note: "Docstring tying the 256 um scale, age 0 Ma, and the six sources together", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-columba-livia-turing-wavelength-s0.yaml, lines: [28, 66], note: "Four laws with Lean theorem names and code loci", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          --self-test checks the specimen hash, lambda = 256 um, the sign of sigma at
+          k_c, zero, and equal diffusion, that the only unstable mode is n = 4, Pearson
+          r > 0.98, monotonic Dv sweep, bitwise repeatability, stripe mode 4, and the
+          ablation ratio. Seed is 3151. Pass 1 was invoked as --render-mode unfitted.
+        evidence:
+          - {file: models/2026-delphi10000-columba-livia-turing-wavelength-s0.py, lines: [594, 626], note: "Deterministic self-test", supports: true}
+          - {file: docs/media/columba_livia_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 GIF produced by the unfitted renderer", supports: true}
+    remediation:
+      - "Re-render docs/media/columba_livia_turing_wavelength_s0_growth.gif with --render-mode fitted so the last frames register the simulated melanin on the rock-dove photograph. Pass 1 CV similarity was 57.8 (gate 58) and image_fitness was 63.0 (gate 70)."
+      - "Re-score specimen-match from that fitted GIF. Do not retune k_c or the audit weights to manufacture the pass; the dispersion Pearson r = 0.999889 already clears 0.98."
+      - "Record signing as unavailable if ~/.nanopub/profile.yml is still absent. Do not invent a trusty URI."
