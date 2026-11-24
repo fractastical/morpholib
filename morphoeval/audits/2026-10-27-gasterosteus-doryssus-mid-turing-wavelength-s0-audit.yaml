@@ -1,0 +1,192 @@
+# MorphoEval audit — Gasterosteus doryssus_mid, 42 µm Turing wavelength, Pass 1.
+# Single assessor (grok-4.7). Builder and assessor are the same agent.
+# Scale 42 µm (4.194e-05 m), Late Miocene Truckee Fm, 10.01 Ma, T = +9 kyr.
+
+audit:
+  id: 2026-10-27-gasterosteus-doryssus-mid-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent Pass 1)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 files are new on top of 0c76d15d. Loci are checked with --no-verify-loci until this commit contains them."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376:765-768 (1995)"
+    doi: 10.1038/376765a0
+  bell1982:
+    title: "Fine-scale temporal variation of the Miocene stickleback Gasterosteus doryssus"
+    authors: "Bell MA, Haglund TR"
+    venue: "Paleobiology 8(3):282-292 (1982)"
+    doi: 10.1017/s0094837300006990
+  hunt2008:
+    title: "Evolution toward a new adaptive optimum: phenotypic evolution in a fossil stickleback lineage"
+    authors: "Hunt G, Bell MA, Travis MP"
+    venue: "Evolution 62(3):700-710 (2008)"
+    doi: 10.1111/j.1558-5646.2007.00310.x
+  shapiro2004:
+    title: "Genetic and developmental basis of evolutionary pelvic reduction in threespine sticklebacks"
+    authors: "Shapiro MD et al."
+    venue: "Nature 428:717-723 (2004)"
+    doi: 10.1038/nature02415
+  chan2010:
+    title: "Adaptive evolution of pelvic reduction in sticklebacks by recurrent deletion of a Pitx1 enhancer"
+    authors: "Chan YF et al."
+    venue: "Science 327:302-305 (2010)"
+    doi: 10.1126/science.1182213
+  voje2022:
+    title: "Evolution of static allometry and constraint on evolutionary allometry in a fossil stickleback"
+    authors: "Voje KL, Bell MA, Stuart YE"
+    venue: "Journal of Evolutionary Biology 35(3):423-438 (2022)"
+    doi: 10.1111/jeb.13984
+
+simulations:
+  - id: delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 42 µm on Gasterosteus doryssus_mid (Truckee Fm, 10.01 Ma)"
+    organism: "Gasterosteus doryssus_mid"
+    script: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_growth.gif
+    extra_outputs:
+      - docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_comparison.png
+      - datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, kondo1995, bell1982, hunt2008, shapiro2004, chan2010, voje2022]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion: a critical wavenumber selected by diffusion and reaction rates."
+        - "Kondo & Asai 1995: reaction-diffusion waves set pigment spacing on fish skin."
+        - "Bell & Haglund 1982 and Hunt, Bell & Travis 2008: directional pelvic reduction in Truckee Fm G. doryssus."
+        - "Shapiro et al. 2004 and Chan et al. 2010: extant pelvic reduction maps to a Pitx1 enhancer deletion."
+        - "Voje, Bell & Stuart 2022: CC BY 4.0 plate of weakly and strongly armored G. doryssus morphs."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian at (a, b) = (0.062, 1.18), σ(k), and Du bisection onto 41.94 µm."
+        - "Chronoseries (Dv/Du, γ) = (14.2, 1.55), (18, 1), (24.8, 0.62) giving 32.14, 41.94, 56.90 µm."
+        - "Spectral diffusion plus reaction substeps, ratio sweep, equal-diffusion control, RK2 dispersion check."
+      transfer_boundary:
+        - "42 µm melanophore spacing is transferred from extant pigment-pattern RD onto a fossil that preserves bone, not chromatophores."
+      does_not_claim:
+        - "That the centimetre-scale fossil photograph is a 42 µm histological section."
+        - "That Pitx1 was sequenced from these Miocene fish."
+        - "That the unguided stripe field by itself reproduces the skeleton (pure-field CV is about 58)."
+    summary: >-
+      Pass 1 at the 42 µm detail scale (4.194e-05 m, 10.01 Ma, vestigial spine, T = +9 kyr).
+      The mid-stage fastest mode is 41.94 µm. Predicted neighbours are 32.14 µm (early, full girdle)
+      and 56.90 µm (late, pelvic loss). Analytic versus RK2 dispersion Pearson r = 0.9897, RMSE = 0.070.
+      Equal-diffusion control σ_max = -0.324. Ratio sweep from 12 to 32 lengthens λ. The growth GIF
+      registers that field onto the Voje, Bell & Stuart 2022 plate (12 frames, 640×480) and scores
+      CV similarity 92.3. The unguided stripe field alone is near the 58 CV floor and is not claimed
+      as a skeleton match. Overall 83.8/100. Remediations: Du sensitivity, pure-field CV recorded
+      beside the registered CV, and a bone-versus-sediment radial split.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          jacobian, sigma_curve and fastest_mode implement the Schnakenberg linearisation
+          and k_c = argmax σ(k). solve_du bisects Du so the mid mode is 41.94 µm.
+          integrate_schnakenberg is an exponential spectral diffusion step plus two reaction
+          substeps, with a hard clip at 8 that is a numerical stabiliser, not part of Schnakenberg.
+          The GIF then composites the field onto the fossil, which is a render step, not the PDE.
+          Four Lean theorems check wavelength order, diffusivity-ratio order, negative reaction
+          trace, and a positive mid-stage Turing margin, with zero sorry.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [97, 140], note: "Jacobian, σ(k), fastest mode, Du bisection onto 14 pixels", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [208, 246], note: "spectral diffusion plus reaction substeps and the amplitude clip at 8", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean, lines: [18, 44], note: "four theorems, decide, no sorry", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The delivered GIF's last frame is the saturated activator registered onto the real
+          CC BY plate. Computer-vision similarity against that plate is 92.3 (12 frames, 640×480,
+          first-to-last mean absolute difference 0.029). The comparison PNG shows the plate,
+          the pure vertical stripe field, and the decayed equal-diffusion control side by side.
+          The pure stripe field is not a skeleton: its unguided CV sits near 58, and this score
+          does not pretend otherwise. The plate's scale bar is 1 cm, so the match is anatomical
+          context plus a 42 µm modulation, not a histological overlay.
+        evidence:
+          - {file: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 growth GIF, registered render, CV 92.3", supports: true}
+          - {file: docs/media/gasterosteus_doryssus_mid_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, pure activator stripes, equal-diffusion control, dispersion, chronoseries, ratio sweep", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [279, 317], note: "composite_on_specimen modulates the fossil by the activator; it is not an unguided prediction", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          At γ = 1, raising Dv/Du from 12 to 32 lengthens λ_pix from 12.91 to 15.73, monotonically,
+          and every ratio in that list is Turing-unstable. The chronoseries is a different path:
+          γ falls from 1.55 to 0.62 while the ratio rises from 14.2 to 24.8, and λ goes
+          32.14 → 41.94 → 56.90 µm. Both controls move the wavelength in the direction the
+          dispersion predicts. Du itself is still a solved constant; a ±10% Du probe is not in this pass.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [159, 171], note: "ratio_sweep at fixed mid-stage gamma", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep λ_pix 12.91, 13.31, 13.67, 13.99, 14.59, 15.09, 15.73", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [78, 83], note: "three chronoseries stages with distinct ratio and gamma", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          Sixteen-wavenumber analytic versus RK2 growth rates: Pearson r = 0.9897, RMSE = 0.070.
+          Equal-diffusion σ_max = -0.324 against a null of 0. Specimen coherency 0.596 versus
+          registered-frame coherency 0.603; foreground fraction 0.589 versus 0.821.
+          Radial-spectrum KS D = 0.333. Orientation-histogram Pearson r = 0.669.
+          These are not self-copies. Missing this pass: a Du uncertainty band, an explicit
+          stored pure-field CV, and a bone-versus-sediment split of the plate.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [173, 206], note: "RK2 mode ODE versus closed-form σ(k), Pearson and RMSE", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [394, 433], note: "specimen CV signature, radial KS, orientation histogram", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r=0.9897, KS=0.333, coherency 0.596 vs 0.603", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Seven DOIs were checked on Crossref on 2026-10-27, including Bell & Haglund 1982
+          at 10.1017/s0094837300006990 and the plate's source paper 10.1111/jeb.13984.
+          The specimen file is the Wikimedia Commons original, CC BY 4.0, SHA-256
+          a1d587e4264868ea273dcbf9576536275406dfd0a3e43481c7d879b13d2d19ea, re-checked at runtime.
+          Deduction: author lists for Shapiro 2004 and Chan 2010 are abbreviated in the audit
+          references; the BibTeX file holds the fuller lists.
+        evidence:
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/paper_citations.bib, lines: [1, 68], note: "Turing, Kondo, Bell, Hunt, Shapiro, Chan, Voje with DOIs", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_reference.json, lines: [48, 56], note: "specimen SHA-256, Commons URL, CC BY 4.0, Voje DOI", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [89, 95], note: "runtime SHA-256 check of the specimen", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module docstring states the PDE, the steady state, k_c, the mid-stage numbers,
+          the chronoseries, and the claim boundary. jacobian, sigma_curve, stage_table,
+          ratio_sweep, numerical_dispersion and integrate_schnakenberg each match one of those
+          lines. The Lean module names the same nanometre wavelengths the script prints
+          (32139, 41940, 56898). There is no line-by-line map onto numbered equations in
+          Turing 1952, because the kinetics are the Schnakenberg reduction of that dispersion.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [1, 52], note: "docstring equations, scale 42 µm, age 10.01 Ma, claim boundary", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.yaml, lines: [36, 75], note: "four laws with Lean loci and source DOIs", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          Seed 3230, deterministic 48-step Du bisection, --self-test asserts wavelength order,
+          |λ_mid − 41.94 µm| < 0.05, Pearson r > 0.98, negative control, monotone ratio sweep,
+          growing field variance, and a GIF of at least 10 frames at least 480 px.
+          The self-test passed on 2026-10-27 (r = 0.98974, λ = 32.14/41.94/56.90 µm).
+          Dependencies are the repo scientific stack (numpy, scipy, Pillow, matplotlib).
+          No second machine was used.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py, lines: [697, 726], note: "self_test assertions and the pass line", supports: true}
+          - {file: datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/README.md, lines: [1, 40], note: "scale, age, chronoseries table, and the run command", supports: true}
+    remediation:
+      - id: R1
+        item: "Report λ under Du scaled by 0.9 and 1.1 so the 42 µm calibration has an uncertainty band."
+      - id: R2
+        item: "Store the unguided pure-field CV next to the registered-render CV instead of only the composite."
+      - id: R3
+        item: "Split the fossil plate into bone versus sediment and compare radial spectra inside the bone mask."

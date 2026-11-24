@@ -1,0 +1,70 @@
+sim_id: delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0
+slot: 3230
+organism: Gasterosteus doryssus_mid
+common_name: Miocene Stickleback Chronospecies II (Vestigial Spine, T=+9 kyr)
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 4.194e-05
+log10_size_m: -4.377
+size_human: 42 µm
+scale_tier: 4_cellular_10um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Gasterosteus doryssus_mid (42 µm, detail scale)
+geological_age_ma: 10.01
+geological_period: Late Miocene (Truckee Fm, 10.01 Ma)
+fossil_lineage_group: Gasterosteus Pelvic Reduction Chronospecies
+chronoseries_index: 2/6
+predecessor: Gasterosteus doryssus_early
+successor: Gasterosteus doryssus_late
+poion_form: Stripes, Spots & Ocelli
+poson_law: Turing Wavenumber k_c
+efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: Schnakenberg activator-inhibitor, k_c = argmax sigma(k), lambda_c = 2*pi/k_c
+  a: 0.062
+  b: 1.18
+  gamma_mid: 1.0
+  diffusivity_ratio_mid: 18.0
+  target_lambda_pix: 14.0
+  lambda_m: 4.194e-05
+  grid: [128, 128]
+  seed: 3230
+  inputs:
+    - datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_reference.json
+    - datasets/gasterosteus_doryssus_mid_turing_wavelength_s0/gasterosteus_doryssus_mid_turing_wavelength_s0_specimen.jpg
+equations:
+  - law_name: Chronoseries wavelength ordering at 42 µm
+    formula: lambda_early < lambda_mid = 41.94 µm < lambda_late
+    lean_decl: MathOfBiology.Loop_3230.lambdaMidNm
+    lean_theorem: MathOfBiology.Loop_3230.wavelength_lengthens_along_pelvic_reduction
+    lean_locus: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean#L13-L20
+    variables: pelvic index P and reaction rate gamma at T = 0, +9, +22 kyr
+    role: What changes from doryssus_early to doryssus_mid to doryssus_late at this detail scale
+    source_citation: Hunt, Bell & Travis (2008) DOI:10.1111/j.1558-5646.2007.00310.x
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
+  - law_name: Diffusivity ratio increases as armor is lost
+    formula: (Dv/Du)_early = 14.2 < (Dv/Du)_mid = 18.0 < (Dv/Du)_late = 24.8
+    lean_decl: MathOfBiology.Loop_3230.ratioMidTimes10
+    lean_theorem: MathOfBiology.Loop_3230.diffusivity_ratio_increases_as_armor_is_lost
+    lean_locus: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean#L23-L30
+    variables: Dv/Du at the vestigial-spine mid stage versus its neighbours
+    role: Inhibitor range at 42 µm, distinct from the 1.7 mm organ-scale sibling
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
+  - law_name: Equal-diffusion control has negative reaction trace
+    formula: fu + gv < 0 so sigma(k) < 0 when Du = Dv
+    lean_decl: MathOfBiology.Loop_3230.reactionTraceMilli
+    lean_theorem: MathOfBiology.Loop_3230.equal_diffusion_reaction_trace_is_negative
+    lean_locus: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean#L33-L39
+    variables: Schnakenberg Jacobian trace at (a, b) = (0.062, 1.18)
+    role: Negative control for Turing wavenumber selection
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
+  - law_name: Mid-stage Turing margin
+    formula: h = Dv*fu + Du*gv > 0 at ratio 18
+    lean_decl: MathOfBiology.Loop_3230.midTuringMarginH
+    lean_theorem: MathOfBiology.Loop_3230.mid_stage_turing_margin_is_positive
+    lean_locus: morphoeval/lean/loops/Loop_3230_gasterosteus_doryssus_mid_turing_wavelength_s0.lean#L42-L48
+    variables: scaled Jacobian entries fu = 900, gv = -1543, Du = 100, Dv = 1800
+    role: Necessary margin for a positive growth band at 42 µm
+    source_citation: Kondo & Asai (1995) DOI:10.1038/376765a0
+    code_locus: models/2026-delphi10000-gasterosteus-doryssus-mid-turing-wavelength-s0.py
