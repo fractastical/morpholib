@@ -1,0 +1,208 @@
+audit:
+  id: 2026-10-27-drosophila-pseudoobscura-turing-wavelength-s0-audit-v2
+  supersedes: 2026-10-27-drosophila-pseudoobscura-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-pseudoobscura-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      pillow: "13.0.0"
+      matplotlib: "3.11.2"
+    note: >-
+      Pass 2 of loop 3200. Supersedes the pass-1 audit. New slot files are not in
+      commit 0c76d15d; the graph is built with --no-verify-loci and
+      --allow-reintroduction because the shared rubric nanopub already exists.
+      No ~/.nanopub/profile.yml, so the trig files are unsigned. Scores are
+      uncalibrated rubric ratings. Publisher ORCID is the one already used by
+      this repository's MorphoEval nanopubs (0009-0007-4948-9192).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  richards2005:
+    title: "Comparative genome sequencing of Drosophila pseudoobscura: chromosomal, gene, and cis-element evolution"
+    authors: "Richards S, Liu Y, Bettencourt BR, Hradecky P, Letovsky S, Nielsen R, et al."
+    venue: "Genome Research 15:1-18 (2005)"
+    doi: 10.1101/gr.3059305
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  kopp2011:
+    title: "Drosophila sex combs as a model of evolutionary innovations"
+    authors: "Kopp A"
+    venue: "Evolution & Development 13:504-522 (2011)"
+    doi: 10.1111/j.1525-142X.2011.00507.x
+  hanson2019:
+    title: "Drosophila pseudoobscura male (File:Dpse_1.tif)"
+    authors: "Hanson MA"
+    venue: "Wikimedia Commons, 2019-08-25"
+    url: https://commons.wikimedia.org/wiki/File:Dpse_1.tif
+
+simulations:
+  - id: delphi10000-drosophila-pseudoobscura-turing-wavelength-s0
+    name: "Drosophila pseudoobscura Turing wavelength at 2.0 µm (detail rung, 0 Ma)"
+    organism: Drosophila pseudoobscura
+    script: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py
+    output: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-pseudoobscura-turing-wavelength-s0-audit
+    source_refs: [turing1952, richards2005, kondo2010, kopp2011, hanson2019]
+    summary: >-
+      Pass 2 keeps the near-onset Turing wavenumber (fastest mode 1.961 µm,
+      classic k_c wavelength 1.946 µm) and replaces the six-e-fold linear horizon
+      with the cubic law d_t u = σ(k) u - γ u³. Activator rms plateaus at 0.258.
+      Peak-to-peak spacing on that stripe field is 1.961 µm (RMSE 0 against the
+      rung, because mode (12, 0) is an exact harmonic of the 12-wavelength domain).
+      The spectral centroid, which includes cubic harmonics, is 1.957 µm and is
+      not identical to the reference. The comparison figure draws the specimen
+      mask. Last-frame CV similarity to the Hanson male is 83.1 (12 frames, 640×480).
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) gives the two-species dispersion relation and the conditions for a diffusion-driven band."
+        - "Richards et al. (2005) sequenced D. pseudoobscura. They do not report a Turing wavelength."
+        - "Kopp (2011) reviews sex-comb evolution. The two-segment comb is not a 1.961 µm stripe."
+        - "The Hanson 2019 Commons file is a lateral photograph of an adult male under CC BY-SA 4.0."
+      reconstructed_in_script:
+        - "Jacobian (0.84, -0.90, 1.55, -1.20) s^-1 and diffusivities D_u = 0.028046, D_v = 0.131825 µm²/s place the fastest mode at 1.961 µm."
+        - "Split-step integration of σ(k) u - γ u³ with γ = σ_max / 0.35², 320 steps, seed 3200. A weak x-axis orientation weight is a stand-in for the anterior-posterior axis."
+        - "Chronoseries comparison: Δlog10 λ versus planitibia is -2.003 and versus santomea is +1.717, with Δage = 0 Ma. Diffusivity would have to be about 10112 times larger to put this Jacobian on the planitibia rung."
+      transfer_boundary:
+        - "1.961e-6 m is the assigned detail rung of this slot, not a published histological period for a D. pseudoobscura ocellus."
+        - "Planitibia and santomea wavelengths are neighbouring MorphoEval primordium rungs, not measurements made in this script."
+      does_not_claim:
+        - "That Richards 2005 measured a reaction-diffusion wavelength."
+        - "That the sex comb or the third-chromosome inversions are produced by this 2 µm mode."
+        - "That planitibia → pseudoobscura → santomea is a stratigraphic ancestor-descendant series."
+        - "That spacing RMSE = 0 is an independent empirical discovery. The domain was built so twelve critical wavelengths fit exactly, and the saturated stripes lock to that harmonic."
+        - "That the growth GIF is a time-lapse of embryogenesis."
+    needs:
+      - id: saturate-cubic
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Cubic saturation ∂t u = σ(k) u - γ u³ replaces the fixed e-fold horizon. Activator rms plateaus at 0.258."
+        status: resolved
+        novelty_n: 1.2
+        contradiction_c: 0.0
+        depth_d: 2.0
+        age_days_a: 0
+      - id: stripe-spacing
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Peak-to-peak spacing on 176 intervals of the saturated field. Mean 1.961 µm, RMSE 0, KS 0.568 against N(1.961, 0.12)."
+        status: resolved
+        novelty_n: 1.0
+        contradiction_c: 0.0
+        depth_d: 1.5
+        age_days_a: 0
+      - id: mask-overlay
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Panel A draws the foreground mask on the Hanson male, and the GIF carries a readable 2 µm inset. Last-frame CV similarity is 83.1."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          growth_rate and classic_kc2 are the Turing dispersion and the k_c
+          minimizer. The fastest mode is 1.961 µm; classic k_c gives 1.946 µm,
+          the near-onset shift. simulate_field now integrates ∂t u = σ(k) u - γ u³
+          for 320 steps. Activator rms goes 0.029 → 0.258 → 0.258, so the
+          amplitude plateaus. The x-axis orientation weight is not in Turing 1952
+          and is labelled as a reconstruction, which is why this is not a 95.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [90, 103], note: "σ(k) and k_c²"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [225, 283], note: "cubic split-step and plateau test"}
+          - {file: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean, lines: [26, 49], note: "five theorems, no sorry"}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Scaling both diffusivities by s² scales λ_* by s. Across s in [0.70, 1.45]
+          the discrete-grid wavelength tracks the continuous argmax with Pearson
+          r = 0.99988 and RMSE = 0.0071 µm (panel E). Equal diffusion drops max σ
+          from +0.0073 s⁻¹ to -0.18 s⁻¹ (panel F).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [137, 188], note: "sweep and ablation"}
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panels E and F"}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Panel A draws the foreground mask on the Hanson 2019 CC BY-SA male.
+          The GIF is 12 frames at 640×480. Its last frame matches that photograph
+          at CV similarity 83.1, and a 168×112 inset shows the 2 µm stripes
+          growing. The stripe panel is still a computed field, not a micrograph
+          of this fly's cuticle, so the score stays in the mid-80s.
+        evidence:
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "mask overlay and saturated stripes"}
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, CV 83.1"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [368, 385], note: "mask edge drawn on panel A"}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          Spectral centroid of the saturated field is 1.9571 µm against the
+          assigned 1.961 µm (not a copy of the reference). Diffusivity-sweep
+          Pearson r = 0.99988, RMSE = 0.0071 µm, KS = 0.0625. Peak-to-peak
+          spacing on 176 intervals has RMSE 0 versus 1.961 µm because the
+          domain fits twelve critical wavelengths exactly; that zero is reported
+          as a construction, and the centroid is the measurement that is allowed
+          to differ. Specimen foreground 0.140 (reference 0.45), circularity
+          0.105 (reference 1), coherency 0.652 (reference 0.32). No wet-lab
+          period at 2 µm is available, so this is not a low-90s validation.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [285, 311], note: "stripe spacing RMSE and KS"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [444, 574], note: "measure_morphoeval, values differ from references"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [190, 220], note: "specimen segmentation"}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Turing 1952, Richards 2005, Kondo and Miura 2010, Kopp 2011, and
+          Dobzhansky and Sturtevant 1938 are cited with DOIs. The specimen is
+          SHA-256 8bb7f34ac600cac7feff3a3e2810b1f89199880dad8180913ec86151f88476aa,
+          MA Hanson, CC BY-SA 4.0, Commons File:Dpse_1.tif. The reference JSON
+          states that Richards 2005 is not a wavelength measurement.
+        evidence:
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/drosophila_pseudoobscura_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 1.961e-6 m and age 0 Ma"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Richards, Kondo, Kopp"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/README.md, lines: [1, 30], note: "scale and age stated in the dataset README"}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The docstring states h(k²), k_c², and the cubic law. stripe_spacing,
+          the diffusivity sweep, and the equal-diffusion theorem in Lean are
+          the same statements as the code. Chronoseries deltas are -2.003 and
+          +1.717 log10 metres at Δage = 0.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [1, 30], note: "laws and the cubic remediation"}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.yaml, lines: [49, 81], note: "equations tied to Lean loci"}
+      repro-package:
+        value: 91
+        rationale: >-
+          Seed 3200, pinned specimen hash, and --self-test now also require the
+          activator to plateau and the stripe-spacing RMSE to stay under 0.05 µm,
+          in addition to Pearson r > 0.98 and the equal-diffusion control.
+          Invocation is in the dataset README.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [580, 650], note: "self-test including saturation"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/README.md, lines: [34, 44], note: "invocation"}
+    remediation:
+      - "Pass-1 cubic saturation, peak-to-peak spacing, specimen-mask overlay, and a readable 2 µm inset are in this pass. CV similarity is 83.1."
+      - "A published histological period at 2 µm for D. pseudoobscura is still absent. 1.961 µm remains the assigned detail rung."

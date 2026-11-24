@@ -1,0 +1,202 @@
+audit:
+  id: 2026-10-27-drosophila-pseudoobscura-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (Cursor cloud agent)"
+    homepage: https://x.ai
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      pillow: "13.0.0"
+      matplotlib: "3.11.2"
+    note: >-
+      Pass 1 of loop 3200. New slot files are not in commit 0c76d15d; the knowledge
+      graph was built with --no-verify-loci. Scores are uncalibrated rubric ratings.
+      Nanopub signing was not available (no ~/.nanopub/profile.yml).
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  richards2005:
+    title: "Comparative genome sequencing of Drosophila pseudoobscura: chromosomal, gene, and cis-element evolution"
+    authors: "Richards S, Liu Y, Bettencourt BR, Hradecky P, Letovsky S, Nielsen R, et al."
+    venue: "Genome Research 15:1-18 (2005)"
+    doi: 10.1101/gr.3059305
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  kopp2011:
+    title: "Drosophila sex combs as a model of evolutionary innovations"
+    authors: "Kopp A"
+    venue: "Evolution & Development 13:504-522 (2011)"
+    doi: 10.1111/j.1525-142X.2011.00507.x
+  hanson2019:
+    title: "Drosophila pseudoobscura male (File:Dpse_1.tif)"
+    authors: "Hanson MA"
+    venue: "Wikimedia Commons, 2019-08-25"
+    url: https://commons.wikimedia.org/wiki/File:Dpse_1.tif
+
+simulations:
+  - id: delphi10000-drosophila-pseudoobscura-turing-wavelength-s0
+    name: "Drosophila pseudoobscura Turing wavelength at 2.0 µm (detail rung, 0 Ma)"
+    organism: Drosophila pseudoobscura
+    script: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py
+    output: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, richards2005, kondo2010, kopp2011, hanson2019]
+    summary: >-
+      Pass 1 selects a 1.961 µm wavelength from the Turing dispersion relation just
+      above onset and compares that rung with the planitibia 197.2 µm and santomea
+      102 µm primordium neighbours, all at 0 Ma. The linear field, diffusivity sweep
+      (Pearson r = 0.99988), and equal-diffusion ablation are rendered beside the
+      CC BY-SA male. A cubic steady state, peak-to-peak spacing, and a drawn
+      specimen mask are still open.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) gives the two-species dispersion relation and the conditions for a diffusion-driven band."
+        - "Richards et al. (2005) sequenced D. pseudoobscura and describe its chromosomal evolution. They do not report a Turing wavelength."
+        - "Kopp (2011) reviews sex-comb evolution. The two-segment comb is not a 1.961 µm stripe."
+        - "The Hanson 2019 Commons file is a lateral photograph of an adult male under CC BY-SA 4.0."
+      reconstructed_in_script:
+        - "Jacobian (0.84, -0.90, 1.55, -1.20) s^-1 and diffusivities D_u = 0.028046, D_v = 0.131825 µm²/s place the fastest mode at 1.961 µm."
+        - "Fourier integration of broadband noise for six e-folds, a diffusivity-scale sweep, and an equal-diffusion ablation."
+        - "Chronoseries comparison: Δlog10 λ versus planitibia is -2.003 and versus santomea is +1.717, with Δage = 0 Ma."
+      transfer_boundary:
+        - "1.961e-6 m is the assigned detail rung of this slot, not a published histological period for a D. pseudoobscura ocellus or pigment granule."
+        - "Planitibia and santomea wavelengths are the primordium rungs of neighbouring MorphoEval slots, not measurements made in this script."
+      does_not_claim:
+        - "That Richards 2005 measured a reaction-diffusion wavelength."
+        - "That the sex comb or the third-chromosome inversions are produced by this 2 µm mode."
+        - "That planitibia → pseudoobscura → santomea is a stratigraphic ancestor-descendant series."
+        - "That the growth GIF is a time-lapse of embryogenesis. It is a linear mode growing under the adult habitus."
+    needs:
+      - id: saturate-cubic
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Replace the fixed six-e-fold linear horizon with a cubic saturation so the activator reaches a bounded amplitude."
+        status: open
+        novelty_n: 1.2
+        contradiction_c: 0.0
+        depth_d: 2.0
+        age_days_a: 0
+      - id: stripe-spacing
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Measure peak-to-peak spacing on the 2D field and compare it to 1.961 µm. The present KS is only between analytic and discrete dispersion samples."
+        status: open
+        novelty_n: 1.0
+        contradiction_c: 0.0
+        depth_d: 1.5
+        age_days_a: 0
+      - id: mask-overlay
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Draw the specimen foreground mask on the comparison figure. Circularity and coherency are computed but not shown."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          growth_rate implements the largest real eigenvalue of J - k² D, and
+          classic_kc2 is the minimizer (D_v f_u + D_u g_v) / (2 D_u D_v).
+          The fastest mode is 1.961 µm and the classic k_c wavelength is 1.946 µm,
+          the shift expected just above onset. simulate_field then amplifies noise
+          for a fixed six e-folds. There is no saturating nonlinearity, so the
+          late-time amplitude is not a steady state of a nonlinear PDE.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [87, 99], note: "σ(k) and k_c²"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [222, 265], note: "linear Fourier horizon, no cubic term"}
+          - {file: morphoeval/lean/loops/Loop_3200_drosophila_pseudoobscura_turing_wavelength_s0.lean, lines: [26, 49], note: "five theorems, no sorry"}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Scaling both diffusivities by s² scales λ_* by s and leaves σ_* unchanged.
+          Across s in [0.70, 1.45] the discrete-grid wavelength tracks the continuous
+          argmax with Pearson r = 0.99988 and RMSE = 0.0071 µm. Panel E of the
+          comparison figure shows that monotonic control. The equal-diffusion
+          ablation drops max σ from +0.0073 s⁻¹ to -0.18 s⁻¹.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [134, 185], note: "sweep and ablation"}
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panels E and F"}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Panel A and the animated habitus use the Hanson 2019 CC BY-SA male, not a
+          cartoon. Computer-vision similarity of the GIF's last frame to that
+          photograph is 76.7 (12 frames, 640×480). The 2 µm panel is a computed
+          labyrinth at λ_cent = 1.957 µm, not a micrograph of this fly's cuticle,
+          and the specimen mask is not drawn. That keeps the score below the
+          low 90s.
+        evidence:
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panel A specimen, panel B field"}
+          - {file: docs/media/drosophila_pseudoobscura_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, last-frame CV 76.7"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/drosophila_pseudoobscura_turing_wavelength_s0_specimen.jpg, lines: [0, 0], note: "SHA-256 8bb7f34a…"}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          The spectral centroid is 1.9569 µm against the assigned 1.961 µm.
+          The diffusivity sweep has Pearson r = 0.99988, RMSE = 0.0071 µm, and
+          KS = 0.0625 (not zero). The specimen mask gives foreground fraction
+          0.140 (reference 0.45), circularity 0.105 (reference 1, a round
+          ocellus), and coherency 0.652 (reference 0.32). These references are
+          not copies of the measurements. Peak-to-peak spacing on the 2D field
+          is not yet measured, and 1.961 µm is an assigned rung rather than a
+          wet-lab period.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [392, 497], note: "measure_morphoeval rows"}
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [187, 220], note: "specimen segmentation"}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Turing 1952, Richards 2005, Kondo & Miura 2010, Kopp 2011, and
+          Dobzhansky & Sturtevant 1938 are cited with DOIs. The specimen is
+          pinned to SHA-256 8bb7f34ac600cac7feff3a3e2810b1f89199880dad8180913ec86151f88476aa,
+          creator MA Hanson, CC BY-SA 4.0, Commons File:Dpse_1.tif. The reference
+          JSON states that Richards 2005 is not a wavelength measurement.
+        evidence:
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/drosophila_pseudoobscura_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 1.961e-6 m, age 0 Ma, chronoseries neighbours"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/paper_citations.bib, lines: [1, 40], note: "Turing, Richards, Kondo, Kopp"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/README.md, lines: [1, 30], note: "scale and age stated explicitly"}
+      code-traceability:
+        value: 88
+        rationale: >-
+          The module docstring writes h(k²) and k_c², and growth_rate, classic_kc2,
+          and the Lean theorems are the same statements. The chronoseries block
+          records Δlog10 = -2.003 versus planitibia and +1.717 versus santomea
+          at Δage = 0. The linear horizon is labelled as Pass 1, not as a steady PDE.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [1, 28], note: "equation statement and pass-1 limit"}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.yaml, lines: [49, 81], note: "equations tied to Lean loci"}
+      repro-package:
+        value: 90
+        rationale: >-
+          Seed 3200, pinned specimen hash, and --self-test cover stability,
+          the 1.961 µm mode, Pearson r > 0.98, the equal-diffusion control,
+          chronoseries order, and the Lean namespace. The render path is
+          python3 models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py.
+          Dependencies are the repo scientific stack (numpy, scipy, pillow, matplotlib).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-pseudoobscura-turing-wavelength-s0.py, lines: [503, 564], note: "--self-test checks"}
+          - {file: datasets/drosophila_pseudoobscura_turing_wavelength_s0/README.md, lines: [34, 44], note: "invocation"}
+    remediation:
+      - "Add a cubic saturation so the activator amplitude is a bounded steady state rather than a fixed six-e-fold horizon."
+      - "Measure peak-to-peak spacing on the 2D field and test it against 1.961 µm. The present KS compares only analytic and discrete dispersion samples."
+      - "Draw the specimen foreground mask on the comparison figure."
+      - "Show the 2 µm field at a readable scale in the growth animation without dropping last-frame CV similarity below 58."
