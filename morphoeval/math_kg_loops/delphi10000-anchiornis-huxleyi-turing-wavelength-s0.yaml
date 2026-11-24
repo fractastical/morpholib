@@ -1,0 +1,69 @@
+sim_id: delphi10000-anchiornis-huxleyi-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 2.0e-9
+log10_size_m: -8.699
+size_human: 2.0 nm
+scale_tier: 1_molecular_nm
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Anchiornis huxleyi (2.0 nm, detail scale)
+geological_age_ma: 160.0
+geological_period: Late Jurassic (Tiaojishan Fm, 160.0 Ma)
+fossil_lineage_group: Theropod-Avian Feather Fossil Series
+chronoseries: "1/1"
+predecessor_wavelength_m: 2.89e-8
+predecessor_note: >
+  Slot 1229 is the 29 nm envelope on the same taxon and the same 160.0 Ma horizon.
+  This detail slot does not copy that slot's parameters. There is no successor chronospecies.
+model_spec:
+  model: Schnakenberg (1979) kinetics implementing Turing (1952) wavenumber selection at 2.0 nm
+  a: 0.062
+  b: 1.28
+  Du: 0.72
+  Dv: 31.5
+  grid_resolution: [128, 128]
+  dx: 1.0
+  dt: 0.004
+  steps: 2400
+  seed: 3111
+  lambda_c_m: 2.0e-9
+  inputs:
+    - datasets/anchiornis_huxleyi_turing_wavelength_s0/anchiornis_huxleyi_holotype.jpg
+    - datasets/anchiornis_huxleyi_turing_wavelength_s0/anchiornis_huxleyi_turing_wavelength_s0_reference.json
+    - datasets/anchiornis_huxleyi_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Turing dispersion determinant
+    formula: det(J - k^2 D) = Du*Dv*k^4 - (Dv*fu + Du*gv)*k^2 + (fu*gv - fv*gu)
+    lean_decl: MathOfBiology.Loop_3111.detSquare
+    lean_theorem: MathOfBiology.Loop_3111.schnakenberg_det_positive
+    lean_locus: morphoeval/lean/loops/Loop_3111_anchiornis_huxleyi_turing_wavelength_s0.lean
+    variables: "a=0.062, b=1.28; det(J)=(a+b)^2"
+    role: Primary Turing condition at the 2.0 nm detail scale in Anchiornis huxleyi
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-anchiornis-huxleyi-turing-wavelength-s0.py
+  - law_name: Critical intrinsic wavelength
+    formula: lambda_c = 2*pi/k_c, k_c^2 = (Dv*fu + Du*gv)/(2*Du*Dv), lambda_c = 2.0 nm
+    lean_decl: MathOfBiology.Loop_3111.traceMargin
+    lean_theorem: MathOfBiology.Loop_3111.schnakenberg_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3111_anchiornis_huxleyi_turing_wavelength_s0.lean
+    variables: "Du=0.72, Dv=31.5"
+    role: Wavelength selection for stripes, spots and ocelli at 2.0 nm
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-anchiornis-huxleyi-turing-wavelength-s0.py
+  - law_name: Detail mode versus 29 nm envelope
+    formula: lambda_29nm / lambda_2nm > 14
+    lean_decl: MathOfBiology.Loop_3111.detail_wavelength_shorter_than_29nm_envelope
+    lean_theorem: MathOfBiology.Loop_3111.detail_wavelength_shorter_than_29nm_envelope
+    lean_locus: morphoeval/lean/loops/Loop_3111_anchiornis_huxleyi_turing_wavelength_s0.lean
+    variables: "29 nm predecessor envelope, 2.0 nm this slot, age fixed at 160.0 Ma"
+    role: Scale transition within chronoseries 1/1; no successor chronospecies
+    source_citation: Li (2010) DOI:10.1126/science.1186290
+    code_locus: models/2026-delphi10000-anchiornis-huxleyi-turing-wavelength-s0.py
+  - law_name: Diffusion-ratio Turing gate
+    formula: Dv/Du > 40 and k_c inside the unstable band
+    lean_decl: MathOfBiology.Loop_3111.inhibitor_diffuses_faster
+    lean_theorem: MathOfBiology.Loop_3111.critical_wavenumber_inside_unstable_band
+    lean_locus: morphoeval/lean/loops/Loop_3111_anchiornis_huxleyi_turing_wavelength_s0.lean
+    variables: "Dv=31.5, Du=0.72, k_c rounded ×1000 = 776"
+    role: Critical bifurcation criterion for Turing wavenumber k_c
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-anchiornis-huxleyi-turing-wavelength-s0.py
