@@ -1,0 +1,161 @@
+# Pass 2 — Anolis carolinensis Turing wavelength at 101.1 µm (slot 3112).
+# Closes the pass-1 reading of the proportional wavelength bias, the GIF-versus-specimen
+# computer-vision score, and the unclipped ablation number. Signing, a second
+# assessor, and a true 101 µm micrograph remain open.
+audit:
+  id: 2026-10-27-anolis-carolinensis-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-anolis-carolinensis-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Working tree for slot 3112 after the pass-2 figure and fitness measurement. New files are not in 0c76d15d; build with --no-verify-loci. publisher_orcid is the creator IRI already used on this repo's MorphoEval nanopubs. No local nanopub profile, so these graphs are unsigned."
+references:
+  turing1952:
+    title: "Turing 1952, The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Schnakenberg 1979, Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: 10.1016/0022-5193(79)90042-0
+  alexander1969:
+    title: "Alexander & Fahrenbach 1969, The dermal chromatophores of Anolis carolinensis"
+    authors: "Alexander, N. J. and Fahrenbach, W. H."
+    venue: "Am. J. Anat."
+    doi: 10.1002/aja.1001260105
+  taylor1970:
+    title: "Taylor & Hadley 1970, Chromatophores and color change in Anolis carolinensis"
+    authors: "Taylor, J. D. and Hadley, M. E."
+    venue: "Z. Zellforsch."
+    doi: 10.1007/BF00309737
+  fofonjka2021:
+    title: "Fofonjka & Milinkovitch 2021, Reaction-diffusion on growing skin scales"
+    authors: "Fofonjka, A. and Milinkovitch, M. C."
+    venue: "Nat. Commun."
+    doi: 10.1038/s41467-021-22525-1
+simulations:
+  - id: delphi10000-anolis-carolinensis-turing-wavelength-s0
+    name: "Anolis carolinensis Schnakenberg wavelength at 101.1 µm (Holocene, 0 Ma)"
+    organism: "Anolis carolinensis (green anole)"
+    script: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py
+    output: docs/media/anolis_carolinensis_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-anolis-carolinensis-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, alexander1969, taylor1970, fofonjka2021]
+    summary: >-
+      Pass 2. The same Schnakenberg field (a = 0.055, b = 0.945, D_v/D_u = 8.2,
+      λ_c = 101.1 µm, Holocene 0 Ma). Nonlinear periodic peak 99.82 µm; Neumann
+      peak 103.96 µm; dispersion Pearson r = 0.9941. Across 72–168 µm the
+      measured peaks are a factor 0.971 of the onset prediction (Pearson r = 1.0
+      because the bias is proportional; RMSE = 3.45 µm; KS = 0.167, p ≈ 1 at
+      n = 6). Ablation with D_v = D_u drops the amplitude by a factor 1220.
+      The 512 px, 12-frame GIF scores 88.9 against the Commons specimen on the
+      fitness-test orientation, radial-FFT and coherency similarity. Specimen
+      structure-tensor coherency is 0.6275 against 0.5308 on the rendered field.
+      Weighted overall 85.4. Image fitness 0.55*88.9 + 0.30*76 + 0.15*90 = 85.2.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg 1979: du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Alexander & Fahrenbach 1969: xanthophore, iridophore and basal melanophore layers in A. carolinensis; melanin in the processes turns the skin from green toward brown."
+        - "Taylor & Hadley 1970: physiological melanosome migration, not a new wavelength, is the colour-change mechanism inside one melanophore."
+      reconstructed_in_script:
+        - "D_u and D_v are chosen so k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) equals (2π/101.1 µm)^2."
+        - "Eight wavelengths on an 808.8 µm patch; a 40 µm cellular predecessor holds zero critical modes."
+        - "The nonlinear FFT peak sits at 0.971 of the onset wavelength on every swept target. That factor is the reported residual."
+      transfer_boundary:
+        - "Fofonjka & Milinkovitch 2021 (Timon scale borders quantising RD into a cellular automaton) is the organ-scale successor, not this intra-scale 101.1 µm patch."
+      does_not_claim:
+        - "That Alexander & Fahrenbach measured 101.1 µm as a Turing wavelength."
+        - "That the rendered spot field is a photograph of the animal. CV similarity 88.9 is a texture score, not an identity claim."
+        - "A fossil chronospecies. The series is Holocene only (1/1, 0 Ma)."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "Fourier Schnakenberg step matches the linear dispersion to Pearson r = 0.9941, and a reflect-padded no-flux patch selects 103.96 µm against the 101.1 µm onset target. Parameters are still reconstructed for the assigned scale rather than fit to a measured anole diffusivity."
+        evidence:
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [120, 171], note: "sigma_of_k2 and the periodic integrator", supports: true}
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [173, 202], note: "Neumann control, reflect padding", supports: true}
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [232, 259], note: "early-growth dispersion correlation", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "Fitness-test CV similarity between the Commons photograph and the last GIF frame is 88.9 (12 frames, 512 px, frame motion present). The side-by-side is still a whole animal against an 0.81 mm spot field, so this is a texture match, not a portrait match. 76 uses the CV evidence without treating the photograph as reproduced."
+        evidence:
+          - {file: docs/media/anolis_carolinensis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 512 px, CV similarity 88.9", supports: true}
+          - {file: docs/media/anolis_carolinensis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, spot field, sweep, and raw control numbers", supports: true}
+          - {file: datasets/anolis_carolinensis_turing_wavelength_s0/anolis_carolinensis_specimen.jpg, lines: [0, 0], note: "public-domain male, Danny S., 2011", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Six targets from 72 to 168 µm, D_u rescaled so the onset wavelength equals the target, produce measured peaks 69.91, 83.50, 98.17, 114.57, 135.94, 163.12 µm. The map is monotone and linear (r = 1.0) with a stable 0.971 factor."
+        evidence:
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [261, 290], note: "wavelength_sweep", supports: true}
+          - {file: datasets/anolis_carolinensis_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "analytical_um versus measured_um", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Headline error is RMSE 3.45 µm, the proportional 0.971 bias, not the Pearson coefficient. KS = 0.167 (p ≈ 1 at n = 6) does not separately detect that small shift. Ablation ratio 1219.9 with h < 0. Specimen coherency 0.6275 versus rendered-field coherency 0.5308. Cellular predecessor mode count 0 versus 8 on the primordium patch. Values are not copies of their references."
+        evidence:
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [396, 470], note: "non-circular measurement records", supports: true}
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [292, 306], note: "ablation_ratio, D_v = D_u", supports: true}
+          - {file: datasets/anolis_carolinensis_turing_wavelength_s0/metrics.json, lines: [0, 0], note: "pearson 1.0, RMSE 3.446, KS 0.167, ablation 1219.85", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "Unchanged provenance from pass 1, plus the pass-2 metrics file pinning GIF and PNG SHA-256 next to the specimen digest. 101.1 µm remains an assigned scale."
+        evidence:
+          - {file: datasets/anolis_carolinensis_turing_wavelength_s0/paper_citations.bib, lines: [1, 73], note: "Crossref-checked bibliography", supports: true}
+          - {file: datasets/anolis_carolinensis_turing_wavelength_s0/anolis_carolinensis_turing_wavelength_s0_reference.json, lines: [70, 109], note: "specimen block and claim boundary", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Dispersion, sweep, ablation and Neumann each map to a named function cited from the docstring equations. Lean file has seven theorems and zero sorry, including the empty 40 µm predecessor."
+        evidence:
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [1, 48], note: "equation map", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3112_anolis_carolinensis_turing_wavelength_s0.lean, lines: [26, 61], note: "theorems, no sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test passed (sweep r = 1.0, ablation ratio 187 on the short grid, simulated λ within 8% of 101.1). Full run is seed 3112. Signing is still impossible here; that is recorded under remediation and is not scored as if a signature existed."
+        evidence:
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [544, 569], note: "self_test", supports: true}
+          - {file: models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py, lines: [584, 629], note: "main writes GIF, PNG, metrics", supports: true}
+    remediation:
+      - id: R4
+        item: "No ~/.nanopub/profile.yml. Nanopubs were built and conformance-checked, not signed."
+      - id: R5
+        item: "Single builder-assessor. No independent second score."
+      - id: R6
+        item: "One whole-animal photograph. A 101 µm dermal micrograph is still absent, so specimen-match stays a texture score."
+    needs:
+      - id: N1
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "A second assessor from another provider has not scored this slot."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Need a dermal micrograph at ~100 µm, not only the whole-animal Commons portrait."
+        status: open
+        novelty_n: 0.8
+        contradiction_c: 0.2
+        depth_d: 2.0
+        age_days_a: 0
+      - id: N3
+        need_type: provenance_lock
+        target_dimension: repro-package
+        description: "Nanopub profile is absent, so the trig files cannot be signed or trusty-checked."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0

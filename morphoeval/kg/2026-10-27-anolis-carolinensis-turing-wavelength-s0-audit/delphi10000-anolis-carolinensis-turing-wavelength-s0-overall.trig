@@ -1,0 +1,74 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-anolis-carolinensis-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-anolis-carolinensis-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-anolis-carolinensis-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Anolis carolinensis Schnakenberg wavelength at 101.1 µm (Holocene, 0 Ma) — MorphoEval overall 79.6/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1. Schnakenberg kinetics with (a, b) = (0.055, 0.945) and D_v/D_u = 8.2 place the onset wavelength at 101.1 µm on an 808.8 µm periodic dermal patch (Holocene, 0 Ma, tier 5 detail). The nonlinear FFT peak is 99.82 µm. A six-point sweep from 72 to 168 µm returns Pearson r = 1.0 because the residual is a proportional factor near 0.971, with RMSE 3.45 µm. That residual is not yet treated as the fit error in this score. The GIF is a 512 px, 12-frame growth of dark melanin spots on a green field. It is not a portrait of the Commons specimen. Overall on this reading is 79.6. Overall 79.6/100 (faithfulness 77.1, reproducibility 85.5); rubric morphoeval 0.1.0; checkpoint commit 0c76d15d; environment: . Dimension assessments: Model fidelity to source 84, Morphological realism / specimen match 70, Parameter expressivity 80, Morphometric validation 78, Source and data traceability 90, Code-to-model traceability 82, Reproducibility package 84. Output judged: docs/media/anolis_carolinensis_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-anolis-carolinensis-turing-wavelength-s0.py at 0c76d15d, image/png, 466662 B, 1344×1008 px, artifact_sha256 a5272637322b843ecaee43a0898221e93786df5eb5d952714b4a99cc6f3db99b (sha256 a5272637322b843ecaee43a0898221e93786df5eb5d952714b4a99cc6f3db99b), spec_fingerprint 17ba2b079a1597562250107c46da2253ac6d3c2a7a7816f161aca05a741fc46e. Dual provenance: spec_fingerprint: 17ba2b079a1597562250107c46da2253ac6d3c2a7a7816f161aca05a741fc46e; artifact_sha256: a5272637322b843ecaee43a0898221e93786df5eb5d952714b4a99cc6f3db99b. Claim boundary: reported_in_source: Turing 1952: diffusion-driven instability and a critical wavenumber. | Schnakenberg 1979: du/dt = a - u + u^2 v, dv/dt = b - u^2 v. | Alexander & Fahrenbach 1969: xanthophore, iridophore and basal melanophore layers in A. carolinensis; melanin in the processes turns the skin from green toward brown. | Taylor & Hadley 1970: physiological melanosome migration, not a new wavelength, is the colour-change mechanism inside one melanophore.; reconstructed_in_script: D_u and D_v are chosen so k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) equals (2π/101.1 µm)^2. | Eight wavelengths on an 808.8 µm patch; a 40 µm cellular predecessor holds zero critical modes.; transfer_boundary: Fofonjka & Milinkovitch 2021 (Timon scale borders quantising RD into a cellular automaton) is the organ-scale successor, not this intra-scale 101.1 µm patch.; does_not_claim: That Alexander & Fahrenbach measured 101.1 µm as a Turing wavelength. | That the rendered spot field is a photograph of the animal. | A fossil chronospecies. The series is Holocene only (1/1, 0 Ma).." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "open need [independent_assessor/model-fidelity, pressure P=1.3]: A second assessor from another provider has not scored this slot.",
+            "open need [specimen_comparison/specimen-match, pressure P=2.8]: Need a dermal micrograph at ~100 µm, not only the whole-animal Commons portrait.",
+            "remediation needed: {'id': 'R1', 'item': 'Treat RMSE 3.45 µm and the factor measured/analytical ≈ 0.971 as the fit residual. Do not let Pearson r = 1.0 stand in for a zero-error claim.'}",
+            "remediation needed: {'id': 'R2', 'item': 'Score the 12-frame 512 px GIF against the Commons specimen with the fitness-test orientation, radial-FFT and coherency similarity, and record it.'}",
+            "remediation needed: {'id': 'R3', 'item': 'The ablation panel must show the raw amplitude ratio, not a clipped bar.'}",
+            "remediation needed: {'id': 'R4', 'item': 'No ~/.nanopub/profile.yml on this runner, so the nanopubs cannot be signed. Record that; do not invent a signature.'}",
+            "remediation needed: {'id': 'R5', 'item': 'Single builder-assessor. No independent second score.'}",
+            "remediation needed: {'id': 'R6', 'item': 'One photograph, and it is a whole animal, not a 101 µm skin micrograph. n = 1.'}" ;
+        pk:hasScore "0.796"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second assessor)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/aja.1001260105>,
+            <https://doi.org/10.1007/BF00309737>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1038/s41467-021-22525-1>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://doi.org/10.1002/aja.1001260105> dct:title "Alexander & Fahrenbach 1969, The dermal chromatophores of Anolis carolinensis" .
+    <https://doi.org/10.1007/BF00309737> dct:title "Taylor & Hadley 1970, Chromatophores and color change in Anolis carolinensis" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:title "Schnakenberg 1979, Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1038/s41467-021-22525-1> dct:title "Fofonjka & Milinkovitch 2021, Reaction-diffusion on growing skin scales" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:title "Turing 1952, The chemical basis of morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Anolis carolinensis Schnakenberg wavelength at 101.1 µm (Holocene, 0 Ma) — MorphoEval overall 79.6/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:29:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-anolis-carolinensis-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-anolis-carolinensis-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
