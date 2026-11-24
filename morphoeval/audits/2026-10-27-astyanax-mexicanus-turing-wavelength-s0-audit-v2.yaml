@@ -1,0 +1,153 @@
+# MorphoEval audit — loop 3125 pass 2
+# Fixes the pass-1 gaps: diffusion-ratio sweep, Du = Dv ablation, flank KS test,
+# and removal of the unused resample buffer in the composite.
+audit:
+  id: 2026-10-27-astyanax-mexicanus-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-astyanax-mexicanus-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass-2 files are introduced on this branch. The parent commit does not contain them, so blob URLs at that commit are not yet resolvable."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81(3):389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88(1):161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+    year: 1981
+  jeffery2009:
+    title: "Regressive Evolution in Astyanax Cavefish"
+    authors: "Jeffery WR"
+    venue: "Annual Review of Genetics 43(1):25-47 (2009)"
+    doi: 10.1146/annurev-genet-102108-134216
+    year: 2009
+  yamamoto2004:
+    title: "Hedgehog signalling controls eye degeneration in blind cavefish"
+    authors: "Yamamoto Y, Stock DW, Jeffery WR"
+    venue: "Nature 431(7010):844-847 (2004)"
+    doi: 10.1038/nature02864
+    year: 2004
+  protas2006:
+    title: "Genetic analysis of cavefish reveals molecular convergence in the evolution of albinism"
+    authors: "Protas ME et al."
+    venue: "Nature Genetics 38(1):107-111 (2006)"
+    doi: 10.1038/ng1700
+    year: 2006
+  gross2009:
+    title: "A novel role for Mc1r in the parallel evolution of depigmentation in Astyanax mexicanus"
+    authors: "Gross JB, Borowsky R, Tabin CJ"
+    venue: "PLoS Genetics 5(1):e1000326 (2009)"
+    doi: 10.1371/journal.pgen.1000326
+    year: 2009
+  mccauley2004:
+    title: "Evolution of pigment cell regression in the cavefish Astyanax"
+    authors: "McCauley DW, Hixon E, Jeffery WR"
+    venue: "Evolution & Development 6(4):209-218 (2004)"
+    doi: 10.1111/j.1525-142x.2004.04026.x
+    year: 2004
+  yoshizawa2010:
+    title: "Evolution of a behavioral shift mediated by superficial neuromasts"
+    authors: "Yoshizawa M, Goricki S, Soares D, Jeffery WR"
+    venue: "Current Biology 20(18):1631-1636 (2010)"
+    doi: 10.1016/j.cub.2010.07.017
+    year: 2010
+simulations:
+  - id: delphi10000-astyanax-mexicanus-turing-wavelength-s0
+    name: "Turing wavenumber at 666 nm in the Astyanax cave morph"
+    organism: "Astyanax mexicanus (Holocene cave morph, 0 Ma)"
+    script: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py
+    output: docs/media/astyanax_mexicanus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/astyanax_mexicanus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-astyanax-mexicanus-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, murray1981, jeffery2009, yamamoto2004, protas2006, gross2009, mccauley2004, yoshizawa2010]
+    summary: >-
+      Pass 2. Same Schnakenberg carrier and 6.656e-7 m calibration as pass 1
+      (Holocene cave morph, 0 Ma). Dispersion Pearson r remains 0.99997
+      (RMSE 0.00455). Nonlinear wavelength 660.7 nm. The Dv/Du sweep on
+      {10, 12, 16, 20, 24, 30} is monotonic: selected wavelength rises from
+      15.74 px to 19.88 px. Du = Dv = 2 suppresses the band (sigma_max = -0.1).
+      The voucher flank and the patch differ by KS = 0.105 on magnitude-weighted
+      Sobel orientations (p about 1e-24). The unused resample buffer in the
+      composite is gone. Eye loss and neuromast expansion are still outside k_c.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952), Schnakenberg (1979) and Murray (1981) supply the instability, the kinetics and the coat-marking wavelength idea."
+        - "oca2 and mc1r, not a measured 666 nm mode, account for cavefish pigment loss (Protas et al. 2006; Gross et al. 2009; McCauley, Hixon and Jeffery 2004)."
+        - "Yamamoto, Stock and Jeffery (2004) and Yoshizawa et al. (2010) are the sources for eye degeneration and neuromast expansion. Neither is a Turing-wavelength result."
+      reconstructed_in_script:
+        - "Metres per pixel are set so the fastest linear mode equals 6.656e-7 m. That length is the loop card, not a cavefish measurement."
+        - "Pass 2 adds a six-point diffusion-ratio sweep, an equal-diffusivity ablation, and a flank-versus-patch KS statistic. Pearson r, RMSE and the 660.7 nm nonlinear peak are unchanged from pass 1."
+      transfer_boundary:
+        - "The GIF still composites a subcellular patch onto a whole-body photograph. High computer-vision similarity is dominated by the shared silhouette. It does not show that the camera resolved 666 nm."
+      does_not_claim:
+        - "Does not claim optic-cup degeneration or neuromast expansion are produced by k_c."
+        - "Does not claim Schnakenberg parameters were identified in Astyanax tissue."
+        - "Does not claim a fossil predecessor. The chronoseries is the single extant cave morph at 0 Ma. The 24 µm sibling is a scale comparison, ratio 36.33."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "Pass 2 keeps the pseudo-spectral Schnakenberg step and the eigenvalue comparison, and now checks the two classical corollaries: the band disappears when Du = Dv, and the selected wavelength lengthens as Dv/Du increases above threshold. Kinetics remain a minimal carrier, not a cavefish-derived pair, which is why the score stays short of the top of the scale."
+        evidence:
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [84, 96], note: "sigma(k) from the reaction-diffusion Jacobian", supports: true}
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [271, 275], note: "Du = Dv ablation, sigma_max = -0.1", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The 12-frame 960x522 GIF is still the Seb Morič cave-morph photograph with a growing flank modulation. Pass 2 did not repaint the animal to chase the fitness score. The comparison figure now shows the sweep beside the fish. The photograph cannot resolve 666 nm, so specimen-match cannot be read as a pixel identity at that scale."
+        evidence:
+          - {file: docs/media/astyanax_mexicanus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 960x522", supports: true}
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [232, 247], note: "signed-field composite, unused buffer removed", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "On the unstable branch Dv/Du = 10, 12, 16, 20, 24, 30 the selected wavelength is 15.74, 16.38, 17.42, 18.26, 18.98, 19.88 px, strictly increasing, and sigma_max rises from 0.057 to 0.355. The self-test rejects a non-monotonic sweep. Beta remains a single visualization weight."
+        evidence:
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [249, 268], note: "diffusion_ratio_sweep and the monotonicity check", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r = 0.99997 and RMSE = 0.00455 on 11 modes. Nonlinear wavelength 660.7 nm versus the 665.6 nm linear calibration. Ablation sigma_max = -0.1 against a marginal reference of 0. Flank orientation KS = 0.105 (not 0). Melanin-dark fraction on the body mask is 0.002 against the Oca2-null reference of 0. The KS samples orientations with a fixed seed; it is not a spatial registration of melanophores."
+        evidence:
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [110, 161], note: "dispersion goodness of fit", supports: true}
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [277, 304], note: "flank versus patch KS", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Same Crossref-checked DOIs and the same SHA-256-pinned CC BY-SA 4.0 voucher as pass 1. The README now states the sweep, the ablation and the KS test next to the 6.656e-7 m scale and the 0 Ma age. The wavelength is still a slot scale, not a literature measurement, which is said in the claim boundary rather than hidden."
+        evidence:
+          - {file: datasets/astyanax_mexicanus_turing_wavelength_s0/README.md, lines: [1, 50], note: "666 nm, 0 Ma, sweep and KS described", supports: true}
+          - {file: datasets/astyanax_mexicanus_turing_wavelength_s0/paper_citations.bib, lines: [41, 90], note: "Jeffery, Yamamoto, Protas, Gross entries", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "The sweep, the ablation and the wavelength bracket sit next to the Lean theorems for the discriminant, the equal-diffusivity failure and the 36-37x ratio against the 24 µm sibling. The composite path is now one signed resample. The integer Jacobian in Lean is the Schnakenberg state cleared by 5, which the script comments and does not re-derive in Lean."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3125_astyanax_mexicanus_turing_wavelength_s0.lean, lines: [33, 59], note: "discriminant, equal diffusivity, wavenumber bracket, sibling ratio", supports: true}
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [104, 108], note: "metres per pixel from k_max and 6.656e-7 m", supports: true}
+      repro-package:
+        value: 86
+        rationale: "--self-test now also requires the ablation to be negative, the sweep to be monotonic, the KS statistic to lie in (0, 1), r > 0.98, at least 10 frames and a short side of at least 480 px. Seed 3125 and the specimen hash are unchanged. Signing still needs a local nanopub profile, which this run does not have."
+        evidence:
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [550, 562], note: "pass-2 self-test gates", supports: true}
+          - {file: models/2026-delphi10000-astyanax-mexicanus-turing-wavelength-s0.py, lines: [76, 82], note: "specimen SHA-256 check", supports: true}
+    remediation:
+      - id: R5
+        item: "The 666 nm length is imposed by the slot card. A wet-lab measurement of melanosome spacing on this species would replace the metres-per-pixel calibration."
+      - id: R6
+        item: "No nanopub profile was present, so pass 2 is not signed. Signing waits on ~/.nanopub/profile.yml."
