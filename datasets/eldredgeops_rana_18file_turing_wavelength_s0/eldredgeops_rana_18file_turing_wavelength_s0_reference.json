@@ -1,0 +1,106 @@
+{
+  "slot": 3215,
+  "sim_id": "delphi10000-eldredgeops-rana-18file-turing-wavelength-s0",
+  "script": "models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py",
+  "organism": {
+    "scientific_name": "Eldredgeops rana",
+    "chronospecies_label": "Eldredgeops rana_18file",
+    "anatomical_structure": "schizochroal calcite eye, 18 dorsoventral lens files",
+    "aristotelian_path": "II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Eldredgeops"
+  },
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength",
+    "wavelength_nm": 492,
+    "phenomenon_size_m": 4.915e-07,
+    "log10_size_m": -6.308,
+    "scale_tier": "2_macromolecular_100nm",
+    "tier_index": "2/8",
+    "detail_variant": "s0",
+    "note": "Campaign-assigned detail scale. Not a length reported by Eldredge 1972. Distinct from the sibling cellular tier at 1.786e-05 m (18 µm)."
+  },
+  "paleobiology": {
+    "lineage": "Trilobite Segmentation & Eye Fossil Series",
+    "chronoseries": "1/2",
+    "geological_horizon": "Middle Devonian (Cazenovian, 387 Ma)",
+    "geological_age_ma": 387,
+    "n_dorsoventral_files": 18,
+    "successor": {
+      "label": "Eldredgeops rana_17file",
+      "geological_horizon": "Middle Devonian (Tioughniogan, 384 Ma)",
+      "geological_age_ma": 384,
+      "n_dorsoventral_files": 17,
+      "delta_files": -1,
+      "delta_age_ma": -3
+    },
+    "scale_specific_change": "k_c is held fixed at 2π/(492 nm) inside a lens. With a conserved dorsoventral arc, wavelengths per file rise by 18/17 when the successor drops one file. The 492 nm wavenumber itself does not jump."
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "du_dt": "Du * laplacian(u) + gamma * (a - u + u^2 * v)",
+    "dv_dt": "Dv * laplacian(v) + gamma * (b - u^2 * v)",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian": {
+      "f_u": "gamma * (b - a) / (a + b)",
+      "f_v": "gamma * (a + b)^2",
+      "g_u": "gamma * (-2 b) / (a + b)",
+      "g_v": "-gamma * (a + b)^2"
+    },
+    "critical_wavenumber": "k_c^2 = (Dv * f_u + Du * g_v) / (2 * Du * Dv)",
+    "critical_wavelength": "lambda_c = 2 * pi / k_c",
+    "turing_conditions": [
+      "trace(J) < 0",
+      "det(J) > 0",
+      "Dv * f_u + Du * g_v > 0",
+      "(Dv * f_u + Du * g_v)^2 > 4 * Du * Dv * det(J)"
+    ]
+  },
+  "parameters": {
+    "a": 0.146,
+    "b": 1.038,
+    "gamma": 2.4,
+    "Du_prescale": 0.018,
+    "Dv_prescale": 0.492,
+    "spatial_unit": "After rescaling, 1 model unit = 492 nm = 4.915e-07 m",
+    "seed": 3215,
+    "grid_n": 96,
+    "domain_wavelengths": 6,
+    "note": "Dv_prescale = 0.492 marks this 492 nm slot. These are not the 18 µm sibling parameters."
+  },
+  "specimen": {
+    "filename": "eldredgeops_rana_18file_turing_wavelength_s0_specimen.jpg",
+    "sha256": "3a83d6e639450366d894856ec070022103defb1e7f56bb6faec9648b6d601986",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Eldredgeops_eye.jpg",
+    "direct_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Eldredgeops_eye.jpg",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "RealGatba",
+    "date": "2022-07-13",
+    "attribution": "Eldredgeops eye by RealGatba, Wikimedia Commons, CC BY-SA 4.0.",
+    "pixel_size": [3024, 2873],
+    "what_it_shows": "Schizochroal eye of Eldredgeops rana, crushed slightly. Lens files are visible. Not a measured Cazenovian 18-file voucher."
+  },
+  "outputs": {
+    "comparison_png": "docs/media/eldredgeops_rana_18file_turing_wavelength_s0_comparison.png",
+    "growth_gif": "docs/media/eldredgeops_rana_18file_turing_wavelength_s0_growth.gif"
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952: diffusion-driven instability and a critical wavenumber",
+      "Schnakenberg 1979: the two-species reaction used here",
+      "Eldredge 1972: Phacops / Eldredgeops lens-file counts change through the Middle Devonian",
+      "Clarkson, Levi-Setti and Horváth 2006: schizochroal eyes are calcite lens arrays"
+    ],
+    "reconstructed_in_script": [
+      "Parameter set whose linear critical wavelength equals the assigned 492 nm",
+      "RK4 integration of Fourier-mode amplitudes versus the 2x2 dispersion eigenvalues",
+      "2D Fourier split of the nonlinear Schnakenberg system",
+      "Chronoseries ratio 18/17 for wavelengths per file under a conserved arc"
+    ],
+    "does_not_claim": [
+      "That Eldredge measured a 492 nm pigment wavelength",
+      "That these Schnakenberg coefficients are the Devonian biochemistry",
+      "That the Commons photograph is a PDE solution or a proven 18-file stratigraphic voucher",
+      "That losing one lens file retunes k_c"
+    ]
+  }
+}

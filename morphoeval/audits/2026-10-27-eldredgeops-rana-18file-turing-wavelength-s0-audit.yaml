@@ -1,0 +1,181 @@
+# Pass 1 audit — Eldredgeops rana_18file, 492 nm Turing wavenumber, 387 Ma.
+# Builder-assessor only. Pass 2 executes the sweep, ablation field, and specimen KS.
+audit:
+  id: 2026-10-27-eldredgeops-rana-18file-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  domain: morphogenesis
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0000-0002-1267-0234"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, loop 3215)"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 332efe5138233530509bf80322afc73c77f98255
+    note: "Pass 1 working tree. ORCID is the vendored ProbKnow template publisher because ~/.nanopub/profile.yml is absent; nanopubs are unsigned and are not a publication by that ORCID holder."
+  license: "https://creativecommons.org/licenses/by/4.0/"
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    year: 1952
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    year: 1979
+    doi: "10.1016/0022-5193(79)90042-0"
+  eldredge1972:
+    title: "Systematics and evolution of Phacops rana (Green, 1832) and Phacops iowensis Delo, 1935"
+    authors: "Eldredge, N."
+    venue: "Bulletin of the AMNH 147(2) (1972)"
+    year: 1972
+    url: "https://digitallibrary.amnh.org/handle/2246/1095"
+  eldredge1972draft:
+    title: "Speciation and Punctuated Equilibria: An Alternative to Phyletic Gradualism [3rd draft]"
+    authors: "Eldredge, N."
+    venue: "AMNH scientific data (1972)"
+    year: 1972
+    doi: "10.5531/sd.paleo.7"
+  clarkson2006:
+    title: "The eyes of trilobites: The oldest preserved visual system"
+    authors: "Clarkson, E. N. K.; Levi-Setti, R.; Horváth, G."
+    venue: "Arthropod Structure & Development 35:247-259 (2006)"
+    year: 2006
+    doi: "10.1016/j.asd.2006.08.002"
+simulations:
+  - id: delphi10000-eldredgeops-rana-18file-turing-wavelength-s0
+    name: "Turing k_c at 492 nm for the 18-file Eldredgeops eye (Cazenovian, 387 Ma)"
+    organism: "Eldredgeops rana_18file"
+    domain: morphogenesis
+    script: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py
+    output: docs/media/eldredgeops_rana_18file_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/eldredgeops_rana_18file_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, eldredge1972, eldredge1972draft, clarkson2006]
+    model_spec:
+      model: "Schnakenberg 1979 kinetics with Turing 1952 k_c, rescaled to 492 nm"
+      a: 0.146
+      b: 1.038
+      gamma: 2.4
+      Du_prescale: 0.018
+      Dv_prescale: 0.492
+      wavelength_m: 4.915e-07
+      grid_n: 96
+      seed: 3215
+      inputs:
+        - datasets/eldredgeops_rana_18file_turing_wavelength_s0/eldredgeops_rana_18file_turing_wavelength_s0_reference.json
+        - datasets/eldredgeops_rana_18file_turing_wavelength_s0/eldredgeops_rana_18file_turing_wavelength_s0_specimen.jpg
+    summary: >-
+      Pass 1 integrates the Schnakenberg system so the linear critical wavelength
+      is exactly 492 nm (4.915e-07 m) at 387 Ma. RK4 growth rates on the Turing
+      band match the leading eigenvalue (Pearson r = 1, RMSE ~ 3e-12) because the
+      spatial operator is spectral and the initial condition is the eigenvector.
+      The saturated 2D field selects a nonlinear FFT peak at 574 nm. Equal
+      diffusivities give max Re(sigma) = -0.812. The 12-frame 720x540 GIF ends on
+      the CC BY-SA Commons eye photograph. The 18-to-17 file step changes
+      wavelengths per file by 18/17 if the dorsoventral arc is conserved; it does
+      not retune k_c. Gamma sweep, ablation field, Otsu mask, and KS test are
+      implemented but not executed in this pass.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 states the diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg 1979 states the two-species reaction used here."
+        - "Eldredge 1972 documents Phacops (Eldredgeops) rana lens-file counts through the Middle Devonian."
+        - "Clarkson, Levi-Setti and Horváth 2006 describe schizochroal eyes as calcite lens arrays."
+      reconstructed_in_script:
+        - "Slot parameters a=0.146, b=1.038, gamma=2.40, Du_pre=0.018, Dv_pre=0.492 rescaled so lambda_c = 492 nm."
+        - "RK4 modal growth versus the 2x2 dispersion eigenvalue."
+        - "Fourier-split 2D nonlinear field on a 96^2 grid spanning six linear wavelengths."
+        - "Conserved-arc ratio 18/17 between this 387 Ma morph and the 384 Ma 17-file successor."
+      transfer_boundary:
+        - "492 nm is the campaign detail-scale assignment (tier 2_macromolecular_100nm), not a length Eldredge published."
+        - "The Commons photograph is an Eldredgeops rana eye, not a proven Cazenovian 18-file voucher."
+      does_not_claim:
+        - "That Devonian lens pigment used these Schnakenberg coefficients."
+        - "That the photograph is a solution of the PDE."
+        - "That losing one lens file changes k_c."
+        - "That the unsigned nanopublications were published by the template ORCID holder."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          The script implements Schnakenberg kinetics, the steady-state Jacobian,
+          the four Turing inequalities, and k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv),
+          then rescales space so lambda_c equals the assigned 492 nm. The 2D step
+          is a Fourier reaction-diffusion split of those same terms. It is not a
+          fit to a measured Devonian diffusivity.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [70, 88], note: "Jacobian and spatial rescaling to lambda_c = 1 model unit", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [188, 233], note: "Nonlinear Fourier split of the Schnakenberg PDE", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          The comparison figure places the CC BY-SA Eldredgeops eye beside the
+          saturated field, and the GIF's last frame is that photograph at 720x540.
+          Earlier frames are the growing spot field, which is not a lens-by-lens
+          drawing of the eye. Score reflects both the real photograph and that gap.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [273, 344], note: "Pass-1 figure and 12-frame GIF ending on the specimen", supports: true}
+          - {file: docs/media/eldredgeops_rana_18file_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "720x540, 12 frames", supports: true}
+      parameter-expressivity:
+        value: 64
+        rationale: >-
+          Equal diffusivities are shown to stabilise the homogeneous state
+          (max Re(sigma) = -0.812), so the diffusivity contrast does control
+          instability. The gamma and Dv/Du sweeps exist as functions but are not
+          run or drawn in the Pass-1 figure, so monotonic control is not yet visible.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [38, 48], note: "Slot parameters, including Dv_prescale = 0.492", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [172, 180], note: "Equal-diffusion max growth rate", supports: true}
+      morphometric-validation:
+        value: 78
+        rationale: >-
+          Dispersion Pearson r = 1.0 with RMSE 3.15e-12 on real-eigenvalue modes
+          (spectral mode plus RK4). Nonlinear FFT wavelength is 574 nm against the
+          linear reference 492 nm. Specimen structure-tensor coherency is 0.479
+          against 0.746 on the simulated field. KS, Otsu foreground, and multi-seed
+          CV are not in the Pass-1 measurement set.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [130, 162], note: "dispersion_fit Pearson r and RMSE", supports: true}
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [235, 247], note: "Specimen structure-tensor coherency", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Turing 1952, Schnakenberg 1979, Eldredge 1972 (AMNH handle 2246/1095 and
+          DOI 10.5531/sd.paleo.7), and Clarkson et al. 2006 are cited with resolvable
+          identifiers. The eye photograph is CC BY-SA 4.0, artist RealGatba, SHA-256
+          pinned. The 492 nm scale is labelled as a campaign assignment.
+        evidence:
+          - {file: datasets/eldredgeops_rana_18file_turing_wavelength_s0/eldredgeops_rana_18file_turing_wavelength_s0_reference.json, lines: [11, 36], note: "492 nm, 387 Ma, successor 17-file at 384 Ma, specimen SHA", supports: true}
+          - {file: datasets/eldredgeops_rana_18file_turing_wavelength_s0/paper_citations.bib, lines: [1, 48], note: "BibTeX for Turing, Schnakenberg, Eldredge, Clarkson", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          jacobian_raw, diffusivities, dispersion_matrix, rk4_growth, and
+          simulate_field each map to one displayed equation. Lean theorems in
+          MathOfBiology.Loop_3215 pin wavelength positivity, the file-count step,
+          the age order, and Dv > Du. No second assessor re-scored this pass.
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [91, 128], note: "Dispersion matrix and RK4 growth", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3215_eldredgeops_rana_18file_turing_wavelength_s0.lean, lines: [19, 45], note: "Six sorry-free theorems", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test checks r > 0.98, RMSE, lambda_c = 1 model unit, negative
+          ablation growth, the 18/17 ratio, GIF frame count and resolution, and
+          the specimen SHA-256. Seed 3215 is fixed. Dependencies are the repo
+          scientific stack (numpy, scipy, pillow, matplotlib).
+        evidence:
+          - {file: models/2026-delphi10000-eldredgeops-rana-18file-turing-wavelength-s0.py, lines: [438, 468], note: "Self-test gates", supports: true}
+          - {file: datasets/eldredgeops_rana_18file_turing_wavelength_s0/README.md, lines: [1, 40], note: "Invocation and scale/age statement", supports: true}
+    remediation:
+      - "Parameter-regime sweep: gamma and Dv/Du sweeps are defined but not executed or drawn on the Pass-1 figure."
+      - "Negative control: equal-diffusion max sigma is analytic only; the ablation field is not simulated in the Pass-1 render."
+      - "Specimen segmentation: whole-frame coherency is reported, but Otsu foreground, radial-spectrum KS, and multi-seed wavelength are not in the Pass-1 outputs."
+      - "No independent second assessor scored this pass."
+      - "Nanopublications cannot be signed: ~/.nanopub/profile.yml is absent."
