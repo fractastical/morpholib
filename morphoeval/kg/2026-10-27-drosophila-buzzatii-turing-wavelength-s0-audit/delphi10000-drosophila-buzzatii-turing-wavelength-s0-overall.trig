@@ -1,0 +1,69 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-buzzatii-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-buzzatii-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-buzzatii-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg–Turing wavelength at 2.908 µm in Drosophila buzzatii (Pass 1) — MorphoEval overall 82.9/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1 implements the Schnakenberg PDE and the closed-form wavenumber, renders a 12-frame growth GIF at 720×540, and orders buzzatii (2.908 µm, 584 modes) against bipectinata (85.92 µm, 19 modes) and cyrtoloma (207.6 µm, 8 modes) at 0 Ma. Morphometric credit is partial until the KS, segmentation, and ablation panel are re-scored. Overall 82.9/100 (faithfulness 81.6, reproducibility 86.1); rubric morphoeval 0.1.0; checkpoint commit 00782eec; environment: python 3.12, numpy 2.5.4, scipy 1.18.1. Dimension assessments: Model fidelity to source 88, Morphological realism / specimen match 80, Parameter expressivity 84, Morphometric validation 74, Source and data traceability 88, Code-to-model traceability 84, Reproducibility package 86. Output judged: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py at 00782eec, image/png, 469642 B, 1512×984 px, artifact_sha256 e036de5b2cd1da218273a42f89a3c324d68abbfa376721e0b15a03ad64a715e6 (sha256 e036de5b2cd1da218273a42f89a3c324d68abbfa376721e0b15a03ad64a715e6), spec_fingerprint 08fa3b6fbda37d14034e66aaa32be6a4f2884d2974f79734f2b5414d7f6640c2. Dual provenance: spec_fingerprint: 08fa3b6fbda37d14034e66aaa32be6a4f2884d2974f79734f2b5414d7f6640c2; artifact_sha256: e036de5b2cd1da218273a42f89a3c324d68abbfa376721e0b15a03ad64a715e6; input_dataset_sha256: {datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_reference.json=61a3792c4a139711..., datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_specimen.jpg=21d216f74bbb2735...}. Claim boundary: reported_in_source: Turing 1952: a homogeneous field can be unstable at a finite critical wavenumber. | Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v. | Norry, Vilardi & Hasson 1997: inversion-sensitive correlations among size traits in D. buzzatii.; reconstructed_in_script: gamma is solved so lambda_c = 2.908 um on this Jacobian, with D_v/D_u = 29. | Discrete-mode lambda across 14 gamma scales is correlated with the closed form.; transfer_boundary: Norry's wing/thorax allometry is used only as the statement that organ length changes mode count N = L/lambda, not lambda itself.; does_not_claim: That Norry measured a 2.9 µm pigment wavelength. | That the species card is a wing micrograph.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': 'Put the two-sample KS distance between the species-card radial spectrum and the pure Schnakenberg field into the measurement sidecar (value must differ from 0).'}",
+            "remediation needed: {'id': 'R2', 'item': 'Segment the canonical card and report foreground fraction, circularity, and structure-tensor coherency against a reference that is not the measured value.'}",
+            "remediation needed: {'id': 'R3', 'item': 'Show the equal-diffusion ablation on the comparison figure, not only inside --self-test.'}",
+            "remediation needed: {'id': 'R4', 'item': 'Report the saturated-field wavelength separately from the linear 2.908 µm target so the coarsening offset is a measured residual, not a hidden mismatch.'}" ;
+        pk:hasScore "0.829"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; Pass 1)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1038/sj.hdy.6882540>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1038/sj.hdy.6882540> dct:date "1997"^^xsd:gYear ;
+        dct:title "Correlations among size-related traits are affected by chromosome inversions in an adaptive polymorphism in Drosophila buzzatii" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The Chemical Basis of Morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Schnakenberg–Turing wavelength at 2.908 µm in Drosophila buzzatii (Pass 1) — MorphoEval overall 82.9/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:49:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-drosophila-buzzatii-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-drosophila-buzzatii-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

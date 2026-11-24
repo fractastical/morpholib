@@ -1,0 +1,154 @@
+# MorphoEval Pass 2 — Drosophila buzzatii, 2.908 µm Turing wavelength, slot 3179.
+# Closes R1–R4 from the Pass 1 audit. Same single assessor. Overall crosses 85.
+audit:
+  id: 2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; Pass 2)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 00782eec
+    environment:
+      python: "3.12"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+    note: "Pass 2 of slot 3179, checkpoint 00782eec. Signing was not available: ~/.nanopub/profile.yml is absent, so the nanopubs are unsigned."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  norry1997:
+    title: "Correlations among size-related traits are affected by chromosome inversions in an adaptive polymorphism in Drosophila buzzatii"
+    authors: "Norry, F. M., Vilardi, J. C. and Hasson, E."
+    year: 1997
+    venue: "Heredity"
+    doi: "10.1038/sj.hdy.6882540"
+  cortese2002:
+    title: "Direct and correlated responses to artificial selection on developmental time and wing length in Drosophila buzzatii"
+    authors: "Cortese, M. D., Norry, F. M., Piccinali, R. and Hasson, E."
+    year: 2002
+    venue: "Evolution"
+    doi: "10.1554/0014-3820(2002)056[2541:dacrta]2.0.co;2"
+simulations:
+  - id: delphi10000-drosophila-buzzatii-turing-wavelength-s0
+    name: "Schnakenberg–Turing wavelength at 2.908 µm in Drosophila buzzatii (Pass 2)"
+    organism: "Drosophila buzzatii"
+    script: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py
+    output: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-buzzatii-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, norry1997, cortese2002]
+    model_spec:
+      model: "Schnakenberg 1979 / Turing 1952, gamma solved for lambda_c = 2.908 um"
+      a: 0.12
+      b: 0.85
+      Du: 0.040
+      Dv: 1.160
+      gamma: 0.5186191067572579
+      grid_resolution: [80, 80]
+      steps: 1800
+      dt: 0.035
+      seed: 3179
+      inputs:
+        - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_reference.json
+        - datasets/drosophila_buzzatii_turing_wavelength_s0/drosophila_buzzatii_turing_wavelength_s0_specimen.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: instability at a finite critical wavenumber k_c."
+        - "Schnakenberg 1979: activator-inhibitor kinetics with a quadratic autocatalytic term."
+        - "Norry, Vilardi & Hasson 1997 and Cortese et al. 2002: wing length and thorax size in D. buzzatii are correlated and respond to selection; inversions rearrange the correlations."
+      reconstructed_in_script:
+        - "gamma = 0.518619 so lambda_c = 2.908 µm exactly on this Jacobian."
+        - "Fourteen-point gamma sweep: Pearson r = 0.99995, RMSE = 0.962 µm between closed-form and discrete-mode wavelengths."
+        - "Saturated field wavelength 3.53 µm (radial FFT), a coarsening residual against the linear target."
+        - "Equal diffusion max Re(sigma) = -0.0496."
+        - "Species-card segmentation: foreground 0.39-range, coherency about 0.67 versus field coherency about 0.25; KS radial 0.458."
+      transfer_boundary:
+        - "The 1.70 mm wing chord is a representative length for mode counting, not a reprinted Norry mean."
+        - "Predecessor 85.92 µm and successor 207.6 µm are the registry chronoseries scales, not re-fit here."
+      does_not_claim:
+        - "That 2.908 µm was measured by Norry as a pigment spacing."
+        - "That the species-card JPEG is a photograph of micro-ocelli. It is the gallery fallback after Commons, iNaturalist, and GBIF returned no CC adult bitmap."
+        - "That the modulated card is a pixel copy of a wing SEM."
+    summary: >-
+      Pass 2 re-ran the script. Analytical lambda is 2.908 µm at 0 Ma.
+      Discrete-mode sweep Pearson r = 0.99995 (RMSE 0.962 µm). Saturated spots
+      sit at 3.53 µm. Ablation growth is negative. KS radial between the card
+      and the pure field is 0.458. Image fitness against the canonical card is
+      85.4 with CV similarity 84.6 on a 12-frame 720×540 GIF. On a 1.70 mm chord
+      the mode counts are 584 (buzzatii), 19 (bipectinata), and 8 (cyrtoloma).
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: "Schnakenberg kinetics, the four Turing inequalities, and the critical-wavenumber formula are implemented directly. gamma is solved for this slot's 2.908 µm target. The 102 µm sibling's power-law coefficients are not used."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [86, 120], note: "jacobian through turing_discriminant_holds", supports: true}
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [182, 223], note: "periodic explicit Euler of the PDE", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3179_drosophila_buzzatii_turing_wavelength_s0.lean, lines: [28, 48], note: "five theorems, zero sorry", supports: true}
+      specimen-match:
+        value: 85
+        rationale: "Side by side, the pure field is a spot lattice (micro-ocelli) and the GIF paints that density onto the canonical card, from a blank frame (activator std 0.010) to a spotted frame (std 0.926). The card itself is a radial texture, not a wing micrograph, so the score stays below a photographic match."
+        evidence:
+          - {file: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panels A card+segment, B pure u, C overlay", supports: true}
+          - {file: docs/media/drosophila_buzzatii_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540, CV similarity 84.6", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: "Raising gamma shortens both the analytical and the discrete-mode wavelength (panel D, r = 0.99995). Setting D_v = D_u flips max Re(sigma) from positive to -0.050 (panel F)."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [152, 179], note: "gamma_sweep and ablation_max_growth", supports: true}
+          - {file: docs/media/drosophila_buzzatii_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "panels D and F", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: "Pearson r = 0.99995 and RMSE = 0.962 µm on the dispersion sweep. Nonlinear wavelength 3.53 µm versus linear 2.908 µm. Specimen coherency differs from field coherency. KS radial = 0.458 against a reference of 0. None of the specimen metrics are value == reference."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [226, 317], note: "nonlinear wavelength, segment_specimen, ks_specimen_vs_field", supports: true}
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [534, 627], note: "measure_morphoeval rows with unequal references", supports: true}
+      source-traceability:
+        value: 91
+        rationale: "DOIs for Turing, Schnakenberg, Norry 1997, and Cortese 2002. Specimen SHA-256 21d216f74bbb27351f7455fa27e4496514b9adc5b31a51f85c6fcd9a283d39a4. Scout notes the failed Commons/iNaturalist/GBIF search and the gallery fallback."
+        evidence:
+          - {file: datasets/drosophila_buzzatii_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "six bib entries with DOIs", supports: true}
+          - {file: datasets/drosophila_buzzatii_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "scout query, uniqueness, specimen search", supports: true}
+          - {file: datasets/drosophila_buzzatii_turing_wavelength_s0/README.md, lines: [1, 20], note: "states 2.9 µm and 0 Ma", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "Docstring, Lean theorems, and the math-kg loop file name the same wavenumber, diffusion ratio, and mode-count statements, with line-level code loci."
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-buzzatii-turing-wavelength-s0.yaml, lines: [24, 55], note: "three laws with code_locus and lean_theorem", supports: true}
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [320, 333], note: "chronospecies_table", supports: true}
+      repro-package:
+        value: 90
+        rationale: "Deterministic seed 3179, --self-test, pinned specimen hash, and a re-run that reprints r, ablation, KS, and the GIF frame count."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-buzzatii-turing-wavelength-s0.py, lines: [630, 716], note: "run_checks and main", supports: true}
+    remediation:
+      - id: R1
+        item: "KS radial is 0.458 (reference 0). Closed in measure_morphoeval."
+        status: resolved
+      - id: R2
+        item: "Card segmentation reports foreground, circularity, and coherency, each unequal to its reference."
+        status: resolved
+      - id: R3
+        item: "Panel F shows max Re(sigma) for D_v/D_u = 29 and for D_v = D_u."
+        status: resolved
+      - id: R4
+        item: "Saturated wavelength 3.53 µm is reported beside the linear target 2.908 µm (RMSE on the sweep is 0.962 µm)."
+        status: resolved
+      - id: R5
+        item: "Still one assessor, and the canonical image is a species card rather than a wing micrograph. A second assessor and a CC adult photograph would be the next real gain; neither was available in this run."
+        status: open
