@@ -1,0 +1,64 @@
+sim_id: delphi10000-antirrhinum-majus-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 0.0002592
+log10_size_m: -3.586
+size_human: 259 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Antirrhinum majus
+  (Holocene extant, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: ""
+model_spec:
+  sim_id: delphi10000-antirrhinum-majus-turing-wavelength-s0
+  f_u: 1.25
+  f_v: -1.5
+  g_u: 2.0
+  g_v: -1.75
+  D_u_um2_per_h: 640
+  D_v_um2_per_h: 4341
+  cubic: 0.85
+  lambda_c_um: 259.1268
+  seed: 3114
+  age_ma: 0.0
+  inputs:
+    - datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_specimen.jpg
+    - datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_turing_wavelength_s0_reference.json
+    - datasets/antirrhinum_majus_turing_wavelength_s0/antirrhinum_majus_sete_cc-by-sa.jpg
+equations:
+  - law_name: Reaction stability without diffusion
+    formula: tr J = f_u + g_v < 0 and det J = f_u g_v - f_v g_u > 0
+    lean_decl: MathOfBiology.Loop_3114.trace
+    lean_theorem: MathOfBiology.Loop_3114.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean#L8-L22
+    variables: f_u=1.25, g_v=-1.75, f_v=-1.50, g_u=2.00 (rates per hour)
+    role: Homogeneous petal epidermis is stable until diffusion is added
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py#L124-L127
+  - law_name: Turing wavenumber k_c
+    formula: k_c = argmax_k sigma(k), lambda_c = 2 pi / k_c
+    lean_decl: MathOfBiology.Loop_3114.turingDiscriminant
+    lean_theorem: MathOfBiology.Loop_3114.turing_band_open
+    lean_locus: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean#L24-L34
+    variables: D_u=640, D_v=4341 µm^2/h; realized lambda_c=259.13 µm at age 0 Ma
+    role: Selects one ocellus wavelength on a 259 µm domain
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py#L139-L168
+  - law_name: Equal-diffusion ablation
+    formula: h = D (f_u + g_v) < 0 when D_u = D_v
+    lean_decl: MathOfBiology.Loop_3114.diffusionTrace
+    lean_theorem: MathOfBiology.Loop_3114.equal_diffusion_closes_band
+    lean_locus: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean#L36-L42
+    variables: D_u = D_v = 640
+    role: Negative control. The band disappears when the two morphogens diffuse equally.
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py#L183-L187
+  - law_name: Mode count across scales at 0 Ma
+    formula: N(L) = L / lambda_c; N(259 µm)=1, N(40 µm)<1, N(10 mm)=38
+    lean_decl: MathOfBiology.Loop_3114.one_wavelength_at_this_scale
+    lean_theorem: MathOfBiology.Loop_3114.petal_successor_mode_count
+    lean_locus: morphoeval/lean/loops/Loop_3114_antirrhinum_majus_turing_wavelength_s0.lean#L44-L52
+    variables: cell ≤ 40 µm, this scale 259.2 µm, petal lobe 10 mm, age 0 Ma
+    role: What changes versus the scale predecessor and the scale successor. No fossil chronospecies.
+    source_citation: Noda 1994 DOI:10.1038/369661a0; Coen 2004 DOI:10.1073/pnas.0306308101
+    code_locus: models/2026-delphi10000-antirrhinum-majus-turing-wavelength-s0.py#L281-L307
