@@ -1,0 +1,120 @@
+# MorphoEval audit — Bicyclus anynana Turing wavelength, pass 1.
+# The PDE, Table 1, and the dispersion identity are in place. Full credit for the
+# control suite (k_p sweep, width doubling, equal-diffusion ablation, specimen
+# segmentation) is withheld until pass 2 scores those runs as controls.
+audit:
+  id: 2026-10-27-bicyclus-anynana-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor; no independent second assessor)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: "68f7b12177b4371c73d1b9066a4410ed7696f94a"
+    note: "Pass 1 script, specimen pin, and Lean module are in 68f7b121."
+references:
+  sekimura2015:
+    title: "A model for selection of eyespots on butterfly wings"
+    authors: "Sekimura T, Venkataraman C, Madzvamuse A"
+    venue: "PLOS ONE"
+    doi: "10.1371/journal.pone.0141434"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik"
+    doi: "10.1007/BF00289234"
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: "10.1098/rstb.1952.0012"
+  connahs2019:
+    title: "Activation of butterfly eyespots by Distal-less is consistent with a reaction-diffusion process"
+    authors: "Connahs H, Tlili S, van Creij J, Loo TYJ, Banerjee TD, Saunders TE, Monteiro A"
+    venue: "Development"
+    doi: "10.1242/dev.169367"
+simulations:
+  - id: delphi10000-bicyclus-anynana-turing-wavelength-s0
+    name: "Sekimura et al. (2015) Gierer–Meinhardt wing-cell focus at λ_c = 1.507 mm"
+    organism: "Bicyclus anynana (Squinting Bush Brown)"
+    script: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py
+    output: docs/media/bicyclus_anynana_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [sekimura2015, gierer1972, turing1952, connahs2019]
+    summary: >-
+      Pass 1 integrates Eq. 3.1–3.2 with Table 1 on a cell one critical wavelength
+      wide. k_c = 6.190, λ_c anchored at 1.507 mm (0.001507 m, Holocene, 0 Ma).
+      Analytical versus numerical dispersion Pearson r = 0.9985 (RMSE 0.0063).
+      One focus at k_p = 0. The radial pigment correlation against the forewing
+      ocellus is 0.26 and is not treated as the wavelength test. Controls are
+      present in the script but are not yet the basis of the score.
+    claim_boundary:
+      reported_in_source:
+        - "Eq. 3.1–3.2 and Table 1 of Sekimura et al. 2015: Gierer–Meinhardt kinetics, vein Dirichlet value 2 a1_ss, proximal Dirichlet k_p a1_ss, zero-flux inhibitor."
+        - "Low proximal activator selects a focus; high proximal activator suppresses it (their Fig. 4)."
+        - "Focus number increases with anterior–posterior cell width (their S1 Appendix)."
+      reconstructed_in_script:
+        - "Explicit finite-difference integration of Eq. 3.1 and the dispersion identity σ(k)."
+        - "Physical anchor λ_c = 1.507 mm, the scale assigned to this Holocene slot."
+        - "Adult GIF composites measured annulus colours onto ocelli whose positions come from specimen segmentation."
+      transfer_boundary:
+        - "Table 1 is dimensionless. Mapping λ_dim onto 1.507 mm is this slot's scale anchor, not a length reported in the 2015 paper."
+        - "The photograph's leaf and wing-scale texture are the specimen, not a prediction of the wing-cell PDE."
+      does_not_claim:
+        - "That the activator radial profile reproduces the black-gold pigment luminance (measured Pearson r = 0.26)."
+        - "A fossil predecessor or successor species. The chronoseries is the single Holocene terminus."
+        - "A cryptographic nanopublication signature. No ~/.nanopub/profile.yml is present."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "Eq. 3.1–3.2, the Table 1 constants, and the vein/proximal/margin boundary conditions are implemented and the dispersion peak is computed from that Jacobian. The adult pigment colours are sampled from the photograph rather than predicted by the PDE."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [171, 214], note: "simulate_cell documents and applies Eq. 3.1 boundary conditions", supports: true}
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [67, 80], note: "Jacobian and σ(k) of the Table 1 kinetics", supports: true}
+      specimen-match:
+        value: 68
+        rationale: "The comparison figure places the photograph beside an adult frame that still uses the photograph as the wing canvas. The activator panel is one focus on a 1.5 mm by 3.3 mm cell, which is the modelled structure, not a drawing of the whole butterfly."
+        evidence:
+          - {file: docs/media/bicyclus_anynana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Specimen, adult frame, activator, dispersion", supports: true}
+      parameter-expressivity:
+        value: 64
+        rationale: "k_p and cell width are in the script, but pass 1 does not yet score them as a control suite. A first sweep is non-monotonic at k_p = 1 (2 foci) even though k_p = 0 has one focus and k_p = 2 has none."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [482, 492], note: "parameter_sweep over k_p", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: "Dispersion Pearson r = 0.9985 is already measured. Pass 1 does not yet treat specimen segmentation, the KS distance, or the equal-diffusion ablation as scored morphometrics. The radial pigment correlation is 0.26 and must not be substituted for the wavelength test."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [126, 150], note: "dispersion_goodness_of_fit", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Primary DOI 10.1371/journal.pone.0141434 was retrieved as the publisher PDF. The specimen file is SHA-256 pinned and the Commons source is recorded."
+        evidence:
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/paper_citations.bib, lines: [1, 20], note: "Sekimura 2015 and Gierer–Meinhardt 1972", supports: true}
+          - {file: datasets/bicyclus_anynana_turing_wavelength_s0/bicyclus_anynana_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 1.507 mm, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 78
+        rationale: "The module docstring and simulate_cell name Eq. 3.1 and Table 1. Pass 1 has not yet tied each control (ablation, width doubling, segmentation) to a scored measurement."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [1, 18], note: "Module header cites Eq. 3.1–3.2, Table 1, and λ_c = 1.507 mm", supports: true}
+      repro-package:
+        value: 82
+        rationale: "Seed 3133, --self-test, and the pinned specimen hash are in place. Pass 1 has not yet re-scored the rendered GIF against the specimen CV operator as a required output."
+        evidence:
+          - {file: models/2026-delphi10000-bicyclus-anynana-turing-wavelength-s0.py, lines: [799, 820], note: "self_test gates on r, λ, foci, frames, and resolution", supports: true}
+    remediation:
+      - id: R1
+        item: "Score the k_p sweep and the one-wavelength versus two-wavelength focus counts, and keep the non-monotonic k_p = 1 bin visible."
+      - id: R2
+        item: "Score the equal-diffusion ablation: argmax σ(k) must collapse when D2 = D1."
+      - id: R3
+        item: "Segment the specimen photograph (ocelli and the forewing Cu1 pupil) and compare structure-tensor coherency with the GIF. Metrics must not set value equal to reference."
+      - id: R4
+        item: "Report dispersion Pearson r, RMSE, and KS as the wavelength goodness-of-fit, separate from the radial pigment correlation."
+      - id: R5
+        item: "No independent second assessor. This audit is the builder's own score."
+      - id: R6
+        item: "No ~/.nanopub/profile.yml, so the nanopublications are not signed. Do not invent a signature."
