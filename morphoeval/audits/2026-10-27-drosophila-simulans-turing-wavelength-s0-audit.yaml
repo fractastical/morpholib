@@ -1,0 +1,126 @@
+audit:
+  id: 2026-10-27-drosophila-simulans-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 1; second assessor not available)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree on cursor/drosophila-simulans-turing-wavelength-9215. Loop files are new and are not in that commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: 10.1016/0022-5193(79)90042-0
+  glassford2015:
+    title: "Co-option of an ancestral Hox-regulated network underlies a recently evolved morphological novelty"
+    authors: "Glassford, W. J. et al."
+    venue: "Dev. Cell"
+    doi: 10.1016/j.devcel.2015.08.005
+  hagen2020:
+    title: "Rapid diversification of male genitalia between Drosophila species"
+    authors: "Hagen, J. F. D. et al."
+    venue: "Mol. Biol. Evol."
+    doi: 10.1093/molbev/msaa232
+  huey2000:
+    title: "Rapid evolution of a geographic cline in size in an introduced fly"
+    authors: "Huey, R. B. et al."
+    venue: "Science"
+    doi: 10.1126/science.287.5451.308
+  edwards2007:
+    title: "A database of wing diversity in the Hawaiian Drosophila"
+    authors: "Edwards, K. A. et al."
+    venue: "PLoS ONE"
+    doi: 10.1371/journal.pone.0000487
+simulations:
+  - id: delphi10000-drosophila-simulans-turing-wavelength-s0
+    name: "Drosophila simulans 1.92 µm Turing carrier on the posterior-lobe arc (pass 1)"
+    organism: "Drosophila simulans"
+    script: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py
+    output: docs/media/drosophila_simulans_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, glassford2015, hagen2020, huey2000, edwards2007]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics with γ fixed so λ_c = 1.92 µm,
+      measures a 67.57 µm annulus on the species plate (111 px = 100 µm), and
+      fits one radial harmonic (Pearson r = 0.9825). Sweeps and the ablation
+      exist in the script but the headline goodness-of-fit is still the
+      in-sample single harmonic. Overall is withheld below the pass-2 bar.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 selects a finite critical wavenumber from a reaction-diffusion instability."
+        - "Glassford 2015: the epandrial posterior lobe is a melanogaster-subgroup novelty."
+        - "Hagen 2020: simulans-clade lobes diverged within about the last 240,000 years."
+        - "Edwards 2007 documents Hawaiian picture-wing melanin; Huey 2000 documents the subobscura size cline."
+      reconstructed_in_script:
+        - "λ_c = 1.92 µm is the slot assignment, not a published granule diameter."
+        - "Neighbour wavelengths 2.64 µm and 1.60 µm are γ retunings at ratio 11/8 and 5/6."
+        - "The rendered annulus is the measured plate mode, not a relabeling of the 100 µm bar as 1.92 µm."
+      transfer_boundary:
+        - "Silvestris and subobscura are catalog chronoseries neighbours, not phylogenetic ancestors of simulans."
+      does_not_claim:
+        - "Does not claim a measured 1.92 µm spacing on a simulans clasper micrograph."
+        - "Does not claim the species-gallery plate is a transmission electron micrograph."
+        - "Does not claim the whole-fly Wikimedia photograph resolves the detail wavelength."
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: "The dispersion formula recovers 1.92 µm exactly and the radial PDE runs, but pass 1 still treats the 4.8% gap between numerical k (3.115) and infinite-line k_c (3.272) as an uninterpreted residual. The painted field is a radial harmonic, not the PDE state."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [97, 111], note: "gamma_for_wavelength and critical_wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [130, 177], note: "radial Schnakenberg stepper", supports: true}
+      specimen-match:
+        value: 76
+        rationale: "The comparison figure places the plate beside the last GIF frame, but pass 1 has not yet separated plate CV from the whole-fly control. The match is a radial reconstruction of the annulus, not a cell-resolved lobe."
+        evidence:
+          - {file: docs/media/drosophila_simulans_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "six-panel plate versus model", supports: true}
+          - {file: docs/media/drosophila_simulans_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 800x600", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "γ multipliers 0.5 to 3 shorten λ_c monotonically, and Du from 0.02 to 0.40 lengthens it while the diffusion drive stays positive. Pass 1 does not yet make that sweep the scored expressivity claim."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [404, 417], note: "parameter_sweep", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: "Single-harmonic in-sample Pearson r is 0.9825 and the plate annulus is 67.57 µm against the 1.92 µm detail law. The odd-radius holdout is computed later in the file but is not the pass-1 headline, and KS/CV segmentation are not yet the basis of the score."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [259, 280], note: "fit_radial_mode", supports: true}
+          - {file: datasets/drosophila_simulans_turing_wavelength_s0/drosophila_simulans_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pass1_pearson_r 0.9825; lambda_ring_um 67.57", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "OpenAlex-resolved DOIs for Turing, Schnakenberg, Glassford, Hagen, Huey, and Edwards. Plate SHA-256 and the CC BY-SA 3.0 Weeks female are pinned in the reference JSON."
+        evidence:
+          - {file: datasets/drosophila_simulans_turing_wavelength_s0/paper_citations.bib, lines: [1, 78], note: "DOI bibliography", supports: true}
+          - {file: datasets/drosophila_simulans_turing_wavelength_s0/drosophila_simulans_turing_wavelength_s0_reference.json, lines: [1, 40], note: "input_sha256 block", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "jacobian, gamma_for_wavelength, and the Lean wavelength-order theorems name the same quantities. Section-level pins into Turing 1952 are not reproduced beyond the dispersion formula."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3205_drosophila_simulans_turing_wavelength_s0.lean, lines: [34, 37], note: "mode_count_orders_the_chronoseries", supports: true}
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [72, 90], note: "Schnakenberg Jacobian", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3205, --self-test, and hashed inputs. Pass 1 self-test already renders the GIF. No second machine and no nanopub profile on this runner."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-simulans-turing-wavelength-s0.py, lines: [749, 780], note: "self_test assertions", supports: true}
+    remediation:
+      - id: R1
+        item: "Make the odd-radius holdout the headline goodness-of-fit, not only the in-sample single harmonic (pass-1 r = 0.9825)."
+      - id: R2
+        item: "Report computer-vision similarity of the GIF against the annular plate and, separately, against the Wikimedia whole-fly photograph."
+      - id: R3
+        item: "Interpret the numerical-versus-analytical wavenumber gap (3.115 vs 3.272) as the bounded-disk shift instead of leaving it uninterpreted."
+      - id: R4
+        item: "Independent second assessor is not available in this cloud session."
