@@ -1,0 +1,186 @@
+# Pass 2 — supersedes the pass-1 audit for slot 3231.
+# Sweep, ablation, native-frame arm spacing, orientation KS and the official
+# GIF-versus-plate CV score are now scored. Second assessor and a fossil
+# thin section remain outside this loop.
+
+audit:
+  id: 2026-10-27-gasterosteus-doryssus-late-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-gasterosteus-doryssus-late-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-late-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, pass 2)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Same working tree as pass 1. Pass 2 rescores after the frozen metrics
+      and the image-fitness CV. lean is not installed. No nanopub profile, so
+      the graph is unsigned. publisher_orcid is the creator already used by
+      this repository's MorphoEval trig files.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  hunt2008:
+    title: "Evolution toward a new adaptive optimum: phenotypic evolution in a fossil stickleback lineage"
+    authors: "Hunt G, Bell MA, Travis MP"
+    venue: "Evolution 62(3):700-710 (2008)"
+    doi: 10.1111/j.1558-5646.2007.00310.x
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0
+    name: "Gasterosteus doryssus_late Turing wavelength at 27 µm (9.99 Ma)"
+    organism: "Gasterosteus doryssus_late"
+    script: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py
+    output: docs/media/gasterosteus_doryssus_late_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-gasterosteus-doryssus-late-turing-wavelength-s0-audit
+    source_refs: [turing1952, hunt2008, kondo2010]
+    summary: >-
+      Pass 2 closes the pass-1 measurement gaps. Continuum lambda_m is 27.07 µm
+      at 9.99 Ma. The periodic-grid Laplacian returns 26.77 µm (late), 21.10 µm
+      (marine) and 33.38 µm (mid). Sweep Pearson r=0.999999, RMSE=0.309 µm.
+      Equal diffusion has sigma_max=-0.390 and the seeded mode decays; r=25
+      grows (amplitude ratio 2.17). Noise-seeded ring wavelength is 28.96 µm.
+      Native-frame arm spacing is 27.10 µm. Orientation KS D=0.050 on the saved
+      GIF (0.045 before GIF quantization). Official CV similarity of the
+      12-frame 640x480 GIF is 82.3.
+      Weighted overall 86.2.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and diffusion-driven instability"
+        - "Kondo and Miura 2010 treat pigment patterns as reaction-diffusion wavelengths"
+        - "Hunt, Bell and Travis 2008 document pelvic evolution in a fossil stickleback lineage"
+      reconstructed_in_script:
+        - "Schnakenberg parameters with r=25 so the continuum fastest mode is 27.07 µm"
+        - "Du scaled with lambda_m squared across mid (33.62 µm), late (27.07 µm) and marine (21.48 µm)"
+        - "Far-field spiral used as the late ocellus render, arm spacing measured on the native frame"
+      transfer_boundary:
+        - "27 µm is the tier-4 detail assignment, not a caliper reading on Truckee material"
+        - "The gallery plate is an illustrated ocellus card with a 100 µm bar"
+      does_not_claim:
+        - "Does not claim fossil melanophores were measured at 27 µm"
+        - "Does not claim the gallery JPEG is a photograph of a Miocene specimen"
+        - "Does not reuse the 1.7 mm parameters of slot 1209"
+        - "Does not claim a second assessor or a kernel-checked Lean build"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The Jacobian, continuum dispersion, discrete symbol and 1D ring match
+          the stated Schnakenberg system, and the equal-diffusion control closes
+          the Turing band. The animated frame remains a far-field spiral at the
+          selected wavelength rather than a 2D PDE, which is why this is not 95.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [84, 125], note: "sigma(k), continuum k_m, discrete symbol at dx=2.2 µm", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [200, 230], note: "equal-diffusion ablation versus r=25", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3231_gasterosteus_doryssus_late_turing_wavelength_s0.lean, lines: [16, 41], note: "six theorems, 0 sorry; lean binary absent so not kernel-checked", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [298, 316], note: "render is the far-field spiral", supports: false}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Official verifier CV similarity between the gallery plate and the last
+          GIF frame is 82.3 (12 frames, 640x480). Orientation KS D=0.050 on the
+          saved GIF. The
+          plate and the render are the same ocellus class. The plate is still an
+          illustration, so the score stays below the mid-90s.
+        evidence:
+          - {file: docs/media/gasterosteus_doryssus_late_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 ocellus GIF", supports: true}
+          - {file: docs/media/gasterosteus_doryssus_late_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate beside render, sweep and chronospecies bars", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [417, 449], note: "KS and coherency on plate versus final frame", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Discrete wavelength increases monotonically with Du across marine
+          (21.10 µm), late (26.77 µm) and mid (33.38 µm). AP-stripe power
+          increases with eps: 0.504, 0.622, 0.668. Both controls are on the
+          comparison figure.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [335, 403], note: "figure panels for the Du sweep and the three chronospecies", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [562, 573], note: "self-test requires monotonic wavelengths and stripe fractions", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Pearson r=0.999999 and RMSE=0.309 µm on five Du scales. Late discrete
+          wavelength 26.77 µm versus continuum 27.07 µm. Noise-seeded ring
+          28.96 µm. Native-frame arm spacing 27.10 µm. KS D=0.050. None of these
+          measured values is copied from its reference. What is not claimed is a
+          fossil melanophore count.
+        evidence:
+          - {file: datasets/gasterosteus_doryssus_late_turing_wavelength_s0/metrics.json, lines: [1, 37], note: "r, RMSE, ablation, stripe fractions, KS, ray spacing", supports: true}
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [451, 560], note: "measure_morphoeval records value and a different reference_value", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Three DOIs, SHA-256 pins checked at runtime, scout manifest records the
+          Crossref hit for Hunt, Bell and Travis 2008 and explains why extant
+          Wikimedia photographs were not used as the chronospecies plate.
+        evidence:
+          - {file: datasets/gasterosteus_doryssus_late_turing_wavelength_s0/paper_citations.bib, lines: [1, 32], note: "Turing, Hunt, Kondo", supports: true}
+          - {file: datasets/gasterosteus_doryssus_late_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3231, no filename collision, specimen choice", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Docstring, reference JSON and Lean statements use the same fractions
+          (tr J = -58/75, r=25, wavelengths 21480/27070/33620 nm). The GIF pitch
+          is a display of that wavelength, not a separate law. Lean was not
+          executed in this environment.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [1, 48], note: "equations and chronospecies table", supports: true}
+          - {file: datasets/gasterosteus_doryssus_late_turing_wavelength_s0/gasterosteus_doryssus_late_turing_wavelength_s0_reference.json, lines: [28, 55], note: "same Jacobian and claim boundary", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test passes. Seed, hashes and GIF geometry (12 frames, 640x480)
+          are checked. Re-running the script reproduces r, RMSE and the late
+          discrete wavelength. System packages are not vendored per script, and
+          there is no nanopub profile to sign with.
+        evidence:
+          - {file: models/2026-delphi10000-gasterosteus-doryssus-late-turing-wavelength-s0.py, lines: [584, 620], note: "invocation, GIF gate, metrics write", supports: true}
+    remediation:
+      - id: R1
+        item: "Resolved in this pass: Du-sweep Pearson r=0.999999, RMSE=0.309 µm, late discrete wavelength 26.77 µm versus reference 27.07 µm."
+        status: resolved
+      - id: R2
+        item: "Resolved in this pass: equal-diffusion sigma_max=-0.390 and amplitude collapse, against Turing amplitude ratio 2.17."
+        status: resolved
+      - id: R3
+        item: "Resolved in this pass: orientation KS D=0.050, coherency compared, native-frame arm spacing 27.10 µm."
+        status: resolved
+      - id: R4
+        item: "Resolved in this pass: CV similarity 82.3 on the 12-frame 640x480 GIF; specimen-match rescored to 84."
+        status: resolved
+    needs:
+      - id: N1
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "A second assessor from another provider has not scored this script."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "No Miocene thin section preserves a 27 µm melanophore spacing to replace the gallery ocellus card."
+        status: open
+        novelty_n: 0.8
+        contradiction_c: 0.2
+        depth_d: 2.0
+        age_days_a: 0
