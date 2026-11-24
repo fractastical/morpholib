@@ -1,0 +1,194 @@
+# Pass 1 audit — slot 3172, Drosophila succini, 2.8 µm Turing wavelength, 44 Ma.
+# Single assessor (this loop). Scores withhold credit for the sweep, the specimen
+# segmentation, and the band-restricted goodness-of-fit until those rows are in the
+# measurements sidecar and the GIF has been scored (Pass 2).
+audit:
+  id: 2026-10-27-drosophila-succini-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (loop 3172 builder-assessor, pass 1)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: >-
+      Parent of the loop commit. New slot-3172 paths are not in 0c76d15d; the KG
+      build uses --no-verify-loci for that reason. Scale 2.759e-06 m, age 44 Ma.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  hennig1965:
+    title: "Die Acalyptratae des Baltischen Bernsteins"
+    authors: "Hennig W"
+    venue: "Stuttgarter Beiträge zur Naturkunde 145:1-215 (1965)"
+    doi: 10.5281/zenodo.10748923
+    url: https://www.biodiversitylibrary.org/part/241980
+  grimaldi1987:
+    title: "Amber fossil Drosophilidae (Diptera), with particular reference to the Hispaniolan taxa"
+    authors: "Grimaldi DA"
+    venue: "American Museum Novitates 2880 (1987)"
+    doi: 10.5281/zenodo.10747237
+    url: https://www.biodiversitylibrary.org/item/317069
+
+simulations:
+  - id: delphi10000-drosophila-succini-turing-wavelength-s0
+    name: "Drosophila succini Turing wavenumber at 2.8 µm (44 Ma, detail scale s0)"
+    organism: "Drosophila succini"
+    script: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py
+    output: docs/media/drosophila_succini_turing_wavelength_s0_comparison.png
+    also:
+      - morphoeval/lean/loops/Loop_3172_drosophila_succini_turing_wavelength_s0.lean
+    extra_outputs:
+      - docs/media/drosophila_succini_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, kondo2010, hennig1965, grimaldi1987]
+    model_spec:
+      sim_id: delphi10000-drosophila-succini-turing-wavelength-s0
+      seed: 3172
+      lambda_m: 2.759e-06
+      inputs:
+        - datasets/drosophila_succini_turing_wavelength_s0/drosophila_succini_turing_wavelength_s0_specimen.jpg
+        - datasets/drosophila_succini_turing_wavelength_s0/drosophila_succini_turing_wavelength_s0_reference.json
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: a reaction-diffusion system selects a critical wavenumber."
+        - "Schnakenberg 1979: du/dt = a - u + u^2 v and dv/dt = b - u^2 v, plus diffusion."
+        - "Hennig 1965: Drosophila succini is a Baltic amber acalyptrate, volume 145."
+        - "Grimaldi 1987: Dominican amber drosophilids, the chronoseries context for the 19 Ma successor."
+      reconstructed_in_script:
+        - "Jacobian, sigma(k), k_c = argmax sigma, D_u solved so lambda = 2.759e-06 m at r = 18.72."
+        - "Stem r = 8.40 below onset and equal-diffusivity ablation have sigma_max < 0."
+        - "Berryi wavelength 2.382 µm by transferring the registry ratio 98.43/114 onto this detail scale."
+      transfer_boundary:
+        - "No published measurement of a 2.8 µm pigment wavelength in the Hennig holotype."
+        - "Kondo & Miura 2010 is a framework paper, not a datum for this fossil."
+        - "The gallery card is a synthetic spiral, not an amber photomicrograph."
+      does_not_claim:
+        - "That the GIF's spot field is a photograph of Drosophila succini."
+        - "That the full Fourier spectrum of the nonlinear PDE matches linear theory (it does not, outside the Turing band)."
+        - "That 10.1163/187631265X00018 is a resolvable DOI."
+    needs:
+      - id: n1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Tabulate lambda versus D_u at fixed r and confirm it is monotone in the measurements sidecar."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: n2
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Segment the gallery card and report foreground fraction, coherency, circularity, and an orientation KS distance against the spot field, with value not equal to the reference."
+        status: open
+        novelty_n: 0.5
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: n3
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Publish the band-restricted Pearson r and RMSE, and state the full-spectrum r so the band choice is not hidden."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.2
+        depth_d: 1
+        age_days_a: 0
+    remediation:
+      - "Add the D_u sweep monotonicity table to the scored measurements."
+      - "Add specimen segmentation metrics that are not self-referential."
+      - "Report Turing-band Pearson r and the weaker full-spectrum r side by side."
+      - "Score the animated GIF against the specimen with the canonical CV function."
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics and the Turing wavenumber at 2.759e-06 m
+      for Drosophila succini at 44 Ma. The dispersion band already fits, but this
+      scoring withholds specimen and sweep credit until the sidecar and the image-fitness
+      test exist. Overall is the rubric weighted mean, not a separate number.
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          The script states and codes Schnakenberg kinetics, the Jacobian, sigma(k), and
+          k_c = argmax sigma(k), and it solves D_u so the peak sits on 2.759 µm at r = 18.72.
+          Deducted because the kinetics are not a Drosophila-specific published system, and
+          because the textbook determinant wavenumber k_h is not the same as k_c above onset.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [20, 28], note: "PDE, steady state, sigma(k), and the 2.759 µm target at r = 18.72", supports: true}
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [88, 162], note: "jacobian, onset ratio, growth_rate, k_peak, solve_du_for_wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [165, 177], note: "textbook k_h squared formula, reported separately from k_c", supports: true}
+      specimen-match:
+        value: 70
+        rationale: >-
+          The comparison figure places the gallery card next to the amber-coloured spot field,
+          and the GIF is twelve frames of that field at 960 by 720. Pass 1 does not yet credit
+          a scored CV similarity. The card is a synthetic spiral, so anatomical match to an
+          amber inclusion is not claimed.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [376, 442], note: "six-panel figure: card, spots, dispersion, D_u sweep, chronoseries, ablation", supports: true}
+          - {file: docs/media/drosophila_succini_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "rendered comparison", supports: true}
+          - {file: docs/media/drosophila_succini_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 960x720", supports: true}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          r = 8.40 and r = 1 are negative controls with sigma_max < 0, and a D_u scale sweep
+          is drawn. Pass 1 does not yet treat the monotonicity table as a scored measurement.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [245, 277], note: "parameter_sweep over D_u scale and ratio_regime including stem and ablation", supports: true}
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [405, 433], note: "sweep panel and negative-control overlay", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          A 1D spectral check of sigma(k) exists. Pass 1 does not yet score the band Pearson
+          residual, the nonlinear wavelength offset, or the specimen KS distance as sidecar rows.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [187, 234], note: "dispersion_numeric: spectral PDE growth versus analytic sigma", supports: true}
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [597, 712], note: "measure_morphoeval rows; not yet the scored sidecar at pass 1", supports: true}
+      source-traceability:
+        value: 80
+        rationale: >-
+          Turing, Schnakenberg, Kondo, Hennig (Zenodo/BHL), and Grimaldi (Zenodo/BHL) are cited.
+          The species-registry DOI 10.1163/187631265X00018 did not resolve and is not used.
+          The specimen is a gallery fallback after an empty Commons search.
+        evidence:
+          - {file: datasets/drosophila_succini_turing_wavelength_s0/paper_citations.bib, lines: [1, 50], note: "five BibTeX records with resolvable DOIs", supports: true}
+          - {file: datasets/drosophila_succini_turing_wavelength_s0/README.md, lines: [1, 25], note: "states 2.8 µm, 2.759e-06 m, and 44 Ma, and the failed registry DOI", supports: true}
+          - {file: datasets/drosophila_succini_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3172 scout note and DOI resolution method", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module docstring names the equations and the chronoseries contrast, and the Lean
+          file checks the integer form of the onset crossing, the berryi compression, and the
+          mode count. The Lean theorems are Nat comparisons, not a real-analysis proof of sigma(k).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [30, 43], note: "chronoseries contrast versus stem and Drosophila berryi", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3172_drosophila_succini_turing_wavelength_s0.lean, lines: [1, 45], note: "five theorems, zero sorry, namespace MathOfBiology.Loop_3172", supports: true}
+      repro-package:
+        value: 82
+        rationale: >-
+          --self-test checks the wavelength, the band correlation, both negative controls, the
+          monotone D_u sweep, and a GIF of at least 10 frames and 480 px. Dataset hashes beyond
+          the specimen digest are not all pinned inside the script.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [70, 86], note: "pinned specimen SHA-256, seed 3172, r = 18.72, lambda = 2.759e-06", supports: true}
+          - {file: models/2026-delphi10000-drosophila-succini-turing-wavelength-s0.py, lines: [715, 755], note: "self_test assertions", supports: true}
