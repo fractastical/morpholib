@@ -1,0 +1,193 @@
+# Pass 1. Cooksonia pertoni, 1.3 µm Turing wavelength, Late Silurian 425 Ma.
+# Single assessor (Grok 4.7). No ~/.nanopub/profile.yml, so this audit is not signed.
+
+audit:
+  id: 2026-10-27-cooksonia-pertoni-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent pass 1)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8308af02867b4125a973e632c1b5c530ef0ddf71
+    note: >-
+      Pass 1 tree for slot 3153. Specimen JPEGs are force-added because
+      datasets/*/*_specimen.jpg is gitignored. No nanopub profile on this
+      machine, so publication is recorded as unsigned.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  edwards1992:
+    title: "A vascular conducting strand in the early land plant Cooksonia"
+    authors: "Edwards D, Davies KL, Axe L"
+    year: 1992
+    venue: "Nature 357:683-685 (1992)"
+    doi: 10.1038/357683a0
+  edwards2003:
+    title: "Xylem in early tracheophytes"
+    authors: "Edwards D"
+    year: 2003
+    venue: "Plant, Cell & Environment 26:57-72 (2003)"
+    doi: 10.1046/j.1365-3040.2003.00878.x
+  kenrick1997:
+    title: "The origin and early evolution of plants on land"
+    authors: "Kenrick P, Crane PR"
+    year: 1997
+    venue: "Nature 389:33-39 (1997)"
+    doi: 10.1038/37918
+
+simulations:
+  - id: delphi10000-cooksonia-pertoni-turing-wavelength-s0
+    name: "Cooksonia pertoni Turing wavelength at 1.3 µm (425 Ma)"
+    organism: "Cooksonia pertoni"
+    script: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py
+    output: docs/media/cooksonia_pertoni_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/cooksonia_pertoni_turing_wavelength_s0_growth.gif
+      - datasets/cooksonia_pertoni_turing_wavelength_s0/cooksonia_pertoni_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, edwards1992, edwards2003, kenrick1997]
+    summary: >-
+      Schnakenberg kinetics at a=0.12, b=0.84, D_v/D_u=10, just above the
+      Turing threshold. k_c=2.356, lambda_c=1.339 µm at 425 Ma. Equal diffusion
+      (predecessor) has sigma_max=-0.086. A longer diffusion length for Rhynia
+      gwynne-vaughanii at 407 Ma moves lambda_c to 1.695 µm. Dispersion
+      Pearson r against the discrete Laplacian is 1.000 on six real-eigenvalue
+      modes. The growth GIF is a Y-shaped axis on a matrix whose radial spectrum
+      matches the Amgueddfa Cymru compression (CV similarity 95.4). The 1.3 µm
+      field is the comparison-figure panel, not a feature resolved by the photograph.
+    claim_boundary:
+      reported_in_source:
+        - "Edwards, Davies & Axe 1992: C. pertoni has a vascular strand with annular to spiral tracheids."
+        - "Turing 1952 dispersion relation and Schnakenberg 1979 kinetics."
+        - "Edwards 2003: early tracheophyte walls are annular, spiral or scalariform-like."
+      reconstructed_in_script:
+        - "Parameters chosen so the fastest mode is 1.339 µm."
+        - "Successor D_u raised from 0.055 to 0.088 at fixed ratio."
+        - "Isotomous axis drawn on a spectrum-matched matrix."
+      transfer_boundary:
+        - "1.3 µm is the assigned detail scale, not an Edwards measurement."
+        - "The museum slab is a centimetre-scale compression."
+      does_not_claim:
+        - "That Cooksonia had animal-style ocelli."
+        - "That the photograph resolves 1.3 µm wall bands."
+        - "That the 73 µm sibling parameters apply at this scale."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The Jacobian at a=3/25, b=21/25 is the exact Schnakenberg linearisation
+          (trace -0.172, det 0.922). Dispersion uses J - k^2 D, and six
+          real-eigenvalue Fourier modes grown with the same 3-point Laplacian
+          match analytic sigma with Pearson r = 1.000 and RMSE 1.4e-4.
+          Equal diffusion is stable. Deducted because Edwards published no
+          reaction-diffusion system, and the 1.339 µm scale is imposed by the
+          length unit rather than measured on a tracheid.
+        evidence:
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [95, 144], note: "Jacobian, sigma_+(k), discrete Laplacian symbol", supports: true}
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [187, 239], note: "eigenvector-initialised finite-difference growth rates", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3153_cooksonia_pertoni_turing_wavelength_s0.lean, lines: [5, 33], note: "trace, determinant, ratio 10 above threshold, ratio 8 below", supports: true}
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [1, 55], note: "1.339 µm is an assigned scale, stated as such", supports: false}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The 12-frame 720x540 GIF ends as a dark isotomous axis on grain whose
+          computer-vision similarity to the Amgueddfa Cymru compression is 95.4
+          (orientation, radial FFT, coherency, occupancy). The comparison figure
+          places that photograph beside the tracheid-wall field. Deducted because
+          the matrix is spectrally matched rather than a registered overlay, the
+          rendered axis is smoother and greyer than the fossil, and the 1.3 µm
+          bands are not visible on the GIF (they are washed out by the shell-power
+          match). Template opening angle on the photo is 70 degrees; the drawn
+          axis is 64.4 degrees.
+        evidence:
+          - {file: docs/media/cooksonia_pertoni_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF, 720x540, last frame is the Y axis", supports: true}
+          - {file: docs/media/cooksonia_pertoni_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, activator field, dispersion, diffusion-ratio sweep", supports: true}
+          - {file: datasets/cooksonia_pertoni_turing_wavelength_s0/cooksonia_pertoni_amgueddfa_specimen.jpg, lines: [0, 0], note: "CC BY-SA Amgueddfa Cymru compression used as the fitness target", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          D_v/D_u swept through {8, 9, 10, 12, 16, 24}. sigma_max moves
+          -0.037, +0.006, +0.043, +0.102, +0.184, +0.282 and lambda_c moves
+          1.271, 1.307, 1.339, 1.396, 1.484, 1.617 µm, both monotonic, with
+          ratio 8 below threshold and ratio 10 the focal point. a and b are
+          not exposed as a CLI sweep.
+        evidence:
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [586, 598], note: "diffusion-ratio sweep and monotonic sigma_max / lambda", supports: true}
+          - {file: docs/media/cooksonia_pertoni_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "sweep panel", supports: true}
+      morphometric-validation:
+        value: 87
+        rationale: >-
+          Discrete-Laplacian dispersion Pearson r = 1.000 (RMSE 1.4e-4) on modes
+          3-8. Specimen radial-spectrum Pearson r = 0.9865, RMSE 0.205, gray KS
+          0.028 against the Amgueddfa photograph. Model branch angle 64.4 degrees
+          versus template 70.0 degrees on that photo and 67.5 degrees on the NMNH
+          slab (values differ from their references). Stripe spacing of the
+          saturated field is 1.339 µm. Successor wavelength 1.695 µm is longer
+          than the focal wavelength. Deducted because the branch angle is a
+          coarse template (2.5 degree steps), not a published morphometric, and
+          the spacing CV is exactly 0 on a pure mode.
+        evidence:
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [714, 844], note: "measure_morphoeval rows with references that are not copies of the values", supports: true}
+          - {file: datasets/cooksonia_pertoni_turing_wavelength_s0/cooksonia_pertoni_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "k_c, wavelengths, Pearson r, KS, angles", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Five DOIs in the bib, confirmed against OpenAlex or Crossref on
+          2026-10-27. The fitness image is the Amgueddfa Cymru file, CC BY-SA 4.0,
+          SHA-256 aa48bf1c9b50b41dc7f1ef6c6fc8b73b112b59e09f2a8d6ebb4d2aa8f97a0d57,
+          pinned in the reference JSON. Deducted because the Nature paper is not
+          open access, so tracheid diameters were not read off a figure.
+        evidence:
+          - {file: datasets/cooksonia_pertoni_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "Turing, Schnakenberg, Edwards 1992, Edwards 2003, Kenrick & Crane 1997", supports: true}
+          - {file: datasets/cooksonia_pertoni_turing_wavelength_s0/cooksonia_pertoni_turing_wavelength_s0_reference.json, lines: [1, 40], note: "1.3 µm and 425 Ma stated, specimen SHA-256 pinned", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module docstring states the PDE, the exact Jacobian, the predecessor
+          and successor, and the claim boundary. Lean theorems are the
+          cross-multiplied trace, determinant, and threshold inequalities, not
+          renamed arithmetic. Deducted because the shell-power match that builds
+          the GIF is a rendering calibration, not an equation in Turing 1952.
+        evidence:
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [1, 70], note: "docstring equations and claim boundary", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-cooksonia-pertoni-turing-wavelength-s0.yaml, lines: [1, 55], note: "three laws tied to Lean declarations", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          Seed 3153, explicit-Euler dt below the D_v stability bound, and
+          --self-test passes (k_c, 1.339 µm, predecessor sigma_max < 0, successor
+          wavelength longer, dispersion r > 0.98, amplitude ratio > 2, GIF
+          >= 10 frames and >= 480 px). Deducted because dependency pins live in
+          the repo requirements file rather than this script, and Lean was not
+          executed here (no lean binary).
+        evidence:
+          - {file: models/2026-delphi10000-cooksonia-pertoni-turing-wavelength-s0.py, lines: [846, 878], note: "self_test assertions", supports: true}
+          - {file: datasets/cooksonia_pertoni_turing_wavelength_s0/README.md, lines: [1, 40], note: "invocation and scale/age stated", supports: true}
+    remediation:
+      - id: R1
+        item: "The GIF axis does not show helical Turing bands; shell-power matching removes them. Restore a visible axial modulation and re-measure CV similarity."
+      - id: R2
+        item: "Branch-angle template uses 2.5 degree steps. Refine the sweep so the Amgueddfa and NMNH angles are not grid-snapped."
+      - id: R3
+        item: "No independent second assessor. This pass is builder-scored."
+      - id: R4
+        item: "No ~/.nanopub/profile.yml. Do not claim a signature."
