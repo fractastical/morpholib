@@ -1,0 +1,125 @@
+# MorphoEval audit — Baculites compressus Turing wavelength, 94 µm, Pass 2
+audit:
+  id: 2026-10-27-baculites-compressus-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-baculites-compressus-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8f0ebbb7583b60dab933158a86eda8e291baab3e
+    note: "Source commit for the script, specimen, and Lean module. Pass 2 tightens the integrator that this commit contains."
+references:
+  turing1952:
+    title: "Turing 1952, The chemical basis of morphogenesis"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Schnakenberg 1979, Simple chemical reaction systems with limit cycle behaviour"
+    doi: 10.1016/0022-5193(79)90042-0
+  gierer1972:
+    title: "Gierer and Meinhardt 1972, A theory of biological pattern formation"
+    doi: 10.1007/BF00289234
+  meinhardt1987:
+    title: "Meinhardt and Klingler 1987, A model for pattern formation on the shells of molluscs"
+    doi: 10.1016/S0022-5193(87)80101-7
+  coiled1892:
+    title: "G. C. C. 1892, The coiled stage of Baculites compressus"
+    doi: 10.1017/S0016756800146023
+  fatherree1998:
+    title: "Fatherree, Harries and Quinn 1998, Isotopic dissection of Baculites compressus from the Pierre Shale"
+    doi: 10.2307/3515325
+  kevmin_specimen:
+    title: "Kevmin, Baculites compressus polished section (Wikimedia Commons, CC BY-SA 3.0)"
+    url: https://commons.wikimedia.org/wiki/File:Baculites_compressus_01.jpg
+simulations:
+  - id: delphi10000-baculites-compressus-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength of Baculites compressus at 94.16 µm (Pass 2)"
+    organism: "Baculites compressus (Late Cretaceous orthoconic heteromorph)"
+    script: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py
+    output: docs/media/baculites_compressus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/baculites_compressus_turing_wavelength_s0_growth.gif
+      - datasets/baculites_compressus_turing_wavelength_s0/baculites_compressus_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-baculites-compressus-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, gierer1972, meinhardt1987, coiled1892, fatherree1998, kevmin_specimen]
+    summary: >-
+      Pass 2 closes the three Pass-1 remediation items. The eigenmode step is
+      0.06 of the diffusion bound instead of 0.12; dispersion Pearson r moves
+      from 0.99966 to 0.99994 and RMSE from 0.00884 to 0.00802 per τ. The
+      comparison-figure caption states that 94.16 µm is the chemical wavelength
+      at the 73.5 Ma Pierre Shale zone, not a caliper reading of the 2.7 cm
+      Bearpaw section. The diffusion sweep stays labeled as a local probe.
+      λ_c remains 94.16 µm, λ_max 96.54 µm, and equal diffusion still decays.
+      The flank GIF is unchanged in construction: 12 frames, 720×480.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) dispersion relation and the inhibitor-long-range instability."
+        - "Schnakenberg (1979) trimolecular steady state u0=a+b, v0=b/(a+b)^2."
+        - "Meinhardt & Klingler (1987): mollusc pigment records a mantle-edge reaction-diffusion system."
+        - "G. C. C. (1892): Baculites compressus has a coiled early stage before the orthoconic shaft."
+        - "Fatherree, Harries & Quinn (1998): B. compressus in the upper Campanian Pierre Shale of South Dakota."
+      reconstructed_in_script:
+        - "D_u solved so the k_c formula returns λ_c = 94.16 µm at r = 9.2 and χ = 1."
+        - "Numeric σ(k) at the tightened timestep, and the equal-diffusion ablation."
+        - "χ readout 3/2 and 6215/9416 for the predecessor and successor."
+        - "Flank mode packet, foreground segmentation, and the figure caption's formation transfer."
+      transfer_boundary:
+        - "The photograph is a Bearpaw Formation section; the age anchor 73.5 Ma is the Pierre Shale zone. The figure caption says so."
+        - "Shell-pigment RD is transferred from gastropod models to an ammonite mantle."
+      does_not_claim:
+        - "94.16 µm was not measured on the photograph."
+        - "χ for Placenticeras and Nipponites is not a fossil pigment measurement."
+        - "The Wikimedia caption age of 100 Ma is not used."
+        - "The flank GIF is not a 2D integration of the PDE on the shell mesh."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The same Schnakenberg Jacobian and k_c formula as Pass 1, now integrated at half the previous timestep fraction. Dispersion r = 0.99994. The flank image remains a seeded Fourier packet rather than the time-integrated 2D field, which is why this is not higher."
+        evidence:
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [121, 132], note: "Pass-2 timestep is 0.06 of the diffusion bound; Pass 1 was 0.12", supports: true}
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [99, 118], note: "k_c formula still returns 94.16 µm at χ = 1", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The GIF is the same capsule-and-labyrinth comparison as Pass 1. The new caption stops the figure from being read as a measured 94 µm caliper on the Bearpaw section. The outline is still a smooth oval against a broken shell, so the side-by-side score stays moderate."
+        evidence:
+          - {file: docs/media/baculites_compressus_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "caption states 94.16 µm versus the 2.7 cm Bearpaw section", supports: true}
+          - {file: docs/media/baculites_compressus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720×480 growth animation", supports: true}
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [501, 509], note: "suptitle carries the formation transfer and the KS line", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "λ_max still scales as √D across the 16-fold diffusion multipliers, and χ still orders Nipponites < Baculites < Placenticeras. The panel is explicitly a local probe. The independent wavenumber test is the dispersion curve, which survived the tighter step."
+        evidence:
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [205, 242], note: "diffusion-multiplier sweep", supports: true}
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [475, 478], note: "sweep title says local probe", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pass-2 dispersion r = 0.99994, RMSE = 0.00802 per τ, down from 0.00884. λ_max = 96.54 µm versus the 94.16 µm reference. Ablation σ stays negative. Segmented shell area, orientation KS, and radial-FFT r are unchanged and still not equal to their references."
+        evidence:
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [161, 189], note: "analytic versus numeric dispersion", supports: true}
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [373, 440], note: "specimen segmentation and KS / radial-FFT comparison", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Same DOI set and SHA-256-pinned CC BY-SA specimen as Pass 1. The figure caption now repeats the Bearpaw / Pierre Shale distinction that the reference JSON already stated."
+        evidence:
+          - {file: datasets/baculites_compressus_turing_wavelength_s0/paper_citations.bib, lines: [1, 70], note: "DOI-backed bibliography", supports: true}
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [501, 503], note: "figure caption names both formations", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "The timestep comment records the Pass-1 fraction and the Pass-2 fraction on the integrator itself. k_c, σ(k), the ablation, and χ remain named functions. The flank packet is still the photograph-scale projection, documented as such."
+        evidence:
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [128, 132], note: "Pass-1 versus Pass-2 timestep comment", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3131_baculites_compressus_turing_wavelength_s0.lean, lines: [34, 63], note: "series order and positive k_c product", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Same seed, hash gate, and --self-test. Re-running the script after the timestep change regenerated the PNG, the 12-frame 720×480 GIF, and the metrics JSON."
+        evidence:
+          - {file: models/2026-delphi10000-baculites-compressus-turing-wavelength-s0.py, lines: [647, 673], note: "self-test still requires dispersion r > 0.98", supports: true}
+          - {file: datasets/baculites_compressus_turing_wavelength_s0/README.md, lines: [26, 36], note: "invocation and output paths", supports: true}
+    remediation:
+      - id: R4
+        item: "One polished Bearpaw section stands in for a Pierre Shale population. χ for Placenticeras and Nipponites is still a geometric prediction, and the flank GIF is still not a 2D shell-mesh integration."
