@@ -1,0 +1,82 @@
+sim_id: delphi10000-drosophila-eugracilis-turing-wavelength-s0
+slot: 3184
+organism: Drosophila eugracilis
+phenomenon_size_m: 1.485e-06
+log10_size_m: -5.828
+size_human: "1.5 µm"
+scale_tier: 3_subcellular_um
+detail_variant: s0
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila eugracilis (1.5 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora melanogaster Subgroup Radiation (0–12 Ma)"
+chronoseries: "Drosophila 13/41"
+predecessor: Drosophila erecta
+successor: Drosophila ficusphila
+external_datasets:
+- name: FlyBase
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+math_family: Reaction-Diffusion and Turing dispersion (Schnakenberg activator-substrate)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  kinetics: Schnakenberg 1979
+  a: 0.04
+  b: 0.96
+  D_u: 0.05
+  D_v: 1.6
+  gamma_eugracilis: 1.0
+  gamma_erecta: 0.5
+  gamma_ficusphila: 1.5837582591209423
+  lambda_eugracilis_m: 1.485e-06
+  lambda_erecta_m: 2.1001071401240464e-06
+  lambda_ficusphila_m: 1.18e-06
+  grid_n: 128
+  seed: 3184
+  inputs:
+  - datasets/drosophila_eugracilis_turing_wavelength_s0/drosophila_eugracilis_turing_wavelength_s0_reference.json
+  - datasets/drosophila_eugracilis_turing_wavelength_s0/drosophila_eugracilis_turing_wavelength_s0_specimen.jpg
+  - datasets/drosophila_eugracilis_turing_wavelength_s0/paper_citations.bib
+equations:
+- law_name: Turing dispersion determinant
+  formula: "det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)"
+  lean_decl: MathOfBiology.Loop_3184.lamEugracilisNm
+  lean_theorem: MathOfBiology.Loop_3184.predecessor_wavelength_longer
+  lean_locus: morphoeval/lean/loops/Loop_3184_drosophila_eugracilis_turing_wavelength_s0.lean#L20-L21
+  variables: "f_u, f_v, g_u, g_v at the Schnakenberg steady state, scaled by Murray gamma"
+  role: "Focal 1.485 µm wavelength lies strictly below the erecta predecessor (2100 nm)"
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-drosophila-eugracilis-turing-wavelength-s0.py#L94-L111
+- law_name: Critical wavenumber
+  formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c"
+  lean_decl: MathOfBiology.Loop_3184.wavenumber_reverses_wavelength
+  lean_theorem: MathOfBiology.Loop_3184.wavenumber_reverses_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3184_drosophila_eugracilis_turing_wavelength_s0.lean#L27-L29
+  variables: "k increases as lambda falls from erecta 2100 nm through eugracilis 1485 nm to ficusphila 1180 nm"
+  role: "Poson law at the 1.5 µm detail scale"
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-eugracilis-turing-wavelength-s0.py#L94-L111
+- law_name: Murray gamma scaling
+  formula: "lambda_c(gamma) = lambda_c(1) / sqrt(gamma)"
+  lean_decl: MathOfBiology.Loop_3184.murray_gamma_orders_with_shorter_wavelength
+  lean_theorem: MathOfBiology.Loop_3184.murray_gamma_orders_with_shorter_wavelength
+  lean_locus: morphoeval/lean/loops/Loop_3184_drosophila_eugracilis_turing_wavelength_s0.lean#L41-L43
+  variables: "gamma_erecta=0.50, gamma_eugracilis=1, gamma_ficusphila=(1.485/1.180)^2"
+  role: "What changes at 0 Ma between chronospecies 13/41 and its neighbors is gamma, not geological age"
+  source_citation: "Murray 1981 DOI:10.1016/0022-5193(81)90334-9"
+  code_locus: models/2026-delphi10000-drosophila-eugracilis-turing-wavelength-s0.py#L127-L129
+- law_name: Detail-window mode count
+  formula: "N = 17820 nm / lambda_nm; N_eugracilis = 12"
+  lean_decl: MathOfBiology.Loop_3184.eugracilis_window_is_twelve_wavelengths
+  lean_theorem: MathOfBiology.Loop_3184.detail_window_mode_count
+  lean_locus: morphoeval/lean/loops/Loop_3184_drosophila_eugracilis_turing_wavelength_s0.lean#L32-L38
+  variables: "window 17.820 µm; N_ficusphila > 12 > N_erecta"
+  role: "Shorter successor wavelength packs more ocellar foci into the same detail window"
+  source_citation: "Tanaka, Barmina and Kopp 2009 DOI:10.1073/pnas.0807875106"
+  code_locus: models/2026-delphi10000-drosophila-eugracilis-turing-wavelength-s0.py#L372-L395
