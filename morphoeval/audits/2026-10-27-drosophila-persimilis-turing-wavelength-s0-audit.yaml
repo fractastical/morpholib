@@ -1,0 +1,127 @@
+# MorphoEval pass 1 — Drosophila persimilis, 2.1 µm Turing wavelength, slot 3198.
+# First reading of the Schnakenberg detail-tier model. Controls exist in the
+# script; this pass withholds full credit until they are re-checked in pass 2.
+audit:
+  id: 2026-10-27-drosophila-persimilis-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, first reading)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 6c49ecbdcc1e6d2fcf72d168ee46196263be7d3b
+    note: "Slot 3198 only. No existing tracked file on origin/main is modified."
+references:
+  noor2001:
+    title: "Chromosomal inversions and the reproductive isolation of species"
+    authors: "Noor, Grams, Bertucci & Reiland"
+    doi: 10.1073/pnas.221274498
+  dobzhansky1959:
+    title: "Drosophila paulistorum, a cluster of species in statu nascendi"
+    authors: "Dobzhansky & Spassky"
+    doi: 10.1073/pnas.45.3.419
+  kambysellis1995:
+    title: "Pattern of ecological shifts in the diversification of Hawaiian Drosophila inferred from a molecular phylogeny"
+    authors: "Kambysellis, Ho, Craddock, Piano, Parisi & Cohen"
+    doi: 10.1016/s0960-9822(95)00229-6
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg"
+    doi: 10.1016/0022-5193(79)90042-0
+  ready1976:
+    title: "Development of the Drosophila retina, a neurocrystalline lattice"
+    authors: "Ready, Hanson & Benzer"
+    doi: 10.1016/0012-1606(76)90225-6
+simulations:
+  - id: delphi10000-drosophila-persimilis-turing-wavelength-s0
+    name: "Schnakenberg critical wavelength for Drosophila persimilis at 2.1 µm"
+    organism: "Drosophila persimilis"
+    script: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py
+    output: docs/media/drosophila_persimilis_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_persimilis_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [noor2001, dobzhansky1959, kambysellis1995, turing1952, schnakenberg1979, ready1976]
+    summary: >-
+      Pass 1. Focal wavelength is the assigned 2.098 µm detail tier at 0 Ma.
+      Predecessor D. paulistorum and successor D. planitibia change only the
+      diffusion length, λ ∝ L^0.42. Self-test reports Pearson r = 0.9993 on the
+      Du sweep, ablation ratio 0.051, and stripe order paulistorum < persimilis
+      < planitibia. Full credit is withheld: the gallery plate is not an
+      electron micrograph, β is a transfer, and the critical mode is seeded.
+    claim_boundary:
+      reported_in_source:
+        - "Noor et al. 2001: chromosomal inversions contribute to reproductive isolation between D. pseudoobscura and D. persimilis."
+        - "Dobzhansky & Spassky 1959: D. paulistorum is a cluster of incipient species."
+        - "Kambysellis et al. 1995: Hawaiian Drosophila, including the picture-wing radiation that contains D. planitibia, diversified by ecological shifts."
+        - "Turing 1952 and Schnakenberg 1979: a diffusion-driven instability selects a finite critical wavenumber."
+        - "Ready, Hanson & Benzer 1976: the Drosophila retina is a neurocrystalline lattice, which is the motive for a roughly 2 µm period."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian, onset wavenumber k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), and λ = 2π/k_c tuned to 2.098 µm at diffusion ratio 20."
+        - "Allometric map λ = 2.098 µm * (L/2.82 mm)^0.42 using catalog body lengths 2.36, 2.82 and 5.30 mm."
+        - "Equal-diffusion ablation, five-point Du sweep, five-seed SD, N=64 vs N=96 convergence, and β-endpoint integrations."
+      transfer_boundary:
+        - "2.098 µm is the assigned tier-3 detail wavelength for this slot, not a measurement printed in Noor et al. 2001."
+        - "β = 0.42 is a scale-transfer exponent for subcellular diffusion length, not a regression on pigment periods of these three species."
+      does_not_claim:
+        - "Does not claim the species-gallery spiral is a micrograph of 2.1 µm pigment granules."
+        - "Does not claim broadband noise selects k_c inside 1200 steps."
+        - "Does not claim the 117 µm primordium slot (2891) parameters."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The integrator is Schnakenberg kinetics with the standard onset wavenumber, periodic boundaries, and an equal-diffusion control that drops the activator standard deviation by about twenty-fold. The critical cosine is seeded at the predicted wavelength, so the run shows that the mode persists, not that noise finds it."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [117, 130], note: "D_u solved from k_c at ratio 20", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [165, 208], note: "periodic Euler step and critical-mode seed", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [243, 259], note: "equal-diffusion ablation", supports: true}
+      specimen-match:
+        value: 68
+        rationale: "The comparison figure places the gallery plate beside three stripe fields whose spacing increases from paulistorum to planitibia. The plate is a golden-brown spiral, explicitly captioned as not an electron micrograph. The growth GIF's last frame is that plate, so a high computer-vision score against it is expected and is not ultrastructural agreement."
+        evidence:
+          - {file: docs/media/drosophila_persimilis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate plus three chronospecies fields", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [457, 474], note: "GIF terminal frame is the gallery plate", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: "The Du sweep is monotonic and the analytic β table keeps paulistorum shorter than planitibia from β=0.20 to 0.70. Endpoint diffusivities are integrated, but this first reading does not yet treat that grid as a full substitute for a measured wavelength series."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [210, 241], note: "five-point Du sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [261, 292], note: "analytic β order and integrated endpoints", supports: true}
+      morphometric-validation:
+        value: 70
+        rationale: "FFT centroids, Pearson r, RMSE, ablation ratio, seed SD, and grid convergence are computed. References are the assigned 2.098 µm tier and the allometric targets, not periods measured on these three species. The orientation KS against the gallery plate is large, which is the correct disagreement, and is not yet the basis of the score."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [144, 163], note: "spectral-centroid wavelength", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [531, 662], note: "measurement list with value != reference", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Primary DOIs were resolved on Crossref. The catalog DOI 10.1073/pnas.98.21.12084 does not resolve and was not used; Noor et al. 2001 is 10.1073/pnas.221274498. Dataset files are SHA-256 pinned."
+        evidence:
+          - {file: datasets/drosophila_persimilis_turing_wavelength_s0/paper_citations.bib, lines: [1, 20], note: "Noor 2001 and Dobzhansky 1959", supports: true}
+          - {file: datasets/drosophila_persimilis_turing_wavelength_s0/drosophila_persimilis_turing_wavelength_s0_reference.json, lines: [1, 20], note: "2.098e-06 m and age 0 Ma", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "Each numeric routine maps to one piece of the dispersion relation, the allometry, or the ablation. Lean states the integer order, the onset bound, and the k·λ pin. The docstring states which claims are transfers."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3198_drosophila_persimilis_turing_wavelength_s0.lean, lines: [14, 34], note: "onset, chronoseries order, Hawaiian step", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [1, 40], note: "scale, age, and equation statement", supports: true}
+      repro-package:
+        value: 84
+        rationale: "--self-test checks scale, age, order, Pearson r > 0.98, ablation, β order, seed SD, and grid convergence. Seeds and hashes are fixed. Pass 1 had not yet re-rendered after the endpoint integration was scored."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [82, 102], note: "SHA-256 pin and scale check", supports: true}
+          - {file: models/2026-delphi10000-drosophila-persimilis-turing-wavelength-s0.py, lines: [664, 696], note: "self-test assertions", supports: true}
+    remediation:
+      - id: R1
+        item: "The gallery plate is not a 2.1 µm micrograph. Keep the orientation KS between the plate and the activator field as a separate metric, and do not read the GIF terminal-frame similarity as ultrastructural agreement."
+      - id: R2
+        item: "β = 0.42 is a transfer. Credit the integrated β=0.20 and β=0.70 endpoints only after the self-test order check is re-run and the gap is reported against the analytic gap without copying it."
+      - id: R3
+        item: "The critical mode is seeded. The equal-diffusion ablation must stay in the scored measurement set so the stripe is not credited as an imposed drawing. A noise-selected transient is still not shown."
