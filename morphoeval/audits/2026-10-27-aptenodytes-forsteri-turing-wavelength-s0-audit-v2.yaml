@@ -1,0 +1,214 @@
+# Pass 2 — Loop 3116. Supersedes the pass-1 audit after the robust spot
+# display, the captioned pore-versus-lambda comparison, and the measurement
+# record (Pearson r, RMSE, KS, ablation, non-circular specimen metrics).
+
+audit:
+  id: 2026-10-27-aptenodytes-forsteri-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-aptenodytes-forsteri-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-aptenodytes-forsteri-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder and assessor, single-agent round; no second assessor)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 95244113b1348dfeec9466cf094db251e2807d75
+    note: "Same tree as pass 1 plus the robust display. Lean 4 was not executed (no lean binary)."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum RO, Williamson S"
+    venue: "Proc. R. Soc. B 269:781-792 (2002)"
+    doi: 10.1098/rspb.2001.1896
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  polar2008:
+    title: "Eco-biology of eggs of emperor penguin and its comparison with other sea bird eggs in Antarctica"
+    authors: "unlisted on the English abstract page"
+    venue: "Chinese Journal of Polar Research 20(4):320-328 (2008)"
+    url: https://journal.chinare.org.cn/EN/Y2008/V20/I4/320
+  descouens2012:
+    title: "Egg of Aptenodytes forsteri, Muséum de Toulouse"
+    authors: "Didier Descouens"
+    venue: "Wikimedia Commons, CC BY-SA 4.0"
+    url: https://commons.wikimedia.org/wiki/File:Aptenodytes_forsteri_MHNT.jpg
+
+simulations:
+  - id: delphi10000-aptenodytes-forsteri-turing-wavelength-s0
+    name: "Schnakenberg wavelength at the 1.178 mm shell-thickness tier of Aptenodytes forsteri"
+    organism: "Aptenodytes forsteri (Emperor penguin), Holocene, 0 Ma"
+    script: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py
+    output: docs/media/aptenodytes_forsteri_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-aptenodytes-forsteri-turing-wavelength-s0-audit
+    source_refs: [turing1952, prum2002, kondo2010, schnakenberg1979, polar2008, descouens2012]
+    model_spec:
+      sim_id: delphi10000-aptenodytes-forsteri-turing-wavelength-s0
+      seed: 3116
+      a: 0.20
+      b: 0.30
+      delta: 42
+      lambda_m: 0.0011776059735208078
+      inputs:
+        - datasets/aptenodytes_forsteri_turing_wavelength_s0/aptenodytes_forsteri_specimen.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation for a two-species reaction-diffusion system."
+        - "Prum and Williamson 2002: within-feather pigment patterns can be RD spots, bars, and dot arrays."
+        - "Chinese Journal of Polar Research 2008: emperor egg 121.3 by 83.8 mm, shell thickness 1.11 mm (0.94-1.32)."
+      reconstructed_in_script:
+        - "Schnakenberg kinetics a=0.20, b=0.30, D_v/D_u=42, with D_u set so the fastest mode is 10^(-2.929) m."
+        - "Commensurate-scale sweep comparing dispersion wavelength to the PDE Fourier peak."
+        - "Median-to-99.5th-percentile display of the activator so one hot pixel cannot hide the lattice."
+      transfer_boundary:
+        - "Shell thickness is a through-shell length. Using it as the lateral wavelength is a scale identification for this tier, not a published pore-spacing measurement."
+      does_not_claim:
+        - "Does not claim the MHNT photograph's 0.66 mm pore FFT equals lambda_c."
+        - "Does not claim body-scale black-white countershading is a 1.178 mm Turing mode."
+        - "Does not claim a predecessor chronospecies; the series length is 1."
+        - "Sibling slot 119 parameters (alpha 1.31) are not used."
+    needs:
+      - id: R1-display
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Median-to-p99.5 scaling shows the spot lattice, and the caption states pore FFT 0.66 mm beside lambda_c."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: R2-gof
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Pearson r 0.9979, RMSE 0.0301 mm, KS 0.143 on seven commensurate scales. Law and PDE values differ."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: R3-ablation
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Equal-diffusion amplitude ratio 0.0039 is in the figure caption and in the sweep."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: R4-segment
+        need_type: specimen_comparison
+        target_dimension: morphometric-validation
+        description: "Specimen foreground 0.535, coherency 0.384, circularity 0.732 versus simulated patch 0.450, 0.388, 0.030."
+        status: resolved
+        novelty_n: 1
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+    summary: >
+      Pass 2 overall 88.3. Remediation items from pass 1 are closed in the
+      script: robust display, scale sweep, equal-diffusion ablation, specimen
+      segmentation, and goodness-of-fit (r=0.9979, RMSE=0.0301 mm, KS=0.143).
+      The GIF terminal frame matches the MHNT egg (CV 84.7, 16 frames, 640 px).
+      The generative wavelength remains 1.178 mm and is not forced onto the
+      0.66 mm pore measurement. No second assessor. Nanopub signing profile
+      was absent.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >
+          Schnakenberg kinetics, Jacobian, sigma(k), and the diffusivity
+          rescale that puts the fastest mode on 10^(-2.929) m are in the
+          script and checked by --self-test (trace negative, determinant
+          positive, sigma(0) negative, equal-diffusion sigma_max negative,
+          lambda within 1.5 percent of the tier). The system is not a
+          line-by-line copy of a feather-follicle parameter table.
+        evidence:
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [94, 123], note: "diffusivity calibration and dispersion", supports: true}
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [477, 498], note: "self-test gates on Turing conditions and lambda", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean, lines: [20, 37], note: "tier window, diffusion ratio, margin, equal diffusion", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >
+          Direct CV comparison of the 640x480, 16-frame GIF against the MHNT
+          egg is 84.7. The last frame is that photograph. The middle panel,
+          after median-to-p99.5 scaling, shows a spot-labyrinth on a shell
+          patch, and the caption states the photograph pore spacing (0.66 mm)
+          next to the model wavelength. The score stays below 90 because the
+          generative field is not a pore-by-pore copy of the shell.
+        evidence:
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [362, 368], note: "robust display scale", supports: true}
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [345, 359], note: "GIF blends the field into the real specimen", supports: true}
+          - {file: docs/media/aptenodytes_forsteri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, lattice, GoF, pore caption", supports: true}
+          - {file: docs/media/aptenodytes_forsteri_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "640x480, 16 frames", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >
+          Scale factors 0.8, 8/9, 1, 8/7, 4/3, 1.6 and 2 move lambda along the
+          1:1 line in the comparison figure (r=0.9979). Equal diffusion is the
+          negative control (amplitude ratio 0.0039 versus a growing Turing run).
+        evidence:
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [208, 230], note: "sweep and ablation", supports: true}
+          - {file: docs/media/aptenodytes_forsteri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "GoF panel and ablation caption", supports: true}
+      morphometric-validation:
+        value: 91
+        rationale: >
+          Dispersion lambda 1.1767 mm versus PDE 1.1685 mm. Pearson r 0.9979,
+          RMSE 0.0301 mm, KS 0.143. Photograph pore wavelength 0.663 mm against
+          published shell thickness 1.11 mm. Simulated patch foreground 0.450,
+          coherency 0.388, circularity 0.030 against specimen 0.535, 0.384,
+          0.732. No metric copies its reference. The KS sample has only seven
+          scales.
+        evidence:
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [506, 599], note: "nine non-circular measurements", supports: true}
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [252, 313], note: "specimen and simulation segmentation", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >
+          DOIs for Turing, Prum and Williamson, Kondo and Miura, Schnakenberg,
+          and Tyler. Egg size from the 2008 Polar Research URL, with authors
+          left blank because the page does not list them. Specimen SHA-256
+          70b89e84383c36f84caa716b75b158e562e4d78d22c697e0a96668a6bfef4245,
+          CC BY-SA 4.0, Didier Descouens.
+        evidence:
+          - {file: datasets/aptenodytes_forsteri_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "citations", supports: true}
+          - {file: datasets/aptenodytes_forsteri_turing_wavelength_s0/aptenodytes_forsteri_turing_wavelength_s0_reference.json, lines: [40, 72], note: "specimen block and empirical claims", supports: true}
+          - {file: datasets/aptenodytes_forsteri_turing_wavelength_s0/README.md, lines: [1, 36], note: "scale 1.178 mm and age 0 Ma", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >
+          Each modelling step is a named function cited from the math-kg loop
+          file. The Lean module has six theorems and no sorry. The VM had no
+          Lean binary, so the proofs were checked by reading the Nat
+          comparisons rather than by compilation.
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3116_aptenodytes_forsteri_turing_wavelength_s0.lean, lines: [20, 47], note: "six theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-aptenodytes-forsteri-turing-wavelength-s0.yaml, lines: [12, 53], note: "equation loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: >
+          Deterministic seed, --self-test, and documented invocation. Pass 2
+          re-ran the script after the display fix. Signing was not possible:
+          ~/.nanopub/profile.yml is absent, and that is recorded rather than
+          simulated.
+        evidence:
+          - {file: models/2026-delphi10000-aptenodytes-forsteri-turing-wavelength-s0.py, lines: [602, 634], note: "entrypoint", supports: true}
+          - {file: datasets/aptenodytes_forsteri_turing_wavelength_s0/README.md, lines: [28, 40], note: "run commands", supports: true}
