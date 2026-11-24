@@ -1,0 +1,151 @@
+# MorphoEval audit v2 — Dugesia japonica Turing wavelength 6.912 µm
+# Closes Pass 1 items R1–R4. Supersedes the Pass 1 audit.
+audit:
+  id: 2026-10-27-dugesia-japonica-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes_audit_id: 2026-10-27-dugesia-japonica-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; Pass 2)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 80fe3e3968850cd5826acf65ba6a24cab2e95424
+    note: "Pass 2. Sweep and ablation are on the figure. Nonlinear peak is 8.064 µm (mode 6) against linear λ_c = 6.912 µm. KS D = 0.434. iNaturalist mean body circularity = 0.307."
+    environment:
+      python: "3.12"
+      lean: "not installed in this VM; theorems are Lean 4 prelude, unchecked here"
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B (1952)"
+    doi: 10.1098/rstb.1952.0012
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik (1972)"
+    doi: 10.1007/BF00289234
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  kondo2009:
+    title: "How animals get their skin patterns: fish pigment pattern as a live Turing wave"
+    authors: "Kondo S, Iwashita M, Yamaguchi M"
+    venue: "International Journal of Developmental Biology (2009)"
+    doi: 10.1387/ijdb.072502sk
+  nogi2009:
+    title: "A novel biological activity of praziquantel requiring voltage-operated Ca2+ channel beta subunits"
+    authors: "Nogi T, Zhang D, Chan JD, Marchant JS"
+    venue: "PLoS Neglected Tropical Diseases (2009)"
+    doi: 10.1371/journal.pntd.0000464
+  orii2002:
+    title: "Anatomy of the planarian Dugesia japonica I. The muscular system"
+    authors: "Orii H, Ito H, Watanabe K"
+    venue: "Zoological Science (2002)"
+    doi: 10.2108/zsj.19.1123
+  lapan2012:
+    title: "Transcriptome analysis of the planarian eye identifies ovo as a specific regulator of eye regeneration"
+    authors: "Lapan SW, Reddien PW"
+    venue: "Cell Reports (2012)"
+    doi: 10.1016/j.celrep.2012.06.018
+  herath2020:
+    title: "Cross-inhibition of Turing patterns explains the self-organized regulatory mechanism of planarian fission"
+    authors: "Herath S, Lobo D"
+    venue: "Journal of Theoretical Biology (2020)"
+    doi: 10.1016/j.jtbi.2019.110042
+simulations:
+  - id: delphi10000-dugesia-japonica-turing-wavelength-s0
+    name: "Saturated Schnakenberg Turing wavelength for Dugesia japonica dorsal pigment at 6.912 µm (Holocene, Pass 2)"
+    organism: "Dugesia japonica (freshwater planarian)"
+    script: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py
+    output: docs/media/dugesia_japonica_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/dugesia_japonica_turing_wavelength_s0_growth.gif
+      - datasets/dugesia_japonica_turing_wavelength_s0/dugesia_japonica_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-dugesia-japonica-turing-wavelength-s0-audit
+    source_refs: [turing1952, gierer1972, schnakenberg1979, murray1981, kondo2009, nogi2009, orii2002, lapan2012, herath2020]
+    summary: >-
+      Pass 2 keeps the same kinetics and the same 6.912 µm linear wavelength.
+      The saturated steady field peaks at Fourier mode 6, λ = 8.064 µm, which is
+      reported beside λ_c rather than tuned away. Diffusion ratio R from 36 to 120
+      shortens λ monotonically, and equal diffusion (R = 1) has max σ = -0.565.
+      Interior gray KS distance against the Nogi plate is D = 0.434 (reference
+      null 0.5). The Kalininsky wild-type voucher yields two bodies with mean
+      circularity 0.307. Linear dispersion Pearson r remains 0.99998.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) gives the diffusion-driven instability and the critical wavenumber."
+        - "Schnakenberg (1979), Gierer & Meinhardt (1972), and Murray (1981) supply the kinetics and the pigment-prepattern reading."
+        - "Nogi et al. (2009) published the CC BY 2.5 regenerated Dugesia japonica plate. Kalininsky's iNaturalist photo 226612281 is CC BY 4.0."
+      reconstructed_in_script:
+        - "κ = 0.15, R = 48, D_u solved for λ_c = 6.912 µm, spectral integrator, seed 3213."
+        - "Nonlinear radial-FFT wavelength, KS interior comparison, diffusion-ratio sweep, and equal-diffusion ablation."
+        - "Pale-body segmentation of the wild-type voucher."
+      transfer_boundary:
+        - "Kondo (2009) is a fish pigment wave. Lapan & Reddien (2012) is Schmidtea eye regeneration. Herath & Lobo (2020) is planarian fission, not this wavelength."
+        - "Neither specimen plate is a calibrated 6.912 µm micrograph."
+      does_not_claim:
+        - "Does not claim 6.912 µm was measured on this species. It is the slot's detail-scale operating point (6.912e-6 m, log10 = -5.160), age 0 Ma."
+        - "Does not claim a fossil predecessor. Chronoseries 1/1."
+        - "Does not claim the brightness mask separates every worm on the Nogi plate."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "Same saturated Schnakenberg system and wavenumber formula as Pass 1. Pass 2 states the nonlinear shift (8.064 µm versus 6.912 µm) instead of treating the linear wavelength as the steady-state peak. κ and R are still chosen for this slot, not taken from a Dugesia pigment paper."
+        evidence:
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [122, 156], note: "Saturated Jacobian and D_u solved from k_c", supports: true}
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [458, 470], note: "dominant_wavelength_um on the steady activator", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "The 640 px, 16-frame GIF still paints the field through the Nogi body mask (CV similarity 94.7). Pass 2 does not pretend the wild-type rocks-and-worms photo is the same object; it measures that voucher separately. Merged outlines on the regeneration plate remain visible."
+        evidence:
+          - {file: docs/media/dugesia_japonica_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "16 frames, 640 px, CV 94.7 against the Nogi plate", supports: true}
+          - {file: docs/media/dugesia_japonica_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Plate, render, field, dispersion, sweep, ablation", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: "The figure plots λ(R) from 36 to 120, falling from 7.002 µm to 6.758 µm, and the equal-diffusion bar is negative while σ(k_c) at R = 48 is positive. Self-test asserts the monotonicity."
+        evidence:
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [582, 602], note: "Sweep curve and ablation bars on the comparison figure", supports: true}
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [344, 360], note: "diffusion_ratio_sweep at fixed operating-point D_u", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: "Pearson r = 0.99998 on the linear modes. Nonlinear peak 8.064 µm versus reference 6.912 µm. KS D = 0.434 versus reference 0.5. Nogi circularity 0.261 versus 0.55. Ocelli 7 versus 2. Wild-type circularity 0.307 versus 0.55. None of these values is copied onto its reference."
+        evidence:
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [494, 508], note: "ks_specimen_vs_render", supports: true}
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [729, 756], note: "nonlinear wavelength, KS, and iNat circularity in measure_morphoeval", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Pass 1 provenance stands. The wild-type voucher is now actually measured, and both SHA-256 digests remain in the reference JSON."
+        evidence:
+          - {file: datasets/dugesia_japonica_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Crossref-checked DOIs including Nogi 2009 and the iNaturalist credit", supports: true}
+          - {file: datasets/dugesia_japonica_turing_wavelength_s0/README.md, lines: [1, 28], note: "6.912 µm, 0 Ma, both licences", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Docstring, Lean integer shadow, and the new measurement functions each point at the formula they implement. Lean was not executed in this VM."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3213_dugesia_japonica_turing_wavelength_s0.lean, lines: [14, 39], note: "Six theorems, 0 sorry", supports: true}
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [139, 171], note: "k_c formula and dispersion σ(k)", supports: true}
+      repro-package:
+        value: 90
+        rationale: "--self-test now also checks a non-flat patch, a nonlinear wavelength off 6.912 µm, and at least one wild-type body. Seed, grid, and commands are unchanged. Still one assessor, and no nanopub signature because this VM has no ~/.nanopub/profile.yml."
+        evidence:
+          - {file: models/2026-delphi10000-dugesia-japonica-turing-wavelength-s0.py, lines: [759, 808], note: "self_test including nonlinear wavelength and iNat mask", supports: true}
+          - {file: datasets/dugesia_japonica_turing_wavelength_s0/dugesia_japonica_turing_wavelength_s0_metrics.json, lines: [1, 20], note: "Pass 2 metrics JSON written by the script", supports: true}
+    remediation:
+      - id: R5
+        item: "Still one assessor. A second model has not scored this audit."
+      - id: R6
+        item: "The Nogi brightness mask still merges some adjacent animals. A watershed split was not required for the image-fitness gate and was not added."
