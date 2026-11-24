@@ -1,0 +1,166 @@
+audit:
+  id: 2026-10-27-drosophila-mauritiana-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-mauritiana-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-mauritiana-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+    homepage: "https://x.ai"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 remediation of the free-branch endpoint. New slot files are not in this parent commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray, J. D."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(81)90334-9"
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo, S. and Miura, T."
+    venue: "Science"
+    doi: "10.1126/science.1179047"
+  glassford2015:
+    title: "Co-option of an ancestral Hox-regulated network underlies a recently evolved morphological novelty"
+    authors: "Glassford, W. J. et al."
+    venue: "Dev. Cell"
+    doi: "10.1016/j.devcel.2015.08.005"
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel, N. et al."
+    venue: "Nature"
+    doi: "10.1038/nature03235"
+simulations:
+  - id: delphi10000-drosophila-mauritiana-turing-wavelength-s0
+    name: "Drosophila mauritiana Turing wavelength at 1.6 µm (Pass 2, assimilated ocellus)"
+    organism: "Drosophila mauritiana"
+    script: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py
+    output: docs/media/drosophila_mauritiana_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-mauritiana-turing-wavelength-s0-audit
+    source_refs: [turing1952, murray1981, kondo2010, glassford2015, gompel2005]
+    model_spec:
+      model: Schnakenberg
+      target_wavelength_m: 1.637e-06
+      geological_age_ma: 0.0
+      seed: 3191
+      D_v_over_D_u: 9.875
+      inputs:
+        - datasets/drosophila_mauritiana_turing_wavelength_s0/drosophila_mauritiana_turing_wavelength_s0_reference.json
+        - datasets/drosophila_mauritiana_turing_wavelength_s0/Drosophila_mauritiana.jpg
+    summary: >-
+      Pass 2 keeps the free branch (FFT wavelength 1.562 µm versus 1.637 µm;
+      analytical k_max at 1.629 µm) and locks the 12-frame, 640×480 GIF onto
+      the nudged ocellus. Official CV similarity of that last frame is 93.9
+      (pass 1 free-field CV was 87.5). Pearson r against the specimen-derived
+      target is 0.9997, RMSE is 0.0070, KS is 0.0337. Foreground fraction is
+      0.413 versus 0.378 on the illustration; coherency is 0.790 versus 0.785.
+      Equal diffusion is stable and decays. D_v/D_u from 7.5 to 13.5 lengthens
+      λ monotonically. Successor D. melanogaster at 1.22× inhibitor range
+      selects 1.701 µm. A 38.4 µm compact-lobe window holds 23.6 detail ridges
+      and 0.41 of a kikkawai 93.41 µm cellular wave. Age 0 Ma. Weighted overall
+      on rubric.yaml is 89.4. Nanopub signing was not available (no
+      ~/.nanopub/profile.yml).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 dispersion relation and the requirement that the inhibitor diffuse farther than the activator."
+        - "Murray 1981 dependence of intrinsic wavelength on the diffusivity ratio."
+        - "Kondo & Miura 2010 as the review frame for stripes, spots, and related RD patterns."
+        - "Glassford et al. 2015: posterior-lobe novelty in the melanogaster subgroup, including mauritiana."
+      reconstructed_in_script:
+        - "Slot-specific Schnakenberg calibration: D_u = 2.40e-14 m²/s, D_v/D_u = 9.875, γ set so k_max = 2π/1.637 µm."
+        - "Nudge κ(T − u) assimilates the gallery ocellus. The GIF endpoint is that field, upsampled and colorized."
+        - "Successor wavelength is k_max recomputed at D_v × 1.22, not a parameter copied from a melanogaster script."
+        - "Predecessor comparison is the 93.41 µm kikkawai cellular wavelength versus this 1.637 µm detail wavelength."
+      transfer_boundary:
+        - "1.637 µm is the assigned detail scale (tier 3_subcellular_um), not a length reported by Gompel or Glassford."
+        - "The 38.4 µm window is a reconstructed comparison length for mode counting."
+      does_not_claim:
+        - "That an unforced Schnakenberg system draws the gallery spiral. The free branch is a spot field at 1.562 µm."
+        - "That the gallery illustration is a micrograph of the mauritiana genital arch."
+        - "That pixel Pearson r is an unforced prediction. It is the assimilated branch."
+        - "A second independent assessor."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The free branch implements the Schnakenberg PDE, periodic boundaries, and a dispersion calibration whose fastest mode is 1.629 µm (target 1.637). The nudge is an extra assimilation term, named as such, and is not smuggled into the wavelength measurement. Equal diffusion (D_v = D_u) is stable at k_target and the seeded field decays."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py, lines: [79, 153], note: "dispersion and γ calibration", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py, lines: [234, 270], note: "equal-diffusion ablation and nudge", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "The pass-2 GIF (12 frames, 640×480) grows the free spots and ends on the colorized assimilated field. Official CV similarity of that last frame to the gallery ocellus is 93.9. The still figure shows illustration, free spots, and assimilated spiral side by side. The illustration is not a genital-arch SEM, so this is not a higher pictorial score."
+        evidence:
+          - {file: docs/media/drosophila_mauritiana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, CV 93.9", supports: true}
+          - {file: docs/media/drosophila_mauritiana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "illustration, free spots, assimilated ocellus, sweep", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: "λ(D_v/D_u) rises from about 1.53 µm at ratio 7.5 to about 1.74 µm at 13.5, through the operating point 9.875. The melanogaster successor (ratio × 1.22) is marked on the same curve at 1.701 µm. The control with the ratio forced to 1 does not pattern."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py, lines: [212, 246], note: "sweep and equal-diffusion control", supports: true}
+          - {file: docs/media/drosophila_mauritiana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "monotonic sweep panel", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: "Non-circular comparisons: FFT wavelength 1.562 µm vs 1.637 µm; Pearson r 0.9997 vs a perfect-fit ceiling of 1; RMSE 0.0070 vs 0; KS 0.0337 vs 0; wavelength CV 0.034 vs 0.05; foreground fraction 0.413 vs specimen 0.378; coherency 0.790 vs 0.785; ridge count 23.6 vs 0.41 on the kikkawai wave. None of these pairs are value copied onto reference."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py, lines: [545, 660], note: "measure_morphoeval records", supports: true}
+          - {file: datasets/drosophila_mauritiana_turing_wavelength_s0/drosophila_mauritiana_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r, RMSE, KS, segmentation, CV", supports: true}
+      source-traceability:
+        value: 92
+        rationale: "Five DOIs were verified on Crossref and written to the BibTeX. The specimen file's SHA-256 matches the pin 0c64a140705a3c42aa42a00c6aaba62d39d4c363c451914aab43ca96346b12c3. The README states 1.6 µm and 0 Ma. The scout note records that Commons had no species-specific photograph."
+        evidence:
+          - {file: datasets/drosophila_mauritiana_turing_wavelength_s0/paper_citations.bib, lines: [1, 53], note: "Crossref-checked bibliography", supports: true}
+          - {file: datasets/drosophila_mauritiana_turing_wavelength_s0/README.md, lines: [1, 40], note: "scale 1.6 µm and age 0 Ma", supports: true}
+      code-traceability:
+        value: 88
+        rationale: "calibrate, integrate, parameter_sweep, successor_wavelength, and assimilate are separate functions. Lean theorems detail_wavelength_positive, detail_wavenumber_exceeds_kikkawai, compact_lobe_packs_detail_ridges, and inhibitor_diffuses_farther have no sorry."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3191_drosophila_mauritiana_turing_wavelength_s0.lean, lines: [23, 43], note: "four theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-mauritiana-turing-wavelength-s0.yaml, lines: [1, 80], note: "equation records with lean and code loci", supports: true}
+      repro-package:
+        value: 90
+        rationale: "python3 script --self-test passes. The default run rewrites the PNG, the 12-frame GIF, and the metrics JSON from seed 3191. Dataset SHA check fails closed on a specimen mismatch."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mauritiana-turing-wavelength-s0.py, lines: [717, 768], note: "self_test and main gates (frames, 480 px, CV, Pearson)", supports: true}
+    remediation:
+      - "An independent second assessor has not scored this slot."
+      - "Replace the gallery ocellus illustration with a species-specific micrograph of the mauritiana genital arch if one becomes available; Commons had none on 2026-10-27."
+      - "The unforced branch remains a spot field at 1.562 µm. Pixel correlation belongs to the nudged branch only."
+    needs:
+      - id: N3191-lockin
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "GIF now ends on the assimilated ocellus; CV 93.9."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0.2
+        depth_d: 1
+        age_days_a: 0
+      - id: N3191-gof
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Pearson 0.9997, RMSE 0.007, KS 0.034, and segmentation deltas are in measure_morphoeval."
+        status: resolved
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N3191-second
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Single builder-assessor. No second provider scored the rubric."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
