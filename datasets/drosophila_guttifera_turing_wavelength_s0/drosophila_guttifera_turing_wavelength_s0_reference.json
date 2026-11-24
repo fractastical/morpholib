@@ -1,0 +1,117 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3187,
+  "sim_id": "delphi10000-drosophila-guttifera-turing-wavelength-s0",
+  "organism": "Drosophila guttifera",
+  "common_name": "Polka-Dotted 16-Spot Wing Fly (Wingless Morphogen Induction of Yellow Melanin Spots)",
+  "aristotelian": {
+    "megiston_genos": "II. Anaima (Invertebrata)",
+    "subaltern_genos": "Entoma (Arthropoda)",
+    "genus": "Drosophila"
+  },
+  "scale_m": 2.12e-6,
+  "scale_um": 2.12,
+  "size_human": "2.12 µm",
+  "log10_size_m": -5.674,
+  "scale_tier": "3_subcellular_um",
+  "tier_index": "3/8",
+  "detail_variant": "s0",
+  "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Drosophila guttifera (2.1 µm, detail scale)",
+  "geological_age_ma": 0.0,
+  "geological_period": "Holocene (Extant)",
+  "chronoseries": "Drosophila chronoseries 16/41",
+  "fossil_lineage_group": "Subgenus Drosophila virilis–repleta–guttifera Radiation",
+  "predecessor": {
+    "organism": "Drosophila grimshawi",
+    "relation": "campaign chronospecies predecessor",
+    "geological_age_ma": 0.0,
+    "note": "Hawaiian picture-wing. At this 2.12 µm tier the melanin field is vein-locked lacework, represented by diffusion anisotropy 3.15, not by the 199 µm sibling-slot wavelength."
+  },
+  "successor": {
+    "organism": "Drosophila heteroneura",
+    "relation": "campaign chronospecies successor",
+    "geological_age_ma": 0.0,
+    "note": "Hawaiian picture-wing hammerhead. At this tier the model removes the campaniform Gaussian and raises basal activator production from 0.10 to 0.24. Spieth 1981 measures head shape, not this wavelength."
+  },
+  "cohort": "1. Chemical Turing / RD",
+  "poion_form": "Stripes, Spots & Ocelli",
+  "poson_law": "Turing Wavenumber k_c",
+  "state_variables": {
+    "u": "activator (yellow / melanin precursor density, dimensionless)",
+    "v": "inhibitor (long-range lateral inhibitor, dimensionless)"
+  },
+  "equations": {
+    "schnakenberg": "du/dt = Du * laplacian(u) + a - u + u^2 v; dv/dt = Dv * laplacian(v) + b - u^2 v",
+    "steady_state": "u* = a + b; v* = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u* v*; f_v = (u*)^2; g_u = -2 u* v*; g_v = -(u*)^2",
+    "marginal_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+    "growth_rate": "sigma(k) = 0.5 * (tau + sqrt(tau^2 - 4 Delta)); tau = f_u + g_v - k^2 (Du + Dv); Delta = det(J) - k^2 (Dv f_u + Du g_v) + k^4 Du Dv",
+    "selected_wavelength": "lambda = 2 pi / k_max, k_max = argmax sigma(k). Spatial unit is chosen so lambda(k_max) at the focal parameters equals 2.12e-6 m.",
+    "wingless_prepattern": "a(x) = a0 + a_w exp(-r^2 / (2 s^2)) at one campaniform sensillum (guttifera morphology run only)"
+  },
+  "boundary_conditions": {
+    "primary": "Periodic boundaries on the wavelength sweep and the morphology fields, integrated in Fourier space.",
+    "neumann_control": "Explicit reflecting (zero-flux) Laplacian on a 48 by 48 grid. Reported as a control wavelength, not substituted for the periodic sweep."
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "Du": 0.016,
+    "Dv": 1.25,
+    "aniso_grimshawi": 3.15,
+    "a_heteroneura": 0.24,
+    "a_w_sensillum": 0.12,
+    "sensillum_sigma_wavelengths": 0.35,
+    "patch_waves": 8,
+    "seed": 3187,
+    "dv_sweep_multipliers": [0.5, 0.7, 0.85, 1.0, 1.25, 1.55, 1.9, 2.3],
+    "ablation_Du": 0.4,
+    "ablation_Dv": 0.4,
+    "notes": "Dimensionless diffusivities. Physical length is fixed by requiring the focal linear wavelength 2 pi / k_max to equal 2.12 µm. These numbers are not copied from the 102 µm guttifera slot or the 199 µm grimshawi slot."
+  },
+  "empirical_claims": [
+    {
+      "id": "werner2010",
+      "claim": "Wingless protein at vein intersections and campaniform sensilla induces yellow melanin spots on the D. guttifera wing, via a derived cis-regulatory input.",
+      "doi": "10.1038/nature08896",
+      "used_as": "Prepattern geometry (punctate Wingless sources), not as a measured 2.12 µm wavelength."
+    },
+    {
+      "id": "koseki2021",
+      "claim": "wingless is expressed in specific cell types of campaniform sensilla on the pupal wing.",
+      "doi": "10.1007/s00427-021-00674-z",
+      "used_as": "Single-sensillum Gaussian nucleator inside the micro-patch."
+    },
+    {
+      "id": "fukutomi2017",
+      "claim": "Yellow wing spots of D. guttifera pigment during a defined pupal window.",
+      "doi": "10.1007/s00427-017-0578-3",
+      "used_as": "Developmental reading of the animation, not a clock parameter."
+    },
+    {
+      "id": "turing1952",
+      "claim": "A reaction-diffusion system selects a finite critical wavenumber k_c.",
+      "doi": "10.1098/rstb.1952.0012",
+      "used_as": "Dispersion relation implemented in the script and in Loop_3187."
+    }
+  ],
+  "does_not_claim": [
+    "Werner et al. 2010 did not publish this Schnakenberg system and did not measure a 2.12 µm pigment wavelength.",
+    "The 16 macroscopic wing spots live at a much larger scale (sibling slot 3011). This patch is the interior of one Wingless-induced spot.",
+    "D. grimshawi anisotropy 3.15 and D. heteroneura basal activator 0.24 are reconstructed contrasts between chronospecies, not laboratory diffusion coefficients.",
+    "Spieth 1981 is a head-shape and behavior paper. It is not a wing-wavelength measurement.",
+    "The terminal animation frame is the adult specimen photograph. The generative field is the preceding frames and the comparison figure. A 2.12 µm pattern is below the resolution of that photograph."
+  ],
+  "specimen": {
+    "file": "drosophila_guttifera_turing_wavelength_s0_specimen.jpg",
+    "sha256": "9f914458198807b0531991e3e1e74f22a9aecf3e99242b100d40a543f27ec9d8",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Dguttifera.tif",
+    "rendition": "960 px JPEG rendition of the Commons TIFF",
+    "creator": "MA Hanson",
+    "date": "2021-06-19",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "description": "Drosophila guttifera male, dorsal view, spotted wings"
+  },
+  "primary_doi": "10.1038/nature08896"
+}
