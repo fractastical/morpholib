@@ -1,0 +1,66 @@
+sim_id: delphi10000-cyanobacteria-mat-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+organism: Cyanobacteria mat
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+scale_m: 6.419e-05
+scale_tier: 4_cellular_10um
+model_spec:
+  model: Schnakenberg Turing wavelength for a Holocene cyanobacteria mat at 64.19 µm
+  parameters:
+    a: 0.11
+    b: 0.83
+    diffusion_ratio: 16
+    finite_amplitude_scale: 1.08
+    lambda_m: 6.419e-05
+    domain_wavelengths: 8
+    seed: 3158
+  inputs:
+    - datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_holocene_culture_plate.jpg
+    - datasets/cyanobacteria_mat_turing_wavelength_s0/cyanobacteria_mat_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Homogeneous Schnakenberg state is stable
+    formula: tr J = f_u + g_v < 0 at (u_s, v_s) = (a+b, b/(a+b)^2)
+    lean_decl: MathOfBiology.Loop_3158.law1_trace
+    lean_theorem: MathOfBiology.Loop_3158.law1_homogeneous_stable
+    lean_locus: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean#L15-L20
+    variables: f_u ≈ 0.7660, g_v ≈ -0.8836, scaled by 10^4 in the proof
+    role: Stable homogeneous state, required before diffusion can destabilise a band
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py#L122-L141
+  - law_name: Eight wavelengths tile the periodic domain
+    formula: L = 8 * lambda, lambda = 64.19 µm
+    lean_decl: MathOfBiology.Loop_3158.law2_domain
+    lean_theorem: MathOfBiology.Loop_3158.law2_eight_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean#L24-L29
+    variables: n_waves = 8, lambda stored as 6419 hundredths of a micrometre
+    role: Domain quantization for the selected pigment-ocellus mode
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py#L220-L236
+  - law_name: Inhibitor diffuses faster than the activator
+    formula: D_v / D_u = 16 > 1; equal diffusion is the ablation
+    lean_decl: MathOfBiology.Loop_3158.law3_ratio_gap
+    lean_theorem: MathOfBiology.Loop_3158.law3_inhibitor_faster
+    lean_locus: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean#L34-L39
+    variables: ratio 16, gap = ratio - 1
+    role: Diffusion-driven instability condition for this slot
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py#L164-L208
+  - law_name: Selected wavenumber maximises the dispersion
+    formula: sigma(k) = 1/2 (tr(k) + sqrt(tr(k)^2 - 4 det(k))); k_star = argmax sigma
+    lean_decl: MathOfBiology.Loop_3158.law5_determinant_positive
+    lean_theorem: MathOfBiology.Loop_3158.law5_determinant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean#L50-L52
+    variables: det J > 0 together with tr J < 0
+    role: The other half of the homogeneous-stability conditions
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py#L143-L155
+  - law_name: Holocene node is not the Dresser Formation
+    formula: age_Ma = 0 < 3480
+    lean_decl: MathOfBiology.Loop_3158.law4_holocene_not_paleoarchean
+    lean_theorem: MathOfBiology.Loop_3158.law4_holocene_not_paleoarchean
+    lean_locus: morphoeval/lean/loops/Loop_3158_cyanobacteria_mat_turing_wavelength_s0.lean#L43-L45
+    variables: this chronoseries has one node at 0 Ma
+    role: Rejects the Paleoarchean fossil photographs returned by the image scout
+    source_citation: Petroff et al. 2010 DOI:10.1073/pnas.1001973107
+    code_locus: models/2026-delphi10000-cyanobacteria-mat-turing-wavelength-s0.py#L30-L48
