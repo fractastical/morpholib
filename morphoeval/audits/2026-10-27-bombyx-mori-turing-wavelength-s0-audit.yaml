@@ -1,0 +1,124 @@
+# Pass 1 — Bombyx mori Turing wavelength, slot 3134, 41 µm, 0 Ma.
+# Overall weighted score is computed by the rubric (expected ~82.5).
+# The scale-bar helper returns micrometres per pixel while the fitter treats it
+# as pixels per micrometre, so the 41 µm carrier is misplaced and the reported
+# ring pitch is inflated. That is the main Pass-1 gap.
+audit:
+  id: 2026-10-27-bombyx-mori-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree. New slot-3134 files are not in this commit yet."
+references:
+  yamaguchi2013:
+    title: "Periodic Wnt1 expression in response to ecdysteroid generates twin-spot markings on caterpillars"
+    authors: "Yamaguchi, Banno, Mita, Yamamoto, Ando, Fujiwara"
+    venue: "Nature Communications"
+    doi: "10.1038/ncomms2778"
+  yoda2014:
+    title: "The transcription factor Apontic-like controls diverse colouration pattern in caterpillars"
+    authors: "Yoda, Yamaguchi, Mita, Yamamoto, Banno, Ando, Daimon, Fujiwara"
+    venue: "Nature Communications"
+    doi: "10.1038/ncomms5936"
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    venue: "Kybernetik"
+    doi: "10.1007/BF00289234"
+simulations:
+  - id: delphi10000-bombyx-mori-turing-wavelength-s0
+    name: "Bombyx mori Turing wavenumber selection at 41 µm (Holocene, 0 Ma)"
+    organism: "Bombyx mori"
+    domain: morphogenesis
+    script: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py
+    output: docs/media/bombyx_mori_turing_wavelength_s0_growth.gif
+    also:
+      - docs/media/bombyx_mori_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [yamaguchi2013, yoda2014, turing1952, gierer1972]
+    summary: >-
+      Pass 1. Schnakenberg linear dispersion is calibrated so argmax σ(k) = 41.016 µm
+      at age 0 Ma (Du = 10.659 µm², Dv = 191.861 µm², ratio 18). Analytic versus
+      numeric growth-rate Pearson r = 0.9923 (RMSE 0.051). The axisymmetric Galerkin
+      fit to the ocellus card has Pearson r = 0.9997. The scale helper returns
+      100/width (µm per px, 0.9009) but callers treat it as px per µm, so the 41 µm
+      carrier carries only 0.14% of the wave amplitude and the dark-ring pitch is
+      reported as 82.14 µm instead of about 67 µm. σ(96 µm) = -0.490 (mandarina
+      contrast damped) and the Du = Dv ablation growth rate is -1.315.
+    claim_boundary:
+      reported_in_source:
+        - "Yamaguchi et al. 2013: periodic Wnt1 expression generates Bombyx larval twin spots."
+        - "Turing 1952 and Gierer & Meinhardt 1972: a finite wavelength is selected when the inhibitor diffuses farther than the activator."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian with a = 0.058, b = 0.94, Dv/Du = 18, rescaled so λ_c = 41 µm."
+        - "Axisymmetric Galerkin sideband fitted to the canonical ocellus card."
+        - "Predecessor contrast σ(2π/96 µm) < 0 < σ(2π/41 µm) at 0 Ma. No successor chronospecies."
+      transfer_boundary:
+        - "Wnt1 twin spots in the source paper are segment-scale. The 41 µm figure is this slot's cellular detail scale, not a length Yamaguchi measured."
+      does_not_claim:
+        - "That 41 µm or 96 µm was measured on a fossil or on Bombyx mandarina."
+        - "That the Pass-1 ring pitch of 82.14 µm is the card's true pitch. The unit conversion is inverted."
+        - "A pixel-fitted nonlinear 2D spot field."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "Implements the Schnakenberg Jacobian, σ(k), and a calibration that puts the maximum-growth wavelength at 41.016 µm. The rendered carrier for that wavelength is then placed with an inverted scale factor, so the picture is not yet the 41 µm mode."
+        evidence:
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [74, 118], note: "kinetics, sigma_of_k, calibrate_diffusivities", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3134_bombyx_mori_turing_wavelength_s0.lean, lines: [21, 49], note: "four sorry-free theorems: 2π identity, 96−41=55, Dv/Du>1, sign of σ", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "The growth GIF is an axisymmetric rendering of the ocellus card with synthetic grain, 12 frames at 640×480. The side-by-side figure shows the card. The 41 µm ring is not yet on the card's pixel scale."
+        evidence:
+          - {file: docs/media/bombyx_mori_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth GIF", supports: true}
+          - {file: docs/media/bombyx_mori_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "card, render, flat ablation, profiles", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: "dispersion_sweep varies wavelength from 28 to 88 µm and Dv by factors 0.55 to 2.05. λ(Dv) is monotonic. The ablation is a growth-rate number plus a flat gray panel, not a field evolved at Du = Dv."
+        evidence:
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [147, 183], note: "dispersion_sweep, Dv sweep, Du=Dv ablation rate", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: "Dispersion Pearson r = 0.9923 and radial Pearson r = 0.9997, with RMSE 0.669 gray levels and KS D = 0.0265. The reported dark-ring pitch is 82.14 µm because measure_scale_bar returns µm/px (0.9009) and segment_card divides by it. The 41 µm mode power fraction is 0.0014. KS p-value is computed and dropped."
+        evidence:
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [191, 208], note: "scale bar returns 100/width", supports: false}
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [489, 574], note: "measure_morphoeval pitch and coherency", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Yamaguchi 2013, Yoda 2014, Turing 1952, and Gierer & Meinhardt 1972. Ocellus card SHA-256 2adf5122… and CC0 adult SHA-256 76144516…. Age 0 Ma and scale 41 µm are stated in the reference JSON."
+        evidence:
+          - {file: datasets/bombyx_mori_turing_wavelength_s0/paper_citations.bib, lines: [1, 39], note: "four DOIs", supports: true}
+          - {file: datasets/bombyx_mori_turing_wavelength_s0/bombyx_mori_turing_wavelength_s0_reference.json, lines: [1, 90], note: "scale, age, claim boundary, specimen digests", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Module docstring maps Schnakenberg, k_c, the 96 µm predecessor, and the Galerkin card fit to Turing, Gierer-Meinhardt, and Yamaguchi. Lean theorems are integer witnesses of the same identities, not a real-analysis formalization of σ(k)."
+        evidence:
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [1, 42], note: "equation docstring, 41 µm, 0 Ma", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3134, --self-test, pinned specimen digest, deterministic dispersion correlation. Passing the self-test does not catch the inverted scale factor."
+        evidence:
+          - {file: models/2026-delphi10000-bombyx-mori-turing-wavelength-s0.py, lines: [577, 614], note: "self_test gates on λ, both Pearson r values, ablation sign, GIF size", supports: true}
+    remediation:
+      - id: R1
+        item: "measure_scale_bar returns micrometres per pixel (100/width) while fit_galerkin and segment_card treat the value as pixels per micrometre. Return width/100, re-place the 41 µm carrier, and recompute the dark-ring pitch."
+      - id: R2
+        item: "Replace the constant-gray ablation panel with a field evolved at Du = Dv from the same seeded noise, and keep the numeric growth rate σ < 0."
+      - id: R3
+        item: "Emit the Kolmogorov-Smirnov p-value as its own measurement (value not equal to the reference) alongside D, Pearson r, and RMSE."
+      - id: R4
+        item: "Re-render the GIF after the scale correction and re-score computer-vision similarity against the ocellus card."
