@@ -1,0 +1,58 @@
+sim_id: delphi10000-asterias-rubens-turing-wavelength-s0
+organism: Asterias rubens
+age_ma: 0.0
+scale_m: 0.0001152
+scale_um: 115.2
+scale_tier: 5_primordium_100um
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) / Murray (1981) critical wavenumber
+  a: 0.072
+  b: 0.918
+  diff_ratio: 7.62
+  lambda_um: 115.2
+  domain_um: 576.0
+  n_waves: 5
+  grid_resolution: [96, 96]
+  seed: 3123
+  age_ma: 0.0
+  inputs:
+    - datasets/asterias_rubens_turing_wavelength_s0/asterias_rubens_turing_wavelength_s0_reference.json
+    - datasets/asterias_rubens_turing_wavelength_s0/asterias_rubens_specimen.jpg
+equations:
+  - law_name: Homogeneous Schnakenberg trace is negative
+    formula: f_u + g_v < 0 at (u*, v*) = (a+b, b/(a+b)^2)
+    lean_decl: MathOfBiology.Loop_3123.homogeneous_trace_negative
+    lean_theorem: MathOfBiology.Loop_3123.homogeneous_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3123_asterias_rubens_turing_wavelength_s0.lean#L24-L26
+    variables: f_u = 47/55, g_v = -9801/10000
+    role: Diffusion-free stability of the optic-pigment steady state
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0; Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py#L98-L145
+  - law_name: Turing wavenumber k_c
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c = 115.2 um
+    lean_decl: MathOfBiology.Loop_3123.diffusion_drive_positive
+    lean_theorem: MathOfBiology.Loop_3123.diffusion_drive_positive
+    lean_locus: morphoeval/lean/loops/Loop_3123_asterias_rubens_turing_wavelength_s0.lean#L30-L32
+    variables: D_v/D_u = 7.62, lambda = 115.2 um, domain = 576.0 um
+    role: Selects the pigment / ocellus wavelength on the 576 µm patch
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012; Murray (1981) DOI:10.1016/0022-5193(81)90334-9
+    code_locus: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py#L113-L145
+  - law_name: Five wavelengths per pentaradial patch
+    formula: L = 5 * lambda_c = 576.0 um
+    lean_decl: MathOfBiology.Loop_3123.five_wavelengths_fill_domain
+    lean_theorem: MathOfBiology.Loop_3123.five_wavelengths_fill_domain
+    lean_locus: morphoeval/lean/loops/Loop_3123_asterias_rubens_turing_wavelength_s0.lean#L18-L20
+    variables: n_waves = 5, lambda_tenths = 1152, domain_tenths = 5760
+    role: One critical wavelength per arm sector at this scale, unlike the 10 µm cell or the 1 mm optic cushion
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py#L70-L86
+  - law_name: Scale lies between cellular and organ tiers
+    formula: 10 um < 115.2 um < 1000 um
+    lean_decl: MathOfBiology.Loop_3123.scale_between_cellular_and_organ
+    lean_theorem: MathOfBiology.Loop_3123.scale_between_cellular_and_organ
+    lean_locus: morphoeval/lean/loops/Loop_3123_asterias_rubens_turing_wavelength_s0.lean#L36-L38
+    variables: cellular predecessor tier 10 um, organ successor tier 1000 um, age 0 Ma
+    role: What changes at this Holocene scale relative to the adjacent tiers. The chronoseries itself is a single extant point.
+    source_citation: Murray (1981) DOI:10.1016/0022-5193(81)90334-9
+    code_locus: models/2026-delphi10000-asterias-rubens-turing-wavelength-s0.py#L70-L74
