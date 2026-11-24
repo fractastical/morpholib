@@ -1,0 +1,97 @@
+sim_id: delphi10000-coturnix-japonica-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+organism: Coturnix japonica
+age_Ma: 0
+scale_m: 2.242e-5
+scale_label: 22 µm
+model_spec:
+  model: Schnakenberg (1979) activator-inhibitor RD at the Coturnix japonica 22.42 µm within-feather wavelength
+  lambda_m: 2.242e-5
+  log10_m: -4.649
+  age_Ma: 0
+  a: 0.07
+  b: 0.93
+  Du: 0.035
+  Dv: 1.85
+  anisotropy_display: 0.28
+  seed: 3157
+  grid_policy: "per-run ppw=14 across 6 by 4.5 critical wavelengths"
+  dt: 0.0011
+  t_end: 8.0
+  kinetics: "du/dt = a - u + u^2 v + div(Du grad u); dv/dt = b - u^2 v + Dv laplacian v"
+  kc2_identity: "3112/259"
+  boundary: periodic detail patch
+  inputs:
+    - datasets/coturnix_japonica_turing_wavelength_s0/coturnix_japonica_yehliu_taiwan.jpg
+    - datasets/coturnix_japonica_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Reaction-stable trace
+    formula: "tr J = f_u + g_v = -0.140 < 0"
+    lean_decl: MathOfBiology.Loop_3157.trace_scaled
+    lean_theorem: MathOfBiology.Loop_3157.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean#L15-L18
+    lean_code: |
+      def trace_scaled : Int := 860 + (-1000)
+      theorem trace_negative : trace_scaled < 0 := by
+        decide
+    variables: "f_u = 0.860, g_v = -1 at u0 = a + b = 1, v0 = 0.93"
+    role: Homogeneous steady state of the 22.42 µm quail pigment system is stable without diffusion
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py
+  - law_name: Positive Jacobian determinant
+    formula: "det J = f_u g_v - f_v g_u = 1 > 0"
+    lean_decl: MathOfBiology.Loop_3157.det_scaled
+    lean_theorem: MathOfBiology.Loop_3157.det_positive
+    lean_locus: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean#L22-L25
+    lean_code: |
+      def det_scaled : Int := 860 * (-1000) - 1000 * (-1860)
+      theorem det_positive : det_scaled > 0 := by
+        decide
+    variables: "f_v = (a+b)^2 = 1, g_u = -1.86"
+    role: Uniform perturbations decay; any instability must be wave-like
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py
+  - law_name: Critical wavenumber k_c
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v) = 3112/259"
+    lean_decl: MathOfBiology.Loop_3157.cross_scaled
+    lean_theorem: MathOfBiology.Loop_3157.kc_exact_ratio
+    lean_locus: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean#L30-L34
+    lean_code: |
+      def cross_scaled : Int := 1850 * 860 + 35 * (-1000)
+      def kc_den_scaled : Int := 2 * 35 * 1850
+      theorem kc_exact_ratio : cross_scaled * 259 = kc_den_scaled * 3112 := by
+        decide
+    variables: "D_u = 0.035, D_v = 1.85; length unit set so lambda_c = 2.242e-5 m"
+    role: Turing wavenumber selecting the 22.42 µm Coturnix pigment stripe / ocellus scale
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Prum & Williamson 2002 DOI:10.1098/rspb.2001.1896"
+    code_locus: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py
+  - law_name: Open Turing band
+    formula: "(D_v f_u + D_u g_v)^2 - 4 D_u D_v det J > 0"
+    lean_decl: MathOfBiology.Loop_3157.band_discriminant
+    lean_theorem: MathOfBiology.Loop_3157.turing_band_nonempty
+    lean_locus: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean#L40-L44
+    lean_code: |
+      def band_discriminant : Int :=
+        cross_scaled * cross_scaled - 4 * 35 * 1850 * det_scaled
+      theorem turing_band_nonempty : band_discriminant > 0 := by
+        decide
+    variables: "discriminant of h(k^2) = det J - cross k^2 + D_u D_v k^4"
+    role: A band of wavenumbers around the 22.42 µm mode is linearly unstable
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py
+  - law_name: Equal-diffusion predecessor and Holocene age gap
+    formula: "D_u = D_v implies cross < 0; Holocene age gap = 0 Ma"
+    lean_decl: MathOfBiology.Loop_3157.equal_diffusion_cross
+    lean_theorem: MathOfBiology.Loop_3157.equal_diffusion_quenches
+    lean_locus: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean#L49-L56
+    lean_code: |
+      def equal_diffusion_cross : Int := 35 * 860 + 35 * (-1000)
+      def holocene_age_gap_Ma : Int := 0
+      theorem equal_diffusion_quenches : equal_diffusion_cross < 0 := by
+        decide
+      theorem holocene_terminal_no_successor : holocene_age_gap_Ma = 0 := by
+        decide
+    variables: "chronoseries 1/1 at 0 Ma; predecessor is ontogenetic, not a fossil species"
+    role: The 22.42 µm mode is absent when activator and inhibitor diffuse equally, and there is no successor chronospecies
+    source_citation: "Haupaix et al. 2018 DOI:10.1126/science.aar4777"
+    code_locus: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py

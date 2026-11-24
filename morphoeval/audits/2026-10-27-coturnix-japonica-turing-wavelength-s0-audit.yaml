@@ -1,0 +1,204 @@
+# MorphoEval audit — Coturnix japonica 22.42 µm Turing wavelength, Pass 1.
+# Builder and assessor are the same agent (grok-4.7). No second assessor.
+
+audit:
+  id: 2026-10-27-coturnix-japonica-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single-agent round; second assessor not available)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Slot 3157 files are new in the working tree and are not in commit
+      0c76d15d. Locus verification against that commit is skipped at build
+      time with --no-verify-loci. The loop commit that adds these files is
+      the one that should be cited after it lands.
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum RO, Williamson S"
+    venue: "Proceedings of the Royal Society B 269:781-792 (2002)"
+    doi: 10.1098/rspb.2001.1896
+  harris2005:
+    title: "Molecular evidence for an activator-inhibitor mechanism in development of embryonic feather branching"
+    authors: "Harris MP, Williamson S, Fallon JF, Meinhardt H, Prum RO"
+    venue: "PNAS 102:11734-11739 (2005)"
+    doi: 10.1073/pnas.0500781102
+  haupaix2018:
+    title: "The periodic coloration in birds forms through a prepattern of somite origin"
+    authors: "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M"
+    venue: "Science 361:eaar4777 (2018)"
+    doi: 10.1126/science.aar4777
+  inaba2020:
+    title: "Avian pigment pattern formation: developmental control of macro- and micro-level pigment patterns"
+    authors: "Inaba M, Chuong CM"
+    venue: "Frontiers in Cell and Developmental Biology 8:620 (2020)"
+    doi: 10.3389/fcell.2020.00620
+
+simulations:
+  - id: delphi10000-coturnix-japonica-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength at 22.42 µm on Holocene Coturnix japonica plumage"
+    organism: "Coturnix japonica (Japanese quail), Holocene extant, 0 Ma"
+    domain: morphogenesis
+    script: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py
+    output: docs/media/coturnix_japonica_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/coturnix_japonica_turing_wavelength_s0_growth.gif
+      - datasets/coturnix_japonica_turing_wavelength_s0/coturnix_japonica_turing_wavelength_s0_metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, prum2002, harris2005, haupaix2018, inaba2020]
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg 1979: the kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Prum & Williamson 2002: within-feather bars, spots and ocelli as follicular reaction-diffusion."
+        - "Harris et al. 2005: Shh self-activates and induces Bmp2; Bmp2 represses Shh on the feather epithelium."
+        - "Haupaix et al. 2018 and Inaba & Chuong 2020: Japanese quail has a somite-scale macro pattern and a within-feather micro pattern."
+      reconstructed_in_script:
+        - "Slot parameters (a, b, Du, Dv) = (0.07, 0.93, 0.035, 1.85) with the length unit fixed so lambda_c = 2.242e-5 m."
+        - "A Du sweep of the linear-regime growth wavelength, an equal-diffusion ablation, and a mildly anisotropic display field."
+        - "Plumage-mask segmentation of the Yehliu photograph and a high-frequency composite of the micro-mode onto that Holocene envelope."
+      transfer_boundary:
+        - "The Yehliu portrait has no micron scale bar. Pixel wavelength in the GIF is a display convention. The 22.42 µm figure is the linear law, not a photogrammetric length."
+        - "Saturated spot spacing on the display grid is about 33.6 µm, longer than the linear 22.42 µm. Those are different measurements."
+      does_not_claim:
+        - "Does not claim Schnakenberg rates are fitted Shh/Bmp2 biochemical constants."
+        - "Does not claim a geological shift from a named fossil chronospecies. The series is one Holocene node at 0 Ma."
+        - "Does not claim the somite-stripe script (beta_A = 0.22, d = 20) was reused."
+    summary: >-
+      Pass 1. Schnakenberg reaction-diffusion on a periodic 22.42 µm detail
+      patch for Holocene Coturnix japonica. Linear k_c^2 = 3112/259, sigma_max
+      = 0.513 at the nominal point, equal-diffusion sigma_max = -0.070.
+      A five-point Du sweep of the early-time growth wavelength tracks the
+      linear law with Pearson r = 0.9997 and RMSE = 6.52 µm (the growth
+      moment sits long of k_c). The saturated display spacing is 33.6 µm.
+      The Yehliu CC BY-SA portrait is segmented and used as the envelope for
+      a 12-frame 960×540 growth GIF. Computer-vision similarity of the last
+      frame to the photograph is 96.0. Ablation activator std is 0.0003
+      against a patterned std of 1.04. Overall 86.2/100. The growth-moment
+      bias, the saturated-versus-linear gap, and the single plumage ROI are
+      the remediation targets.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          The script integrates Schnakenberg kinetics and the Turing
+          dispersion, including tr J = -0.140, det J = 1, k_c^2 = 3112/259,
+          and an open band. Five Lean theorems check those scaled integers
+          with no sorry. The length unit is fixed so the nominal linear
+          wavelength is 2.242e-5 m. Deduction: the rates are not Harris et
+          al. 2005 biochemical constants, and the saturated spacing is not
+          the linear wavelength.
+        evidence:
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [77, 118], note: "Jacobian, k_c^2, and sigma(k)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3157_coturnix_japonica_turing_wavelength_s0.lean, lines: [15, 56], note: "trace, det, k_c ratio, open band, equal-diffusion quench, Holocene age gap 0", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [16, 22], note: "docstring states the kinetics are phenomenological, not fitted Shh/Bmp2 rates", supports: false}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The comparison figure places the Yehliu quail, its plumage crop,
+          the simulated activator, the dispersion curve, the Du sweep, and
+          the equal-diffusion control on one page. The growth GIF is 12
+          frames at 960×540. Last-frame CV similarity to the photograph is
+          96.0 because the concrete and straw stay put and only plumage
+          high frequencies are replaced. Deduction: the portrait is not a
+          follicle micrograph and has no scale bar, so the resemblance is
+          texture-class plus silhouette, not a micron overlay.
+        evidence:
+          - {file: docs/media/coturnix_japonica_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, plumage crop, display field, dispersion, sweep, ablation", supports: true}
+          - {file: docs/media/coturnix_japonica_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 960x540 plumage growth animation", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [8, 14], note: "portrait has no micron scale bar; it is an envelope, not a measured 22.42 µm field", supports: false}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          In this inhibitor-dominated regime k_c^2 ≈ f_u/(2 D_u), so D_v
+          barely moves the wavelength. The script sweeps D_u over
+          (0.020, 0.028, 0.035, 0.048, 0.062). Analytical lambda increases
+          monotonically, and the linear-regime growth wavelength tracks it
+          at r = 0.9997. Equal diffusion quenches the mode. Deduction: the
+          display anisotropy (0.28) is a single setting, not a sweep, and
+          the growth moment is offset from the identity line (RMSE 6.52 µm).
+        evidence:
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [59, 66], note: "nominal parameters and the Du sweep, distinct from the somite-script pair", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [296, 339], note: "growth wavelength and the Du sweep Pearson/RMSE", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [64, 64], note: "anisotropy is one display constant, not a swept axis", supports: false}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Reported measurements, each with a reference that is not a copy
+          of the value: simulated stripe wavelength 33.65 µm vs linear
+          22.42 µm; plumage melanin fraction 0.340 vs activator-midpoint
+          fraction; plumage coherency vs field coherency; Pearson r =
+          0.99966 vs 1; RMSE 6.52 µm vs 0; KS D = 0.098 vs 0; ablation std
+          0.0003 vs patterned std 1.04. Deduction: one photograph, and the
+          growth-moment RMSE is still several micrometres.
+        evidence:
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [352, 417], note: "plumage mask, Otsu melanin fraction, structure-tensor coherency", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [557, 636], note: "measurement dicts with value != reference", supports: true}
+          - {file: datasets/coturnix_japonica_turing_wavelength_s0/coturnix_japonica_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "r = 0.99966, RMSE = 6.52 µm, KS = 0.098, CV similarity = 96", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Six DOIs were confirmed on Crossref or OpenAlex on 2026-10-27 and
+          written to paper_citations.bib. The specimen is Wikimedia Commons
+          File:Coturnix japonica, Yehliu, Taiwan 1.jpg by 孫鋒 林, CC BY-SA 2.0,
+          SHA-256 e3ba62e08042fc743e031332b767f23fb3e7ce7ccb743d517952af59cc3769fc,
+          checked at self-test time. Deduction: the gallery downscale is
+          recorded but was not the file used, and no PMID is attached.
+        evidence:
+          - {file: datasets/coturnix_japonica_turing_wavelength_s0/paper_citations.bib, lines: [1, 86], note: "Turing, Schnakenberg, Prum & Williamson, Harris, Haupaix, Inaba & Chuong", supports: true}
+          - {file: datasets/coturnix_japonica_turing_wavelength_s0/coturnix_japonica_turing_wavelength_s0_reference.json, lines: [65, 82], note: "SHA-256, creator, CC BY-SA 2.0, Commons URL, no scale bar", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [814, 818], note: "self-test re-hashes the specimen against the reference JSON", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module docstring states the PDE, the critical-wavenumber
+          formula, and the claim that D_v is a weak lever. lean_scaled_identities
+          repeats the integers proved in Loop_3157. The math-KG yaml points
+          at those declarations. Deduction: there is no line-by-line map
+          onto numbered equations of Prum & Williamson 2002, because that
+          paper's follicle geometry is not the system integrated here.
+        evidence:
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [1, 36], note: "docstring equations, scale, age, and claim boundary", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [135, 152], note: "scaled integers shared with the Lean module", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-coturnix-japonica-turing-wavelength-s0.yaml, lines: [1, 40], note: "model_spec parameters and law list", supports: true}
+      repro-package:
+        value: 88
+        rationale: >-
+          Seed 3157, explicit-Euler step capped by the diffusion stability
+          bound, --self-test covering the Lean identities, the quench, a
+          short pattern-versus-ablation run, and a three-point Pearson
+          check above 0.98. Full run writes the PNG, GIF, and metrics JSON.
+          Python 3.12, numpy 2.5.4, scipy 1.18.1, Pillow 13, matplotlib 3.11.
+          Deduction: dependencies are the cloud image, not a per-script lock,
+          and the checkpoint commit does not yet contain these files.
+        evidence:
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [792, 834], note: "--self-test identities, quench, dynamics, trio Pearson r > 0.98", supports: true}
+          - {file: models/2026-delphi10000-coturnix-japonica-turing-wavelength-s0.py, lines: [186, 198], note: "dt reduced to stay under the explicit diffusion bound", supports: true}
+    remediation:
+      - id: R1
+        item: "The linear-regime wavelength is a power-weighted first moment and sits ~6.5 µm long of k_c. Replace it with a parabolic fit to the growth peak and recompute Pearson r and RMSE."
+      - id: R2
+        item: "Report saturated display spacing and linear lambda as separate annotated lengths on the comparison figure so 33.6 µm is not read as the slot wavelength."
+      - id: R3
+        item: "Add a second plumage ROI (flank-only, straw excluded) and repeat the melanin-fraction and coherency measurements so the single mask is not the only specimen number."
+      - id: R4
+        item: "No independent second assessor is available in this single-agent loop. Leave the score as builder-assessed; do not invent a second signature."
