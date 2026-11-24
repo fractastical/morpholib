@@ -1,0 +1,51 @@
+sim_id: delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 1.549e-05
+log10_size_m: -4.810
+size_human: "15 µm"
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Aulacopleura koninckii_holaspis18 (Silurian Wenlock, 428.3 Ma)
+geological_age_ma: 428.3
+geological_period: Silurian (Wenlock Epoch, 428.3 Ma)
+fossil_lineage_group: Trilobite Segmentation & Eye Fossil Series
+model_spec:
+  sim_id: delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0
+  lambda_c_m: 1.549e-05
+  f_u: 0.72
+  f_v: -0.86
+  g_u: 1.1
+  g_v: -1.28
+  diffusion_ratio: 40
+  seed: 3127
+  grid: [64, 96]
+  inputs:
+    - datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/aulacopleura_koninckii_holaspis18_turing_wavelength_s0_reference.json
+    - datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/aulacopleura_koninckii_holaspis18_specimen.jpg
+equations:
+  - law_name: Jacobian trace-determinant stability at 15.49 µm
+    formula: "trace(J) = f_u + g_v < 0 and det(J) = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3127.traceMilli
+    lean_theorem: MathOfBiology.Loop_3127.homogeneous_state_stable
+    lean_locus: morphoeval/lean/loops/Loop_3127_aulacopleura_koninckii_holaspis18_turing_wavelength_s0.lean#L9-L18
+    variables: "f_u = 0.720 s^-1, f_v = -0.860, g_u = 1.100, g_v = -1.280 at the holaspis18 cuticle"
+    role: "Homogeneous steady state stays stable while a finite band of wavenumbers can still go unstable once D_v >> D_u"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py
+  - law_name: Critical Turing wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c = 15.49 µm"
+    lean_decl: MathOfBiology.Loop_3127.turingNumeratorMilli
+    lean_theorem: MathOfBiology.Loop_3127.inhibitor_diffusion_opens_a_band
+    lean_locus: morphoeval/lean/loops/Loop_3127_aulacopleura_koninckii_holaspis18_turing_wavelength_s0.lean#L20-L25
+    variables: "D_v / D_u = 40; D_u is solved so that lambda_c = 15.49 µm on the holaspis18 pitch"
+    role: "Selects the pigment-stripe / ocellus wavelength at the 15 µm detail scale"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py
+  - law_name: Chronoseries mode count at fixed wavelength
+    formula: "N = pitch_um / lambda_um; N(meraspis) < N(holaspis18) < N(holaspis22)"
+    lean_decl: MathOfBiology.Loop_3127.modeCount
+    lean_theorem: MathOfBiology.Loop_3127.holaspis18_mode_between_chronospecies
+    lean_locus: morphoeval/lean/loops/Loop_3127_aulacopleura_koninckii_holaspis18_turing_wavelength_s0.lean#L27-L36
+    variables: "floor pitches 79, 175 and 224 µm at lambda = 15 µm give mode counts 5, 11 and 14"
+    role: "At 428.3 Ma the 18-segment holaspid sits between the 428.5 Ma meraspis and the 428.1 Ma 22-segment holaspid; k_c itself does not change"
+    source_citation: "Fusco et al. 2004 DOI:10.1086/381042; Fusco, Hong and Hughes 2016 DOI:10.1017/pab.2016.5"
+    code_locus: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py

@@ -1,0 +1,160 @@
+# Pass 2 audit — closes the oval-mask and single-transect gaps from pass 1.
+# Overall (rubric weights): 87.6
+# Supersedes 2026-10-27-aulacopleura-koninckii-holaspis18-turing-wavelength-s0-audit (overall 85.3).
+audit:
+  id: 2026-10-27-aulacopleura-koninckii-holaspis18-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-aulacopleura-koninckii-holaspis18-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-aulacopleura-koninckii-holaspis18-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 working tree. No ~/.nanopub/profile.yml, so publisher_orcid is the repository placeholder and nanopubs are unsigned. A pure Sobel mask covered 0.92 of the frame and dropped CV to 71.8; the rendered mask is the warm-cuticle chroma mask instead."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  fusco2004:
+    title: "Exploring developmental modes in a fossil arthropod: growth and trunk segmentation of the trilobite Aulacopleura konincki"
+    authors: "Fusco, G.; Hughes, N. C.; Webster, M.; Minelli, A."
+    venue: "The American Naturalist"
+    doi: "10.1086/381042"
+  hughes1995:
+    title: "Growth and variation in the Silurian proetide trilobite Aulacopleura konincki"
+    authors: "Hughes, N. C.; Chapman, R. E."
+    venue: "Lethaia"
+    doi: "10.1111/j.1502-3931.1995.tb01824.x"
+  fusco2016:
+    title: "Axial growth gradients across the postprotaspid ontogeny of the Silurian trilobite Aulacopleura koninckii"
+    authors: "Fusco, G.; Hong, P. S.; Hughes, N. C."
+    venue: "Paleobiology"
+    doi: "10.1017/pab.2016.5"
+simulations:
+  - id: delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0
+    name: "Turing wavenumber at 15.49 µm on Aulacopleura koninckii holaspis18 (428.3 Ma)"
+    organism: "Aulacopleura koninckii_holaspis18"
+    domain: morphogenesis
+    script: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py
+    output: docs/media/aulacopleura_koninckii_holaspis18_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/aulacopleura_koninckii_holaspis18_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-aulacopleura-koninckii-holaspis18-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, fusco2004, hughes1995, fusco2016]
+    summary: >-
+      Pass 2 keeps the same 15.49 µm law (dispersion Pearson r = 0.9948, equal-diffusion
+      ablation max Re sigma = -0.048, repeats 5 < 11 < 14). The growth GIF now paints
+      the rib carrier only on the warm cuticle (R-G above the 70th percentile) instead
+      of a geometric oval. Last-frame CV similarity rose from 86.0 to 92.8. A lateral
+      transect (columns 0.62-0.78) has its own 16-mode Pearson r = 0.9863, beside the
+      midline r = 0.9832. Still one assessor and still no resolved 15 µm lens measurement.
+    provenance:
+      artifact_sha256: cecd7f1a290fb2a99e863a9f957dce81d24d61962df4b0462021e418e1676a2f
+      input_dataset_sha256:
+        datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/aulacopleura_koninckii_holaspis18_specimen.jpg: 50ac5dbca82619780eb38716b9107395ccdf809491a0b8b20c71b9c94dfd4d05
+        datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/aulacopleura_koninckii_holaspis18_turing_wavelength_s0_reference.json: e33257c717547148c5bd84bee3d0f089e8554661a9a0c20ea9158835ce8662a0
+    claim_boundary:
+      reported_in_source:
+        - "Hughes & Chapman 1995 and Fusco et al. 2004: meraspid segment addition and a variable holaspid thoracic number, including 18 segments."
+        - "Fusco, Hong & Hughes 2016: axial growth gradients along the trunk."
+        - "Turing 1952: reaction-diffusion selects a finite critical wavelength."
+        - "Commons File:Aulacopleura konincki.jpg, 14 mm, Silurian, CC BY-SA 3.0."
+      reconstructed_in_script:
+        - "Jacobian and D_v/D_u = 40 solved so lambda_c = 15.49 µm = 1.549e-05 m at 428.3 Ma."
+        - "Rib-span fraction 0.2245 on the pinned photograph, applied to the meraspis (4.2 mm, 12 segments, 428.5 Ma) and holaspis22 (22 mm, 22 segments, 428.1 Ma) lengths."
+        - "Mode counts 5, 11 and 14. Midline rib Pearson r = 0.9832; lateral transect Pearson r = 0.9863."
+        - "Cuticle mask from red-minus-green chroma, 70th percentile, largest component."
+      transfer_boundary:
+        - "species_gallery meraspis / holaspis18 / holaspis22 JPEGs are byte-identical, so only the Commons photograph is an independent image."
+        - "The photograph resolves pleural ribs at hundreds of micrometres. The 15.49 µm wavelength is the cellular-scale law, not a feature counted on the photograph."
+      does_not_claim:
+        - "Does not claim a published holochroal lens diameter of 15.49 µm for this species."
+        - "Does not claim a second assessor."
+        - "Does not claim the chroma mask is a histological outline of the pleurae."
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Oval replaced by the warm-cuticle chroma mask. Sobel-only masking was tested and rejected (coverage 0.92, CV 71.8). Rendered CV is 92.8."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N2
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Lateral transect columns 0.62-0.78 scored separately (Pearson r = 0.9863)."
+        status: resolved
+        novelty_n: 0.5
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: N3
+        need_type: independent_assessor
+        target_dimension: model-fidelity
+        description: "Single builder-assessor. A second model has not scored this script."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "Unchanged from pass 1. k_c is solved for 15.49 µm, the homogeneous state is stable, and Euler growth rates match the analytical dispersion at r = 0.9948. Cubic saturation is still a closure rather than Schnakenberg mass-action."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [79, 111], note: "diffusivities, critical_k, sigma_of_k", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [160, 169], note: "equal-diffusion ablation stays negative", supports: true}
+      specimen-match:
+        value: 88
+        rationale: "Pass 2 restricts the rib carrier to the warm cuticle. Last-frame CV similarity against the Commons photograph is 92.8, up from 86.0 with the oval. A Sobel mask of the whole frame was worse (CV 71.8) and was not used. The matrix outside the chroma mask is still the photograph."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [677, 695], note: "_cuticle_mask R-G 70th percentile, largest component", supports: true}
+          - {file: docs/media/aulacopleura_koninckii_holaspis18_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 720×540 GIF, CV similarity 92.8", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "Unchanged and still exercised: diffusivity scale factor moves lambda_c as sqrt(alpha), equal diffusion is a negative control, and the three chronoseries stages change N at fixed k_c."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [172, 190], note: "alpha sweep", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [193, 210], note: "chronoseries mode counts 5, 11, 14", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Midline 16-mode Pearson r = 0.9832 (RMSE 0.182, KS D = 0.035). The lateral transect, fit on its own, is Pearson r = 0.9863 and is not equal to the midline value. Coherency and circularity remain measured on the photograph and differ from their reference baselines. Dispersion r = 0.9948."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [274, 314], note: "rib_profile_fit with column window arguments", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [477, 477], note: "lateral call col_lo=0.62, col_hi=0.78", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [131, 151], note: "dispersion Pearson and RMSE", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Same Crossref DOIs and the same SHA-256-pinned Commons photograph as pass 1."
+        evidence:
+          - {file: datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/paper_citations.bib, lines: [1, 62], note: "five DOIs", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [66, 69], note: "specimen digest check", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "The wavenumber solver, the Lean theorems, and the pass-2 mask are each pinned to a short range. The cubic saturation is still only a closure."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [79, 91], note: "k_c formula in the diffusivity solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3127_aulacopleura_koninckii_holaspis18_turing_wavelength_s0.lean, lines: [9, 36], note: "trace, det, diffusion numerator, mode theorem", supports: true}
+      repro-package:
+        value: 87
+        rationale: "--self-test now also requires the lateral transect Pearson r > 0.98, plus the pass-1 checks (wavelength, dispersion, ablation, monotone sweep, chronoseries, GIF size). Seed and specimen digest are unchanged."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis18-turing-wavelength-s0.py, lines: [619, 637], note: "self_test assertions including the lateral transect", supports: true}
+          - {file: datasets/aulacopleura_koninckii_holaspis18_turing_wavelength_s0/README.md, lines: [16, 22], note: "invocation", supports: true}
+    remediation:
+      - id: R3
+        item: "Independent second assessor (different model) — still builder-scored after pass 2."
