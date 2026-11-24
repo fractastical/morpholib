@@ -1,0 +1,58 @@
+sim_id: thompson1917-t1917-053
+math_family: "geometric — Thompson (1917) coordinate transformation between Dimorphodon and Pteranodon skulls (Fig. 387)"
+claim_id: T1917-053
+model_spec:
+  model: "Thompson 1917 Ch. XVII p. 756 Fig. 387: phi maps the Cartesian grid of Dimorphodon (a) onto the oblique converging-ray grid of Pteranodon (b); realised as thin-plate spline on orbit + four cranial tip landmarks + arc-length semilandmarks"
+  grid_dimorphodon: {vertical: 8, horizontal: 4, cartesian: true}
+  grid_pteranodon: {oblique_converging_rays: true}
+  segmentation: {threshold: otsu, opening_iterations: 1, panel_crop_fraction: {dimorphodon: [0.05, 0.12, 0.48, 0.55], pteranodon: [0.52, 0.12, 0.95, 0.55]}}
+  landmarks: {orbit: "largest interior hole centroid", tips: ["snout", "dorsal", "occiput", "ventral"], semilandmarks_per_segment_default: 20}
+  tps_regularisation_lambda_default: 0.0
+  sweep: {n_semi: [8, 12, 16, 20, 24, 32], lambda: [0.0, 0.001, 0.01, 0.1]}
+  controls: [similarity_only, affine_only, copy_source, shuffled_landmark_null, ks_residuals, jacobian_no_fold]
+  clade_frame: "Dryad doi:10.5061/dryad.4nr4cf37 (Foth et al. 2012) — metadata only; file not OAuth-retrievable in cloud loop"
+  seed: 1917
+  inputs:
+    - datasets/thompson_1917/t1917-053/ongrowthform1917thom_p756_leaf0775_fig387.jpg
+    - datasets/thompson_1917/t1917-053/pteranodon_longiceps_ypm1177_vendored.jpg
+    - datasets/thompson_1917/t1917-053/nie1905_dimorphodon_pteranodon_comparison.png
+    - datasets/thompson_1917/t1917-053/dryad_4nr4cf37_metadata.json
+    - datasets/thompson_1917/t1917-053/t1917_053_on_the_theory_of_transformatio_reference.json
+equations:
+  - law_name: "Thompson warp path — endpoints and equidistant stage displacement (E2)"
+    formula: "phi_t(x) = (1 - t) x + t phi(x); interp4(k,a,b) = (4-k)a + kb"
+    lean_decl: "MathOfBiology.Loop_242.interp4"
+    lean_theorem: "MathOfBiology.Loop_242.interp_endpoints_and_equidistant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_053.lean"
+    code_locus: "thompson/claims/t1917-053_on-the-theory-of-transformations.py"
+    variables: "a: Dimorphodon grid coordinate; b: Pteranodon image; k: stage 0..4"
+    role: "Homotopy form of Thompson's coordinate transformation between the two skull grids"
+    source_citation: "Thompson (1917) On Growth and Form, Ch. XVII p. 756, Fig. 387"
+  - law_name: "Procrustes frame independence (similarity equivariance)"
+    formula: "interp4(k, ca+d, cb+d) = c interp4(k,a,b) + 4d"
+    lean_theorem: "MathOfBiology.Loop_242.interp_similarity_equivariant"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_053.lean"
+    variables: "c: scale; d: translation"
+    role: "Superimposition frame cannot change the predicted warp"
+    source_citation: "Thompson (1917) Ch. XVII; Gower (1975) Generalized Procrustes analysis"
+  - law_name: "No-fold along grid coordinates (1-D order preservation)"
+    formula: "a1<a2, b1<b2 => interp4(k,a1,b1) < interp4(k,a2,b2)"
+    lean_theorem: "MathOfBiology.Loop_242.interp_no_fold"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_053.lean"
+    variables: "ordered grid coordinates a1<a2, b1<b2"
+    role: "Intermediate grids stay orientation-preserving along each coordinate line"
+    source_citation: "Thompson (1917) p. 756 Fig. 387 oblique grid"
+  - law_name: "Best-fit stage statistic soundness (E7)"
+    formula: "4<D-A,B-A> = k|B-A|^2 when D = interp4(k,A,B)"
+    lean_theorem: "MathOfBiology.Loop_242.best_fit_stage_sound"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_053.lean"
+    variables: "landmarks A, B, D and stage k/4"
+    role: "Projection statistic returns exact stage for perfect interpolants"
+    source_citation: "this loop (test statistic)"
+  - law_name: "Affine shear area preservation under interpolation (E5)"
+    formula: "det((4-k)I + k[[1,s],[0,1]]) = 16"
+    lean_theorem: "MathOfBiology.Loop_242.shear_interp_preserves_area"
+    lean_locus: "morphoeval/lean/loops/Thompson1917_T1917_053.lean"
+    variables: "shear s, stage k"
+    role: "Thompson simple shear interpolates without area collapse"
+    source_citation: "Thompson (1917) Ch. XVII pp. 727-733"

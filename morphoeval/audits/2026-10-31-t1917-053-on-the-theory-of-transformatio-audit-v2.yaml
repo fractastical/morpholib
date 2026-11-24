@@ -1,0 +1,71 @@
+# MorphoEval audit — T1917-053 Pass 2 (v2, supersedes Pass 1)
+audit:
+  id: 2026-10-31-t1917-053-on-the-theory-of-transformatio-audit-v2
+  supersedes_audit_id: 2026-10-31-t1917-053-on-the-theory-of-transformatio-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (builder-assessor, Pass 2)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 35d30f4cf
+
+simulations:
+  - id: thompson1917-t1917-053
+    name: "Thompson (1917) Fig. 387: Dimorphodon -> Pteranodon skull coordinate transformation"
+    organism: "Dimorphodon macronyx and Pteranodon longiceps (lateral skull outlines)"
+    script: thompson/claims/t1917-053_on-the-theory-of-transformations.py
+    output: docs/media/t1917_053_on_the_theory_of_transformatio_comparison.png
+    extra_outputs:
+      - docs/media/t1917_053_on_the_theory_of_transformatio_growth.gif
+      - datasets/thompson_1917/t1917-053/result.json
+    status: evaluated
+    summary: >-
+      Pass 2: dense-outline Procrustes (128-pt resample), IoU/chamfer/r/RMSE, 24-setting sweep,
+      shuffled-landmark null (p≈0.80), specimen Otsu CV on YPM1177 photo, Jacobian min det -15.3
+      (grid folds). TPS Procrustes 0.726 vs similarity 0.663 vs affine 0.625 at default n_semi=20;
+      coarse n_semi=8 TPS beats similarity slightly. Verdict mixed (high r=0.977, IoU=0.51).
+      Foth Dryad clade frame file blocked (401).
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "Lean theorems + TPS pipeline; numerical Jacobian shows grid fold at t=1."
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_053.lean, lines: [24, 130], note: "interp4 + no-fold + best_fit + shear theorems", supports: true}
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [380, 395], note: "jacobian_min_det on 8x4 grid — folds at t=1", supports: false}
+      specimen-match:
+        value: 68
+        rationale: "Fig. 387 CV segmentation + YPM1177 specimen Otsu CV (descriptive)."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [310, 316], note: "specimen_cv on vendored Pteranodon photo", supports: true}
+          - {file: datasets/thompson_1917/t1917-053/result.json, lines: [20, 35], note: "verdict mixed; automated warp does not beat affine at default landmarks", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: "24-setting sweep over n_semi and TPS lambda recorded in result.json."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-053/result.json, lines: [39, 80], note: "24-row sweep n_semi 8..32 x lambda", supports: true}
+      morphometric-validation:
+        value: 74
+        rationale: "Dense Procrustes, IoU, r, shuffled-null, KS; null p=0.80 not significant."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [250, 310], note: "dense Procrustes, IoU, chamfer, shuffled null, KS", supports: true}
+          - {file: datasets/thompson_1917/t1917-053/result.json, lines: [30, 31], note: "shuffled null p=0.80 — correspondence not significant at alpha 0.05", supports: false}
+      source-traceability:
+        value: 88
+        rationale: "Pinned IA + Commons + Dryad metadata; Foth file blocked not mismatched."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-053/scout_manifest.json, lines: [1, 50], note: "Dryad + IA + OpenAlex verification", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "measure_morphoeval + KG YAML law entries."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-053.yaml, lines: [1, 45], note: "5 laws", supports: true}
+      repro-package:
+        value: 78
+        rationale: "Deterministic self_test; full Pass 2 run ~8s."
+        evidence:
+          - {file: thompson/claims/t1917-053_on-the-theory-of-transformations.py, lines: [490, 553], note: "self_test + CLI --pass1/--n-semi/--lam", supports: true}
