@@ -1,0 +1,100 @@
+{
+  "sim_id": "delphi10000-ambystoma-mexicanum-turing-wavelength-s0",
+  "slot": 3107,
+  "organism": {
+    "scientific_name": "Ambystoma mexicanum",
+    "common_name": "Axolotl",
+    "aristotelian_path": "I. Enaima (Vertebrata) -> Amphibia & Reptilia (Ootoka) -> Ambystoma"
+  },
+  "phenomenon_scale": {
+    "label": "184 µm",
+    "lambda_um": 184.3,
+    "phenomenon_size_m": 0.0001843,
+    "log10_size_m": -3.734,
+    "scale_tier": "5_primordium_100um",
+    "detail_variant": true,
+    "anatomical_structure": "Larval flank chromatophore primordium: melanophore–xanthophore spacing selected at the Turing onset wavenumber"
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "lineage": "",
+    "chronoseries": {
+      "name": "Ambystoma",
+      "index": "1/1",
+      "node": "Holocene (Extant) Ambystoma mexicanum",
+      "predecessor_chronospecies": null,
+      "successor_chronospecies": null,
+      "what_changes_at_this_scale": "With only one chronospecies node, the contrast is across length, not across named fossil species. Below 184 µm the flank is a migrating neural-crest population (Erickson 1993) and no chemical wavelength is selected. At 0.0001843 m the Schnakenberg onset mode k_c = 2π/184.3 µm is the first unstable pigment spacing. Above this length the same Holocene pattern is stretched by domain growth (Murray 1981) into adult ocelli; that longer spacing is a later scale of this species, not a successor chronospecies, and it is not fitted here."
+    }
+  },
+  "equations": {
+    "kinetics": "Schnakenberg",
+    "activator": "dt u = Du laplacian(u) + a - u + u^2 v",
+    "inhibitor": "dt v = Dv laplacian(v) + b - u^2 v",
+    "steady_state": "u0 = a + b, v0 = b / (a + b)^2",
+    "jacobian_at_steady_state": {"f_u": 0.8, "f_v": 1.0, "g_u": -1.8, "g_v": -1.0},
+    "onset_wavenumber": "k_c^2 = (Dv f_u + Du g_v) / (2 Du Dv)",
+    "wavelength": "lambda_c = 2 pi / k_c = 184.3 um",
+    "boundary_conditions": "Periodic on the square primordium patch. The circular vignette in the GIF is a display mask copied from the micrograph's field stop, not a Neumann or Dirichlet condition."
+  },
+  "parameter_table": {
+    "a": 0.10,
+    "b": 0.90,
+    "diffusion_ratio_Dv_over_Du": 9.0,
+    "critical_ratio": 8.567627457812103,
+    "why_this_ratio": "Just above the Turing threshold so the fastest-growing wavenumber stays near the onset wavenumber. A deeply supercritical ratio (for example 20) shifts the fastest mode to a longer wavelength and is not used.",
+    "domain_wavelengths": 8,
+    "grid_n": 96,
+    "seed": 3107,
+    "not_copied_from": "Ambystoma maculatum sibling slots use a different species and different parameters. This ratio, steady state, and 184.3 µm onset length are specific to loop 3107."
+  },
+  "empirical_claims": [
+    "Epperlein & Löfberg (1989) describe the larval pigment pattern of Ambystoma mexicanum as an arrangement of melanophores and other chromatophores, not as a measured 184.3 µm Turing wavelength.",
+    "Frost-Mason & Mason (1996) review axolotl pigmentation as a developmental system. They do not publish this wavenumber.",
+    "The length 0.0001843 m is the Delphi scale coordinate for tier 5_primordium_100um, detail variant. The model is built so the onset wavelength equals that coordinate.",
+    "The vendored micrograph shows melanophores and xanthophores inside a circular field. It has no scale bar, so the script does not convert its pixel spacing into micrometres."
+  ],
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 dispersion relation and diffusion-driven instability conditions",
+      "Murray 1981 pre-pattern account of coat markings and the domain-growth scale argument",
+      "Epperlein & Löfberg 1989 larval Ambystoma mexicanum pigment pattern",
+      "Frost-Mason & Mason 1996 review of axolotl pigmentation"
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg parameters (a, b, Dv/Du) = (0.10, 0.90, 9) chosen so the onset wavelength is 184.3 µm",
+      "Spectral integration on a periodic 8-wavelength patch",
+      "Linear dispersion sweep, ablation at Dv/Du = 1, and pixel segmentation of the micrograph"
+    ],
+    "transfer_boundary": [
+      "No axolotl paper cited here measured 184.3 µm. Agreement of the linear fastest mode with 184.3 µm tests the algebra of this reconstruction, not a wet-lab spacing.",
+      "Zebrafish stripe RD papers are not used as the axolotl law.",
+      "Adult ocellus size is not predicted numerically in this slot."
+    ],
+    "does_not_claim": [
+      "That lab axolotl color morphs (leucistic, albino, melanoid) are this wild-type wavelength",
+      "That the species-gallery limb plate is a pigment specimen",
+      "A micrometre measurement read off the Wikimedia micrograph"
+    ]
+  },
+  "specimen": {
+    "file": "ambystoma_mexicanum_chromatophores_specimen.jpg",
+    "sha256": "cc106cdbb5c28a40a47946801d35e6f13ada02665b8c773180123279a6cf22c8",
+    "width": 2305,
+    "height": 2305,
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "authors": "Brandon Antonio Segura Torres & Priscilla Vieto Bonilla",
+    "source": "https://commons.wikimedia.org/wiki/File:Cromatóforos_de_larva_de_axolote_pardo_(Ambystoma_mexicanum).jpg",
+    "description": "Chromatophores of a brown axolotl larva (Ambystoma mexicanum)."
+  },
+  "references": [
+    {"id": "turing1952", "doi": "10.1098/rstb.1952.0012"},
+    {"id": "murray1981", "doi": "10.1016/0022-5193(81)90334-9"},
+    {"id": "epperlein1989", "doi": "10.1007/978-3-642-75056-4"},
+    {"id": "frostmason1996", "doi": "10.1387/ijdb.8877441"},
+    {"id": "epperlein1988", "doi": "10.1007/bf00219740"},
+    {"id": "erickson1993", "doi": "10.1111/j.1600-0749.1993.tb00611.x"}
+  ]
+}
