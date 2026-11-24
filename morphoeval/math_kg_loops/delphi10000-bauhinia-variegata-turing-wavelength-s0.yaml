@@ -1,0 +1,55 @@
+sim_id: delphi10000-bauhinia-variegata-turing-wavelength-s0
+organism: Bauhinia variegata
+common_name: Orchid Tree Pod
+epoch: Holocene (Extant)
+age_ma: 0
+characteristic_scale_m: 6.912e-05
+characteristic_scale_um: 69.12
+log10_m: -4.160
+tier: 4_cellular_10um
+math_family: Reaction-Diffusion & Turing Dispersion
+quantitative_law: Turing wavenumber k_c
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) wavenumber selection
+  organism: Bauhinia variegata
+  lambda_um: 69.12
+  lambda_m: 6.912e-05
+  log10_m: -4.160
+  age_ma: 0
+  a: 0.10
+  b: 0.90
+  diffusion_ratio: 16.9
+  grid_resolution: [96, 72]
+  seed: 3132
+  boundary: periodic
+  inputs:
+    - datasets/bauhinia_variegata_turing_wavelength_s0/bauhinia_variegata_specimen.jpg
+    - datasets/bauhinia_variegata_turing_wavelength_s0/bauhinia_variegata_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg diffusion-ratio instability margin
+    formula: r = D_v/D_u > r_crit, with r = 16.9 and r_crit = 8.5676 at (a, b) = (0.10, 0.90)
+    lean_decl: MathOfBiology.Loop_3132.law1Margin
+    lean_theorem: MathOfBiology.Loop_3132.law1_turing_ratio_exceeds_threshold
+    lean_locus: morphoeval/lean/loops/Loop_3132_bauhinia_variegata_turing_wavelength_s0.lean#L18-L22
+    variables: r and r_crit in thousandths (16900 and 8568)
+    role: The inhibitor must out-diffuse the activator before a 69.12 µm band exists
+    source_citation: Turing 1952 doi:10.1098/rstb.1952.0012; Schnakenberg 1979 doi:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py#L105-L116
+  - law_name: Critical wavenumber and wavelength
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c = 69.12 µm
+    lean_decl: MathOfBiology.Loop_3132.law2Balance
+    lean_theorem: MathOfBiology.Loop_3132.law2_domain_gauge_cancellation
+    lean_locus: morphoeval/lean/loops/Loop_3132_bauhinia_variegata_turing_wavelength_s0.lean#L26-L31
+    variables: domain length in micrometres; gauge cancels
+    role: Selects the detail-scale wavelength rather than a reference-frame offset
+    source_citation: Turing 1952 doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py#L129-L134
+  - law_name: How many cellular wavelengths fit on the 1 cm valve
+    formula: 144 * 69.12 µm < 1 cm < 145 * 69.12 µm
+    lean_decl: MathOfBiology.Loop_3132.wavelengthsInCentimetre
+    lean_theorem: MathOfBiology.Loop_3132.law3_cellular_mode_count_on_one_centimetre
+    lean_locus: morphoeval/lean/loops/Loop_3132_bauhinia_variegata_turing_wavelength_s0.lean#L42-L45
+    variables: lambda in hundredths of a micrometre (6912); one centimetre (1000000)
+    role: States what changes between this scale and the centimetre valve at the same age (0 Ma)
+    source_citation: Turing 1952 doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-bauhinia-variegata-turing-wavelength-s0.py#L787-L788
