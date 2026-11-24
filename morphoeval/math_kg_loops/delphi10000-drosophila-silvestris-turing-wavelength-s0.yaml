@@ -1,0 +1,83 @@
+sim_id: delphi10000-drosophila-silvestris-turing-wavelength-s0
+slot: 3204
+organism: Drosophila silvestris
+phenomenon_size_m: 2.995e-06
+log10_size_m: -5.524
+size_human: "3.0 µm"
+scale_tier: 3_subcellular_um
+scale_variant: detail
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila silvestris (3.0 µm detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Hawaiian Picture-Winged Drosophila Adaptive Radiation
+chronoseries: "Drosophila 33/41"
+predecessor: Drosophila serrata
+predecessor_lambda_m: 9.226e-05
+successor: Drosophila simulans
+successor_lambda_m: 8.256e-05
+external_datasets:
+- name: FlyBase
+  url: https://flybase.org/
+  doi: 10.1093/genetics/iyad035
+- name: Wikimedia Commons File:Drosophila silvestris Kilohana 5161a.jpg
+  url: https://commons.wikimedia.org/wiki/File:Drosophila_silvestris_Kilohana_5161a.jpg
+  license: CC BY-SA 3.0
+math_family: Reaction-Diffusion & Turing Dispersion (I. Reaction-Diffusion & Stripe Splitting)
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber, detail-tier lambda 2.995e-6 m
+  a: 0.05
+  b: 1.4
+  d_ratio_ocellus: 20
+  gamma_ref: 1.0
+  grid_resolution: [96, 96]
+  domain_wavelengths: 8
+  seed_linear: 7
+  seed_nonlinear: 3204
+  inputs:
+  - datasets/drosophila_silvestris_turing_wavelength_s0/drosophila_silvestris_turing_wavelength_s0_reference.json
+  - datasets/drosophila_silvestris_turing_wavelength_s0/drosophila_silvestris_turing_wavelength_s0_specimen.jpg
+  - datasets/drosophila_silvestris_turing_wavelength_s0/paper_citations.bib
+equations:
+- law_name: Turing Dispersion Critical Wavenumber
+  formula: "k_c^2 = gamma (D_v f_u + D_u g_v) / (2 D_u D_v), lambda_c = 2 pi / k_c"
+  lean_decl: MathOfBiology.Loop_3204.wavenumberPerM
+  lean_theorem: MathOfBiology.Loop_3204.wavenumber_exceeds_predecessor_by_thirty
+  lean_locus: morphoeval/lean/loops/Loop_3204_drosophila_silvestris_turing_wavelength_s0.lean
+  variables: "lambda_this = 2995 nm; lambda_serrata = 92260 nm; k proxy = 1e9/lambda_nm"
+  role: Detail-tier wavenumber exceeds the D. serrata cellular wavenumber by more than 30
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py
+- law_name: Successor Does Not Inherit the Detail Wavenumber
+  formula: "k_silvestris / k_simulans = 8.256e-5 / 2.995e-6 > 27"
+  lean_decl: MathOfBiology.Loop_3204.wavenumberPerM
+  lean_theorem: MathOfBiology.Loop_3204.wavenumber_exceeds_successor_by_twentyseven
+  lean_locus: morphoeval/lean/loops/Loop_3204_drosophila_silvestris_turing_wavelength_s0.lean
+  variables: "lambda_simulans = 82560 nm"
+  role: Holocene successor D. simulans sits at a cellular wavelength, not at 2.995 µm
+  source_citation: "Assigned chronoseries contrast; Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py
+- law_name: Eight Modes on the Detail Patch
+  formula: "L / lambda_c = 23960 nm / 2995 nm = 8, and L is shorter than both neighbour wavelengths"
+  lean_decl: MathOfBiology.Loop_3204.patchNm
+  lean_theorem: MathOfBiology.Loop_3204.eight_modes_fit_only_at_this_scale
+  lean_locus: morphoeval/lean/loops/Loop_3204_drosophila_silvestris_turing_wavelength_s0.lean
+  variables: "patch = 8 * 2995 nm"
+  role: The 3.0 µm ocellus scale is the only chronoseries wavelength that fits eight times in the detail patch
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py
+- law_name: Ocellus Diffusivity Ratio
+  formula: "d_ocellus = 20 > d_stripe neighbours 8 and 10; equal diffusion d = 1 is linearly stable"
+  lean_decl: MathOfBiology.Loop_3204.ocellus_diffusion_ratio_exceeds_stripe_neighbours
+  lean_theorem: MathOfBiology.Loop_3204.ocellus_diffusion_ratio_exceeds_stripe_neighbours
+  lean_locus: morphoeval/lean/loops/Loop_3204_drosophila_silvestris_turing_wavelength_s0.lean
+  variables: "d = D_v / D_u"
+  role: Spot-selecting inhibitor diffusion at this scale exceeds the stripe-regime contrasts
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-silvestris-turing-wavelength-s0.py
