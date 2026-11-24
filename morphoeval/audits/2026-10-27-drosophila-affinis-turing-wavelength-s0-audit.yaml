@@ -1,0 +1,145 @@
+# Pass 1 — Drosophila affinis detail-tier Turing wavelength (slot 3174).
+# Scores the determinant-condition run frozen in the pass-1 metrics snapshot:
+# fastest mode 2.652 µm and nonlinear FFT 2.619 µm against the assigned 2.444 µm.
+# The script in this commit also contains the Pass-2 calibration; the snapshot
+# file is the Pass-1 record. measure_outputs.py re-imports the script, so the
+# sidecar next to this audit reports the calibrated numbers. That mismatch is
+# stated here rather than papered over.
+audit:
+  id: 2026-10-27-drosophila-affinis-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  publisher_orcid: "https://github.com/fractastical/morpholib#loop-3174"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second provider in this loop)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 scored on the working tree of loop 3174 before the loop commit. Parent commit 0c76d15d does not yet contain these paths. publisher_orcid is the repository URI because no personal ORCID profile is configured; the nanopubs are unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+    url: "https://doi.org/10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+    url: "https://doi.org/10.1016/0022-5193(79)90042-0"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer, A. and Meinhardt, H."
+    venue: "Kybernetik"
+    doi: "10.1007/BF00289234"
+    url: "https://doi.org/10.1007/BF00289234"
+  sturtevant1916:
+    title: "Notes on North American Drosophilidae with Descriptions of Twenty-Three New Species"
+    authors: "Sturtevant, A. H."
+    venue: "Ann. Entomol. Soc. Am."
+    doi: "10.1093/aesa/9.4.323"
+    url: "https://doi.org/10.1093/aesa/9.4.323"
+  miller1955:
+    title: "A Study of Sex Combs in Drosophila affinis and Drosophila athabasca"
+    authors: "Miller, D. D."
+    venue: "Trans. Am. Microsc. Soc."
+    doi: "10.2307/3223884"
+    url: "https://doi.org/10.2307/3223884"
+  wittkopp2002:
+    title: "Reciprocal functions of the Drosophila Yellow and Ebony proteins in the development and evolution of pigment patterns"
+    authors: "Wittkopp, P. J., True, J. R. and Carroll, S. B."
+    venue: "Development"
+    doi: "10.1242/dev.129.8.1849"
+    url: "https://doi.org/10.1242/dev.129.8.1849"
+  shoup1966:
+    title: "The development of pigment granules in the eyes of wild type and mutant Drosophila melanogaster"
+    authors: "Shoup, J. R."
+    venue: "J. Cell Biol."
+    doi: "10.1083/jcb.29.2.223"
+    url: "https://doi.org/10.1083/jcb.29.2.223"
+simulations:
+  - id: delphi10000-drosophila-affinis-turing-wavelength-s0
+    name: "Drosophila affinis Turing wavenumber at 2.4 µm (Holocene, detail tier)"
+    organism: "Drosophila affinis"
+    script: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py
+    output: docs/media/drosophila_affinis_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, sturtevant1916, miller1955, wittkopp2002, shoup1966]
+    summary: >-
+      Pass 1 integrated Schnakenberg kinetics with Du chosen so the determinant-minimizing
+      wavenumber is 2.444 µm at Dv/Du = 10. The fastest linear mode was 2.652 µm and the
+      nonlinear FFT selected 2.619 µm (metrics-pass1.json). Pearson r between continuum and
+      discrete growth rates was 0.9997 and the equal-diffusivity ablation stayed negative
+      (sigma_max = -0.099). The habitus frame matches the CC BY-SA photograph; the 2.444 µm
+      field is not resolved by that photograph's 250 µm scale bar. Weighted overall on the
+      Pass-1 gap is 82.0. Calibration of Du onto the fastest mode is the Pass-2 fix.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite critical wavenumber when the inhibitor diffuses faster than the activator."
+        - "Schnakenberg 1979: kinetics du/dt = a - u + u^2 v, dv/dt = b - u^2 v."
+        - "Sturtevant 1916 named Drosophila affinis. Miller 1955 described its sex combs."
+        - "Wittkopp, True and Carroll 2002: Yellow and Ebony place adult cuticular melanin. Shoup 1966 described melanogaster pigment-granule ontogeny."
+      reconstructed_in_script:
+        - "Jacobian, classical k_c, and a periodic Schnakenberg integration on a 48.88 µm by 36.66 µm patch."
+        - "Chronoseries comparison against the assigned berryi 98.43 µm (19 Ma) and americana 138.7 µm (0 Ma) wavelengths."
+        - "Du, Dv solved for lambda_c = 2.444 µm at diffusivity ratio 10. These are not the sibling slots' alpha_scale coefficients."
+      transfer_boundary:
+        - "Shoup 1966 is D. melanogaster, not a measurement of D. affinis granule spacing."
+        - "The sex comb is the species diagnosis. Its tooth spacing is not this wavelength."
+        - "Berryi and americana are Delphi chronoseries neighbors, not a demonstrated ancestor-descendant pair."
+      does_not_claim:
+        - "Does not claim a new electron-microscope measurement of D. affinis pigment granules."
+        - "Does not claim the habitus photograph resolves a 2.444 µm wave. The print scale bar is 250 µm."
+        - "Does not claim the Pass-1 nonlinear FFT (2.619 µm) equals the assigned scale."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The Jacobian, classical k_c formula, periodic Schnakenberg update, and equal-diffusivity ablation implement the published law. Pass 1 left Du at the determinant condition, so the mode that actually grows (2.652 µm) is not the assigned 2.444 µm."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [90, 139], note: "Schnakenberg Jacobian and analytical dispersion eigenvalue", supports: true}
+          - {file: morphoeval/runs/2026-10-27-drosophila-affinis-turing-wavelength-s0-loop-metrics-pass1.json, lines: [6, 21], note: "Pass-1 fastest mode 2.652 µm, FFT 2.619 µm, ablation sigma -0.099", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The comparison figure places the CC BY-SA female habitus beside the activator field, and the GIF resolves to that habitus. The generative spots are a melanin-ramped field, not a segmentation of the abdominal stripes, and the photograph cannot show 2.444 µm structure."
+        evidence:
+          - {file: docs/media/drosophila_affinis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Habitus, activator, dispersion, chronoseries", supports: true}
+          - {file: docs/media/drosophila_affinis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame growth animation, 960x720", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: "Above onset, peak growth rate increases with Dv/Du while the classical wavelength is held at 2.444 µm. Setting Dv = Du removes the instability. Pass 1 did not yet use Du as a control that places the fastest mode on the assigned scale."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [198, 226], note: "Ratio sweep and equal-diffusivity ablation", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: "Continuum versus discrete sigma(k) Pearson r = 0.9997 with RMSE 0.0089, which clears 0.98. The nonlinear wavelength error against 2.444 µm is 7.2 percent (2.619 vs 2.444). That is the quantity Pass 2 has to close. Specimen segmentation is computed but was not yet the basis of the wavelength claim."
+        evidence:
+          - {file: morphoeval/runs/2026-10-27-drosophila-affinis-turing-wavelength-s0-loop-metrics-pass1.json, lines: [6, 18], note: "Pass-1 pearson_r, rmse, lambda_nonlinear_um", supports: true}
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [182, 196], note: "Pearson r and RMSE of sigma(k)", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-confirmed DOIs for Turing, Schnakenberg, Gierer-Meinhardt, Sturtevant, Miller, Wittkopp, and Shoup. The habitus is Wikimedia Commons File:Daff-fem.tif, CC BY-SA 4.0, SHA-256 pinned."
+        evidence:
+          - {file: datasets/drosophila_affinis_turing_wavelength_s0/paper_citations.bib, lines: [1, 108], note: "BibTeX with Crossref DOIs", supports: true}
+          - {file: datasets/drosophila_affinis_turing_wavelength_s0/drosophila_affinis_turing_wavelength_s0_reference.json, lines: [1, 30], note: "Scale 2.444e-6 m, age 0 Ma, specimen SHA-256", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "The module docstring and the kinetics, dispersion, and ablation functions name the equations they implement. Lean theorems encode the integer form of stability, instability, and the ablation. Pass-1 Du was not yet traced to the fastest-mode condition."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [1, 40], note: "Equation map in the module docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3174_drosophila_affinis_turing_wavelength_s0.lean, lines: [1, 62], note: "Five theorems, no sorry, namespace MathOfBiology.Loop_3174", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3174, --self-test, and SHA-256 pins on the reference, specimen, scout manifest, bibliography, and README. Nanopub signing is unavailable because ~/.nanopub/profile.yml is absent. One builder scored the audit."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [55, 88], note: "Pinned SHA-256 table and verify_dataset_integrity", supports: true}
+          - {file: models/2026-delphi10000-drosophila-affinis-turing-wavelength-s0.py, lines: [763, 795], note: "--self-test assertions", supports: true}
+    remediation:
+      - "R1: Retune Du so the fastest-growing mode, which the nonlinear FFT follows, sits on 2.444 µm. Pass 1 left it at 2.652 µm (FFT 2.619 µm)."
+      - "R2: Redraw the chronoseries panel so the 2.444 µm bar is readable on a log axis next to 98.43 µm and 138.7 µm."
+      - "R3: Report specimen-mask foreground, circularity, coherency, and the orientation-histogram KS against the habitus, with reference values that are not copies of the measurements."
+      - "R4: Nanopub signing was not performed. ~/.nanopub/profile.yml is not on this machine."
+      - "R5: One habitus photograph. The 250 µm scale bar does not resolve 2.444 µm, and there is no second assessor."
