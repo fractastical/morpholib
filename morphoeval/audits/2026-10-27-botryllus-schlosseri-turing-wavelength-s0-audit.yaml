@@ -1,0 +1,139 @@
+# Pass 1 audit — Botryllus schlosseri Turing wavelength, slot 3136.
+# Single builder-assessor. Overall is the rubric weighted mean (see scores).
+audit:
+  id: 2026-10-27-botryllus-schlosseri-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: null
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 files are new on this branch; locus check needs --no-verify-loci until they are committed."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Alan Mathison Turing"
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "J. Schnakenberg"
+    year: 1979
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: "10.1016/0022-5193(79)90042-0"
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Alfred Gierer and Hans Meinhardt"
+    year: 1972
+    venue: "Kybernetik 12:30-39 (1972)"
+    doi: "10.1007/BF00289234"
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Shigeru Kondo and Rihito Asai"
+    year: 1995
+    venue: "Nature 376:765-768 (1995)"
+    doi: "10.1038/376765a0"
+  sorrentino2000:
+    title: "Evolution of cerebral vesicles and their sensory organs in an ascidian larva"
+    authors: "Marina Sorrentino, Lucia Manni, Nancy J. Lane and Paolo Burighel"
+    year: 2000
+    venue: "Acta Zoologica 81:243-258 (2000)"
+    doi: "10.1046/j.1463-6395.2000.00054.x"
+  cloney1982:
+    title: "Ascidian larvae and the events of metamorphosis"
+    authors: "Richard A. Cloney"
+    year: 1982
+    venue: "American Zoologist 22:817-826 (1982)"
+    doi: "10.1093/icb/22.4.817"
+simulations:
+  - id: delphi10000-botryllus-schlosseri-turing-wavelength-s0
+    name: "Schnakenberg–Turing wavelength at 39 µm in Botryllus schlosseri (Holocene, detail scale)"
+    organism: "Botryllus schlosseri"
+    script: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py
+    output: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/botryllus_schlosseri_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, gierer1972, kondo1995, sorrentino2000, cloney1982]
+    summary: >-
+      Periodic Schnakenberg kinetics on a 271.04 µm window (seven wavelengths).
+      The onset formula is pinned to λ = 38.72 µm. The nonlinear activator FFT
+      measured 39.90 µm (6.79 cycles). Pearson r between the formula and argmax
+      σ(k) across a 10-point γ sweep is 0.999998 (RMSE 1.598 cells). Equal
+      diffusion is stable (σ_peak = -0.649). The Parent 1991 colony photograph
+      has circularity 0.085 against a circle reference of 1. The GIF is a spot
+      field in the colony colour histogram, not a reconstruction of the star systems.
+    provenance:
+      input_dataset_sha256:
+        datasets/botryllus_schlosseri_turing_wavelength_s0/Botryllus_schlosseri_Parent1991_Banyuls.jpg: "e351975e1a0b4822b9d0a91545403e9770ae958c31a3ba46a2b07fe05f4dff01"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite critical wavenumber when two morphogens diffuse at different rates."
+        - "Schnakenberg 1979: the mass-action system f = a - u + u^2 v, g = b - u^2 v."
+        - "Sorrentino, Manni, Lane and Burighel 2000: ascidian larvae carry a cerebral vesicle with sensory organs, including an ocellus."
+        - "Cloney 1982: review of ascidian larval metamorphosis, including colonial botryllids."
+      reconstructed_in_script:
+        - "Slot-3136 parameters a=0.097, b=1.246, γ=1.37 chosen so the onset formula returns λ=3.872e-5 m on a 7-wavelength periodic window."
+        - "Nonlinear spectral integration, γ sweep, equal-diffusion ablation, specimen segmentation, KS orientation test, and seed-ensemble CV."
+      transfer_boundary:
+        - "Kondo and Asai 1995 established a reaction-diffusion wavelength for Pomacanthus pigment stripes. That measurement is not transferred as a Botryllus datum."
+        - "The 39 µm length is the MorphoEval detail-tier assignment, not a published caliper on the Parent 1991 photograph."
+      does_not_claim:
+        - "Does not claim that Botryllus star systems are produced by this PDE."
+        - "Does not claim the colony photograph was taken at 39 µm."
+        - "Does not claim a second independent assessor scored this audit."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The script integrates Schnakenberg kinetics and evaluates σ(k) from J - k²D. Diffusivities are solved so the onset identity k_c² = (D_v f_u + D_u g_v)/(2 D_u D_v) equals 2π/λ with λ = 38.72 µm. The γ scale and the autocatalytic term are not yet both ablated."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [77, 129], note: "jacobian, critical ratio, diffusivities_for_wavenumber, growth_rates", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "Side by side, the GIF uses the colony's burgundy-gold colour histogram and a spot grain on the scale of the bright siphon rims, but it does not draw the star systems. Computer-vision similarity of the last frame to the Parent photograph is 83.7; anatomical identity is weaker than that number."
+        evidence:
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen photograph beside the activator field", supports: true}
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last frame scored against the specimen", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: "The γ sweep moves the formula wavelength and the dispersion peak together (r = 0.999998) and the comparison figure shows that scatter. A diffusivity-ratio sweep with D_u held fixed is not yet saved, so ratio expressivity is only implicit in RENDER_FACTOR."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [145, 177], note: "gamma_sweep_gof", supports: true}
+          - {file: docs/media/botryllus_schlosseri_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "γ-sweep panel", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: "FFT wavelength 39.90 µm versus the assigned 38.72 µm, specimen circularity 0.085 versus a circle reference of 1, equal-diffusion σ_peak = -0.649 versus 0, seed CV 0.0089 versus 0, KS statistic 0.086. The photograph is not a 39 µm micrograph, so the micrometre comparison is to the assigned scale."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [500, 554], note: "measure_morphoeval rows", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/botryllus_schlosseri_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "pearson, RMSE, KS, circularity, ablation", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Six DOIs were checked on OpenAlex. The specimen file is SHA-256 pinned to the public-domain Parent 1991 Wikimedia photograph, with author, locality, and license in the reference JSON."
+        evidence:
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/paper_citations.bib, lines: [1, 65], note: "Turing, Schnakenberg, Gierer-Meinhardt, Kondo-Asai, Sorrentino, Cloney", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/botryllus_schlosseri_turing_wavelength_s0_reference.json, lines: [62, 78], note: "specimen SHA-256, URL, license, 39 µm and 0 Ma", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "The module docstring states the PDE, the steady state, and the k_c identity, and names the functions that implement them. Lean theorems encode the diffusion-product sign, the cancellation in the wavenumber identity, the 38.72 µm versus 10 µm margin, and the seven-mode count."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [1, 40], note: "docstring equation map", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3136_botryllus_schlosseri_turing_wavelength_s0.lean, lines: [12, 40], note: "four theorems, no sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test checks the steady-state signs, the recovered wavelength 38.72 µm, σ(k_c)>0, equal-diffusion stability, Pearson r > 0.98, and the specimen SHA-256. Seed 3136 and the render size are constants. Dependencies are the repo scientific stack (numpy, scipy, pillow, matplotlib)."
+        evidence:
+          - {file: models/2026-delphi10000-botryllus-schlosseri-turing-wavelength-s0.py, lines: [557, 593], note: "self_test", supports: true}
+          - {file: datasets/botryllus_schlosseri_turing_wavelength_s0/README.md, lines: [22, 34], note: "invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Add a diffusivity-ratio sweep with D_u fixed and D_v/D_u varied above r_c, and record whether λ(r) is monotonic."
+      - id: R2
+        item: "Add an autocatalysis knockout (drop the u^2 v term) and show that the growth-rate peak is no longer positive."
+      - id: R3
+        item: "Save the ratio-sweep RMSE next to the existing Pearson r, KS statistic, and spacing CV in the metrics JSON."
