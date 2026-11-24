@@ -1,0 +1,53 @@
+sim_id: delphi10000-ceratopteris-richardii-turing-wavelength-s0
+organism: Ceratopteris richardii
+age_ma: 0
+scale_um: 256
+scale_m: 0.000256
+log10_m: -3.592
+tier: 5_primordium_100um
+chronoseries: "1/1 Holocene (Extant)"
+math_family: Turing Reaction-Diffusion Wavelength Selection
+quantitative_law: Turing wavenumber k_c
+model_spec:
+  sim_id: delphi10000-ceratopteris-richardii-turing-wavelength-s0
+  kinetics: schnakenberg
+  lambda_um: 256
+  age_ma: 0
+  D_u: 8
+  D_v: 96
+  a: 0.08
+  b: 0.92
+  domain_um: 768
+  seed: 3143
+  grid: 64
+  inputs:
+    - datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_primordium_plate.jpg
+    - datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_cfern_3weeks_cc-by-sa.jpg
+equations:
+  - law_name: Schnakenberg steady state and Jacobian
+    formula: "u0 = a + b; v0 = b/u0^2; f_u = gamma(-1 + 2 u0 v0); g_v = -gamma u0^2"
+    lean_decl: MathOfBiology.Loop_3143.observationScaleUm
+    lean_theorem: MathOfBiology.Loop_3143.observation_scale_is_256
+    lean_locus: morphoeval/lean/loops/Loop_3143_ceratopteris_richardii_turing_wavelength_s0.lean#L11-L30
+    variables: "a=0.08, b=0.92, observation scale 256 µm, age 0 Ma"
+    role: State variables of the primordium-detail activator-inhibitor system
+    source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py#L63-L78
+  - law_name: Critical wavenumber k_c
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c = 256 µm"
+    lean_decl: MathOfBiology.Loop_3143.diffusivityInhibitor
+    lean_theorem: MathOfBiology.Loop_3143.inhibitor_diffuses_twelvefold
+    lean_locus: morphoeval/lean/loops/Loop_3143_ceratopteris_richardii_turing_wavelength_s0.lean#L17-L38
+    variables: "D_u=8 µm^2/s, D_v=96 µm^2/s, ratio 12"
+    role: Wavelength selection at the 256 µm Holocene detail scale
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py#L80-L137
+  - law_name: Three-wavelength primordium window
+    formula: "L = 3 lambda_c = 768 µm; counterfactual predecessor lambda = 512 µm"
+    lean_decl: MathOfBiology.Loop_3143.primordiumWindowUm
+    lean_theorem: MathOfBiology.Loop_3143.window_holds_three_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3143_ceratopteris_richardii_turing_wavelength_s0.lean#L23-L46
+    variables: "domain side 768 µm; predecessor counterfactual 512 µm is not a scored fossil"
+    role: What changes at this scale versus a doubled meristem and versus the whole frond
+    source_citation: "Geng, Yan and Zhou 2022 DOI:10.1038/s42003-022-03627-y"
+    code_locus: models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py#L46-L56

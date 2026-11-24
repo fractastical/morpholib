@@ -1,0 +1,79 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/delphi/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-ceratopteris-richardii-turing-wavelength-s0> pk:hasAssessment <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-ceratopteris-richardii-turing-wavelength-s0-overall> .
+    <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-ceratopteris-richardii-turing-wavelength-s0-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Ceratopteris richardii Schnakenberg wavelength at 256 µm (Holocene, 0 Ma) — MorphoEval overall 78.3/100" ;
+        dct:date "2026-10-27"^^xsd:date ;
+        dct:description "Pass 1. Analytical lambda_c = 256 µm at D_u = 8, D_v = 96 (ratio 12), gamma = 0.012738 s^-1. Dispersion Pearson r = 1.0 against matrix eigenvalues. The integrated field is seeded on the critical mode and its Fourier peak is 256 µm. The 12-frame GIF is that stripe field (800x600). Computer-vision similarity to the canonical plate is 65.9, short of the image-fitness gate. Plate Otsu foreground fraction is 0.742 against a 0.5 prior. Sweep, ablation, voucher segmentation and terminal-plate lock are implemented but not exercised (REMEDIATION_PASS = 1). Overall 78.3/100 (faithfulness 74.1, reproducibility 88.1); rubric morphoeval 0.1.0; checkpoint commit 8bc1f20b8ecb6382629bf389fb84a0d39e22d0ca; environment: . Dimension assessments: Model fidelity to source 88, Morphological realism / specimen match 62, Parameter expressivity 74, Morphometric validation 76, Source and data traceability 90, Code-to-model traceability 86, Reproducibility package 88. Output judged: docs/media/ceratopteris_richardii_turing_wavelength_s0_comparison.png: rendered output of models/2026-delphi10000-ceratopteris-richardii-turing-wavelength-s0.py at 8bc1f20b8ecb6382629bf389fb84a0d39e22d0ca, image/png, 369299 B, 1344×1008 px, artifact_sha256 b784a5d262e3f76da32b8916aefff0d0a702c05cb7793a22459c1d89d4b5ad6b (sha256 b784a5d262e3f76da32b8916aefff0d0a702c05cb7793a22459c1d89d4b5ad6b), spec_fingerprint 98d67d0345048a400433c4abc043d914baa53b4d681328ad1e3cbae41c4b9bdb. Dual provenance: spec_fingerprint: 98d67d0345048a400433c4abc043d914baa53b4d681328ad1e3cbae41c4b9bdb; artifact_sha256: b784a5d262e3f76da32b8916aefff0d0a702c05cb7793a22459c1d89d4b5ad6b; input_dataset_sha256: {datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_cfern_3weeks_cc-by-sa.jpg=597a43f0f93f748e..., datasets/ceratopteris_richardii_turing_wavelength_s0/Ceratopteris_richardii_primordium_plate.jpg=3fcf2684662c089b...}. Claim boundary: reported_in_source: Turing 1952 and Schnakenberg 1979 select a finite critical wavenumber when the inhibitor out-diffuses the activator. | Geng, Yan and Zhou 2022 and Bartz and Gola 2018 describe the Ceratopteris notch meristem and archegonium positions. They do not publish a 256 µm pigment wavelength.; reconstructed_in_script: gamma is solved so k_c = 2*pi/256 µm on a 768 µm periodic window at age 0 Ma. | The rendered activator is initialized on that critical mode plus seed-3143 noise.; transfer_boundary: Applying Schnakenberg kinetics to the gallery primordium plate is a scale assignment, not a measurement from the fern papers.; does_not_claim: That Ceratopteris pigment was shown experimentally to obey these rate constants. | That a fossil chronospecies at 512 µm was measured. The series has one node, Holocene 0 Ma. | That the Pass-1 GIF matches the plate. CV similarity is 65.9.." ;
+        dct:subject <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: {'id': 'R1', 'item': 'Lock the GIF terminal frame to the canonical plate so orientation, radial FFT and coherency are scored against that plate (Pass-1 CV 65.9, image fitness below 70).'}",
+            "remediation needed: {'id': 'R2', 'item': 'Render the gamma sweep and emit it as a measurement. Self-test already checks monotonicity.'}",
+            "remediation needed: {'id': 'R3', 'item': 'Report the equal-diffusion ablation sigma_max as a negative control measurement.'}",
+            "remediation needed: {'id': 'R4', 'item': 'Segment the CC BY-SA gametophyte voucher and add KS plus RMSE goodness-of-fit against the plate.'}",
+            "remediation needed: {'id': 'R5', 'item': 'Single assessor only. No second provider scored this audit.'}" ;
+        pk:hasScore "0.783"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/delphi/resource/model/grok-4.7> a pk:Model ;
+        rdfs:label "Grok 4.7 (builder-assessor, single agent; no second assessor)" ;
+        dct:identifier "grok-4.7" ;
+        prov:actedOnBehalfOf <https://orcid.org/0000-0000-0000-0000> .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0000-0000-0000-0000>,
+            <https://w3id.org/delphi/resource/model/grok-4.7> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/j.ydbio.2018.10.005>,
+            <https://doi.org/10.1038/s42003-022-03627-y>,
+            <https://doi.org/10.1086/297255>,
+            <https://doi.org/10.1098/rstb.1952.0012> .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1016/j.ydbio.2018.10.005> dct:date "2018"^^xsd:gYear ;
+        dct:title "Meristem development and activity in gametophytes of the model fern, Ceratopteris richardii" .
+    <https://doi.org/10.1038/s42003-022-03627-y> dct:date "2022"^^xsd:gYear ;
+        dct:title "Positional cues and cell division dynamics drive meristem development and archegonium formation in Ceratopteris gametophytes" .
+    <https://doi.org/10.1086/297255> dct:date "1995"^^xsd:gYear ;
+        dct:title "The biology of the fern Ceratopteris and its use as a model system" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Ceratopteris richardii Schnakenberg wavelength at 256 µm (Holocene, 0 Ma) — MorphoEval overall 78.3/100" ;
+        dct:conformsTo <https://w3id.org/delphi/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-27T02:41:10Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0000-0000-0000-0000> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/delphi/resource/assessment/morphoeval-delphi10000-ceratopteris-richardii-turing-wavelength-s0-overall> ;
+        rdfs:seeAlso <https://w3id.org/delphi/resource/claim/morphoeval-delphi10000-ceratopteris-richardii-turing-wavelength-s0> ;
+        pk:domain <https://w3id.org/delphi/resource/domain/morphogenesis> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RASh_Tn3WNfWht2FgL8XQGseMKF3vVdWi-PRROMGuBu9Y> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAGIjRyQ2tgVqY29I6MKx5hzoIwr1f1kGtQw8EP1tTCPY>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAmSN3kCnQSAMqCM143jWrdUWzQTDku2_1DjrHY4v3ol4/template> .
+    <https://w3id.org/delphi/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
