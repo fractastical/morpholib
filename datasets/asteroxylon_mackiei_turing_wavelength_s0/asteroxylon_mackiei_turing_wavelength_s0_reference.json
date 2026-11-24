@@ -1,0 +1,123 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3124,
+  "sim_id": "delphi10000-asteroxylon-mackiei-turing-wavelength-s0",
+  "organism": {
+    "binomial": "Asteroxylon mackiei",
+    "authority": "Kidston & Lang, 1920",
+    "common_frame": "Early Devonian Rhynie Chert lycopsid (actinostele and microphylls)",
+    "aristotelian_path": "III. Phyta (Embryophyta) -> Angiospermae & Gymnospermae -> Asteroxylon",
+    "clade_note": "Asteroxylon is a stem lycopsid, not an angiosperm. The campaign path label is retained; the biology used here is Kidston & Lang 1920 and Hetherington et al. 2021."
+  },
+  "phenomenon_scale": {
+    "phenomenon_size_m": 5.2e-06,
+    "size_human": "5.2 µm",
+    "log10_size_m": -5.284,
+    "scale_tier": "3_subcellular_um",
+    "tier_index": "3/8",
+    "detail_variant": "s0",
+    "anatomical_structure": "Turing pigment stripe / ocellus wavelength in Asteroxylon mackiei (5.2 µm, detail scale)",
+    "calibration_note": "5.2 µm is the assigned detail-tier critical wavelength of this slot. It is not a published histological measurement of an Asteroxylon pigment period."
+  },
+  "paleobiology": {
+    "geological_age_ma": 407.0,
+    "geological_period": "Early Devonian (Pragian)",
+    "geological_horizon": "Early Devonian (Pragian Rhynie Chert, 407 Ma)",
+    "fossil_lineage_group": "Paleobotanical Vascular & Leaf Fossil Series",
+    "chronoseries": "Asteroxylon chronoseries 1/1",
+    "chronoseries_index": "1/1",
+    "locality": "Rhynie Chert, Aberdeenshire, Scotland"
+  },
+  "what_changes_at_this_scale": {
+    "versus_scale_predecessor": {
+      "name": "Asteroxylon mackiei enation-spacing mode",
+      "sibling_script": "models/2023-turner-asteroxylon-mackiei-turing-wavelength.py",
+      "wavelength_m": 0.0002834,
+      "wavelength_human": "283 µm",
+      "ratio_sibling_over_detail": 54.5,
+      "change": "The 283 µm mode sets one wavelength across a microphyll primordium. The 5.2 µm mode is 54.5 times shorter, so about 30 critical wavelengths fit in a 156 µm tracheid-file window and the diffusion coefficients drop by the square of that ratio. Parameters are not copied from the sibling."
+    },
+    "versus_grade_predecessor": {
+      "name": "Cooksonia pertoni",
+      "age_ma": 420,
+      "change": "Cooksonia is leafless and has no actinostele. There is no protoxylem-pole harmonic and no microphyll trace for a 5.2 µm wall-pattern mode to phase-lock to."
+    },
+    "versus_grade_successor": {
+      "name": "Baragwanathia-grade microphyllous lycopsid",
+      "change": "Fully vascularized microphylls lengthen the organ-scale spacing. The subcellular 5.2 µm mode can persist as tracheid-wall annular or helical spacing while the organ wavelength grows. This slot does not simulate that successor."
+    }
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979: du/dt = a - u + u^2 v + D_u laplacian(u); dv/dt = b - u^2 v + D_v laplacian(v)",
+    "steady_state": "u0 = a + b; v0 = b / (a + b)^2",
+    "jacobian": "f_u = -1 + 2 u v; f_v = u^2; g_u = -2 u v; g_v = -u^2, evaluated at steady state",
+    "homogeneous_stability": "tr J = f_u + g_v < 0 and det J = f_u g_v - f_v g_u > 0",
+    "critical_wavenumber": "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)",
+    "critical_wavelength": "lambda_c = 2 pi / k_c = 5.2e-6 m",
+    "turing_inequality": "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det J, which requires D_v/D_u > 1/f_u"
+  },
+  "state_variables": {
+    "u": "activator (wall-bound, short range), steady value 1.0",
+    "v": "inhibitor (cytosolic, long range), steady value 0.92"
+  },
+  "boundary_conditions": {
+    "domain": "periodic rectangle, 156.0 µm by 117.0 µm (30 by 22.5 critical wavelengths)",
+    "physical_meaning": "one tracheid-file detail window, not a whole shoot",
+    "numerical": "Fourier pseudospectral diffusion, explicit reaction, periodic"
+  },
+  "parameters": {
+    "a": 0.08,
+    "b": 0.92,
+    "delta_Dv_over_Du": 160.0,
+    "lambda_c_m": 5.2e-06,
+    "domain_length_m": 0.000156,
+    "domain_width_m": 0.000117,
+    "n_critical_wavelengths_along_axis": 30,
+    "why_not_the_sibling": "Sibling wavelength 283.4 µm uses a primordium-scale domain. Here D_u is fixed by k_c = 2 pi / 5.2 µm and delta = 160, which is an intracellular ratio, not a tissue-scale morphogen ratio."
+  },
+  "empirical_claims": [
+    {
+      "id": "actinostele",
+      "claim": "Asteroxylon mackiei has a stellate xylem (actinostele) with leaf traces into microphylls.",
+      "source_doi": "10.1017/s0080456800004506"
+    },
+    {
+      "id": "age",
+      "claim": "The Rhynie Chert is Pragian, Early Devonian, about 407 Ma.",
+      "source_doi": "10.1098/rstb.2016.0489"
+    },
+    {
+      "id": "habit",
+      "claim": "The plant is a branching aerial axis with microphylls and rooting axes that are not true roots.",
+      "source_doi": "10.7554/eLife.69447"
+    },
+    {
+      "id": "roots",
+      "claim": "Roots originated stepwise; Asteroxylon rooting axes are not homologous with euphyllophyte roots.",
+      "source_doi": "10.1038/s41586-018-0445-z"
+    },
+    {
+      "id": "kc",
+      "claim": "A two-species reaction-diffusion system selects a finite critical wavenumber k_c when the inhibitor diffuses sufficiently faster than the activator.",
+      "source_doi": "10.1098/rstb.1952.0012"
+    }
+  ],
+  "specimen": {
+    "file": "asteroxylon_mackiei_turing_wavelength_s0_specimen.jpg",
+    "sha256": "ad3ca375be91c9cf8e9eac9a2d3fa71eec4bd2072f17541dba69218cf17c1976",
+    "width": 640,
+    "height": 480,
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Asteroxylon_kz02.jpg",
+    "artist": "Krzysztof Ziarnek, Kenraiz",
+    "credit": "Own work. Asteroxylon in Museo de Paleobotánica Roberto Wagner (Cromarty, Scotland). Center cover-crop to 640x480.",
+    "date": "2024-03-20"
+  },
+  "cohort": {
+    "law": "Turing Reaction-Diffusion Wavelength Selection",
+    "family_index": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing Wavenumber k_c"
+  }
+}
