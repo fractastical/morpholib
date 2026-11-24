@@ -1,0 +1,182 @@
+# MorphoEval audit — Drosophila biarmipes 1.5 µm Turing wavelength, slot 3177, Pass 2.
+# Closes Pass 1 R1 (128² centroid) and R2 (figure callout). Same assessor as Pass 1.
+# Scale 1.5 µm (1.486e-06 m, log10=-5.828). Age 0 Ma.
+
+audit:
+  id: 2026-10-27-drosophila-biarmipes-turing-wavelength-s0-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-biarmipes-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-biarmipes-turing-wavelength-s0-audit
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, Pass 2 after the 128² grid check)"
+  publisher_github: https://github.com/fractastical
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: >-
+      Parent of the slot-3177 working tree. Loop files are new; build with
+      --no-verify-loci. Nanopub signing was not available (~/.nanopub/profile.yml absent).
+
+references:
+  gompel2005:
+    title: "Chance caught on the wing: cis-regulatory evolution and the origin of pigment patterns in Drosophila"
+    authors: "Gompel N, Prud'homme B, Wittkopp PJ, Kassner VA, Carroll SB"
+    venue: "Nature 433:481-487 (2005)"
+    doi: 10.1038/nature03235
+  prudhomme2006:
+    title: "Repeated morphological evolution through cis-regulatory changes in a pleiotropic gene"
+    authors: "Prud'homme B, Gompel N, Rokas A, Kassner VA, Williams TM, Yeh S-D, True JR, Carroll SB"
+    venue: "Nature 440:1050-1053 (2006)"
+    doi: 10.1038/nature04597
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+  wittkopp2003:
+    title: "Evolution in black and white: genetic control of pigment patterns in Drosophila"
+    authors: "Wittkopp PJ, Carroll SB, Kopp A"
+    venue: "Trends in Genetics 19:495-504 (2003)"
+    doi: 10.1016/S0168-9525(03)00194-X
+
+simulations:
+  - id: delphi10000-drosophila-biarmipes-turing-wavelength-s0
+    name: "Drosophila biarmipes Turing wavelength at 1.5 µm (detail s0, 0 Ma)"
+    organism: "Drosophila biarmipes"
+    script: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py
+    output: docs/media/drosophila_biarmipes_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_biarmipes_turing_wavelength_s0_growth.gif
+      - datasets/drosophila_biarmipes_turing_wavelength_s0/drosophila_biarmipes_turing_wavelength_s0_metrics.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-biarmipes-turing-wavelength-s0-audit
+    source_refs: [gompel2005, prudhomme2006, turing1952, kondo2010, wittkopp2003]
+    phenomenon_size_m: 1.486e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: Holocene (Extant)
+    summary: >-
+      Pass 2 keeps the Pass 1 Schnakenberg law (linear lambda_c = 1.486 µm,
+      sigma_max = 0.391, ananassae sigma_max = -0.538, bipectinata lambda_c =
+      1.400 µm, equal-diffusion sigma_max = -0.102, Pearson r = 0.9998,
+      RMSE = 0.0037, KS = 0.083). R1: the 128² centroid is 1.358 µm, against
+      1.259 µm on 96², so about half the gap to 1.486 µm was grid locking and
+      a nonlinear shortening remains. R2: both centroids are printed on the
+      comparison figure. GIF 720×540, 12 frames, cv_sim_similarity 82.3.
+      The gallery plate is still not a 1.5 µm micrograph (need N1, left open).
+    claim_boundary:
+      reported_in_source:
+        - "Gompel et al. 2005: D. biarmipes males deploy a novel yellow wing-spot enhancer."
+        - "Prud'homme et al. 2006: wing spots evolved repeatedly via yellow cis-regulatory elements."
+        - "Turing 1952: a finite critical wavenumber when the inhibitor diffuses faster than the activator."
+      reconstructed_in_script:
+        - "Schnakenberg (a, b, D_u, D_v) whose linear lambda_c equals 1.486 µm."
+        - "Ananassae subcritical and bipectinata shorter-wavelength shifts at fixed diffusivities."
+        - "96² centroid 1.259 µm and 128² centroid 1.358 µm on the same 17.832 µm patch."
+      transfer_boundary:
+        - "1.5 µm is the Delphi 3_subcellular_um assignment, not a length reported by Gompel."
+        - "Chronoseries neighbors are catalog positions, not a phylogenetic ancestor chain."
+      does_not_claim:
+        - "That yellow transcription is Schnakenberg kinetics."
+        - "That the gallery plate is a micrograph of a 1.5 µm melanin lattice."
+        - "That the saturated lattice wavelength equals the linear lambda_c."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Unchanged from the dispersion implementation that Pass 1 checked
+          (trace -0.2, det 1, Turing inequality open, six Lean theorems, 0 sorry).
+          Pass 2 adds an explicit statement that the law being audited is the
+          linear critical wavelength, with the nonlinear centroid reported
+          beside it rather than substituted for it.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [107, 152], note: "Jacobian, sigma(k), lambda_c, Turing margin", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [656, 676], note: "128² rerun; centroid 1.358 µm vs linear 1.486 µm", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3177_drosophila_biarmipes_turing_wavelength_s0.lean, lines: [23, 61], note: "six decide theorems, 0 sorry", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          cv_sim_similarity remains 82.3 on the 12-frame 720×540 GIF against
+          the pinned gallery plate. The comparison figure now labels linear
+          lambda_c and both centroids, so the 1.5 µm claim is not carried by
+          the picture alone. The plate is still a 100 µm gallery image; that
+          ceiling is why this dimension is not higher.
+        evidence:
+          - {file: docs/media/drosophila_biarmipes_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540, CV 82.3", supports: true}
+          - {file: docs/media/drosophila_biarmipes_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, last frame, dispersion, sweep, wavelength callout", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [748, 761], note: "figure text states linear, 96², and 128² wavelengths", supports: true}
+          - {file: datasets/drosophila_biarmipes_turing_wavelength_s0/README.md, lines: [19, 21], note: "plate is not a 1.5 µm micrograph", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          b from 0.35 to 1.25 shortens lambda_c monotonically (2.30 µm to
+          1.29 µm). Equal diffusion keeps sigma_max at -0.102. The 128² grid
+          moves the nonlinear centroid from 1.259 µm to 1.358 µm without
+          changing the linear law, which is the expressivity check Pass 1 asked for.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [267, 289], note: "b sweep and domain mode counts", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [656, 676], note: "grid size changes the nonlinear centroid and not lambda_c", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Pearson r = 0.9998, RMSE = 0.0037, KS = 0.083 on linearised modes.
+          Specimen Otsu foreground 0.176 vs render 0.233; coherency 0.690 vs
+          0.464; central ROI coherency 0.607. Seed CV of the 96² centroid is
+          0.015. Pass 2 adds the 128² centroid 1.358 µm (reference 1.486 µm,
+          not a copied scalar).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [208, 264], note: "Pearson, RMSE, and KS on sigma(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [314, 330], note: "specimen Otsu and coherency, including the central ROI", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [800, 814], note: "128² wavelength appended as its own measurement with reference 1.486 µm", supports: true}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Same five OpenAlex-verified DOIs, runtime SHA-256 pins, and the
+          recorded Wikimedia miss. Pass 2 does not add a new specimen; it
+          does not pretend the gallery plate became a micrograph.
+        evidence:
+          - {file: datasets/drosophila_biarmipes_turing_wavelength_s0/paper_citations.bib, lines: [1, 54], note: "five DOIs", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [90, 97], note: "runtime SHA-256 check", supports: true}
+          - {file: datasets/drosophila_biarmipes_turing_wavelength_s0/scout_manifest.json, lines: [0, 0], note: "rejected off-topic OpenAlex hit; curated seeds kept", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Docstring equations, Lean loci, and the new grid128_centroid
+          function are each tied to the linear-versus-nonlinear distinction
+          the figure states. Gompel 2005 still has no equation number to cite.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [1, 42], note: "PDE, chronospecies, claim boundary", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-biarmipes-turing-wavelength-s0.yaml, lines: [33, 90], note: "laws with Lean loci", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [656, 676], note: "grid check named as a discretization test", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test passes (Pearson r > 0.98, predecessor subcritical,
+          successor shorter, equal-diffusion stable, twelve wavelengths).
+          The 128² run uses the same seed, dt, and patch. Dataset hashes are
+          checked before integration. Signing is unavailable in this environment.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [63, 85], note: "frozen parameters and seeds", supports: true}
+          - {file: models/2026-delphi10000-drosophila-biarmipes-turing-wavelength-s0.py, lines: [816, 840], note: "self_test assertions including Pearson r > 0.98", supports: true}
+          - {file: datasets/drosophila_biarmipes_turing_wavelength_s0/README.md, lines: [23, 30], note: "invocation", supports: true}
+    remediation: []
+    needs:
+      - id: N1
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "A CC-licensed micrograph of D. biarmipes wing-spot cuticle near 1 µm. Still open after Pass 2; the gallery plate remains the pinned specimen."
+        status: open
+        novelty_n: 0.6
+        contradiction_c: 0.2
+        depth_d: 0.8
+        age_days_a: 0
