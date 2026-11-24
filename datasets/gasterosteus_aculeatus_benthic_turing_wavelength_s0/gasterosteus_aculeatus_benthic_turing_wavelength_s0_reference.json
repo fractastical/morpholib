@@ -1,0 +1,131 @@
+{
+  "sim_id": "delphi10000-gasterosteus-aculeatus-benthic-turing-wavelength-s0",
+  "slot": 3234,
+  "organism": {
+    "binomial": "Gasterosteus aculeatus",
+    "chronospecies": "Gasterosteus aculeatus_benthic",
+    "common_name": "Post-glacial Pitx1-deleted freshwater benthic stickleback (low plate)",
+    "aristotle": "I. Enaima (Vertebrata) -> Pisces (Ichthyes) -> Gasterosteus",
+    "lineage": "Gasterosteus Pelvic Reduction Chronospecies",
+    "chronoseries_index": "6/6"
+  },
+  "phenomenon_scale": {
+    "phenomenon": "Turing pigment stripe / ocellus wavelength",
+    "phenomenon_size_m": 4.315e-05,
+    "size_human": "43 µm",
+    "log10_size_m": -4.365,
+    "scale_tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "detail_variant": "s0",
+    "note": "Cellular-tier critical wavelength. Distinct from the 2.2 mm organ-scale benthic bar and the 2.4 mm marine organ-scale bar."
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene Post-Glacial Lake (Extant)",
+    "predecessor": {
+      "name": "Gasterosteus aculeatus",
+      "age_ma": 0.015,
+      "horizon": "Late Pleistocene Marine Ancestor (15 ka)",
+      "organ_wavelength_m": 0.002418,
+      "organ_wavelength_human": "2.4 mm"
+    },
+    "same_chronospecies_organ_tier": {
+      "wavelength_m": 0.00225,
+      "wavelength_human": "2.2 mm",
+      "slot_slug": "gasterosteus-aculeatus-benthic-turing-wavelength",
+      "note": "Sibling organ-scale model. Parameters are not reused here."
+    }
+  },
+  "cohort": {
+    "law": "Turing Reaction-Diffusion Wavelength Selection",
+    "family": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979",
+    "pde": [
+      "du/dt = Du * laplacian(u) + gamma * (a - u + u^2 v)",
+      "dv/dt = Dv * laplacian(v) + gamma * (b - u^2 v)"
+    ],
+    "homogeneous_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "fu = gamma*(-1 + 2*u0*v0), fv = gamma*u0^2, gu = gamma*(-2*u0*v0), gv = gamma*(-u0^2)",
+    "dispersion": "det(J - k^2 D) = Du*Dv*k^4 - (Dv*fu + Du*gv)*k^2 + (fu*gv - fv*gu)",
+    "critical_wavenumber": "k_c^2 = (Dv*fu + Du*gv) / (2*Du*Dv)",
+    "critical_wavelength": "lambda_c = 2*pi / k_c",
+    "boundary_conditions": "Periodic on a square dermal patch of a few cellular wavelengths. The rendered ocellus is recentered on the activator maximum.",
+    "readout": "Plate luminance L(r) = c0 + c1*U(r)*Vig(r) + c2*Vfield(r)*Vig(r), with Vig a fixed weak illumination envelope. c0, c1, c2 are fit once to the azimuthal mean of the detail plate."
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "gamma": 0.3,
+    "Du": 0.55,
+    "Dv": 12.0,
+    "grid_n": 32,
+    "dt": 0.008,
+    "nsteps": 9000,
+    "seed": 3234,
+    "radial_bins": 40,
+    "plate_radius_px": 280,
+    "model_radius_frac": 1.35,
+    "vignette_s": 9.0,
+    "lambda_c_m": 4.315e-05,
+    "note": "Grid spacing dx is set so the linear lambda_c equals 4.315e-5 m. These rates are not the 2.2 mm organ-scale sibling's parameters."
+  },
+  "empirical_claims": [
+    "Colosimo et al. 2005: low-plate freshwater sticklebacks repeatedly fix Eda alleles; marine fish keep a complete plate row.",
+    "Chan et al. 2010: pelvic reduction in benthic freshwater populations is caused by recurrent deletion of a Pitx1 enhancer. Age of the post-glacial morph is Holocene (0 Ma on this chronoseries).",
+    "Miller et al. 2007: Kit-ligand cis-regulatory changes alter stickleback pigmentation.",
+    "Greenwood, Jones, Chan et al. 2011: divergent juvenile pigment patterns in threespine sticklebacks have a mapped genetic basis.",
+    "Turing 1952 and Schnakenberg 1979 supply k_c. Kondo and Asai 1995 and Nakamasu et al. 2009 supply the chromatophore activator-inhibitor interpretation from other teleosts."
+  ],
+  "claim_boundary": {
+    "reported_in_source": [
+      "Plate-armor and pelvic-spine reduction in post-glacial benthic sticklebacks (Colosimo 2005; Chan 2010).",
+      "Genetic control of juvenile stickleback pigment pattern (Greenwood et al. 2011) and Kit ligand (Miller et al. 2007).",
+      "Reaction-diffusion wavelength selection (Turing 1952; Schnakenberg 1979) and teleost chromatophore Turing patterns (Kondo and Asai 1995; Nakamasu et al. 2009)."
+    ],
+    "reconstructed_in_script": [
+      "Schnakenberg integration on a 32^2 periodic patch with Du=0.55, Dv=12, gamma=0.3, a=0.1, b=0.9, seed 3234.",
+      "dx chosen so the linear critical wavelength is 43.15 µm (4.315e-5 m).",
+      "Azimuthal luminance of the canonical detail plate fit by a two-morphogen linear readout."
+    ],
+    "transfer_boundary": [
+      "Nakamasu zebrafish and Kondo angelfish rate constants are not stickleback measurements. Only the activator-inhibitor sign pattern is transferred.",
+      "The 43 µm figure is the catalog detail-tier assignment for this slot, not a published melanophore spacing counted on benthic G. aculeatus."
+    ],
+    "does_not_claim": [
+      "Does not claim the Commons lateral photograph is a benthic low-plate individual.",
+      "Does not claim the gallery detail plate is a raw micrograph of a 43 µm lattice; it is the repository canonical single-focus field (100 µm bar) used as the shape target.",
+      "Does not claim the organ-scale 2.2 mm benthic bar model (slot 1211) or the marine 2.4 mm model."
+    ]
+  },
+  "specimens": {
+    "detail_plate": {
+      "file": "gasterosteus_aculeatus_benthic_turing_wavelength_s0_specimen.jpg",
+      "sha256": "d715e13ebe21bfa5b005584946ebb33b475d11926bac487e67aab10554b26e5b",
+      "source": "datasets/species_gallery/I_Enaima_Vertebrata/Gasterosteus_aculeatus_benthic.jpg",
+      "role": "Canonical detail-scale comparison plate (100 µm scale bar, 111 px)."
+    },
+    "wikimedia_lateral": {
+      "file": "gasterosteus_aculeatus_wikimedia_lateral.jpg",
+      "sha256": "5f1fe33dce5e08dc83af1ffce6d538d01ff551244d93804c16a4873486f0663a",
+      "source": "https://commons.wikimedia.org/wiki/File:Gasterosteus_aculeatus.jpg",
+      "creator": "Ron Offermans",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "role": "Whole-animal voucher of Gasterosteus aculeatus. Not labeled benthic."
+    }
+  },
+  "sources": [
+    {"id": "turing1952", "doi": "10.1098/rstb.1952.0012"},
+    {"id": "schnakenberg1979", "doi": "10.1016/0022-5193(79)90042-0"},
+    {"id": "kondo1995", "doi": "10.1038/376765a0"},
+    {"id": "nakamasu2009", "doi": "10.1073/pnas.0808622106"},
+    {"id": "colosimo2005", "doi": "10.1126/science.1107239"},
+    {"id": "miller2007", "doi": "10.1016/j.cell.2007.10.055"},
+    {"id": "chan2010", "doi": "10.1126/science.1182213"},
+    {"id": "greenwood2011", "doi": "10.1038/hdy.2011.1"}
+  ]
+}

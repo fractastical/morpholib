@@ -1,0 +1,43 @@
+sim_id: delphi10000-gasterosteus-aculeatus-benthic-turing-wavelength-s0
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 4.315e-05
+log10_size_m: -4.365
+size_human: 43 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment ocellus wavelength in post-glacial benthic Gasterosteus aculeatus (Holocene, 0 Ma)
+geological_age_ma: 0.0
+geological_period: Holocene Post-Glacial Lake (Extant)
+fossil_lineage_group: Gasterosteus Pelvic Reduction Chronospecies
+predecessor:
+  name: Gasterosteus aculeatus
+  age_ma: 0.015
+  organ_wavelength_m: 0.002418
+  note: Marine complete-plate ancestor. This slot's cellular wavenumber is not that organ-scale bar.
+equations:
+- law_name: Cellular wavelength shorter than both organ-scale bars
+  formula: lambda_detail = 43 µm < lambda_benthic_organ = 2200 µm and lambda_detail < lambda_marine = 2400 µm
+  lean_decl: MathOfBiology.Loop_3234.lambdaDetailUm
+  lean_theorem: MathOfBiology.Loop_3234.cellular_wavelength_shorter_than_organ_bars
+  lean_locus: morphoeval/lean/loops/Loop_3234_gasterosteus_aculeatus_benthic_turing_wavelength_s0.lean#L16-L18
+  variables: lambda_detail at 0 Ma versus the 2.2 mm benthic organ bar and the 2.4 mm marine predecessor
+  role: States what changes at the cellular tier relative to the predecessor and the organ-scale sibling
+  source_citation: Chan et al. 2010 DOI 10.1126/science.1182213; Colosimo et al. 2005 DOI 10.1126/science.1107239
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-benthic-turing-wavelength-s0.py#L40-L48
+- law_name: Wavenumber inversion at fixed k*lambda product
+  formula: k_detail * 43 = k_organ * 2200 and k_detail > k_organ
+  lean_decl: MathOfBiology.Loop_3234.kDetail
+  lean_theorem: MathOfBiology.Loop_3234.wavenumber_inverts_when_wavelength_shrinks
+  lean_locus: morphoeval/lean/loops/Loop_3234_gasterosteus_aculeatus_benthic_turing_wavelength_s0.lean#L26-L29
+  variables: k_c scales as 1/lambda when the low-plate dermis selects the cellular mode
+  role: Critical wavenumber k_c is larger at 43 µm than at 2.2 mm
+  source_citation: Turing 1952 DOI 10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-benthic-turing-wavelength-s0.py#L114-L146
+- law_name: Turing discriminant of the integerised Schnakenberg Jacobian
+  formula: h^2 - 4*Du*Dv*det(J) > 0 with h = Dv*fu + Du*gv, trace < 0, det > 0
+  lean_decl: MathOfBiology.Loop_3234.turing_discriminant_positive
+  lean_theorem: MathOfBiology.Loop_3234.turing_discriminant_positive
+  lean_locus: morphoeval/lean/loops/Loop_3234_gasterosteus_aculeatus_benthic_turing_wavelength_s0.lean#L49-L50
+  variables: fu,fv,gu,gv = 240,300,-540,-300 and Du,Dv = 55,1200 (script rates times 1000 and 100)
+  role: A band of wavenumbers around k_c is unstable only when inhibitor diffusion is long-range
+  source_citation: Schnakenberg 1979 DOI 10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-gasterosteus-aculeatus-benthic-turing-wavelength-s0.py#L114-L146
