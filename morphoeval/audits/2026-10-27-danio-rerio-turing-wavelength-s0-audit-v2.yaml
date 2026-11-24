@@ -1,0 +1,175 @@
+# MorphoEval pass 2 — Danio rerio 24.08 µm Turing wavelength, slot 3164.
+# Closes the pass-1 rendering and KS-grid findings. Scores are uncalibrated.
+audit:
+  id: 2026-10-27-danio-rerio-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-danio-rerio-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (slot 3164 builder-assessor, pass 2; no second assessor)"
+    homepage: https://x.ai
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 2 working tree. ~/.nanopub/profile.yml is absent, so nanopubs are built and conformance-checked but not signed."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 106:8429-8434 (2009)"
+    year: 2009
+    doi: 10.1073/pnas.0808622106
+  hiscock2015:
+    title: "Orientation of Turing-like Patterns by Morphogen Gradients and Tissue Anisotropies"
+    authors: "Hiscock TW, Megason SG"
+    venue: "Cell Systems 1:408-416 (2015)"
+    year: 2015
+    doi: 10.1016/j.cels.2015.12.001
+  quigley2004:
+    title: "Pigment pattern evolution by differential deployment of neural crest and post-embryonic melanophore lineages in Danio fishes"
+    authors: "Quigley IK, Turner JM, Nuckels RJ, Manuel JL, Budi EH, MacDonald EL, Parichy DM"
+    venue: "Development 131:6053-6069 (2004)"
+    year: 2004
+    doi: 10.1242/dev.01526
+  patterson2014:
+    title: "Pigment cell interactions and differential xanthophore recruitment underlying zebrafish stripe reiteration and Danio pattern evolution"
+    authors: "Patterson LB, Bain EJ, Parichy DM"
+    venue: "Nature Communications 5:5299 (2014)"
+    year: 2014
+    doi: 10.1038/ncomms6299
+simulations:
+  - id: delphi10000-danio-rerio-turing-wavelength-s0
+    name: "Danio rerio Holocene 24.08 µm anisotropic Schnakenberg wavelength (pass 2)"
+    organism: "Danio rerio"
+    script: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py
+    output: docs/media/danio_rerio_turing_wavelength_s0_comparison.png
+    also:
+      - docs/media/danio_rerio_turing_wavelength_s0_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-danio-rerio-turing-wavelength-s0-audit
+    source_refs: [turing1952, nakamasu2009, hiscock2015, quigley2004, patterson2014]
+    summary: >-
+      Pass 2 keeps the same Schnakenberg system (a=0.11, b=1.24, Du=0.80,
+      Dv_y=20.80, gamma=0.1989, anisotropy 3.85). The GIF pigment is now a
+      steep sigmoid of the activator, colored with the specimen dark and light
+      palette, and the comparison figure shows that fish-mask composite beside
+      the photograph. Dispersion growth rates are measured on the 11 exact
+      dorsoventral Fourier modes: Pearson r = 0.9805, RMSE = 0.0191, KS D = 0.273
+      against a 0.40 ceiling. Selected wavelength remains 24.08 µm. Computer-vision
+      similarity of the 960×540, 12-frame GIF against the photograph is 77.8.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: two-species reaction-diffusion selects a critical wavenumber when the inhibitor out-diffuses the activator."
+        - "Nakamasu et al. 2009: zebrafish melanophores and xanthophores are a short-range activation / long-range inhibition pair."
+        - "Hiscock & Megason 2015: anisotropy orients stripes by removing one axis from the unstable band."
+        - "Quigley et al. 2004 and Patterson et al. 2014: D. nigrofasciatus is broken-striped or spotted relative to D. rerio."
+      reconstructed_in_script:
+        - "Anisotropic Schnakenberg integration on a 288.96 × 144.48 µm window with Dv_y/Dv_x = 3.85 for D. rerio and 1.12 for the predecessor."
+        - "Growth-rate comparison on exact y-DFT modes, anisotropy sweep, equal-diffusion ablation, and three noise seeds."
+        - "Specimen mask segmentation and a bimodal pigment composite of the simulated field."
+      transfer_boundary:
+        - "The 144.48 µm cellular window is magnified onto the adult outline. Adult stripes are not 24.08 µm wide."
+        - "gamma is calibrated so the dispersion peak lies on the assigned scale."
+      does_not_claim:
+        - "That the gray-brown composite reproduces iridophore iridescence or the eye."
+        - "That the predecessor was measured at 24.08 µm; the contrast is the anisotropy mechanism at this assigned scale."
+        - "A cryptographic nanopublication signature."
+    scores:
+      model-fidelity:
+        value: 87
+        rationale: >-
+          The integrator and the analytical eigenvalue are unchanged from pass 1.
+          Pass 2 measures growth on the exact dorsoventral DFT modes of the
+          window, which are the eigenfunctions of the discrete Laplacian the
+          solver uses. gamma remains a scale calibration rather than a transcribed
+          Nakamasu parameter.
+        evidence:
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [85, 94], note: "analytical dispersion eigenvalue", supports: true}
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [179, 190], note: "exact y-DFT modes used for the growth-rate comparison", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The comparison figure now places the fish-mask composite next to the
+          photograph, and the GIF stripes are bimodal in the specimen dark/light
+          palette rather than a gray sinusoid. Computer-vision similarity rose
+          from 74.5 to 77.8. The eye, blue iridescence, and the adult count of
+          four or five stripes are still absent; the composite shows the six
+          wavelengths of the 144.48 µm window.
+        evidence:
+          - {file: docs/media/danio_rerio_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, mask composite, and unwrapped field", supports: true}
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [270, 286], note: "sigmoid pigment mapped through the specimen palette", supports: true}
+          - {file: docs/media/danio_rerio_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 960x540 animation, CV similarity 77.8", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Gradient anisotropy rises monotonically across inhibitor ratios 1.12,
+          2.0, 3.85, and 6.0 (about 1.2 to 6.0). The predecessor sits at the
+          isotropic end and the equal-diffusion ablation stays at numerical
+          roundoff. The sweep is the same experiment as pass 1 and is plotted
+          with both chronospecies marked.
+        evidence:
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [386, 420], note: "seeds, predecessor, equal-diffusion control, anisotropy sweep", supports: true}
+          - {file: docs/media/danio_rerio_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "anisotropy curve", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          On the 11 exact modes, Pearson r = 0.9805 and RMSE = 0.0191. The KS
+          statistic is 0.273 against a ceiling of 0.40, so the pass-1 coincidence
+          of D with its own reference is gone. GIF coherency 0.4399 is not the
+          specimen coherency 0.3887, and the predecessor wavelength is 20.64 µm
+          against the rerio target 24.08 µm. The correlation clears 0.98 with
+          little room; one low-k mode still sits off the analytical curve.
+        evidence:
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [179, 232], note: "DFT-mode dispersion fit", supports: true}
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [448, 530], note: "measurement rows; KS ceiling 0.40 is not the measured D", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >-
+          DOIs for Turing 1952, Nakamasu 2009, Hiscock & Megason 2015, Quigley
+          2004, and Patterson 2014 were checked on Crossref and written to the
+          BibTeX. Specimen, scout, README, and BibTeX SHA-256 pins are verified
+          before integration. The scout manifest records that slot 3164 is
+          outside the 100-slot campaign file.
+        evidence:
+          - {file: datasets/danio_rerio_turing_wavelength_s0/paper_citations.bib, lines: [1, 84], note: "Crossref-checked bibliography", supports: true}
+          - {file: datasets/danio_rerio_turing_wavelength_s0/danio_rerio_turing_wavelength_s0_reference.json, lines: [1, 40], note: "scale 2.408e-05 m, age 0 Ma, predecessor contrast", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The docstring, reference JSON, math-KG laws, and Lean theorems name
+          the same Jacobian margins and the 3.85 versus 1.12 anisotropy split.
+          Pass 2's sigmoid is commented as a display map, not a change to the
+          PDE. Lean integers are rounded to 0.01.
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3164_danio_rerio_turing_wavelength_s0.lean, lines: [14, 47], note: "five theorems, zero sorry", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-danio-rerio-turing-wavelength-s0.yaml, lines: [1, 55], note: "laws pinned to the Lean theorems and the script", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          --self-test still requires Pearson r > 0.98, RMSE < 0.02, wavelength
+          error below 0.75 µm, a dead equal-diffusion control, three seeds, a
+          rising anisotropy sweep, and a GIF of at least 10 frames and 480 px.
+          The pass-2 command completes in about 11 s from a fixed seed.
+        evidence:
+          - {file: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py, lines: [549, 564], note: "self-test gates", supports: true}
+    remediation:
+      - "No second assessor has scored this pass."
+      - "gamma = 0.1989 is calibrated to the assigned 24.08 µm scale rather than copied from a published table."
+      - "The composite has no eye and no iridescent blue; the stripe count is the cellular window, not the adult flank."
+      - "Nanopubs are unsigned because ~/.nanopub/profile.yml is absent."

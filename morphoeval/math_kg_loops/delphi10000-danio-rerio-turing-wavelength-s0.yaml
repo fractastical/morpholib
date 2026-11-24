@@ -1,0 +1,56 @@
+sim_id: delphi10000-danio-rerio-turing-wavelength-s0
+organism: Danio rerio
+scale_m: 2.408e-05
+scale_tier: 4_cellular_10um
+geological_age_ma: 0.0
+predecessor: Danio nigrofasciatus
+math_family: Reaction-Diffusion & Turing Dispersion
+model_spec:
+  model: "Schnakenberg anisotropic Turing wavelength selection at 24.08 µm (Danio rerio, Holocene)"
+  wavelength_um: 24.08
+  phenomenon_size_m: 2.408e-05
+  geological_age_ma: 0.0
+  a: 0.11
+  b: 1.24
+  Du: 0.8
+  Dv_y: 20.8
+  aniso_rerio: 3.85
+  aniso_nigrofasciatus: 1.12
+  gamma: 0.1989
+  grid_resolution: [192, 96]
+  domain_um: [288.96, 144.48]
+  seed: 3164
+  inputs:
+    - datasets/danio_rerio_turing_wavelength_s0/danio_rerio_turing_wavelength_s0_reference.json
+    - datasets/danio_rerio_turing_wavelength_s0/scout_manifest.json
+    - datasets/danio_rerio_turing_wavelength_s0/paper_citations.bib
+    - datasets/danio_rerio_turing_wavelength_s0/README.md
+    - datasets/danio_rerio_turing_wavelength_s0/danio_rerio_specimen.jpg
+equations:
+  - law_name: Schnakenberg Jacobian trace and determinant
+    formula: "u0=a+b, v0=b/u0^2, f_u=-1+2 u0 v0, g_v=-u0^2, det=f_u g_v-f_v g_u"
+    lean_decl: MathOfBiology.Loop_3164.turingMargin
+    lean_theorem: MathOfBiology.Loop_3164.rerio_dv_axis_turing_unstable
+    lean_locus: morphoeval/lean/loops/Loop_3164_danio_rerio_turing_wavelength_s0.lean
+    variables: "a=0.11, b=1.24, fu≈0.837, gv≈-1.823, det≈1.823, tr≈-0.985"
+    role: "Homogeneous steady state of the 24.08 µm Danio rerio pigment system is stable without diffusion"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012; Nakamasu et al. 2009 DOI:10.1073/pnas.0808622106"
+    code_locus: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py
+  - law_name: Critical Turing wavenumber on the dorsoventral axis
+    formula: "k_c = argmax_k sigma(0, k; Du, Dv_y, gamma), lambda_c = 2 pi / k_c = 24.08 µm"
+    lean_decl: MathOfBiology.Loop_3164.turingMargin
+    lean_theorem: MathOfBiology.Loop_3164.six_wavelengths_span_the_cellular_window
+    lean_locus: morphoeval/lean/loops/Loop_3164_danio_rerio_turing_wavelength_s0.lean
+    variables: "Du=0.80, Dv_y=20.80, gamma=0.1989, Ly=144.48 µm holds 6 wavelengths"
+    role: "Selects the detail-scale pigment wavelength of extant Danio rerio"
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py
+  - law_name: Anisotropic axis selection versus Danio nigrofasciatus
+    formula: "margin(Dv)=h(Dv)^2-4 Du Dv det; margin(Dv_y)>0, margin(Dv_x)<0 iff Dv_y/Dv_x=3.85"
+    lean_decl: MathOfBiology.Loop_3164.turingMargin
+    lean_theorem: MathOfBiology.Loop_3164.rerio_ap_axis_stable
+    lean_locus: morphoeval/lean/loops/Loop_3164_danio_rerio_turing_wavelength_s0.lean
+    variables: "aniso_rerio=3.85, aniso_predecessor=1.12, age=0 Ma"
+    role: "Holocene D. rerio collapses the AP Turing band; the predecessor does not"
+    source_citation: "Hiscock & Megason 2015 DOI:10.1016/j.cels.2015.12.001; Quigley et al. 2004 DOI:10.1242/dev.01526"
+    code_locus: models/2026-delphi10000-danio-rerio-turing-wavelength-s0.py
