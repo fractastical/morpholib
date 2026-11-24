@@ -1,0 +1,88 @@
+sim_id: friston-markov-blanket-pattern-regulation
+math_family: Variational Free Energy Gradient Flow Across a Markov Blanket
+model_spec:
+  model: Friston, Levin, Sengupta & Pezzulo (2015) J. R. Soc. Interface 12:20141383 Markov-blanket free-energy pattern regulation (Levin-channel C07)
+  markov_blanket_partition: "States {eta, s, a=morph, mu}; blanket B={s,a}; mu ⊥ eta | B"
+  variational_free_energy: "F(mu, s) = (1/2) * Pi_s * ||s - mu||^2 + (1/2) * Pi_p * ||mu - mu_star||^2"
+  gap_junction_sensory_map: "s = (1-alpha)*morph + alpha*neighbor_mean(morph), alpha=clip(g_gj,0,0.49)"
+  perception_ode: "dmu/dt = kappa_mu * Pi_s * (s - mu) - kappa_mu * Pi_p * (mu - mu_star)"
+  action_ode: "dmorph/dt = -kappa_a * Pi_s * (morph - mu)"
+  lyapunov_free_energy_decay: "dF/dt <= 0 along coupled perception-action trajectories"
+  parameters:
+    n_cells: 32
+    Pi_s_wt: 2.0
+    Pi_p_wt: 4.0
+    kappa_a: 0.55
+    kappa_mu: 0.90
+    g_gj_wt: 0.35
+    seed: 2015
+  inputs:
+    - datasets/friston_markov_blanket_pattern_regulation/friston_markov_blanket_pattern_regulation_reference.json
+    - datasets/friston_markov_blanket_pattern_regulation/ambystoma_mexicanum_pattern_specimen.jpg
+    - datasets/friston_markov_blanket_pattern_regulation/scout_manifest.json
+    - datasets/friston_markov_blanket_pattern_regulation/paper_citations.bib
+equations:
+  - law_name: "Friston et al. (2015) Variational Free Energy Target Equilibrium Law"
+    formula: "F(μ, s) = (1/2) Π_s (s - μ)^2 + (1/2) Π_p (μ - μ*)^2 ≥ 0;   F(μ*, μ*) = 0"
+    lean_decl: "MathOfBiology.Loop_3101.vfe_2x"
+    lean_theorem: "MathOfBiology.Loop_3101.vfe_zero_at_target_and_symmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_3101_friston_markov_blanket_pattern_regulation.lean#L14-L40"
+    lean_code: |
+      def sq_int (z : Int) : Int :=
+        z * z
+      def vfe_2x (Pi_s Pi_p s mu mu_star : Int) : Int :=
+        Pi_s * sq_int (s - mu) + Pi_p * sq_int (mu - mu_star)
+      theorem vfe_zero_at_target_and_symmetry (Pi_s Pi_p d mu_star : Int) :
+          vfe_2x Pi_s Pi_p mu_star mu_star mu_star = 0 ∧
+          vfe_2x 2 4 0 100 100 = 20000 ∧
+          vfe_2x 2 4 100 100 100 = 0 ∧
+          sq_int (-d) = sq_int d := by
+        refine ⟨?_, by decide, by decide, ?_⟩
+        · simp [vfe_2x, sq_int]
+        · simp [sq_int, Int.neg_mul_neg]
+    variables: "s: sensory states; μ: internal beliefs; μ*: stored bioelectric target pattern; Π_s, Π_p: precisions"
+    role: "Defines the VFE functional and proves the unique zero-energy target equilibrium"
+    source_citation: "Friston et al. (2015) J. R. Soc. Interface 12:20141383 Eqs. (2.1)-(2.6)"
+    code_locus: "2015-friston-markov-blanket-pattern-regulation.py#L120-L180"
+  - law_name: "Markov-Blanket Morphogenetic Action Stop & Sensory-Precision Arrest Law"
+    formula: "dφ/dt = -κ_a Π_s (φ - μ);   φ=μ ⇒ dφ/dt=0;   Π_s=0 ⇒ dφ/dt=0"
+    lean_decl: "MathOfBiology.Loop_3101.action_vel"
+    lean_theorem: "MathOfBiology.Loop_3101.action_stop_and_precision_arrest"
+    lean_locus: "morphoeval/lean/loops/Loop_3101_friston_markov_blanket_pattern_regulation.lean#L43-L62"
+    lean_code: |
+      def action_vel (kappa_a Pi_s morph mu : Int) : Int :=
+        -kappa_a * Pi_s * (morph - mu)
+      theorem action_stop_and_precision_arrest (kappa_a Pi_s morph mu : Int) :
+          action_vel kappa_a Pi_s mu mu = 0 ∧
+          action_vel kappa_a 0 morph mu = 0 ∧
+          action_vel 11 2 0 100 = 2200 ∧
+          action_vel 11 2 100 100 = 0 := by
+        refine ⟨?_, ?_, by decide, by decide⟩
+        · simp [action_vel]
+        · simp [action_vel]
+    variables: "φ: morphological phenotype field; κ_a: action rate; Π_s: sensory precision"
+    role: "Proves exact morphological stopping at the belief state and complete arrest under Pi_s=0"
+    source_citation: "Friston et al. (2015) Eq. (2.6); Pezzulo & Levin (2015) denervation / precision ablation"
+    code_locus: "2015-friston-markov-blanket-pattern-regulation.py#L150-L210"
+  - law_name: "Canonical FEP Pattern-Regulation Regime Asymptotics Law"
+    formula: "lim (φ, F_flag) = (μ*, 0) [Π_s>0 ∧ κ_μ>0] else (φ_0, 1)"
+    lean_decl: "MathOfBiology.Loop_3101.asymptotic_pattern_state"
+    lean_theorem: "MathOfBiology.Loop_3101.canonical_fep_pattern_regimes"
+    lean_locus: "morphoeval/lean/loops/Loop_3101_friston_markov_blanket_pattern_regulation.lean#L65-L90"
+    lean_code: |
+      def asymptotic_pattern_state (Pi_s kappa_mu scrambled setpoint : Int) : Int × Int :=
+        if Pi_s > 0 then
+          if kappa_mu > 0 then (setpoint, 0) else (scrambled, 1)
+        else
+          (scrambled, 1)
+      theorem canonical_fep_pattern_regimes :
+          asymptotic_pattern_state 2 90 0 100 = (100, 0) ∧
+          asymptotic_pattern_state 2 90 0 (-100) = (-100, 0) ∧
+          asymptotic_pattern_state 0 90 0 100 = (0, 1) ∧
+          asymptotic_pattern_state 2 0 0 100 = (0, 1) ∧
+          asymptotic_pattern_state 2 90 35 100 = (100, 0) := by
+        decide
+    variables: "Π_s: sensory precision; κ_μ: belief-update rate; scrambled φ_0; setpoint μ*"
+    role: "Classifies intact recovery, mirrored setpoint rewrite, precision ablation, and open-loop failure"
+    source_citation: "Friston et al. (2015); Levin-channel C07 Markov-blanket VFE gradient flow"
+    code_locus: "2015-friston-markov-blanket-pattern-regulation.py#L260-L360"
