@@ -1,0 +1,126 @@
+# MorphoEval Pass 1 — Dictyostelium discoideum Turing wavelength, slot 3168.
+# Scores the reference δ=24 regime and the sorocarp photograph.
+# Sweep, ablation, specimen segmentation, and dispersion goodness-of-fit
+# are present in the script and are re-scored in the v2 audit.
+audit:
+  id: 2026-10-27-dictyostelium-discoideum-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; no second assessor on this pass)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Working tree for loop 3168. Lean kernel was not on PATH."
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      pillow: "13.0.0"
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, Alan M."
+    year: 1952
+    venue: "Philosophical Transactions of the Royal Society B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, Jürgen"
+    year: 1979
+    venue: "Journal of Theoretical Biology"
+    doi: "10.1016/0022-5193(79)90042-0"
+  taniguchi2013:
+    title: "Phase geometries of two-dimensional excitable waves govern self-organized morphodynamics of amoeboid cells"
+    authors: "Taniguchi, Ishihara, Oonuki, Honda-Kitahara, Kaneko, and Sawai"
+    year: 2013
+    venue: "Proceedings of the National Academy of Sciences"
+    doi: "10.1073/pnas.1218025110"
+  hofer1995:
+    title: "Dictyostelium discoideum: cellular self-organization in an excitable biological medium"
+    authors: "Höfer, Thomas; Sherratt, Jonathan A.; Maini, Philip K."
+    year: 1995
+    venue: "Proceedings of the Royal Society B"
+    doi: "10.1098/rspb.1995.0037"
+simulations:
+  - id: delphi10000-dictyostelium-discoideum-turing-wavelength-s0
+    name: "Dictyostelium discoideum Schnakenberg Turing wavelength at 2.304 µm (Holocene, 0 Ma)"
+    organism: "Dictyostelium discoideum"
+    script: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py
+    output: docs/media/dictyostelium_discoideum_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, taniguchi2013, hofer1995]
+    phenomenon_size_m: 2.304e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: "Holocene (Extant)"
+    summary: >-
+      Pass 1 integrates Schnakenberg kinetics on an 11.52 µm periodic cell so the
+      discrete-Laplacian growth rate peaks at 2.304 µm (measured 2.3037 µm).
+      The GIF is a 12-frame, 960×720 activator field. The public-domain sorocarp
+      is the species photograph, not a cortical micrograph. Diffusion-ratio sweep,
+      equal-diffusion ablation, specimen segmentation, and dispersion goodness-of-fit
+      are left for the v2 re-score.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability at a finite critical wavenumber."
+        - "Taniguchi 2013: Dictyostelium PIP3 and F-actin travel as cortical excitable waves."
+        - "Höfer, Sherratt and Maini 1995: cAMP relay plus chemotaxis produces aggregation streams."
+      reconstructed_in_script:
+        - "Schnakenberg PDE with a=0.16, b=0.94, Du=0.03208776235376616, Dv=0.770106296490388, periodic 80×80 grid, seed 3168."
+      transfer_boundary:
+        - "Catalog wavelength 2.304 µm (2.304e-06 m, log10=-5.638, tier 3_subcellular_um) is the slot coordinate inside the cortical-wave band, not a printed wet-lab mean."
+        - "Chronoseries 1/1 at 0 Ma. A 0.20 µm molecular regime admits zero modes; millimetre-scale cAMP waves are a longer regime of the same extant species."
+      does_not_claim:
+        - "That sorocarps are pigment stripes or ocelli."
+        - "That the phase-singularity model of Taniguchi 2013 was integrated."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The script implements the Schnakenberg PDE, the five-point periodic Laplacian, and σ(k) from the discrete eigenvalue. Pass 1 credits that reference regime. It does not yet credit the dispersion-table residual as a fidelity score."
+        evidence:
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [84, 123], note: "sigma_discrete and unstable eigenvector", supports: true}
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [125, 164], note: "explicit Euler integrator", supports: true}
+      specimen-match:
+        value: 62
+        rationale: "The comparison figure places the public-domain sorocarp beside a cortical spot field. They are different magnifications. Pass 1 does not yet use the measured CV similarity as a specimen-match score."
+        evidence:
+          - {file: docs/media/dictyostelium_discoideum_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "six-panel comparison including the sorocarp photograph", supports: true}
+          - {file: docs/media/dictyostelium_discoideum_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 960x720 activator animation", supports: true}
+      parameter-expressivity:
+        value: 58
+        rationale: "Pass 1 judges only the reference point δ=24, λ=2.304 µm, five modes per cell. The diffusion-ratio sweep is the Pass 2 remediation."
+        evidence:
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [49, 66], note: "slot-3168 constants a, b, Du, Dv, domain, seed", supports: true}
+      morphometric-validation:
+        value: 64
+        rationale: "Pass 1 records that the analytical peak is 2.3037 µm against the 2.304 µm coordinate. Pearson r, RMSE, KS, and the specimen mask statistics are the Pass 2 remediation."
+        evidence:
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [109, 123], note: "analytical_peak_wavelength", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Turing 1952, Schnakenberg 1979, Taniguchi 2013, and Höfer 1995 were confirmed on Crossref or OpenAlex. The sorocarp file is the Wikimedia public-domain JPEG by Bruno in Columbus, SHA-256 pinned in the reference JSON."
+        evidence:
+          - {file: datasets/dictyostelium_discoideum_turing_wavelength_s0/paper_citations.bib, lines: [1, 117], note: "DOI list", supports: true}
+          - {file: datasets/dictyostelium_discoideum_turing_wavelength_s0/dictyostelium_discoideum_turing_wavelength_s0_reference.json, lines: [102, 114], note: "specimen SHA-256 and license", supports: true}
+      code-traceability:
+        value: 78
+        rationale: "The module docstring states the PDE, k_c, the 2.304 µm scale, age 0 Ma, and the claim boundary. Pass 1 does not yet pin the mode-growth table to the Lean statements."
+        evidence:
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [1, 30], note: "governing equations and scale statement", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3168_dictyostelium_discoideum_turing_wavelength_s0.lean, lines: [16, 42], note: "four sorry-free Int theorems", supports: true}
+      repro-package:
+        value: 82
+        rationale: "Seed 3168, --self-test, and pinned Du, Dv. Pass 1 self-test checks the 1% wavelength band, five modes, and the equal-diffusion sign. Full metrics JSON is the Pass 2 package."
+        evidence:
+          - {file: models/2026-delphi10000-dictyostelium-discoideum-turing-wavelength-s0.py, lines: [655, 703], note: "self_test assertions", supports: true}
+    remediation:
+      - "R-sweep: score the δ = Dv/Du sweep (onset and the monotonic rise of λ once σ_max > 0) under parameter-expressivity."
+      - "R-ablation: score the equal-diffusion negative control (variance collapse versus the δ=24 run)."
+      - "R-cv: enter the real specimen border-contrast segmentation (foreground, circularity, coherency) as morphometrics with references that are not equal to the measured values."
+      - "R-gof: report Pearson r, RMSE, and KS for the dispersion relation, plus the specimen-versus-GIF orientation KS."
+      - "R-assessor: a second assessor did not score this pass."
