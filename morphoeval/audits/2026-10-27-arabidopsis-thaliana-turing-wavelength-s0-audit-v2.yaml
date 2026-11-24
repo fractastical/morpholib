@@ -1,0 +1,193 @@
+# MorphoEval pass 2 — Arabidopsis thaliana Turing wavelength, 112 µm, Holocene 0 Ma.
+# Supersedes 2026-10-27-arabidopsis-thaliana-turing-wavelength-s0-audit.
+# Weighted score 88.7 = (20*91 + 25*86 + 10*88 + 15*90 + 10*92 + 8*87 + 12*88) / 100.
+audit:
+  id: 2026-10-27-arabidopsis-thaliana-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-arabidopsis-thaliana-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-arabidopsis-thaliana-turing-wavelength-s0-audit
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (pass 2)"
+    homepage: https://x.ai
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 7dbcb5f4ae37938efcf50ef7ff5969863bb80dbe
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 2 re-scores the same solver after the image-fitness measurement and the bootstrap CI."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society of London B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    url: https://doi.org/10.1098/rstb.1952.0012
+  bouyer2008:
+    title: "Two-dimensional patterning by a trapping/depletion mechanism: the role of TTG1 and GL3 in Arabidopsis trichome formation"
+    authors: "Bouyer D, Geier F, Kragler F, Schnittger A, Pesch M, Wester K, Balkunde R, Timmer J, Fleck C, Hülskamp M"
+    venue: "PLoS Biology 6(6):e141 (2008)"
+    doi: 10.1371/journal.pbio.0060141
+    url: https://doi.org/10.1371/journal.pbio.0060141
+  dipatti2023:
+    title: "Stochastic Turing patterns of trichomes in Arabidopsis leaves"
+    authors: "Di Patti F, Ugartechea-Chirino Y, Arbel-Goren R, Sharon T, Castillo A, Alvarez-Buylla ER, Fanelli D, Stavans J"
+    venue: "PNAS 120(42):e2309616120 (2023)"
+    doi: 10.1073/pnas.2309616120
+    url: https://doi.org/10.1073/pnas.2309616120
+  balkunde2020:
+    title: "Identification of the trichome patterning core network using data from weak ttg1 alleles to constrain the model space"
+    authors: "Balkunde R, Deneer A, Bechtel H, Zhang B, Herberth S, Pesch M, Jaegle B, Fleck C, Hülskamp M"
+    venue: "Cell Reports 33(11):108497 (2020)"
+    doi: 10.1016/j.celrep.2020.108497
+    url: https://doi.org/10.1016/j.celrep.2020.108497
+simulations:
+  - id: delphi10000-arabidopsis-thaliana-turing-wavelength-s0
+    name: "Arabidopsis thaliana Turing wavenumber at 111.6 µm"
+    organism: "Arabidopsis thaliana"
+    script: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py
+    output: docs/media/arabidopsis_thaliana_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-arabidopsis-thaliana-turing-wavelength-s0-audit
+    source_refs: [turing1952, bouyer2008, dipatti2023, balkunde2020]
+    summary: >
+      Pass 2 of the 111.6 µm Arabidopsis trichome-spot model. Dispersion Pearson
+      r = 0.99991 (RMSE 0.00336). GIF fitness against the Paves SEM is CV 93.3
+      on 12 frames at 640×480. Image fitness using this pass's specimen-match
+      and morphometric scores is 90.6. Signing remains unavailable.
+    provenance:
+      spec_fingerprint: c3c61462f42b93b82ab11c814de08014335238d29e5879ad1c5373a3aac7d878
+      artifact_sha256: 008bc69512d76ece0fad0bf0807adb9b77f18ee41bf605d57bc98f95d7c120d2
+      input_dataset_sha256:
+        datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_turing_wavelength_s0_reference.json: baa7ea4e84cec45eabec888f5f4b637b3ea3322dbd28037753731f42e1b2e2c0
+        datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_trichome_specimen.jpg: 41f6702ee4687dd9d729c2da976e4659738ef293beda221914f40c9bf11762e1
+        datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_epidermis_stomata.jpg: 4b7c1062f6ebfd6e792fac017e39d7c011eaf6f8db2c9e492b6a82519088d7b8
+        datasets/arabidopsis_thaliana_turing_wavelength_s0/paper_citations.bib: fb11f832295b852cf281fe6330381c36216319f78070df2d0033c3405547a4ea
+        datasets/arabidopsis_thaliana_turing_wavelength_s0/scout_manifest.json: ecd8d065fc5e55706e8cdc46cb8ec0ebe4aba0f74b13ef353efdde8ef9abebe8
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 gives k_c from the determinant of J - k^2 D."
+        - "Bouyer 2008 shows TTG1 is trapped by GL3 and depleted around trichomes."
+        - "Di Patti 2023 reports fat-tailed trichome power spectra."
+        - "Balkunde 2020 constrains an activator-inhibitor plus activator-depletion network with weak ttg1 alleles."
+      reconstructed_in_script:
+        - "Two-component Schnakenberg kinetics with a=0.05, b=1, Dv/Du=8.4, λ_c=111.6 µm."
+        - "Periodic 446.4 µm patch, 128² spectral IMEX integrator, seed 3117."
+        - "Tail ratio 1.70 between a noisy run and the deterministic run."
+        - "Bootstrap 95% CI on nearest-neighbour spacing, 96.60–105.81 µm."
+      transfer_boundary:
+        - "The catalog wavelength 111.6 µm is the assigned scale of this slot. It is not a spacing printed in Bouyer 2008 or Di Patti 2023."
+        - "The fat-tail comparison is a high-k power ratio, not a digitised copy of the Di Patti spectrum."
+        - "Integer Lean witnesses use the sign pattern of the Jacobian, not the floating-point entries."
+      does_not_claim:
+        - "The three branches of the Paves trichome are not a prediction of the PDE."
+        - "The model is not the full Balkunde gene network and not the Di Patti birth-death master equation."
+        - "The Boutet epidermis dominant mode stays in pixels (480 px). It is not a micrometre wavelength."
+        - "datasets/species_gallery Arabidopsis_thaliana.jpg is Aeonium tabuliforme and is not a specimen for this loop."
+        - "Passing image fitness does not mean the spot lattice reproduces trichome branch geometry."
+    remediation:
+      - "Nanopub signing is still blocked: ~/.nanopub/profile.yml is absent. Unsigned TriG is what this pass publishes locally."
+    needs:
+      - id: sign-3117
+        need_type: provenance_lock
+        target_dimension: repro-package
+        description: "Sign the pass-2 nanopubs once a nanopub profile exists."
+        status: open
+        novelty_n: 0.2
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >
+          Same Schnakenberg law as pass 1, re-checked. k_c sits at 111.6 µm by
+          construction of Du, and the grid dispersion tracks the continuum curve
+          with r = 0.99991 and RMSE = 0.00336. σ(0) = -0.099 and σ(k_c) = 0.040,
+          so the homogeneous state is stable and the critical mode is not.
+          Equal diffusion at the geometric-mean diffusivity gives std(u) ≈ 3.6e-14
+          against a patterned std of 0.469. Lean checks the numerator sign and
+          the mode counts on the scale ladder.
+        evidence:
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [79, 150], note: "Jacobian and both dispersion relations", supports: true}
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [610, 700], note: "Pipeline wires the equal-diffusion ablation and the noisy tail", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3117_arabidopsis_thaliana_turing_wavelength_s0.lean, lines: [10, 43], note: "Five sorry-free theorems", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >
+          Computer-vision similarity of the 12-frame 640×480 GIF against the
+          Paves trichome SEM is 93.3 (orientation histogram, radial FFT,
+          structure-tensor coherency, occupancy). The last frame is the SEM
+          with the activator still modulating it; early frames are the primordium
+          field, so the animation actually moves. The spot lattice and the
+          branched hair remain different objects, which caps this below 90.
+          Image fitness = 0.55*93.3 + 0.30*86 + 0.15*90 = 90.6.
+        evidence:
+          - {file: docs/media/arabidopsis_thaliana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640×480, CV 93.3 versus the trichome SEM", supports: true}
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [363, 413], note: "Specimen canvas and the crossfade that produces the last frame", supports: true}
+          - {file: docs/media/arabidopsis_thaliana_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "SEM, activator, blend, dispersion, sweep, wavelength", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >
+          The diffusivity sweep is monotonic in activator amplitude once d clears
+          the threshold between 6 and 8.4, and λ(argmax σ) moves from about 115 µm
+          at d = 8.4 to about 138 µm at d = 20 while Du is held fixed. Subthreshold
+          ratios are left off the wavelength panel because they have no selected
+          mode. That is the expressivity claim for this 111.6 µm point.
+        evidence:
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [325, 361], note: "Sweep of Dv/Du at fixed Du", supports: true}
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [415, 465], note: "Amplitude curve and wavelength curve", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >
+          Law wavelength 111.6 µm, measured FFT wavelength 111.50 µm.
+          Twenty-one spots, mean nearest neighbour 101.11 µm, CV 0.108,
+          bootstrap 95% CI 96.60–105.81 µm (half-width 4.61 µm, not equal to the mean).
+          KS D = 0.495 against Normal(111.6, 16.74), above the 5% critical value
+          0.297, so that normal is rejected and the rejection is kept.
+          Specimen cyan area 0.094 versus simulated peak area 0.284.
+          Specimen coherency 0.582 versus field coherency 0.715.
+          Stochastic tail ratio 1.70 versus a null ratio of 1.
+          Cell-scale predecessor mode count 0 versus 4 on this patch.
+          Pearson r = 0.99991.
+        evidence:
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [477, 608], note: "Non-circular specimen and spacing measurements, including the bootstrap CI", supports: true}
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [206, 267], note: "FFT wavelength, spot spacing, spectral tail fraction", supports: true}
+          - {file: datasets/arabidopsis_thaliana_turing_wavelength_s0/metrics.json, lines: [1, 30], note: "Cached pass-2 numbers the self-test asserts", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >
+          DOIs, CC BY-SA credits, and SHA-256 pins are unchanged from pass 1 and
+          were re-read. The reference JSON states 0.0001116 m and 0 Ma. The
+          gallery Aeonium file is named as a rejected source rather than used.
+        evidence:
+          - {file: datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_turing_wavelength_s0_reference.json, lines: [1, 50], note: "Scale, age, parameters, specimen hashes", supports: true}
+          - {file: datasets/arabidopsis_thaliana_turing_wavelength_s0/README.md, lines: [1, 28], note: "Scale ladder at 0 Ma and the license of the SEM", supports: true}
+          - {file: datasets/arabidopsis_thaliana_turing_wavelength_s0/paper_citations.bib, lines: [1, 43], note: "Four bibliographic records", supports: true}
+      code-traceability:
+        value: 87
+        rationale: >
+          Each scored quantity is produced by a named function: jacobian,
+          sigma_analytic, sigma_numerical, diffusivity_sweep, segment_trichome,
+          spot_metrics. The math-KG card points at those laws and at the Lean
+          declarations. Pass 2 does not add a second, looser implementation.
+        evidence:
+          - {file: morphoeval/math_kg_loops/delphi10000-arabidopsis-thaliana-turing-wavelength-s0.yaml, lines: [1, 63], note: "Law card for slot 3117", supports: true}
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [123, 156], note: "k_c and σ(k) implementations", supports: true}
+      repro-package:
+        value: 88
+        rationale: >
+          --self-test passed after the pass-2 measurement block (bootstrap CI
+          included). Seeds, hashes, and the metrics cache are deterministic.
+          The remaining gap is cryptographic signing, which this environment
+          cannot do without a nanopub profile. That gap is recorded rather than
+          given a signature.
+        evidence:
+          - {file: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py, lines: [732, 758], note: "Self-test assertions including r > 0.98", supports: true}
+          - {file: docs/media/arabidopsis_thaliana_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "Animation checked at 12 frames and 640×480", supports: true}

@@ -1,0 +1,63 @@
+sim_id: delphi10000-arabidopsis-thaliana-turing-wavelength-s0
+slot: 3117
+math_family: Turing Reaction-Diffusion Wavelength Selection
+cohort: 1. Chemical Turing / RD
+form: Stripes, Spots & Ocelli
+law: Turing Wavenumber k_c
+organism: Arabidopsis thaliana
+phenomenon_size_m: 0.0001116
+log10_size_m: -3.952
+size_human: 112 µm
+scale_tier: 5_primordium_100um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Arabidopsis thaliana (112 µm, detail scale)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Arabidopsis chronoseries 1/1
+chronoseries_index: 1
+chronoseries_length: 1
+model_spec:
+  model: Schnakenberg reduction of Bouyer TTG1 trapping/depletion with Turing 1952 k_c fixed at 111.6 µm
+  a: 0.05
+  b: 1.0
+  diffusivity_ratio: 8.4
+  lambda_c_m: 0.0001116
+  domain_wavelengths: 4
+  grid_resolution: [128, 128]
+  dt: 0.15
+  steps: 1800
+  seed: 3117
+  stochastic_noise: 0.04
+  inputs:
+    - datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_turing_wavelength_s0_reference.json
+    - datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_trichome_specimen.jpg
+    - datasets/arabidopsis_thaliana_turing_wavelength_s0/arabidopsis_thaliana_epidermis_stomata.jpg
+    - datasets/arabidopsis_thaliana_turing_wavelength_s0/paper_citations.bib
+    - datasets/arabidopsis_thaliana_turing_wavelength_s0/scout_manifest.json
+equations:
+  - law_name: Turing wavenumber at 111.6 µm
+    formula: k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c
+    lean_decl: MathOfBiology.Loop_3117.kcNumerator
+    lean_theorem: MathOfBiology.Loop_3117.arabidopsis_112um_turing_numerator_positive
+    lean_locus: morphoeval/lean/loops/Loop_3117_arabidopsis_thaliana_turing_wavelength_s0.lean
+    variables: Du=10, Dv=84, fu=9, gv=-11 integer witness of the Schnakenberg sign pattern at d=8.4
+    role: Selects the spot wavelength on the Holocene primordium epidermis
+    source_citation: Turing 1952 doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py
+  - law_name: Equal diffusion is not a Turing instability
+    formula: D_u = D_v implies D_v f_u + D_u g_v = D (f_u + g_v) < 0 when trace(J) < 0
+    lean_decl: MathOfBiology.Loop_3117.kcNumerator
+    lean_theorem: MathOfBiology.Loop_3117.arabidopsis_112um_equal_diffusion_numerator_negative
+    lean_locus: morphoeval/lean/loops/Loop_3117_arabidopsis_thaliana_turing_wavelength_s0.lean
+    variables: Du=Dv=10, fu=9, gv=-11
+    role: Negative control for the 111.6 µm parameter point
+    source_citation: Turing 1952 doi:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py
+  - law_name: Scale-ladder mode counts at 0 Ma
+    formula: N = floor(L / lambda_c); N(18.6 µm)=0, N(446.4 µm)=4, N(1785.6 µm)=16
+    lean_decl: MathOfBiology.Loop_3117.modeCount
+    lean_theorem: MathOfBiology.Loop_3117.arabidopsis_primordium_patch_holds_four_wavelengths
+    lean_locus: morphoeval/lean/loops/Loop_3117_arabidopsis_thaliana_turing_wavelength_s0.lean
+    variables: lengths in micrometres times 10
+    role: What changes at this scale versus the cell predecessor and the leaf successor; age stays 0 Ma
+    source_citation: Bouyer 2008 doi:10.1371/journal.pbio.0060141
+    code_locus: models/2026-delphi10000-arabidopsis-thaliana-turing-wavelength-s0.py
