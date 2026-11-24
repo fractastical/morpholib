@@ -1,0 +1,68 @@
+sim_id: delphi10000-drosophila-sechellia-turing-wavelength-s0
+slot: 3202
+organism: Drosophila sechellia
+phenomenon_size_m: 1.548e-06
+log10_size_m: -5.810
+size_human: "1.5 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Drosophila sechellia (1.5 µm detail)
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Sophophora melanogaster Subgroup Radiation (0–12 Ma)"
+predecessor: Drosophila santomea
+successor: Drosophila serrata
+chronoseries_index: "31/41"
+math_family: Turing reaction-diffusion wavelength selection
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+model_spec:
+  sim_id: delphi10000-drosophila-sechellia-turing-wavelength-s0
+  lambda_c_um: 1.5
+  geological_age_ma: 0.0
+  inputs:
+    - datasets/drosophila_sechellia_turing_wavelength_s0/drosophila_sechellia_ovary_specimen.jpg
+    - datasets/drosophila_sechellia_turing_wavelength_s0/drosophila_sechellia_turing_wavelength_s0_reference.json
+    - datasets/drosophila_sechellia_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_sechellia_turing_wavelength_s0/paper_citations.bib
+equations:
+  - law_name: Critical Turing wavenumber
+    formula: "k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v); lambda_c = 2 pi / k_c = 1.500 µm"
+    lean_decl: MathOfBiology.Loop_3202.lambdaSechelliaNm
+    lean_theorem: MathOfBiology.Loop_3202.wavelength_times_wavenumber_is_two_pi
+    lean_locus: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean#L38-L39
+    variables: "f_u=1.600, g_v=-7.200, D_v/D_u=8, lambda_c=1.500 µm at age 0 Ma"
+    role: Selects the 1.5 µm detail-scale pigment-lattice wavelength in D. sechellia
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py
+  - law_name: Homogeneous stability (trace and determinant)
+    formula: "trace = f_u + g_v < 0 and det = f_u g_v - f_v g_u > 0"
+    lean_decl: MathOfBiology.Loop_3202.homogeneous_trace_negative
+    lean_theorem: MathOfBiology.Loop_3202.homogeneous_determinant_positive
+    lean_locus: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean#L22-L28
+    variables: "f_u=1.600, f_v=-2.770, g_u=4.500, g_v=-7.200"
+    role: The unpatterned state is stable until diffusion is added
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py
+  - law_name: Chronospecies wavelength order at 0 Ma
+    formula: "lambda(santomea)=1.921 µm > lambda(serrata)=1.680 µm > lambda(sechellia)=1.500 µm"
+    lean_decl: MathOfBiology.Loop_3202.lambdaSantomeaNm
+    lean_theorem: MathOfBiology.Loop_3202.sechellia_shorter_than_both_neighbours
+    lean_locus: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean#L16-L18
+    variables: "shared D_u, D_v, f_v, g_v and h_min; species-specific f_u and co-adapted g_u"
+    role: What changes at 1.5 µm versus the predecessor D. santomea and the successor D. serrata
+    source_citation: "Jeong 2008 DOI:10.1016/j.cell.2008.01.014; Chenoweth & Blows 2005 DOI:10.1086/427271; McGregor 2007 DOI:10.1038/nature05988"
+    code_locus: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py
+  - law_name: Differential diffusion
+    formula: "D_v = 8 D_u; equal diffusivities damp every mode"
+    lean_decl: MathOfBiology.Loop_3202.inhibitor_diffuses_faster
+    lean_theorem: MathOfBiology.Loop_3202.diffusivity_ratio_is_not_one
+    lean_locus: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean#L33-L50
+    variables: "D_v/D_u = 8"
+    role: Diffusion-driven instability fails in the equal-diffusion ablation
+    source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py

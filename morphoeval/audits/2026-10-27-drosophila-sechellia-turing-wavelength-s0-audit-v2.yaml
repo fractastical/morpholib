@@ -1,0 +1,141 @@
+# MorphoEval Pass 2 — Drosophila sechellia, 1.5 µm Turing wavelength, slot 3202.
+# Closes Pass 1 items R1–R3. R4 (second assessor) stays open; it is not invented.
+# Scores are criterion-referenced ratings on 0–100, not probabilities.
+audit:
+  id: 2026-10-27-drosophila-sechellia-turing-wavelength-s0-audit-v2
+  supersedes_audit_id: 2026-10-27-drosophila-sechellia-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; R4 still open)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 169742c66d5febd4331e8b1fa7dc67037f33d175
+    environment:
+      python: "3.12.3"
+      numpy: "2.5.4"
+      scipy: "1.18.1"
+      matplotlib: "3.11.2"
+      Pillow: "13.0.0"
+    note: "Pass 2 commit 169742c6. Supersedes Pass 1 at 3a268749. Line numbers refer to 169742c6."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72 (1952)"
+  mcgregor2007:
+    title: "Morphological evolution through multiple cis-regulatory mutations at a single gene"
+    doi: 10.1038/nature05988
+    year: 2007
+    venue: "Nature 448:587-590 (2007)"
+  sucena2000:
+    title: "Divergence of larval morphology between Drosophila sechellia and its sibling species caused by cis-regulatory evolution of a single gene"
+    doi: 10.1073/pnas.97.9.4530
+    year: 2000
+    venue: "Proc. Natl. Acad. Sci. USA 97:4530-4534 (2000)"
+  jeong2008:
+    title: "The evolution of gene regulation underlies a morphological difference between two Drosophila sister species"
+    doi: 10.1016/j.cell.2008.01.014
+    year: 2008
+    venue: "Cell 132:783-793 (2008)"
+  chenoweth2005:
+    title: "Contrasting mutual sexual selection on homologous signal traits in Drosophila serrata"
+    doi: 10.1086/427271
+    year: 2005
+    venue: "Am. Nat. 165:281-289 (2005)"
+  shoup1966:
+    title: "The development of pigment granules in the eyes of wild type and mutant Drosophila melanogaster"
+    doi: 10.1083/jcb.29.2.223
+    year: 1966
+    venue: "J. Cell Biol. 29:223-249 (1966)"
+simulations:
+  - id: delphi10000-drosophila-sechellia-turing-wavelength-s0
+    name: "Drosophila sechellia Turing wavelength at 1.5 µm (Holocene, detail scale s0)"
+    organism: Drosophila sechellia
+    script: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py
+    output: docs/media/drosophila_sechellia_turing_wavelength_s0_comparison.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-sechellia-turing-wavelength-s0-audit
+    source_refs: [turing1952, mcgregor2007, sucena2000, jeong2008, chenoweth2005, shoup1966]
+    phenomenon_size_m: 1.548e-06
+    scale_tier: 3_subcellular_um
+    geological_age_ma: 0.0
+    geological_period: Holocene (Extant)
+    summary: >-
+      Pass 2 keeps the Turing 1952 law at λ_c = 1.500 µm, age 0 Ma. The critical-shell
+      power-weighted wavelength is 1.5004 µm (0.03% from 1.500). The brightest oblique
+      Fourier bin remains 1.480 µm and is reported separately. Panel D now shows the
+      unstable lobe (σ_max ≈ +0.004) for santomea, serrata, and sechellia. Panel F places
+      the equal-diffusion note (σ_max = −0.176) above the bars. Sweep Pearson r = 0.9996.
+      Predecessor λ_c = 1.921 µm (D. santomea); successor λ_c = 1.680 µm (D. serrata).
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: k_c from the dispersion relation, and instability only when diffusivities differ."
+        - "McGregor 2007 and Sucena & Stern 2000: D. sechellia larval trichome loss is cis-regulatory at shavenbaby."
+        - "Jeong 2008: D. santomea lost abdominal pigment via a tan enhancer."
+        - "Chenoweth & Blows 2005: D. serrata signal traits are under mutual sexual selection."
+      reconstructed_in_script:
+        - "Near-onset Jacobians with analytical wavelengths 1.921, 1.680 and 1.500 µm."
+        - "Critical-shell wavelength distinct from the brightest Fourier bin; zoomed dispersion lobe; ablation annotation clear of the tick labels."
+      transfer_boundary:
+        - "The CC-BY image is a nucleic-acid stain of an ovary, not an ocellar pigment-granule micrograph."
+        - "Shoup 1966 is D. melanogaster ultrastructure, used only as a scale class."
+      does_not_claim:
+        - "That 1.5 µm was measured as a granule spacing in D. sechellia."
+        - "That Morinda octanoic-acid resistance sets k_c."
+        - "The 88 µm cellular wavelength already modelled in slot 2711."
+        - "That a second assessor scored this pass."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "Same Turing PDE, k_c formula, periodic boundaries, cubic saturation, and equal-diffusion ablation as Pass 1. Pass 2 adds the critical-shell estimator without changing the Jacobian. g_u is still co-adapted to hold h_min, not copied from a measured rate."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [97, 129], note: "critical_wavenumber and species_jacobian", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [205, 235], note: "dominant_wavelength splits the brightest bin from the critical shell", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3202_drosophila_sechellia_turing_wavelength_s0.lean, lines: [20, 34], note: "wavelength order, trace < 0, det > 0, no sorry", supports: true}
+      specimen-match:
+        value: 86
+        rationale: "Panel A is the CC-BY D. sechellia ovary micrograph; panel C modulates it by the field; the 12-frame 720×540 GIF keeps a moving activator and a last frame whose computer-vision similarity to that micrograph is high. Panel F no longer covers the species names. The micrograph is still an ovary, not the ocellar lattice, so the score stays short of a matched ultrastructure."
+        evidence:
+          - {file: docs/media/drosophila_sechellia_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass 2 figure: lobe visible, species labels clear", supports: true}
+          - {file: docs/media/drosophila_sechellia_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720×540", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [718, 730], note: "ablation note centred above the bars", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "f_u still shortens λ monotonically (r = 0.9996) with g_u co-adapted to fixed onset depth. Panel D now shows three distinct positive lobes, with sechellia peaking nearest the dashed k_c line and santomea peaking at lower k."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [267, 302], note: "parameter_sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [681, 697], note: "σ(k) drawn on k in [2.8, 5.8] and σ in [−0.02, 0.008]", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Critical-shell wavelength is 1.5004 µm against analytical 1.500 µm (relative error 0.03%). The brightest bin, 1.480 µm, is kept as its own measurement so the oblique mode is not hidden. Pearson r = 0.9996, calibrated RMSE = 0.0040 µm, four-seed shell CV = 0.0037, KS = 0.229. Specimen Otsu fraction 0.352, aspect 1.331, and coherency 0.612 differ from their priors."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [441, 500], note: "brightest-bin and critical-shell measurements, plus sweep r and RMSE", supports: true}
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [760, 774], note: "assert_science requires the shell within 0.5% of 1.500 µm", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Unchanged from Pass 1. DOIs were checked on Crossref or OpenAlex. The ovary JPEG is CC BY 2.0 and SHA-256 pinned. Scale 1.5 µm and age 0 Ma are in the reference JSON."
+        evidence:
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/paper_citations.bib, lines: [1, 78], note: "BibTeX with DOIs", supports: true}
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/drosophila_sechellia_turing_wavelength_s0_reference.json, lines: [1, 40], note: "1.5 µm and 0 Ma stated; specimen digest", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "Pass 2 comments on dominant_wavelength state why the brightest bin and the critical shell differ, and they point at the rectangular-grid tie. The Jacobian block still names the chronospecies papers."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [205, 214], note: "docstring of dominant_wavelength", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-sechellia-turing-wavelength-s0.yaml, lines: [24, 68], note: "four laws with Lean loci", supports: true}
+      repro-package:
+        value: 87
+        rationale: "--self-test passes on the fast grid, including Pearson r > 0.98, the equal-diffusion control, and the 0.5% shell tolerance. The full render writes analysis_cache.json schema 2, which measure_morphoeval reads. Seed 3202 is fixed."
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-sechellia-turing-wavelength-s0.py, lines: [786, 806], note: "self_test", supports: true}
+          - {file: datasets/drosophila_sechellia_turing_wavelength_s0/README.md, lines: [36, 48], note: "documented invocation", supports: true}
+    remediation:
+      - id: R4
+        item: "A second assessor from another provider has not scored this audit. This pass does not invent one."
