@@ -1,0 +1,86 @@
+# MorphoEval audit — Thompson (1917) T1917-035 sea-urchin test membrane claim (Pass 2 v2), 2026-10-31
+
+audit:
+  id: 2026-10-31-t1917-035-on-the-shapes-of-eggs-and-of-c-audit-v2
+  supersedes_audit_id: 2026-10-31-t1917-035-on-the-shapes-of-eggs-and-of-c-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 assessor, loop thompson1917-t1917-035)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: pending
+    environment: {python: "3.12", numpy: "2.x", scipy: "1.x", matplotlib: "3.x", scikit-image: "0.26.x", Pillow: "10+"}
+
+simulations:
+  - id: thompson1917-t1917-035
+    name: "Thompson (1917) Ch. XV Fig. 328 — sea-urchin test meridian under envelope pressure/tension (Pass 2)"
+    organism: "Echinoid tests — Commons CC BY 2.0 (primary + 14 panel instances); literature ratio CSV"
+    script: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py
+    output: docs/media/t1917_035_on_the_shapes_of_eggs_and_of_c_comparison.png
+    extra_outputs:
+      - docs/media/t1917_035_on_the_shapes_of_eggs_and_of_c_growth.gif
+      - datasets/thompson_1917/t1917-035/result.json
+    status: evaluated
+    supersedes_audit_id: 2026-10-31-t1917-035-on-the-shapes-of-eggs-and-of-c-audit
+    claim_boundary:
+      reported_in_source:
+        - "Thompson 1917: hollow structures including sea-urchin tests (Fig. 328) explicable as membranes/shells under pressure and tension."
+        - "Envelope equation p_n + T(1/r + 1/r') = P (p. 658)."
+      reconstructed_in_script:
+        - "Major-axis CV meridian; symmetric-pole Preston fit; Thompson 4-constraint closure; 2H profile; closure sweep GIF."
+        - "14-test panel elongation dispersion; sphere ablation; KS vs literature axial:equatorial ratios."
+      transfer_boundary:
+        - "Axisymmetric approximation of pentamerous urchin test; calcareous ossicle microstructure not modelled."
+        - "Dryad dn160 excluded (DATASET_MISMATCH); skulls/shells in claim not tested."
+      does_not_claim:
+        - "That genetics dataset dn160 supports the claim."
+        - "Dynamic growth of the test — static meridian fit only."
+    summary: >-
+      Pass 2 adds multi-specimen segmentation, closure parameter sweep, sphere ablation (2.35× worse RMSE),
+      literature ratio table, KS statistic, and documents Dryad mismatch in result.json (verdict mixed on
+      broad claim; urchin instance partially supported).
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "Thompson envelope exercised via closure, mean curvature profile, and sweep; Lean laws pinned."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [130, 200], note: "thompson_closure + mean_curvature", supports: true}
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_035.lean, lines: [50, 75], note: "laplaceResidual theorem", supports: true}
+      specimen-match:
+        value: 62
+        rationale: "Real Commons tests segmented; profile r ~ 0.52; oblique photo limits overlay fidelity."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-035/result.json, lines: [1, 60], note: "headline_numbers", supports: true}
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [188, 280], note: "segment_urchin / segment_panel", supports: true}
+      parameter-expressivity:
+        value: 76
+        rationale: "closure_sweep over delta_pole; GIF; literature CSV regimes."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [290, 310], note: "closure_sweep", supports: true}
+      morphometric-validation:
+        value: 68
+        rationale: "RMSE/breadth, Pearson r, KS D, sphere ablation ratio exported in measure_morphoeval."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [330, 410], note: "measure_morphoeval Pass 2 branch", supports: true}
+      source-traceability:
+        value: 86
+        rationale: "Scout manifest + reference JSON SHA pins; Dryad mismatch explicit."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-035/scout_manifest.json, lines: [20, 45], note: "DRYAD_MISMATCH", supports: true}
+      code-traceability:
+        value: 82
+        rationale: "math_kg_loops yaml + Lean loci."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-035.yaml, lines: [1, 35], note: "sim_id + equations", supports: true}
+      repro-package:
+        value: 80
+        rationale: "Self-test, result.json, comparison PNG + growth GIF."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [470, 520], note: "self_test + main", supports: true}
+    overall:
+      value: 73.4
+    remediation: []

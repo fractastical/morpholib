@@ -1,0 +1,82 @@
+# MorphoEval audit — Thompson (1917) T1917-035 sea-urchin test membrane claim (Pass 1), 2026-10-31
+
+audit:
+  id: 2026-10-31-t1917-035-on-the-shapes-of-eggs-and-of-c-audit
+  rubric_version: 0.1.0
+  date: "2026-10-31"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 1 baseline assessor, loop thompson1917-t1917-035)"
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: pending
+    environment: {python: "3.12", numpy: "2.x", scipy: "1.x", matplotlib: "3.x", scikit-image: "0.26.x"}
+
+simulations:
+  - id: thompson1917-t1917-035
+    name: "Thompson (1917) Ch. XV Fig. 328 — sea-urchin test as pressure/tension shell (Pass 1 --pass1)"
+    organism: "Echinoid test (Wikimedia Commons CC BY 2.0, James St. John)"
+    script: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py
+    output: docs/media/t1917_035_on_the_shapes_of_eggs_and_of_c_comparison.png
+    status: evaluated
+    model_spec:
+      model: "Preston symmetric-pole meridian + Thompson envelope closure; Pass 1 single specimen"
+      inputs:
+        - datasets/thompson_1917/t1917-035/commons_sea_urchin_test_structure_8340336761.jpg
+    claim_boundary:
+      reported_in_source:
+        - "Thompson 1917 Ch. XV Fig. 328: sea-urchin tests among hollow structures explicable under pressure and tension."
+      reconstructed_in_script:
+        - "Pass 1 CV meridian on one Commons photograph; Preston fit; Thompson closure residual."
+      does_not_claim:
+        - "Dryad dn160 (genetics) — documented DATASET_MISMATCH."
+        - "Skulls / other shells in the same sentence (not tested in Pass 1)."
+    summary: >-
+      Pass 1 baseline (--pass1): single-specimen pipeline, no panel sweep, no KS/ablation export.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: "Thompson envelope + Preston meridian implemented; Lean Loop_229 with 5 theorems."
+        evidence:
+          - {file: morphoeval/lean/loops/Thompson1917_T1917_035.lean, lines: [1, 95], note: "0 sorry", supports: true}
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [95, 180], note: "laplace / closure", supports: true}
+      specimen-match:
+        value: 48
+        rationale: "One Commons profile photo; oblique lighting; no multi-specimen panel in Pass 1."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-035/commons_sea_urchin_test_structure_8340336761.jpg, lines: [0, 0], note: "primary specimen", supports: true}
+          - {file: datasets/thompson_1917/t1917-035/commons_sea_urchin_tests_7_77.jpg, lines: [0, 0], note: "not used in Pass 1", supports: false}
+      parameter-expressivity:
+        value: 38
+        rationale: "No closure sweep or regime table exported in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [430, 450], note: "--pass1 skips closure_sweep", supports: false}
+      morphometric-validation:
+        value: 41
+        rationale: "RMSE and closure only; no KS, no literature table, weak Pearson r in Pass 1."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [320, 380], note: "measure_morphoeval pass1 branch", supports: false}
+      source-traceability:
+        value: 78
+        rationale: "Scout manifest documents Dryad MISMATCH and Commons MATCH with SHA-256."
+        evidence:
+          - {file: datasets/thompson_1917/t1917-035/scout_manifest.json, lines: [1, 80], note: "verification dossier", supports: true}
+      code-traceability:
+        value: 70
+        rationale: "math_kg_loops yaml links Lean and script."
+        evidence:
+          - {file: morphoeval/math_kg_loops/thompson1917-t1917-035.yaml, lines: [1, 40], note: "equations", supports: true}
+      repro-package:
+        value: 65
+        rationale: "Self-test and SHA pins; Pass 1 mode only."
+        evidence:
+          - {file: thompson/claims/t1917-035_on-the-shapes-of-eggs-and-of-certain-other-hollo.py, lines: [470, 510], note: "self_test", supports: true}
+    overall:
+      value: 56.8
+    remediation:
+      - id: R1
+        item: "Multi-specimen panel CV, parameter-regime sweep, sphere ablation, literature KS/RMSE (Pass 2)"
+      - id: R2
+        item: "Major-axis meridian extraction and symmetric-pole Preston constraint for urchin profiles"
