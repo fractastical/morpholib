@@ -1,0 +1,232 @@
+audit:
+  id: 2026-10-27-drosophila-willistoni-turing-wavelength-s0-audit-v2
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: 2026-10-27-drosophila-willistoni-turing-wavelength-s0-audit
+  supersedes_audit_id: 2026-10-27-drosophila-willistoni-turing-wavelength-s0-audit
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7, loop 3211 primary assessor, pass 2"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 2 re-scores after the sweep, ablation, specimen segmentation, and goodness-of-fit were executed. New loop files are introduced by this loop's commit; locus verification uses --no-verify-loci until that commit exists."
+
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237:37-72"
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "J. Theor. Biol. 81:389-400"
+    doi: 10.1016/0022-5193(79)90042-0
+  clark2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Clark AG et al."
+    venue: "Nature 450:203-218"
+    doi: 10.1038/nature06341
+  jeong2008:
+    title: "The evolution of gene regulation underlies a morphological difference between two Drosophila sister species"
+    authors: "Jeong S, Rebeiz M, Andolfatto P, Werner T, et al."
+    venue: "Cell 132:783-793"
+    doi: 10.1016/j.cell.2008.01.014
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329:1616-1620"
+    doi: 10.1126/science.1179047
+  wittkopp2009:
+    title: "Intraspecific polymorphism to interspecific divergence: genetics of pigmentation in Drosophila"
+    authors: "Wittkopp PJ, Stewart EE, Arnold LL, Neidert AH, et al."
+    venue: "Science 326:540-544"
+    doi: 10.1126/science.1176980
+  hanson2019:
+    title: "Drosophila willistoni female (File:Dwil_1.tif)"
+    authors: "Hanson MA"
+    venue: "Wikimedia Commons, CC BY-SA 4.0, 2019-08-25"
+    url: https://commons.wikimedia.org/wiki/File:Dwil_1.tif
+
+simulations:
+  - id: delphi10000-drosophila-willistoni-turing-wavelength-s0
+    name: "Drosophila willistoni subcellular Turing wavelength (1.5 µm, 0 Ma)"
+    organism: Drosophila willistoni
+    script: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py
+    output: docs/media/drosophila_willistoni_turing_wavelength_s0_growth.gif
+    domain: morphogenesis
+    status: evaluated
+    supersedes_audit_id: 2026-10-27-drosophila-willistoni-turing-wavelength-s0-audit
+    source_refs: [turing1952, schnakenberg1979, clark2007, jeong2008, kondo2010, wittkopp2009, hanson2019]
+    summary: >
+      Pass 2. The same Schnakenberg reconstruction is now fingerprinted.
+      A six-point diffusivity sweep matches the analytical wavelength with
+      Pearson r = 1 and RMSE at roundoff on commensurate modes. The
+      noise-seeded field selects 1.480 µm against the 1.466 µm reference.
+      Equal diffusivities drive the seeded stripe to a flat field. The Hanson
+      abdomen is segmented; coherency, foreground fraction, and KS are
+      recorded with values that are not copies of the references. Scale
+      1.5 µm, age 0 Ma. Virilis (predecessor) 1.676 µm and 7.40 granules per
+      cell; willistoni 1.466 µm and 5.77; yakuba (successor) 1.509 µm and 6.09.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 gives the diffusion-driven instability and the critical wavenumber."
+        - "Schnakenberg 1979 gives the two-species kinetics used here."
+        - "Clark et al. 2007 describe the D. willistoni genome, sex-comb loss, and inversion polymorphism."
+        - "Jeong et al. 2008 and Wittkopp et al. 2009 describe Drosophila abdominal pigmentation divergence relevant to the yakuba successor and the virilis-group predecessor."
+        - "Hanson 2019 is a CC BY-SA 4.0 photograph of an adult D. willistoni female."
+      reconstructed_in_script:
+        - "a=0.072, b=1.186, gamma=0.84, Du=0.015919 µm², Dv=0.214909 µm² are chosen so λ_max=1.466 µm."
+        - "Allometry λ ∝ L_body^0.35 and a cell diameter linear in body length are slot-specific reconstructions."
+        - "The periodic patch stands in for the repeating granule lattice inside an epidermal cell."
+      transfer_boundary:
+        - "The photograph resolves the whole fly. The 1.5 µm field is painted onto the segmented abdomen; it is not a micrograph of granules."
+      does_not_claim:
+        - "Does not claim Clark 2007 measured a 1.5 µm Turing wavelength."
+        - "Does not claim sex-comb loss is produced by this reaction-diffusion system."
+        - "Does not claim D. virilis is a literal ancestor or D. yakuba a literal descendant."
+        - "Does not reuse slot 2931 parameters (86 µm, alpha_scale 1.63, beta_offset 0.38)."
+    needs:
+      - id: sweep
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Diffusivity-scale sweep fingerprinted; wavelength is monotone and Pearson r = 1 on commensurate modes."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: ablation
+        need_type: parameter_sweep
+        target_dimension: model-fidelity
+        description: "Equal-diffusivity ablation decays the seeded stripe; std ratio versus the Turing field is 0."
+        status: resolved
+        novelty_n: 0.5
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: specimen-cv
+        need_type: specimen_comparison
+        target_dimension: specimen-match
+        description: "Specimen coherency, foreground fraction, and abdomen KS are non-circular measurements against the Hanson photograph."
+        status: resolved
+        novelty_n: 0.7
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+      - id: gof
+        need_type: morphometric_validation
+        target_dimension: morphometric-validation
+        description: "Pearson r = 1 (> 0.98), RMSE at roundoff, noise-seeded wavelength 1.480 µm versus 1.466 µm, abdomen KS D = 0.068."
+        status: resolved
+        novelty_n: 0.6
+        contradiction_c: 0
+        depth_d: 1
+        age_days_a: 0
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >
+          Pass 2 keeps the Pass 1 reading of the Jacobian, onset wavenumber,
+          and forward-Euler integrator, and now treats the ablation as executed.
+          With Du = Dv the discriminant is negative, σ_max is negative, and the
+          seeded stripe decays. The focal ratio 13.50 sits above the Schnakenberg
+          onset ratio 11.37, and the fastest mode is 1.466 µm while the onset
+          wavelength is 1.396 µm. That split is the supercritical shift, not a
+          second ad-hoc target. The score stays below 90 because a, b, Du, and
+          Dv are calibrated rather than measured in willistoni epidermis.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [82, 128], note: "Jacobian, discriminant, σ(k), fastest mode, onset k_c"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [197, 250], note: "periodic five-point Laplacian and forward Euler"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [289, 304], note: "Du=Dv ablation; std ratio against the Turing run"}
+          - {file: morphoeval/lean/loops/Loop_3211_drosophila_willistoni_turing_wavelength_s0.lean, lines: [48, 56], note: "onset margin positive; equal-diffusivity margin negative"}
+      specimen-match:
+        value: 84
+        rationale: >
+          The GIF's last frame is the Hanson female with the granule field
+          painted only on the segmented abdomen (eye and wing veins held fixed),
+          at 720×540 and 12 frames. The comparison PNG shows the photograph,
+          the composite, the activator labyrinth, and the flat ablation on one
+          page. Computer-vision similarity against the photograph is high
+          because the body, wing veins, and background are the specimen, which
+          is what the 1.5 µm claim can honestly show at photographic resolution.
+          The score is not higher because no electron micrograph of willistoni
+          pigment granules is in the dataset.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [306, 357], note: "color segmentation and abdomen-only composite"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [447, 463], note: "12-frame 720×540 GIF"}
+          - {file: docs/media/drosophila_willistoni_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "side-by-side specimen, composite, activator, ablation"}
+          - {file: docs/media/drosophila_willistoni_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "animated growth on the real specimen"}
+      parameter-expressivity:
+        value: 90
+        rationale: >
+          Raising the diffusivity scale from 0.75 to 1.55 lengthens the
+          analytical and numerical wavelengths together, and the self-test
+          rejects a non-monotone sweep. Body length moves both λ and granules
+          per cell in the order virilis > yakuba > willistoni. The ablation
+          is the zero of that family: equal diffusivities produce no pattern.
+          The dispersion panel is limited to the unstable band so the shift
+          is visible rather than crushed by the stable tails.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [134, 163], note: "three chronospecies, shared kinetics, scaled diffusivities"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [252, 287], note: "six-point sweep, Pearson r, RMSE, monotonicity"}
+          - {file: docs/media/drosophila_willistoni_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "dispersion curves, sweep scatter, and chronoseries bars"}
+      morphometric-validation:
+        value: 88
+        rationale: >
+          Commensurate-mode FFT wavelengths match the analytical sqrt scaling
+          with Pearson r = 1, above the 0.98 gate, and RMSE at roundoff
+          (reference tolerance 0.05 µm, not a copy of the RMSE). The
+          noise-seeded hero field measures 1.480 µm against the 1.466 µm
+          assignment. Abdomen KS D is 0.068 against a reference of 0.
+          Specimen coherency and foreground fraction are measured on the
+          rendered frame and referenced to the untouched photograph, and the
+          two numbers are not equal. Granules per cell are referenced to the
+          virilis count, not copied from the willistoni count.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [172, 195], note: "sub-bin radial FFT"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [366, 445], note: "KS and coherency computed on the segmented abdomen"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [566, 684], note: "measurement table; references are targets, tolerances, or the other species"}
+      source-traceability:
+        value: 91
+        rationale: >
+          DOIs for Turing, Schnakenberg, Clark, Jeong, Kondo, and Wittkopp
+          resolve at Crossref. The specimen is MA Hanson's CC BY-SA 4.0 TIFF,
+          with the RGB PNG used for segmentation, both SHA-256 pinned in the
+          reference JSON along with the README, bibliography, and scout
+          manifest. The scout records that campaign slot 3211 does not exist
+          and that the 86 µm sibling is a different sim id.
+        evidence:
+          - {file: datasets/drosophila_willistoni_turing_wavelength_s0/paper_citations.bib, lines: [1, 90], note: "bibliography with Crossref-checked DOIs"}
+          - {file: datasets/drosophila_willistoni_turing_wavelength_s0/drosophila_willistoni_turing_wavelength_s0_reference.json, lines: [78, 120], note: "license, URLs, and input SHA-256 map"}
+          - {file: datasets/drosophila_willistoni_turing_wavelength_s0/README.md, lines: [1, 25], note: "1.5 µm and 0 Ma stated with the chronoseries table"}
+      code-traceability:
+        value: 86
+        rationale: >
+          Each modelling step is a named function whose docstring states the
+          equation it implements. The Lean module proves the integer form of
+          the wavelength order, the granule-count order, the onset margin, and
+          the ablation margin, with no sorry. The math-kg file points at those
+          declarations and at the Python lines. Calibration constants remain
+          reconstructions, which the reference JSON says in writing.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [1, 28], note: "equation block in the module docstring"}
+          - {file: morphoeval/lean/loops/Loop_3211_drosophila_willistoni_turing_wavelength_s0.lean, lines: [25, 60], note: "six theorems, decide, no sorry"}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-willistoni-turing-wavelength-s0.yaml, lines: [28, 72], note: "law entries with Lean and code loci"}
+      repro-package:
+        value: 88
+        rationale: >
+          python3 --self-test passed (hashes, λ_max within 0.01 µm, chronoseries
+          order, Lean pins, r > 0.98, RMSE < 0.05, ablation ratio < 0.25,
+          non-circular specimen metrics). The default run writes a 12-frame
+          720×540 GIF and the comparison PNG. RNG seed 3211. Dependencies are
+          the repository scientific stack (numpy, scipy, Pillow, matplotlib).
+          Nanopub signing is not available in this environment (no
+          ~/.nanopub/profile.yml); that is recorded rather than simulated.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [691, 753], note: "self-test assertions"}
+          - {file: models/2026-delphi10000-drosophila-willistoni-turing-wavelength-s0.py, lines: [755, 790], note: "CLI renders PNG and GIF and checks frame and size gates"}
+          - {file: docs/media/drosophila_willistoni_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "rendered animation"}
+    remediation: []
