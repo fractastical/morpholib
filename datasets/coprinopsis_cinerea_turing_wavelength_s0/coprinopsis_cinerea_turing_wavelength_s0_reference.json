@@ -1,0 +1,104 @@
+{
+  "sim_id": "delphi10000-coprinopsis-cinerea-turing-wavelength-s0",
+  "slot": 3154,
+  "organism": "Coprinopsis cinerea",
+  "common_name": "Gray Shag Mushroom",
+  "lineage": "IV. Protista & Monera -> Slime Molds & Bacteria -> Coprinopsis",
+  "scale": {
+    "nominal_label": "77 µm",
+    "metres": 7.744e-05,
+    "micrometres": 77.44,
+    "log10_metres": -4.111,
+    "tier": "4_cellular_10um",
+    "tier_index": "4/8",
+    "variant": "detail",
+    "tier_floor_micrometres": 10.0,
+    "detail_ratio_vs_floor": 7.744,
+    "note": "The exact SI length is 7.744e-05 m. The loop brief labels it 77 µm. log10(7.744e-05) = -4.111."
+  },
+  "evolutionary_history": {
+    "stage": "Holocene (Extant)",
+    "age_Ma": 0.0,
+    "chronoseries": "1/1",
+    "predecessor": null,
+    "successor": null,
+    "scale_contrast": "No named predecessor or successor chronospecies. Relative to the 10 µm tier floor, this detail variant is 7.744× longer. With Schnakenberg kinetics held fixed, k_c ∝ (D_u D_v)^{-1/4} ∝ γ^{1/2}, so selecting 10 µm instead of 77.44 µm requires γ larger by 7.744² ≈ 59.97 or a diffusion product smaller by 7.744⁴ ≈ 3596. The Holocene age lock is 0 Ma: the extant gray-shag pileus is the terminus of this chronoseries."
+  },
+  "cohort": {
+    "law": "Turing Reaction-Diffusion Wavelength Selection",
+    "family_index": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "quantitative_law": "Turing wavenumber k_c"
+  },
+  "equations": {
+    "kinetics": "f = a - u + u^2 v,  g = b - u^2 v",
+    "pde": "du/dt = γ f + D_u ∇²u,  dv/dt = γ g + D_v ∇²v",
+    "steady_state": "u0 = a + b,  v0 = b / u0^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "critical_wavenumber": "k_c^2 = γ * sqrt(det(J) / (D_u D_v))",
+    "wavelength": "λ_c = 2π / k_c",
+    "turing_trace": "D_v f_u + D_u g_v > 0 and (D_v f_u + D_u g_v)^2 > 4 D_u D_v det(J)",
+    "boundary_conditions": "periodic square; 5-point Laplacian; explicit Euler"
+  },
+  "parameters": {
+    "a": 0.10,
+    "b": 0.90,
+    "Du": 1.0,
+    "Dv": 16.0,
+    "grid": [96, 96],
+    "pixels_per_critical_wave": 12,
+    "dt": 0.008,
+    "steps": 5600,
+    "seed": 3154,
+    "gamma_note": "γ is solved so λ_c = 7.744e-05 m at (Du, Dv) = (1, 16). It is not a free copied constant."
+  },
+  "empirical_claims": [
+    "Turing (1952) selects a finite critical wavenumber when the inhibitor diffuses sufficiently faster than the activator.",
+    "Schnakenberg (1979) supplies the two-species kinetics used here; the steady state and Jacobian are exactly those of f = a - u + u^2 v, g = b - u^2 v.",
+    "Kües (2000) reviews fruiting-body development in Coprinus cinereus (the name then used for Coprinopsis cinerea), including gill formation.",
+    "Stajich et al. (2010) assemble the Coprinopsis cinerea chromosomes and treat the species as a model multicellular mushroom.",
+    "The 77 µm length is the MorphoEval assigned characteristic scale for this slot (tier-4 detail variant). It is not a spacing measured on the vendored photograph, which has no scale bar.",
+    "The photograph shows a mature lamellate cap. Gill spacing on that fruiting body is a millimetre-scale readout, not the 77 µm cellular wavelength simulated on the 8-wavelength cuticle patch."
+  ],
+  "specimen": {
+    "file": "datasets/coprinopsis_cinerea_turing_wavelength_s0/coprinopsis_cinerea_specimen.jpg",
+    "sha256": "f5905e9c02019fc55d651c22742ce29a53541673e37355631a29a5076046b06b",
+    "bytes": 223222,
+    "width": 960,
+    "height": 711,
+    "source_url": "https://commons.wikimedia.org/wiki/File:2015-05-30_Coprinopsis_cinerea_(Schaeff.-_Fr.)_Redhead,_Vilgalys_%26_Moncalvo_593470.jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/b/bc/2015-05-30_Coprinopsis_cinerea_%28Schaeff.-_Fr.%29_Redhead%2C_Vilgalys_%26_Moncalvo_593470.jpg",
+    "thumbnail_note": "960 px Wikimedia thumbnail of the original 3671×2719 file, fetched for this dataset.",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+    "creator": "Igor (Igor_Yevdokimov), Mushroom Observer",
+    "mushroom_observer_image": 593470,
+    "date": "2015-05-30",
+    "attribution": "Igor (Igor_Yevdokimov) / Mushroom Observer, CC BY-SA 3.0, via Wikimedia Commons"
+  },
+  "claim_boundary": {
+    "reported_in_source": [
+      "Turing 1952 linear-stability wavenumber for a two-morphogen reaction-diffusion system",
+      "Schnakenberg 1979 kinetics and the resulting Jacobian at steady state",
+      "Kües 2000 developmental natural history of Coprinus cinereus gilled fruiting bodies",
+      "Stajich et al. 2010 genome of Coprinopsis cinerea"
+    ],
+    "reconstructed_in_script": [
+      "γ calibrated so k_c equals 2π / 7.744e-05 m on a 96² periodic patch with 12 px per wave",
+      "Explicit Euler, periodic 5-point Laplacian, dispersion comparison, γ sweep, equal-diffusion and off-band ablations",
+      "Colour segmentation of the 2015 gill disc and structure-tensor coherency on that mask",
+      "GIF palette uses only the photograph's mean RGB; spatial structure is the activator field"
+    ],
+    "transfer_boundary": [
+      "77 µm is an assigned atlas scale, not a measured pigment spacing on this fruiting body",
+      "Schnakenberg (a, b, D) are a standard Turing substrate, not a Coprinopsis biochemical fit",
+      "The mature gills in the photograph are the organism-scale stripe morphology; the simulation is the cellular-scale wavelength on a 619.52 µm patch"
+    ],
+    "does_not_claim": [
+      "That 77.44 µm was measured with a scale bar on Mushroom Observer image 593470",
+      "That these kinetic parameters are unique to Coprinopsis or were estimated from its transcriptome",
+      "A post-Holocene successor chronospecies, or a fossil predecessor inside this 1/1 chronoseries",
+      "That the animation is a photograph of the fruiting body"
+    ]
+  }
+}
