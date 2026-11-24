@@ -1,0 +1,131 @@
+{
+  "schema_version": "morphoeval-loop-reference-1.0",
+  "slot": 3223,
+  "sim_id": "delphi10000-euperipatoides-rowelli-turing-wavelength-s0",
+  "organism": {
+    "scientific_name": "Euperipatoides rowelli",
+    "common_name": "Australian velvet worm",
+    "aristotelian_path": "II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Euperipatoides",
+    "lineage": "Panarthropod & Invertebrate Extremophiles"
+  },
+  "phenomenon_scale": {
+    "label": "Turing pigment stripe / ocellus wavelength",
+    "scale_human": "1.1 µm",
+    "phenomenon_size_m": 1.12e-06,
+    "log10_size_m": -5.951,
+    "scale_tier": "3_subcellular_um",
+    "detail_variant": true,
+    "note": "Exact stored length is 1.12e-06 m (1.12 µm), the detail-scale wavelength named 1.1 µm in the slot brief."
+  },
+  "paleobiology": {
+    "geological_age_ma": 0.0,
+    "geological_period": "Holocene (Extant)",
+    "chronoseries": "1/1",
+    "predecessor": {
+      "name": "Cambrian stem lobopodian (lineage context; not a member of this one-step chronoseries)",
+      "age_ma": 508.0,
+      "preservation_floor_m": 1.0e-05,
+      "countable_wavelengths_at_1_12_um": 0,
+      "change": "At 1.12 µm the predecessor leaves no countable pigment/microvillus spacing. N = 0 because the feature sits below a 10 µm preservation floor."
+    },
+    "this_chronospecies": {
+      "name": "Euperipatoides rowelli",
+      "age_ma": 0.0,
+      "eye_diameter_m": 1.0e-04,
+      "countable_wavelengths_across_eye": 89,
+      "change": "The living retina makes k_sigma a physiological eigenvalue. floor(100 µm / 1.12 µm) = 89 detail wavelengths fit across the eye."
+    },
+    "successor": null,
+    "what_changes_vs_predecessor_and_successor": "No successor (extant terminus, chronoseries 1/1). Versus the Cambrian predecessor, the integer mode count at this scale changes from unresolved (N = 0) to N = 89, and the diffusion ratio Dv/Du = 22 belongs to the hydrated screening-pigment field rather than to a fossil impression. The detail wavelength stays finer than the 2.5 µm photoreceptor pitch; that separation is the content of this scale, not a copy of a coarser sibling slot."
+  },
+  "governing_model": {
+    "law": "Turing wavenumber k_c (fastest-growing mode k_sigma)",
+    "cohort": "1. Chemical Turing / RD",
+    "form": "Stripes, Spots & Ocelli",
+    "kinetics": "Schnakenberg 1979",
+    "equations": [
+      "du/dt = Du * laplacian(u) + gamma * (a - u + u^2 v)",
+      "dv/dt = Dv * laplacian(v) + gamma * (b - u^2 v)"
+    ],
+    "state_variables": ["u activator (pigment/rhabdom precursor)", "v inhibitor"],
+    "boundary_conditions": "No-flux (Neumann) on the square retinal patch, implemented as a discrete cosine basis.",
+    "steady_state": {"u0": "a + b", "v0": "b / (a + b)^2"},
+    "jacobian": {
+      "f_u": "-1 + 2 u0 v0",
+      "f_v": "u0^2",
+      "g_u": "-2 u0 v0",
+      "g_v": "-u0^2"
+    },
+    "dispersion": "sigma(k) = largest real eigenvalue of gamma*J - k^2 diag(Du, Dv)",
+    "k_sigma_definition": "k_sigma = argmax_{k>0} sigma(k), calibrated to 2*pi/lambda",
+    "k_delta_definition": "k_delta^2 = gamma * (Dv*f_u + Du*g_v) / (2*Du*Dv), the minimizer of the determinant factor; equals k_sigma only at onset",
+    "k_onset_definition": "k_onset^2 = gamma * sqrt(det(J) / (Du*Dv)), the classical double-root Turing wavenumber"
+  },
+  "parameters": {
+    "a": 0.12,
+    "b": 0.88,
+    "Du": 1.0,
+    "Dv": 22.0,
+    "lambda_m": 1.12e-06,
+    "n_wavelengths_across_domain": 14,
+    "domain_length_m": 1.568e-05,
+    "gamma": 34122.25342711872,
+    "grid_n": 96,
+    "seed": 3223,
+    "notes": "gamma is the bisection value at which argmax sigma(k) = 2*pi*14 on the unit nondimensional domain, i.e. physical wavelength 1.12 µm. Dv/Du = 22 is specific to slot 3223."
+  },
+  "empirical_claims": [
+    {
+      "id": "eye_diameter",
+      "claim": "Adult E. rowelli eyes are ocelli about 100 µm in diameter.",
+      "value": 100.0,
+      "unit": "µm",
+      "source_doi": "10.1371/journal.pcbi.1008808"
+    },
+    {
+      "id": "receptor_pitch",
+      "claim": "Photoreceptors are packed on a roughly hexagonal lattice with centre-to-centre distance 2–3 µm; the optical model uses about 2.5 µm.",
+      "value": 2.5,
+      "unit": "µm",
+      "source_doi": "10.1371/journal.pcbi.1008808"
+    },
+    {
+      "id": "microvillus_scale_bar",
+      "claim": "The rhabdomeric microvillus layer is figured at a 1 µm scale bar, the anatomical regime of this detail wavelength.",
+      "value": 1.0,
+      "unit": "µm",
+      "source_doi": "10.1242/jeb.175802"
+    },
+    {
+      "id": "screening_pigment",
+      "claim": "Pigment cells are distinguished by pigment granules and the absence of a rhabdomere; they cup the retina.",
+      "value": null,
+      "unit": null,
+      "source_doi": "10.1016/j.asd.2006.06.003"
+    },
+    {
+      "id": "lens_refractive_index",
+      "claim": "The lens is approximately homogeneous with refractive index about 1.48–1.485.",
+      "value": 1.485,
+      "unit": "dimensionless",
+      "source_doi": "10.1371/journal.pcbi.1008808"
+    }
+  ],
+  "transfer_boundary": "No published paper measures a Turing wavelength of 1.12 µm in E. rowelli. The script reconstructs that wavelength by calibrating Schnakenberg k_sigma to the assigned detail scale, inside the anatomical regime described by Mayer 2006, Kirwan 2018, and Ljungholm & Nilsson 2021.",
+  "specimen_image": {
+    "filename": "euperipatoides_rowelli_specimen.jpg",
+    "sha256": "29166a767a52ae559d35f372036be33ffc983492061877933038a6a5fe1af988",
+    "license": "CC BY 2.0",
+    "credit": "Alan Couch, Canberra, ACT, Australia",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Euperipatoides_rowelli.jpg",
+    "capture": "Nikon COOLPIX P90, 2012-03-16, Wikimedia Commons upload of the Flickr original",
+    "role": "Whole-animal CV target. Not an electron micrograph at 1.12 µm."
+  },
+  "primary_dois": [
+    "10.1098/rstb.1952.0012",
+    "10.1016/0022-5193(79)90042-0",
+    "10.1016/j.asd.2006.06.003",
+    "10.1242/jeb.175802",
+    "10.1371/journal.pcbi.1008808"
+  ]
+}
