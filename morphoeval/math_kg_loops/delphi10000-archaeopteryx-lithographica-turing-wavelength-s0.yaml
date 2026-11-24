@@ -1,0 +1,54 @@
+sim_id: delphi10000-archaeopteryx-lithographica-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 7.478e-05
+log10_size_m: -4.126
+size_human: 75 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Archaeopteryx
+  lithographica at the cellular detail scale (75 µm), Tithonian 150.0 Ma
+geological_age_ma: 150.0
+geological_period: Late Jurassic (Tithonian, 150.0 Ma)
+fossil_lineage_group: Theropod-Avian Feather Fossil Series
+chronoseries: 1/1
+model_spec:
+  model: Schnakenberg (1979) activator-inhibitor with Turing (1952) critical wavenumber k_c
+  a: 0.112
+  b: 0.836
+  Du: 0.052
+  Dv: 1.48
+  gamma: 0.039
+  anisotropy: 1.22
+  grid_resolution: [96, 96]
+  seed: 3120
+  phenomenon_size_m: 7.478e-05
+  inputs:
+    - datasets/archaeopteryx_lithographica_turing_wavelength_s0/archaeopteryx_lithographica_berlin_slab.jpg
+    - datasets/archaeopteryx_lithographica_turing_wavelength_s0/archaeopteryx_lithographica_turing_wavelength_s0_reference.json
+equations:
+- law_name: Turing dispersion determinant
+  formula: det(J - k^2 D) = Du Dv k^4 - (Dv fu + Du gv) k^2 + (fu gv - fv gu)
+  lean_decl: MathOfBiology.Loop_3120.duMilli
+  lean_theorem: MathOfBiology.Loop_3120.differential_diffusivity_ratio
+  lean_locus: morphoeval/lean/loops/Loop_3120_archaeopteryx_lithographica_turing_wavelength_s0.lean#L32-L36
+  variables: Du=0.052, Dv=1.48, gamma=0.039 at L=74.78 µm
+  role: Differential diffusion required for a finite k_c on the Archaeopteryx vane
+  source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py#L63-L93
+- law_name: Critical wavelength
+  formula: lambda_c = 2 pi / k_c, k_c^2 = (Dv fu + Du gv) / (2 Du Dv)
+  lean_decl: MathOfBiology.Loop_3120.lambdaArchUmX100
+  lean_theorem: MathOfBiology.Loop_3120.eight_wavelengths_fit_in_vane_patch
+  lean_locus: morphoeval/lean/loops/Loop_3120_archaeopteryx_lithographica_turing_wavelength_s0.lean#L38-L41
+  variables: lambda_c = 74.78 µm = 7.478e-05 m
+  role: Selects the 75 µm pigment-stripe wavelength, distinct from the 2.919 mm organ-scale sibling
+  source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+  code_locus: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py#L63-L93
+- law_name: Feather-series wavelength order at fixed cellular dx
+  formula: lambda(Microraptor, gamma=0.067) < lambda(Archaeopteryx, gamma=0.039) < lambda(Anchiornis, gamma=0.024)
+  lean_decl: MathOfBiology.Loop_3120.lambdaMicroUmX100
+  lean_theorem: MathOfBiology.Loop_3120.successor_shorter_than_archaeopteryx
+  lean_locus: morphoeval/lean/loops/Loop_3120_archaeopteryx_lithographica_turing_wavelength_s0.lean#L20-L28
+  variables: 57.05 µm < 74.78 µm < 95.33 µm
+  role: What changes at 150.0 Ma versus the 160.8 Ma predecessor and the 120 Ma successor
+  source_citation: Li et al. (2010) DOI:10.1126/science.1186290; Li et al. (2012) DOI:10.1126/science.1213780
+  code_locus: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py#L156-L176

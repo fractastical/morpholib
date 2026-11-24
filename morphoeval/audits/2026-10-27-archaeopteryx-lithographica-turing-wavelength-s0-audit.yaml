@@ -1,0 +1,145 @@
+# MorphoEval audit — Archaeopteryx lithographica Turing wavelength, 75 µm, slot 3120, Pass 1.
+# Single builder-assessor. Overall is the rubric weighted mean.
+audit:
+  id: 2026-10-27-archaeopteryx-lithographica-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  domain: morphogenesis
+  publisher_orcid: https://orcid.org/0009-0007-4948-9192
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d
+    note: "Pass 1 working tree on 0c76d15d. Slot files are new and are not in that commit."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    year: 1952
+    doi: 10.1098/rstb.1952.0012
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    year: 1979
+    doi: 10.1016/0022-5193(79)90042-0
+  prum2002:
+    title: "Reaction-diffusion models of within-feather pigmentation patterning"
+    authors: "Prum, R. O. and Williamson, S."
+    year: 2002
+    doi: 10.1098/rspb.2001.1896
+  carney2012:
+    title: "New evidence on the colour and nature of the isolated Archaeopteryx feather"
+    authors: "Carney, R. M. et al."
+    year: 2012
+    doi: 10.1038/ncomms1642
+  manning2013:
+    title: "Synchrotron-based chemical imaging reveals plumage patterns in a 150 million year old early bird"
+    authors: "Manning, P. L. et al."
+    year: 2013
+    doi: 10.1039/c3ja50077b
+  foth2014:
+    title: "New specimen of Archaeopteryx provides insights into the evolution of pennaceous feathers"
+    authors: "Foth, C., Tischlinger, H. and Rauhut, O. W. M."
+    year: 2014
+    doi: 10.1038/nature13467
+  li2010:
+    title: "Plumage Color Patterns of an Extinct Dinosaur"
+    authors: "Li, Q. et al."
+    year: 2010
+    doi: 10.1126/science.1186290
+  li2012:
+    title: "Reconstruction of Microraptor and the Evolution of Iridescent Plumage"
+    authors: "Li, Q. et al."
+    year: 2012
+    doi: 10.1126/science.1213780
+simulations:
+  - id: delphi10000-archaeopteryx-lithographica-turing-wavelength-s0
+    name: "Schnakenberg Turing wavelength on Archaeopteryx lithographica at 75 µm (Tithonian, 150.0 Ma)"
+    organism: "Archaeopteryx lithographica"
+    script: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py
+    output: docs/media/archaeopteryx_lithographica_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, prum2002, carney2012, manning2013, foth2014, li2010, li2012]
+    summary: >-
+      Periodic Schnakenberg system with a=0.112, b=0.836, Du=0.052, Dv=1.48, gamma=0.039,
+      anisotropy 1.22, seed 3120. Analytical lambda_c = 11.991 cells, scaled so the physical
+      wavelength is 7.478e-05 m (75 µm) at 150.0 Ma. Grid FFT wavelength is 12.00 cells
+      (relative error 0.00072). Wing-transect Pearson r = 0.9803, nRMSE = 0.198, KS = 0.053.
+      Equal-diffusion ablation std ratio = 0.00081. Gamma sweep is strictly decreasing.
+      Predicted neighbor wavelengths at the same dx: Anchiornis 95.33 µm (160.8 Ma),
+      Microraptor 57.05 µm (120 Ma). The Berlin-slab scan does not resolve 75 µm.
+    provenance:
+      spec_fingerprint: "6913098e47054812a2f1cf896b7e10fbf923735b2080ce927a3087eecb641c84"
+      artifact_sha256: "4c1546e3a950825eaf079eeb0edd736a5e6177d9a95507f2a2b525cb01b4e166"
+      input_dataset_sha256:
+        archaeopteryx_lithographica_berlin_slab.jpg: "2e307a2774e085710fa58b72ee4579dd2b9ad7b9e328822eaea375619bd1d25d"
+        archaeopteryx_lithographica_turing_wavelength_s0_reference.json: "32deca0baa44c4efa0d1eebf3abb8bb56437b1223aa8c3f961fb5cb739ef4b12"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: finite critical wavenumber when the inhibitor diffuses faster than the activator."
+        - "Schnakenberg 1979: kinetics a - u + u^2 v and b - u^2 v."
+        - "Prum and Williamson 2002: within-feather bars and spots are a reaction-diffusion class."
+        - "Carney 2012: Archaeopteryx feather melanosomes at roughly micrometre length."
+        - "Manning 2013 and Foth 2014: plumage pattern and pennaceous feathers at 150 Ma."
+        - "Li 2010 and Li 2012: Anchiornis colour and Microraptor iridescence."
+      reconstructed_in_script:
+        - "Parameter tuple (a, b, Du, Dv, gamma, anisotropy) chosen so lambda_c = 7.478e-05 m."
+        - "Gamma shifts 0.024 and 0.067 for the Anchiornis and Microraptor predictions."
+        - "Quartic plus three harmonics fitted to the wing optical-density transect of the slab scan."
+      transfer_boundary:
+        - "The public-domain slab JPEG does not resolve 75 µm. The Pearson r is a scan-resolution transect fit, not a measured barbule spacing."
+      does_not_claim:
+        - "That 74.78 µm was measured on this photograph."
+        - "That Anchiornis or Microraptor wavelengths were measured; they are gamma-transfer predictions."
+        - "A molecular identity for u and v."
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: "dispersion() implements the Schnakenberg Jacobian and k_c^2 = (Dv fu + Du gv) / (2 Du Dv), and the grid FFT peak (12.00 cells) matches the analytical wavelength (11.991 cells). The numeric tuple is a reconstruction for this scale, not a table copied from a feather paper."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [63, 93], note: "dispersion() Jacobian and lambda_c", supports: true}
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [101, 138], note: "periodic explicit Euler of the Schnakenberg PDE", supports: true}
+      specimen-match:
+        value: 72
+        rationale: "The comparison figure places the Berlin slab beside a stripe field and a wing overlay, and the GIF keeps the fossil recognizable (cv_sim_similarity 96). The overlay darkening is hard to see against slab contrast, so the pigment stripes are not yet a readable pattern on the vane."
+        evidence:
+          - {file: docs/media/archaeopteryx_lithographica_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "six-panel comparison including slab, u field, and faint overlay", supports: true}
+          - {file: docs/media/archaeopteryx_lithographica_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames at 960x720; last frame is the slab", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "lambda_c(gamma) for gamma in {0.020, 0.039, 0.080, 0.150, 0.250} is strictly decreasing and is plotted. The chronoseries bars use the same dx and three gamma values."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [178, 184], note: "gamma_sweep", supports: true}
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [448, 468], note: "sweep curve and chronoseries bars on the comparison figure", supports: true}
+      morphometric-validation:
+        value: 87
+        rationale: "Wing transect Pearson r = 0.9803, nRMSE = 0.198, KS = 0.053, inter-peak CV = 0.194. Equal-diffusion control collapses the field (std ratio 0.00081). Fundamental-only r = 0.807, so the headline r is not a one-sine fit. The transect is the scan, not a 75 µm measurement."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [232, 270], note: "fit_wing_transect Pearson, nRMSE, KS", supports: true}
+          - {file: datasets/archaeopteryx_lithographica_turing_wavelength_s0/fit_metrics.json, lines: [0, 0], note: "self-test metrics JSON", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Crossref-checked DOIs for Turing, Schnakenberg, Prum and Williamson, Carney, Manning, Foth, and both Li papers. The Berlin slab is public domain and SHA-256 pinned."
+        evidence:
+          - {file: datasets/archaeopteryx_lithographica_turing_wavelength_s0/paper_citations.bib, lines: [1, 96], note: "BibTeX with DOIs", supports: true}
+          - {file: datasets/archaeopteryx_lithographica_turing_wavelength_s0/archaeopteryx_lithographica_turing_wavelength_s0_reference.json, lines: [1, 40], note: "75 µm and 150.0 Ma stated with specimen hash", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "The module docstring and dispersion() name the PDE, the steady state, and k_c. Lean Loop_3120 records the wavelength order and the diffusivity ratio as Nat facts checked by the self-test."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [1, 18], note: "equation map in the module docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3120_archaeopteryx_lithographica_turing_wavelength_s0.lean, lines: [20, 56], note: "six theorems, zero sorry", supports: true}
+      repro-package:
+        value: 88
+        rationale: "--self-test checks Turing conditions, r > 0.98, ablation, monotonic sweep, Lean integers, GIF frames and size, and cv_sim_similarity >= 58. Seed 3120 and the specimen hash are pinned. Pass 1 is a single assessor."
+        evidence:
+          - {file: models/2026-delphi10000-archaeopteryx-lithographica-turing-wavelength-s0.py, lines: [594, 613], note: "self-test assertions", supports: true}
+    remediation:
+      - id: R1
+        item: "The wing overlay is too faint against slab contrast. Raise stripe contrast on the segmented vane and keep cv_sim_similarity >= 70."
+      - id: R2
+        item: "Print the fundamental-only Pearson r (0.807) on the comparison figure next to the 3-harmonic r so the flexible fit is visible."
+      - id: R3
+        item: "Annotate the segmented wing-mask fraction on the figure. Pass 1 leaves it only in fit_metrics.json."
