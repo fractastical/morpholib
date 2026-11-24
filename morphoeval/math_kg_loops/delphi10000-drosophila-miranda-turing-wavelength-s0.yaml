@@ -1,0 +1,97 @@
+sim_id: delphi10000-drosophila-miranda-turing-wavelength-s0
+slot: 3193
+slot_id: loop-3193-drosophila-miranda-turing-wavelength-s0
+organism: Drosophila miranda
+phenomenon_size_m: 1.864e-06
+log10_size_m: -5.730
+size_human: "1.9 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: "Turing pigment stripe / ocellus wavelength in Drosophila miranda (1.9 µm, detail scale)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: Sophophora obscura & willistoni Clade
+predecessor: Drosophila melanogaster
+successor: Drosophila mojavensis
+chronoseries: "22/41"
+math_family: Reaction-Diffusion & Turing Dispersion (Turing Wavenumber k_c)
+model_spec:
+  model: "Schnakenberg (1979) activator-inhibitor with Turing (1952) dispersion, detail wavelength 1.864 µm"
+  a: 0.08
+  b: 0.92
+  f_u: 0.84
+  f_v: 1.0
+  g_u: -1.84
+  g_v: -1.0
+  trace: -0.16
+  det: 1.0
+  gamma: 9.601157924837205
+  D_u_um2: 0.028630087589680647
+  D_v_um2: 0.27488199235044564
+  lambda_um: 1.864
+  lambda_melanogaster_um: 1.412
+  lambda_mojavensis_um: 2.286
+  domain_um: 22.368
+  grid: 96
+  steps: 800
+  dt: 0.05
+  seed: 3193
+  age_ma: 0.0
+  inputs:
+    - datasets/drosophila_miranda_turing_wavelength_s0/drosophila_miranda_turing_wavelength_s0_reference.json
+    - datasets/drosophila_miranda_turing_wavelength_s0/Drosophila_miranda_specimen.jpg
+    - datasets/drosophila_miranda_turing_wavelength_s0/scout_manifest.json
+    - datasets/drosophila_miranda_turing_wavelength_s0/paper_citations.bib
+    - datasets/drosophila_miranda_turing_wavelength_s0/README.md
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+  - law_name: Schnakenberg trace-determinant stability
+    formula: "tr J = f_u + g_v = -0.16 < 0 and det J = f_u g_v - f_v g_u = 1 > 0"
+    lean_decl: MathOfBiology.Loop_3193.trace_hundredths
+    lean_theorem: MathOfBiology.Loop_3193.trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean#L11-L14
+    variables: "f_u = 0.84, g_v = -1 at the miranda detail-scale steady state"
+    role: "Diffusion-free stability at 1.9 µm and 0 Ma"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012; Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0"
+    code_locus: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+  - law_name: Turing margin at the locked diffusivities
+    formula: "(D_v f_u + D_u g_v)^2 > 4 D_u D_v det J, with D_v/D_u = 9.601"
+    lean_decl: MathOfBiology.Loop_3193.inhibitor_faster_and_turing_margin
+    lean_theorem: MathOfBiology.Loop_3193.inhibitor_faster_and_turing_margin
+    lean_locus: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean#L27-L31
+    variables: "D_u = 0.028630 µm²/time, D_v = 0.274882 µm²/time"
+    role: "Finite-wavenumber instability selecting 1.864 µm"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: "D_u = D_v implies D_u (f_u + g_v) < 0, so no Turing band"
+    lean_decl: MathOfBiology.Loop_3193.equal_diffusion_weighted_trace_negative
+    lean_theorem: MathOfBiology.Loop_3193.equal_diffusion_weighted_trace_negative
+    lean_locus: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean#L20-L23
+    variables: "D_u = D_v = 0.028630 µm²/time"
+    role: "Negative control for the 1.9 µm pattern"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+  - law_name: Chronoseries wavelength order at 0 Ma
+    formula: "λ_melanogaster = 1.412 µm < λ_miranda = 1.864 µm < λ_mojavensis = 2.286 µm"
+    lean_decl: MathOfBiology.Loop_3193.chronoseries_wavelength_order
+    lean_theorem: MathOfBiology.Loop_3193.chronoseries_wavelength_order
+    lean_locus: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean#L36-L38
+    variables: "predecessor melanogaster, focal miranda, successor mojavensis, all 0 Ma"
+    role: "What changes at this scale is wavenumber, not geological age"
+    source_citation: "Shoup (1966) DOI:10.1083/jcb.29.2.223; Bachtrog (2013) DOI:10.1038/nrg3366"
+    code_locus: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
+  - law_name: Chronoseries wavenumber and mode count
+    formula: "k_mel > k_mir > k_moj (4450 > 3371 > 2749 mrad/µm) and N = 16 > 12 > 10 on a 22.368 µm field"
+    lean_decl: MathOfBiology.Loop_3193.chronoseries_wavenumber_and_mode_count
+    lean_theorem: MathOfBiology.Loop_3193.chronoseries_wavenumber_and_mode_count
+    lean_locus: morphoeval/lean/loops/Loop_3193_drosophila_miranda_turing_wavelength_s0.lean#L43-L45
+    variables: "integer milliradians per µm and rounded mode counts"
+    role: "Same ordering read in wavenumber and in stripe count"
+    source_citation: "Turing (1952) DOI:10.1098/rstb.1952.0012"
+    code_locus: models/2026-delphi10000-drosophila-miranda-turing-wavelength-s0.py
