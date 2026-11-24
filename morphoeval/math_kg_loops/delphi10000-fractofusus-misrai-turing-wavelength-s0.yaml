@@ -1,0 +1,72 @@
+sim_id: delphi10000-fractofusus-misrai-turing-wavelength-s0
+slot: 3227
+math_family: Reaction-Diffusion & Turing Dispersion
+phenomenon_size_m: 6.33e-05
+log10_size_m: -4.199
+size_human: 63 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Fractofusus misrai
+  (Late Ediacaran, Newfoundland, 565 Ma), detail variant s0
+geological_age_ma: 565.0
+geological_period: Late Ediacaran (Newfoundland, 565 Ma)
+fossil_lineage_group: Ediacaran-Cambrian Bodyplan Fossil Series
+chronoseries: 1/1
+scale_neighbor:
+  slot: 1251
+  phenomenon_size_m: 0.003275
+  relation: 51 detail-scale wavelengths of 6.33e-05 m fit in one 3.275 mm module; 52 do not
+model_spec:
+  model: Schnakenberg 1979 kinetics with the Turing 1952 critical wavenumber k_c
+  a: 0.09
+  b: 0.85
+  D_u: 0.12
+  D_v: 2.4
+  diffusion_ratio: 20
+  grid_resolution: [96, 128]
+  dt: 0.04
+  steps: 1400
+  seed: 3227
+  phenomenon_size_m: 6.33e-05
+  inputs:
+    - datasets/fractofusus_misrai_turing_wavelength_s0/fractofusus_misrai_turing_wavelength_s0_reference.json
+    - datasets/fractofusus_misrai_turing_wavelength_s0/fractofusus_misrai_specimen.jpg
+    - datasets/fractofusus_misrai_turing_wavelength_s0/paper_citations.bib
+    - datasets/fractofusus_misrai_turing_wavelength_s0/scout_manifest.json
+    - datasets/fractofusus_misrai_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing dispersion determinant
+    formula: det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)
+    lean_decl: MathOfBiology.Loop_3227.turing_h_positive
+    lean_theorem: MathOfBiology.Loop_3227.turing_h_positive
+    lean_locus: morphoeval/lean/loops/Loop_3227_fractofusus_misrai_turing_wavelength_s0.lean
+    variables: f_u, f_v, g_u, g_v from Schnakenberg at a=0.09, b=0.85; D_u=0.12, D_v=2.40
+    role: Opens the finite-k band for a 63 µm stationary wave on Fractofusus misrai
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py#L108-L124
+  - law_name: Critical wavelength
+    formula: lambda_c = 2 pi / k_c, k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v)
+    lean_decl: MathOfBiology.Loop_3227.lambdaTenths
+    lean_theorem: MathOfBiology.Loop_3227.scale_separation
+    lean_locus: morphoeval/lean/loops/Loop_3227_fractofusus_misrai_turing_wavelength_s0.lean
+    variables: lambda_c fixed at 6.33e-05 m by the grid spacing
+    role: Detail-scale repeat; 51 copies fit in the 3.275 mm organ module and 52 do not
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py#L126-L134
+  - law_name: Diffusion-ratio precondition
+    formula: D_v / D_u = 20 > 1
+    lean_decl: MathOfBiology.Loop_3227.diffusionRatio
+    lean_theorem: MathOfBiology.Loop_3227.inhibitor_diffuses_faster
+    lean_locus: morphoeval/lean/loops/Loop_3227_fractofusus_misrai_turing_wavelength_s0.lean
+    variables: D_u activator diffusivity, D_v inhibitor diffusivity
+    role: Inhibitor spreads faster than the activator, required for a Turing band
+    source_citation: Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py#L245-L264
+  - law_name: Mid-Ediacaran age window
+    formula: 560 Ma <= 565 Ma <= 575 Ma
+    lean_decl: MathOfBiology.Loop_3227.age_inside_mid_ediacaran
+    lean_theorem: MathOfBiology.Loop_3227.age_inside_mid_ediacaran
+    lean_locus: morphoeval/lean/loops/Loop_3227_fractofusus_misrai_turing_wavelength_s0.lean
+    variables: geological age of the Mistaken Point chronospecies
+    role: Pins 565 Ma inside Gehling & Narbonne 2007 ca. 575-560 Ma
+    source_citation: Gehling & Narbonne 2007 DOI:10.1139/e07-003
+    code_locus: models/2026-delphi10000-fractofusus-misrai-turing-wavelength-s0.py#L517-L540
