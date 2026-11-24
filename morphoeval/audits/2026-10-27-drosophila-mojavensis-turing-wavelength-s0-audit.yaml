@@ -1,0 +1,195 @@
+# MorphoEval audit — Drosophila mojavensis Turing wavelength, 2.4 µm, slot 3194, Pass 1.
+# Weighted overall is computed by build_morphoeval_kg.py from the seven scores below.
+audit:
+  id: 2026-10-27-drosophila-mojavensis-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes: null
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor; a second provider was not available in this loop)"
+  domain: morphogenesis
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0e0828eed603126b2ece796473b70906c8bb4076
+    note: "Loop commit that adds the slot 3194 files. Origin URL in this checkout carries an access token, so build_morphoeval_kg.py skips the blob-locus check with a note rather than a failure."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    venue: "Phil. Trans. R. Soc. B"
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    venue: "J. Theor. Biol."
+    doi: "10.1016/0022-5193(79)90042-0"
+  matzkin2006:
+    title: "Functional genomics of cactus host shifts in Drosophila mojavensis"
+    authors: "Matzkin, L. M.; Watts, T. D.; Bitler, B. G.; Machado, C. A.; Markow, T. A."
+    venue: "Molecular Ecology"
+    doi: "10.1111/j.1365-294x.2006.03102.x"
+  matzkin2012:
+    title: "Population transcriptomics of cactus host shifts in Drosophila mojavensis"
+    authors: "Matzkin, L. M."
+    venue: "Molecular Ecology"
+    doi: "10.1111/j.1365-294x.2012.05549.x"
+  allan2019:
+    title: "Genomic analysis of the four ecologically distinct cactus host populations of Drosophila mojavensis"
+    authors: "Allan, C. W.; Matzkin, L. M."
+    venue: "BMC Genomics"
+    doi: "10.1186/s12864-019-6097-z"
+  genomes2007:
+    title: "Evolution of genes and genomes on the Drosophila phylogeny"
+    authors: "Drosophila 12 Genomes Consortium"
+    venue: "Nature"
+    doi: "10.1038/nature06341"
+simulations:
+  - id: delphi10000-drosophila-mojavensis-turing-wavelength-s0
+    name: "Schnakenberg most-unstable wavelength for D. mojavensis epicuticle at 2.4 µm (0 Ma)"
+    organism: "Drosophila mojavensis"
+    domain: "drosophila-mojavensis-epicuticle-wavelength-2.4um"
+    script: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py
+    output: docs/media/drosophila_mojavensis_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_mojavensis_turing_wavelength_s0_growth.gif
+      - datasets/drosophila_mojavensis_turing_wavelength_s0/metrics.json
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, matzkin2006, matzkin2012, allan2019, genomes2007]
+    summary: >-
+      Pass 1. Schnakenberg kinetics a=0.37, b=0.71, γ=4, R=Dv/Du=80.
+      Diffusivities are scaled so argmax σ(k) is 2.380 µm (catalog 2.4 µm = 2.38e-06 m).
+      PDE-measured σ(k) vs analytic σ(k): Pearson r=0.99323, RMSE=0.02405 (n=9).
+      Saturated radial-FFT wavelength 2.414 µm. Equal-diffusion ablation std ratio 2.5e-6.
+      Analytic λ★(s) is monotone on s in {0.67, 0.85, 1, 1.40, 1.85}.
+      Chronoseries at 0 Ma, λ ∝ √D: D. miranda 3.236 µm, D. mojavensis 2.380 µm,
+      D. novamexicana 1.948 µm. GIF 14 frames, 640×480, CV similarity 87.1
+      against the canonical gallery plate. Pattern weight 0.18 chosen from {0.06, 0.10, 0.14, 0.18}.
+    provenance:
+      artifact_sha256: "33eeba72316e26acf05bde40511d05c5fba8645851653c61c93b7241b21bfa3f"
+      input_dataset_sha256:
+        drosophila_mojavensis_turing_wavelength_s0_specimen.jpg: "f68e7b21de8d6b97f1a79c44f509ee41bc5c9f3439783d507c046c03dae5efae"
+        drosophila_mojavensis_wikimedia_female.png: "7615839cbc7962708d325b16caeec0e7e22b3ff848243c9e29e1ead0849b7eff"
+        drosophila_mojavensis_turing_wavelength_s0_reference.json: "7ab7a539471b22195ba9c74b7f2abc636ecf40e71198a2afd7ec0089d9fdb607"
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952 diffusion-driven instability and linear dispersion"
+        - "Schnakenberg 1979 two-species kinetics"
+        - "Matzkin et al. 2006 and 2012, Allan & Matzkin 2019: cactus-host differentiation in D. mojavensis"
+        - "Drosophila 12 Genomes Consortium 2007 placed D. mojavensis in the repleta group"
+      reconstructed_in_script:
+        - "Du and Dv calibrated so the most-unstable wavelength equals 2.38e-06 m"
+        - "Chronospecies wavelengths via λ ∝ √D at fixed Jacobian and R=80 (3237 nm, 2380 nm, 1948 nm)"
+        - "Activator composited onto the canonical gallery plate for the GIF"
+      transfer_boundary:
+        - "Campaign chronoseries lists D. miranda as predecessor and D. novamexicana as successor at 0 Ma; that is not a cladogram"
+        - "The 2.4 µm length is the catalog detail tier, not a length reported in the Matzkin papers"
+      does_not_claim:
+        - "That 2.38 µm was read off a D. mojavensis micrograph in the cited papers"
+        - "That the gallery plate's 100 µm scale bar is this slot's phenomenon scale"
+        - "That DOI 10.1534/genetics.106.059444 is a Matzkin cactus paper (Crossref: Hill & Otto 2007, yeast)"
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The script integrates Schnakenberg kinetics and the Turing linearisation,
+          and it separates the Murray leading-order k_c from the true argmax of σ(k).
+          Absolute Du, Dv are calibrated to the catalog length 2.38e-06 m rather than
+          taken from a measured epicuticular diffusivity. Periodic boundaries only.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [88, 111], note: "Jacobian at u0=a+b and leading eigenvalue σ(k)", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [122, 156], note: "Du, Dv calibrated so λ★=2.38 µm at R=80", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [249, 296], note: "Periodic explicit Schnakenberg integrator", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The 14-frame 640×480 GIF ends on the canonical plate with a 0.18 activator
+          modulation. Computer-vision similarity to that plate is 87.1. The plate is a
+          stylized ochre spiral with a 100 µm bar, not a 2.4 µm micrograph, so the
+          match is to the repository specimen asset rather than to a published SEM.
+          The public-domain habitus (225×99) is segmented but not the fitness target.
+        evidence:
+          - {file: docs/media/drosophila_mojavensis_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "14 frames, 640×480, CV similarity 87.1", supports: true}
+          - {file: docs/media/drosophila_mojavensis_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "plate, activator, last frame, dispersion, chronoseries, sweep", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [382, 414], note: "pattern-weight search {0.06, 0.10, 0.14, 0.18}; selected 0.18", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          λ★(s) increases monotonically for diffusivity scales 0.67, 0.85, 1, 1.40, 1.85
+          at fixed Jacobian, which is the claimed square-root control. The saturated
+          FFT wavelength is measured only at s=1 (2.414 µm vs λ★ 2.380 µm). The
+          equal-diffusion ablation collapses the amplitude (std ratio 2.5e-6).
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [322, 332], note: "diffusivity_sweep at fixed Jacobian", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [298, 320], note: "ablation Dv=Du", supports: true}
+          - {file: datasets/drosophila_mojavensis_turing_wavelength_s0/metrics.json, lines: [29, 120], note: "pearson_r, ablation_ratio, sweep_monotone", supports: true}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          Pearson r=0.99323 and RMSE=0.02405 between analytic and PDE growth rates
+          across nine wavenumbers.           Plate foreground fraction 0.3806 vs habitus 0.5455,
+          coherency 0.8155 vs 0.5838, circularity 0.0538 vs 0.264,
+          KS(activator, plate)=0.858, all with value ≠ reference.
+          Nonlinear wavelength error is 1.4% (2.414 vs 2.380). No second boundary condition yet.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [205, 224], note: "dispersion_table Pearson r and RMSE", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [474, 508], note: "plate vs habitus segmentation and KS against the activator", supports: true}
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [226, 247], note: "radial FFT wavelength of the saturated field", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Crossref-checked DOIs for Turing 1952, Schnakenberg 1979, Matzkin 2006,
+          Matzkin 2012, Allan & Matzkin 2019, and the Drosophila 12 Genomes paper.
+          Specimen SHA-256 pins match the files on disk. The sibling slot's DOI
+          10.1534/genetics.106.059444 was checked and rejected (it is Hill & Otto 2007).
+        evidence:
+          - {file: datasets/drosophila_mojavensis_turing_wavelength_s0/paper_citations.bib, lines: [1, 55], note: "BibTeX with Crossref DOIs", supports: true}
+          - {file: datasets/drosophila_mojavensis_turing_wavelength_s0/scout_manifest.json, lines: [1, 40], note: "slot 3194 uniqueness note vs the 96 µm sibling", supports: true}
+          - {file: datasets/drosophila_mojavensis_turing_wavelength_s0/drosophila_mojavensis_turing_wavelength_s0_reference.json, lines: [1, 30], note: "2.4 µm and 0 Ma stated; SHA-256 of both images", supports: true}
+      code-traceability:
+        value: 82
+        rationale: >-
+          Jacobian, dispersion, calibration, integrator, ablation, and chronoseries
+          square law are each a named function with the equation in the docstring.
+          The GIF weight search is a render fit, documented in metrics.json, not a
+          new biological parameter.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [1, 40], note: "module docstring states 2.4 µm, 0 Ma, and the PDEs", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3194_drosophila_mojavensis_turing_wavelength_s0.lean, lines: [14, 42], note: "four theorems, no sorry: order, square law, k_c numerator, ablation margin", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-drosophila-mojavensis-turing-wavelength-s0.yaml, lines: [1, 40], note: "laws pinned to the Lean declarations", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          --self-test passed: r>0.98, ablation collapse, monotone sweep, GIF ≥10 frames
+          and ≥480 px, CV≥58, and every morphometric value differs from its reference.
+          Seed 3194. Deterministic explicit Euler. No pinned conda lock for this slot
+          beyond the repository requirements.txt.
+        evidence:
+          - {file: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py, lines: [815, 854], note: "--self-test assertions", supports: true}
+          - {file: datasets/drosophila_mojavensis_turing_wavelength_s0/README.md, lines: [1, 28], note: "invocation and the 2.4 µm / 0 Ma statement", supports: true}
+    remediation:
+      - id: R1
+        item: "Add a no-flux (Neumann) boundary control and report its saturated wavelength next to the periodic λ."
+      - id: R2
+        item: "Measure the saturated FFT wavelength at the predecessor and successor diffusivity scales, not only the analytic λ★(s)."
+    needs:
+      - id: N1
+        need_type: parameter_sweep
+        target_dimension: parameter-expressivity
+        description: "Saturated FFT wavelength at s≠1 is not yet measured."
+        status: open
+        novelty_n: 0.4
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0
+      - id: N2
+        need_type: model_equation
+        target_dimension: model-fidelity
+        description: "Neumann boundary has not been integrated; only the periodic Laplacian is exercised."
+        status: open
+        novelty_n: 0.3
+        contradiction_c: 0.0
+        depth_d: 1.0
+        age_days_a: 0

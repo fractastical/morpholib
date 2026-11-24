@@ -1,0 +1,59 @@
+sim_id: delphi10000-drosophila-mojavensis-turing-wavelength-s0
+slot: 3194
+organism: Drosophila mojavensis
+phenomenon_size_m: 2.38e-06
+log10_size_m: -5.623
+size_human: "2.4 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: "Turing pigment stripe / ocellus wavelength in Drosophila mojavensis (2.4 µm, detail scale)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+chronoseries: "Drosophila 23/41"
+predecessor: Drosophila miranda
+successor: Drosophila novamexicana
+fossil_lineage_group: "Subgenus Drosophila virilis–repleta–guttifera Radiation"
+math_family: "Schnakenberg reaction-diffusion; most-unstable wavenumber k_star"
+aristotelian:
+  megiston_genos: II. Anaima (Invertebrata)
+  subaltern_genos: Entoma (Arthropoda)
+  genus: Drosophila
+  poion_form: Stripes, Spots & Ocelli
+  poson_law: Turing Wavenumber k_c
+  efficient_cause: 1. Chemical Turing / RD
+equations:
+- law_name: Schnakenberg steady state and Jacobian trace
+  formula: "u0 = a + b, v0 = b/u0^2, trace(J) = gamma*(f_u + g_v) < 0"
+  lean_decl: MathOfBiology.Loop_3194.kcNumerator
+  lean_theorem: MathOfBiology.Loop_3194.mojavensis_kc_numerator_positive
+  lean_locus: morphoeval/lean/loops/Loop_3194_drosophila_mojavensis_turing_wavelength_s0.lean#L29-L36
+  variables: "a=0.37, b=0.71, gamma=4, R=Dv/Du=80, lambda_target=2.38e-06 m"
+  role: "Positive trace-diffusion numerator at the 2.4 µm detail scale (0 Ma)"
+  source_citation: "Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0; Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py
+- law_name: Most-unstable wavelength
+  formula: "k_star = argmax_k sigma(k); lambda_star = 2*pi/k_star = 2.38e-06 m"
+  lean_decl: MathOfBiology.Loop_3194.lambdaMojavensisNm
+  lean_theorem: MathOfBiology.Loop_3194.chronoseries_wavelength_decreases
+  lean_locus: morphoeval/lean/loops/Loop_3194_drosophila_mojavensis_turing_wavelength_s0.lean#L10-L20
+  variables: "lambda_miranda=3237 nm, lambda_mojavensis=2380 nm, lambda_novamexicana=1948 nm"
+  role: "Chronoseries order at 0 Ma: miranda > mojavensis > novamexicana"
+  source_citation: "Matzkin et al. 2006 DOI:10.1111/j.1365-294x.2006.03102.x"
+  code_locus: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py
+- law_name: Diffusivity square law across the chronoseries
+  formula: "s = (lambda_nm/2380)^2; Du' = s*Du; Dv' = s*Dv; lambda proportional to sqrt(D)"
+  lean_decl: MathOfBiology.Loop_3194.wavelengthSq
+  lean_theorem: MathOfBiology.Loop_3194.diffusivity_square_law_order
+  lean_locus: morphoeval/lean/loops/Loop_3194_drosophila_mojavensis_turing_wavelength_s0.lean#L22-L27
+  variables: "s_miranda=(3237/2380)^2, s_focal=1, s_novamexicana=(1948/2380)^2"
+  role: "What changes at 2.4 µm versus the predecessor and successor: absolute epicuticular diffusivity, not the Jacobian"
+  source_citation: "Allan & Matzkin 2019 DOI:10.1186/s12864-019-6097-z"
+  code_locus: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py
+- law_name: Equal-diffusion ablation lies below the Turing margin
+  formula: "kcNumerator(1, f_u, g_v) < kcNumerator(80, f_u, g_v)"
+  lean_decl: MathOfBiology.Loop_3194.kcNumerator
+  lean_theorem: MathOfBiology.Loop_3194.differential_diffusion_exceeds_ablation
+  lean_locus: morphoeval/lean/loops/Loop_3194_drosophila_mojavensis_turing_wavelength_s0.lean#L38-L42
+  variables: "ablation sets Dv = Du (ratio 1) against the focal ratio 80"
+  role: "Negative control: without differential diffusion the 2.4 µm mode is not selected"
+  source_citation: "Turing 1952 DOI:10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-drosophila-mojavensis-turing-wavelength-s0.py
