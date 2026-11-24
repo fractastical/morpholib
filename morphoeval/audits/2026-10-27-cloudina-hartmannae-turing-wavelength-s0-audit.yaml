@@ -1,0 +1,115 @@
+# Pass 1 audit — Cloudina hartmannae, 2.397 µm lamella Turing rung, slot 3149.
+# Scores withhold credit for the sweep, ablation, specimen segmentation, and
+# goodness-of-fit until those outputs are line-pinned in the superseding audit.
+audit:
+  id: 2026-10-27-cloudina-hartmannae-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor). No second assessor was run."
+  publisher_orcid: "https://orcid.org/0000-0000-0000-0000"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree. New slot files are not in this commit. publisher_orcid is the nanopub setup-guide placeholder, not a person: ~/.nanopub/profile.yml is absent, so the graph is unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing, A. M."
+    doi: "10.1098/rstb.1952.0012"
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg, J."
+    doi: "10.1016/0022-5193(79)90042-0"
+  yang2020:
+    title: "Ultrastructure of Ediacaran cloudinids suggests diverse taphonomic histories and affinities with non-biomineralized annelids"
+    authors: "Yang, B. et al."
+    doi: "10.1038/s41598-019-56317-x"
+  grant1990:
+    title: "Shell structure and distribution of Cloudina, a potential index fossil for the terminal Proterozoic"
+    authors: "Grant, S. W. F."
+    url: "https://pubmed.ncbi.nlm.nih.gov/11538690/"
+  germs1972:
+    title: "New shelly fossils from Nama Group, South West Africa"
+    authors: "Germs, G. J. B."
+    doi: "10.2475/ajs.272.8.752"
+  penny2014:
+    title: "Ediacaran metazoan reefs from the Nama Group, Namibia"
+    authors: "Penny, A. M. et al."
+    doi: "10.1126/science.1253393"
+simulations:
+  - id: delphi10000-cloudina-hartmannae-turing-wavelength-s0
+    name: "Cloudina hartmannae wall-normal Turing lamella at 2.397 µm (Pass 1)"
+    organism: "Cloudina hartmannae"
+    script: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py
+    output: docs/media/cloudina_hartmannae_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, yang2020, grant1990, germs1972, penny2014]
+    summary: >-
+      Pass 1 implements Schnakenberg kinetics with Du and Dv fixed so the Turing
+      critical wavelength is 2.397 µm on a 19.176 µm wall-normal interval (eight
+      lamellae inside one Grant shell layer). The noise-seeded field produced
+      eight peaks at 2.397 µm. Points are withheld until the diffusivity sweep,
+      equal-diffusion and ablation controls, Corumbá/card segmentation, and the
+      dispersion goodness-of-fit are audited as measurements.
+    claim_boundary:
+      reported_in_source:
+        - "Yang et al. 2020: Namibian Cloudina organic lamellae 0.5–5 µm, up to eight per wall layer"
+        - "Grant 1990: shell layers 8–50 µm"
+        - "Turing 1952 critical wavenumber and Schnakenberg 1979 kinetics"
+      reconstructed_in_script:
+        - "Du, Dv chosen so lambda_c = 2.397 µm at diffusivity ratio 8.65"
+        - "Noise-seeded periodic integration on a commensurate 8-wavelength domain"
+      transfer_boundary:
+        - "A Turing lamella wavelength on an Ediacaran tube is a morphospace hypothesis, not a fossil measurement of pigment"
+      does_not_claim:
+        - "That Cloudina had ocelli or a measured 2.397 µm pigment stripe"
+        - "That the 100 µm species card is a lamella micrograph"
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: "The stepper is Schnakenberg kinetics plus an explicit Laplacian, and k_c is derived from the Jacobian rather than imposed as a drawn cosine. Long-wave eigenvalues of this Jacobian are a complex pair; Pass 1 does not yet credit the decision to keep those modes out of the correlation."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [89, 108], note: "Schnakenberg fixed point, Jacobian, and Du, Dv solved for lambda_c", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [146, 170], note: "Shared PDE step used by the full model, the ablation, and the growth-rate probe", supports: true}
+      specimen-match:
+        value: 74
+        rationale: "The comparison figure shows the species card beside an eight-band activator trace. The card's own scale bar is 100 µm, so a high computer-vision score against that card is not a match to a Nama lamella SEM. Pass 1 holds the score down for that gap."
+        evidence:
+          - {file: docs/media/cloudina_hartmannae_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "Pass-1 comparison figure", supports: true}
+          - {file: docs/media/cloudina_hartmannae_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12-frame 640x480 growth GIF", supports: true}
+      parameter-expressivity:
+        value: 70
+        rationale: "Diffusivity scale is the parameter that must move wavelength as sqrt(s). The sweep function is in the script, but Pass 1 does not yet treat its monotonicity or correlation as an audited measurement."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [297, 318], note: "scale_sweep multiplies Du and Dv and tracks the peak wavelength", supports: true}
+      morphometric-validation:
+        value: 72
+        rationale: "Peak spacing on the commensurate domain is exactly 2.397 µm with standard deviation 0, which is finite-size locking as much as a test. Dispersion correlation, KS against the Yang band, and the Corumbá segmentation are not yet pinned as measurements."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [235, 271], note: "Peak spacing and noise-seeded integration", supports: true}
+      source-traceability:
+        value: 88
+        rationale: "Turing, Schnakenberg, Yang, Germs, and Penny resolve by DOI. Grant 1990 has no DOI in OpenAlex or Crossref; the audit uses the PubMed URL instead of inventing one."
+        evidence:
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/paper_citations.bib, lines: [1, 80], note: "Citation file with verified DOIs and the Grant URL", supports: true}
+          - {file: datasets/cloudina_hartmannae_turing_wavelength_s0/cloudina_hartmannae_turing_wavelength_s0_reference.json, lines: [1, 40], note: "Scale 2.397e-6 m and age 549 Ma stated in the reference", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "Each modelling step is a named function tied to the dispersion relation. The Lean file states the band, stack, and rescaling theorems, but lean is not installed here so those proofs were not executed."
+        evidence:
+          - {file: morphoeval/lean/loops/Loop_3149_cloudina_hartmannae_turing_wavelength_s0.lean, lines: [30, 67], note: "Five theorems, no sorry, no imports", supports: true}
+          - {file: morphoeval/math_kg_loops/delphi10000-cloudina-hartmannae-turing-wavelength-s0.yaml, lines: [1, 30], note: "Law record for this sim id", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3149, pinned image SHA-256, and a --self-test are present. Pass 1 does not yet record a completed self-test log in the audit trail, and the nanopub profile is absent."
+        evidence:
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [71, 87], note: "SHA-256 check of the three vendored images", supports: true}
+          - {file: models/2026-delphi10000-cloudina-hartmannae-turing-wavelength-s0.py, lines: [695, 710], note: "Self-test assertions", supports: true}
+    remediation:
+      - "Parameter-regime sweep: audit the diffusivity-scale sweep and require monotone growth of wavelength with sqrt(s)."
+      - "Negative and ablation controls: record equal-diffusion max growth rate and the autocatalysis-ablation amplitude ratio."
+      - "Real specimen CV segmentation: segment the species card and the Corumbá fossil and require the foreground fractions to differ."
+      - "Goodness-of-fit: pin Pearson r and RMSE of real-eigenvalue growth rates, and report the KS statistic against the Yang band without treating a rejection as a pass."
