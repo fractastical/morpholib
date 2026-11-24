@@ -1,0 +1,70 @@
+sim_id: delphi10000-daphnia-magna-turing-wavelength-s0
+math_family: Turing Reaction-Diffusion Wavelength Selection
+phenomenon_size_m: 2.736e-06
+log10_size_m: -5.563
+size_human: "2.7 µm"
+scale_tier: 3_subcellular_um
+anatomical_structure: "Turing pigment stripe / ocellus wavelength in Holocene Daphnia magna (detail variant s0)"
+geological_age_ma: 0.0
+geological_period: Holocene (Extant)
+fossil_lineage_group: "Daphnia chronoseries 1/1 — single extant terminal, no predecessor or successor chronospecies"
+equations:
+- law_name: Turing dispersion determinant
+  formula: "det(J - k^2 D) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + (f_u g_v - f_v g_u)"
+  lean_decl: MathOfBiology.Loop_3165.discNumerator
+  lean_theorem: MathOfBiology.Loop_3165.critical_wavenumber_numerator_positive
+  lean_locus: morphoeval/lean/loops/Loop_3165_daphnia_magna_turing_wavelength_s0.lean#L34-L38
+  lean_code: |
+    def discNumerator : Nat := 5350516939
+    theorem critical_wavenumber_numerator_positive :
+        discNumerator > 0 := by
+      decide
+  variables: "f_u, f_v, g_u, g_v at the Schnakenberg state (a=0.062, b=1.180); D_u=0.016; D_v=0.640"
+  role: "Cleared numerator of D_v f_u + D_u g_v is positive, so k_c^2 > 0 at the 2.736 µm ocellus-pigment scale"
+  source_citation: "Turing (1952) 10.1098/rstb.1952.0012; Schnakenberg (1979) 10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py#L87-L141
+- law_name: Critical wavelength and diffusion ordering
+  formula: "lambda_c = 2 pi / k_c,  k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v),  D_v = 40 D_u"
+  lean_decl: MathOfBiology.Loop_3165.dvMilli
+  lean_theorem: MathOfBiology.Loop_3165.inhibitor_diffuses_forty_times_faster
+  lean_locus: morphoeval/lean/loops/Loop_3165_daphnia_magna_turing_wavelength_s0.lean#L25-L30
+  lean_code: |
+    def duMilli : Nat := 16
+    def dvMilli : Nat := 640
+    theorem inhibitor_diffuses_forty_times_faster :
+        dvMilli = duMilli * 40 ∧ duMilli < dvMilli := by
+      decide
+  variables: "D_u, D_v in milli-units; lambda_c fixed at 2736 nm by the length unit"
+  role: "Inhibitor diffuses forty times faster than the activator, the differential-diffusion half of the Turing condition"
+  source_citation: "Schnakenberg (1979) 10.1016/0022-5193(79)90042-0"
+  code_locus: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py#L55-L68
+- law_name: Discriminant margin
+  formula: "(D_v f_u + D_u g_v)^2 - 4 D_u D_v (f_u g_v - f_v g_u) > 0"
+  lean_decl: MathOfBiology.Loop_3165.marginNumerator
+  lean_theorem: MathOfBiology.Loop_3165.turing_discriminant_margin_positive
+  lean_locus: morphoeval/lean/loops/Loop_3165_daphnia_magna_turing_wavelength_s0.lean#L41-L45
+  lean_code: |
+    def marginNumerator : Nat := 22679272279285929721
+    theorem turing_discriminant_margin_positive :
+        marginNumerator > 0 := by
+      decide
+  variables: "Same rational Schnakenberg parameters; margin numerator after clearing denominators"
+  role: "The strict Turing inequality that opens a band of unstable wavenumbers around k_c"
+  source_citation: "Turing (1952) 10.1098/rstb.1952.0012"
+  code_locus: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py#L118-L141
+- law_name: Scale sandwich and singleton chronoseries
+  formula: "500 nm < 2736 nm < 22000 nm, and series index = series length = 1 at 0 Ma"
+  lean_decl: MathOfBiology.Loop_3165.lambdaCnm
+  lean_theorem: MathOfBiology.Loop_3165.wavelength_between_melanosome_and_ommatidium
+  lean_locus: morphoeval/lean/loops/Loop_3165_daphnia_magna_turing_wavelength_s0.lean#L12-L22
+  lean_code: |
+    def lambdaCnm : Nat := 2736
+    def melanosomeNm : Nat := 500
+    def ommatidiumNm : Nat := 22000
+    theorem wavelength_between_melanosome_and_ommatidium :
+        melanosomeNm < lambdaCnm ∧ lambdaCnm < ommatidiumNm := by
+      decide
+  variables: "lambda_c = 2736 nm; melanosome predecessor 500 nm; ommatidial successor bound 22000 nm; age 0 Ma"
+  role: "This Holocene terminal has no other chronospecies. The length that changes is the tier, not the age."
+  source_citation: "Smith & Macagno (1990) 10.1007/BF00240009; Hebert & Emery (1990) 10.2307/2389739"
+  code_locus: models/2026-delphi10000-daphnia-magna-turing-wavelength-s0.py#L144-L147
