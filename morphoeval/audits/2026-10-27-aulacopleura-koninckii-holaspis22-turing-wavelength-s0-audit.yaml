@@ -1,0 +1,131 @@
+# MorphoEval audit — Aulacopleura koninckii holaspis22, Turing wavelength 15 µm.
+# Pass 1. Single builder-assessor (Grok 4.7). Remediations R1–R4 are open.
+audit:
+  id: 2026-10-27-aulacopleura-koninckii-holaspis22-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8b3e13105b55d8ac28c3f835f3a5a27bb4faff45
+    environment:
+      python: "3.12.3"
+      numpy: "1.26.4"
+      scipy: "1.18.1"
+      pillow: "13.0.0"
+    note: "Pass 1 sources are on this commit. The comparison PNG is force-tracked because *.png is gitignored; the specimen JPEG is force-tracked because datasets/*/*_specimen.jpg is gitignored. publisher_orcid is the repository Zenodo creator already recorded in docs/zenodo_deposit_wolfram_planform.py, used only so the nanopub template has a dct:creator. ~/.nanopub/profile.yml is absent, so these nanopubs are unsigned."
+references:
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  fusco2004:
+    title: "Exploring Developmental Modes in a Fossil Arthropod: Growth and Trunk Segmentation of the Trilobite Aulacopleura koninckii"
+    authors: "Fusco G, Hughes NC, Webster M, Minelli A"
+    venue: "The American Naturalist 163:167-183 (2004)"
+    doi: 10.1086/381042
+  hughes1995:
+    title: "Growth and variation in the Silurian proetide trilobite Aulacopleura koninckii and its implications for trilobite palaeobiology"
+    authors: "Hughes NC, Chapman RE"
+    venue: "Lethaia 28:333-353 (1995)"
+    doi: 10.1111/j.1502-3931.1995.tb01824.x
+  hughes2006:
+    title: "The ontogeny of trilobite segmentation: a comparative approach"
+    authors: "Hughes NC, Minelli A, Fusco G"
+    venue: "Paleobiology 32:602-627 (2006)"
+    doi: 10.1666/06017.1
+  fusco2016:
+    title: "Axial growth gradients across the postprotaspid ontogeny of the Silurian trilobite Aulacopleura koninckii"
+    authors: "Fusco G, Hong PS, Hughes NC"
+    venue: "Paleobiology 42:426-438 (2016)"
+    doi: 10.1017/pab.2016.5
+  hughes2017:
+    title: "The Development of the Silurian Trilobite Aulacopleura koninckii Reconstructed by Applying Inferred Growth and Segmentation Dynamics"
+    authors: "Hughes NC, Hong PS, Hou J, Fusco G"
+    venue: "Frontiers in Ecology and Evolution 5:37 (2017)"
+    doi: 10.3389/fevo.2017.00037
+simulations:
+  - id: delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0
+    name: "Holaspis22 cuticle Turing wavelength at 15 µm (Wenlock, 428.1 Ma)"
+    organism: "Aulacopleura koninckii holaspis22 (22 thoracic segments)"
+    script: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py
+    output: docs/media/aulacopleura_koninckii_holaspis22_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, fusco2004, hughes1995, hughes2006, fusco2016, hughes2017]
+    summary: >-
+      Schnakenberg reaction-diffusion on a periodic cuticle patch, with D_u and D_v
+      chosen so the analytical critical wavelength is 15.14 µm. Dispersion check on
+      exact Fourier modes gives Pearson r = 0.99963 (RMSE 0.03185). Equal-diffusivity
+      control amplitude ratio is 0.036. Versus holaspis18, four extra meraspid Dyar
+      steps (ratio 1.115) enlarge entry length by 1.546, so each t22 tergite holds
+      1.265 times as many 15 µm tiles. The pinned fossil's post-cephalic rib field
+      measures 23.89 rings against the literature thoracic count of 22.
+    claim_boundary:
+      reported_in_source:
+        - "Five holaspid morphs with 18–22 thoracic segments; hemianamorphosis; precocious specification of the adult count (Fusco et al. 2004)."
+        - "Meraspid per-stage growth 1.115 and holaspid per-stage growth 1.103; thoracic release ends at s18 for t18 and s22 for t22 (Hughes et al. 2017)."
+        - "A shape transition near glabellar length 1.7 mm is not strictly tied to segment number (Hughes & Chapman 1995)."
+      reconstructed_in_script:
+        - "Schnakenberg Jacobian and k_c^2 = (D_v f_u + D_u g_v) / (2 D_u D_v), with the length unit set so lambda_c = 1.514e-5 m."
+        - "Entry-size ratio 1.115^4 and the per-tergite wavelength-count ratio against the 18-segment predecessor."
+        - "Segment-accretion reveal on the pinned dorsal photograph, with the simulated activator painted into the two eye regions."
+      transfer_boundary:
+        - "The catalog ages 428.3 Ma (holaspis18) and 428.1 Ma (holaspis22) are series bookkeeping. Fusco et al. 2004 describe contemporaneous intraspecific morphs from one narrow Wenlock interval near 429 Ma."
+        - "15 µm is the assigned cellular detail scale for this slot. It is not a lens diameter measured on Aulacopleura."
+      does_not_claim:
+        - "That the fossil photograph resolves 15 µm ocelli."
+        - "That 18- and 22-segment animals are successive chronospecies separated by 0.2 Myr."
+        - "That Schnakenberg kinetics were written down by Fusco, Hughes, or Turing; Turing 1952 supplies the dispersion relation, Schnakenberg supplies a two-species carrier that realizes it."
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: "The script implements the Schnakenberg Jacobian, the standard Turing wavenumber, periodic five-point diffusion, and a mode-by-mode growth-rate check (r = 0.99963). Schnakenberg is a carrier for Turing's dispersion relation, not an equation printed by Fusco or Hughes."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [78, 115], note: "jacobian, critical_k2, growth_rate, nominal_diffusivities", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [148, 200], note: "dispersion_validation on exact eigenmodes", supports: true}
+      specimen-match:
+        value: 80
+        rationale: "The GIF's adult frame is the pinned dorsal fossil with a posterior segment-addition front and an ocular overlay of the simulated field. Computer-vision similarity of that frame to the photograph is 96.0. The 15 µm ocelli are not visible in the photograph; they appear only as the eye-field texture."
+        evidence:
+          - {file: docs/media/aulacopleura_koninckii_holaspis22_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "14-frame growth GIF, 611x720", supports: true}
+          - {file: docs/media/aulacopleura_koninckii_holaspis22_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "specimen, adult frame, dispersion, Dyar curves", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [328, 365], note: "posterior reveal and ocular paint", supports: true}
+      parameter-expressivity:
+        value: 62
+        rationale: "Segment count along the reveal and the t18 versus t22 Dyar curves are visible. Diffusivity ratio is fixed at 20, so the wavenumber's dependence on D_v is not yet shown. That sweep is remediation R1."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [118, 134], note: "chronoseries_delta: 1.115^4 versus 22/18", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [414, 436], note: "t18 and t22 relative-length curves", supports: true}
+      morphometric-validation:
+        value: 76
+        rationale: "Pearson r and RMSE are computed on the dispersion relation, the numerical wavelength is reported against 15.14 µm rather than copied onto it, the equal-diffusion control decays, and the photograph's rib count (23.89) is not set equal to the literature value 22. A KS test on orientation histograms is not yet in the metrics (R3)."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [502, 570], note: "measure_morphoeval rows", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [256, 280], note: "postcephalic autocorrelation ring count", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Six DOIs resolved through OpenAlex/Crossref, specimen SHA-256 pinned, scout manifest records the Wikimedia alternatives and the non-collision with the 783 µm sibling script."
+        evidence:
+          - {file: datasets/aulacopleura_koninckii_holaspis22_turing_wavelength_s0/paper_citations.bib, lines: [1, 64], note: "Fusco 2004, Hughes & Chapman 1995, Hughes et al. 2006, Fusco et al. 2016, Hughes et al. 2017, Turing 1952", supports: true}
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [48, 74], note: "SHA-256 pin and verify_specimen", supports: true}
+      code-traceability:
+        value: 80
+        rationale: "Module docstring states the PDEs, k_c, the 15 µm scale, the 428.1 Ma age, and the Dyar delta. Lean theorems encode the integer form of the t22-versus-t18 inequalities. Section-level pins into Turing 1952 are still coarse."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [1, 32], note: "governing equations and chronoseries statement", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3128_aulacopleura_koninckii_holaspis22_turing_wavelength_s0.lean, lines: [10, 27], note: "four theorems, zero sorry", supports: true}
+      repro-package:
+        value: 84
+        rationale: "Seed 3128, --self-test gates on r > 0.98, lambda, age, control decay, and a non-equal ring count. Dependencies are the repo scientific stack (numpy, scipy, pillow, matplotlib). Pass 1 has no diffusivity sweep artifact yet."
+        evidence:
+          - {file: models/2026-delphi10000-aulacopleura-koninckii-holaspis22-turing-wavelength-s0.py, lines: [573, 611], note: "self_test assertions and CLI", supports: true}
+    remediation:
+      - "R1: Sweep diffusivity ratio r = D_v/D_u at fixed D_u and show that lambda_c increases monotonically."
+      - "R2: Add a quadratic-term ablation (drop u^2 v) beside the equal-diffusion negative control."
+      - "R3: Segment the specimen and the GIF last frame with the 12-bin Sobel orientation histogram and the 24-bin radial FFT used by verify_image_fitness, and report a KS statistic."
+      - "R4: Put Pearson r, RMSE, and the new KS/CV terms on the comparison figure."
