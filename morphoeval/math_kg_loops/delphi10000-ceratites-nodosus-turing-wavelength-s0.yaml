@@ -1,0 +1,60 @@
+sim_id: delphi10000-ceratites-nodosus-turing-wavelength-s0
+slot: 3142
+math_family: Turing Reaction-Diffusion Wavelength Selection
+form: Stripes, Spots & Ocelli
+quantitative_law: Turing wavenumber k_c
+phenomenon_size_m: 2.56e-05
+log10_size_m: -4.592
+size_human: 26 µm
+scale_tier: 4_cellular_10um
+anatomical_structure: Turing pigment stripe / ocellus wavelength in Ceratites nodosus (26 µm, detail scale)
+geological_age_ma: 240.0
+geological_period: Middle Triassic (Ladinian, 240 Ma)
+fossil_lineage_group: Cephalopod Fractal Suture Fossil Series
+chronoseries: Ceratites 1/1
+model_spec:
+  model: Schnakenberg (1979) two-species Turing wavenumber on a Ceratites nodosus mantle patch
+  kinetics: f = a - u + u^2 v; g = b - u^2 v
+  wavenumber: k_c^2 = sqrt(det(J) / (Du Dv))
+  a: 0.062
+  b: 1.14
+  gamma_factor_above_onset: 1.15
+  lambda_m: 2.56e-05
+  grid_resolution: [96, 96]
+  domain_wavelengths: 8
+  boundary: periodic
+  seed: 3142
+  inputs:
+    - datasets/ceratites_nodosus_turing_wavelength_s0/ceratites_nodosus_turing_wavelength_s0_reference.json
+    - datasets/ceratites_nodosus_turing_wavelength_s0/ceratites_nodosus_specimen.jpg
+    - datasets/ceratites_nodosus_turing_wavelength_s0/paper_citations.bib
+    - datasets/ceratites_nodosus_turing_wavelength_s0/scout_manifest.json
+    - datasets/ceratites_nodosus_turing_wavelength_s0/README.md
+equations:
+  - law_name: Turing critical wavenumber
+    formula: k_c^2 = (det J / (D_u D_v))^(1/2), det J = f_u g_v - f_v g_u
+    lean_decl: MathOfBiology.Loop_3142.kcNumerator
+    lean_theorem: MathOfBiology.Loop_3142.operating_regime_numerator_positive
+    lean_locus: morphoeval/lean/loops/Loop_3142_ceratites_nodosus_turing_wavelength_s0.lean
+    variables: activator u, inhibitor v, diffusivities Du and Dv, wavenumber k_c at 26 µm
+    role: Selects the cellular pigment wavelength on the Ladinian mantle
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012; Schnakenberg 1979 DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-ceratites-nodosus-turing-wavelength-s0.py
+  - law_name: Cellular wavelengths across the shell
+    formula: N = L_shell / lambda_c with lambda_c = 2.56e-05 m
+    lean_decl: MathOfBiology.Loop_3142.wavelengths
+    lean_theorem: MathOfBiology.Loop_3142.ceratites_shell_holds_1250_cellular_waves
+    lean_locus: morphoeval/lean/loops/Loop_3142_ceratites_nodosus_turing_wavelength_s0.lean
+    variables: L_shell = 0.032 m at 240 Ma; predecessor 0.018 m; successor 0.042 m
+    role: States what changes at 240 Ma versus Goniatites (333 Ma) and Dactylioceras (181 Ma) at fixed cellular wavelength
+    source_citation: Boyajian & Lutz 1992 DOI:10.1130/0091-7613(1992)020<0983:EOBCAI>2.3.CO;2
+    code_locus: models/2026-delphi10000-ceratites-nodosus-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: at Dv = Du the Turing numerator gamma*f_u + g_v is negative and sigma(k) < 0
+    lean_decl: MathOfBiology.Loop_3142.kcNumerator
+    lean_theorem: MathOfBiology.Loop_3142.equal_diffusion_ablation_not_turing
+    lean_locus: morphoeval/lean/loops/Loop_3142_ceratites_nodosus_turing_wavelength_s0.lean
+    variables: gamma = 1 versus operating gamma = 12 in the integer proxy
+    role: Negative control for wavenumber selection
+    source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-ceratites-nodosus-turing-wavelength-s0.py
