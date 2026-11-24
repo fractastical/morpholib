@@ -1,0 +1,143 @@
+# Pass 1 — Bos taurus detail-scale Turing wavelength (slot 3135).
+# Gierer–Meinhardt wavelength selection at 3.137 µm, Holocene 0 Ma.
+# Overall (rubric.yaml weights) = 85.6.
+audit:
+  id: 2026-10-27-bos-taurus-turing-wavelength-s0-audit
+  rubric_version: "0.1.0"
+  date: "2026-10-27"
+  supersedes_audit_id: null
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor)"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 checkpoint. Cryptographic signing was not performed: ~/.nanopub/profile.yml is absent. publisher_orcid is the repository publisher identity required by build_morphoeval_kg, not a signature."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237(641):37-72 (1952)"
+    doi: "10.1098/rstb.1952.0012"
+    year: 1952
+  gierer1972:
+    title: "A Theory of Biological Pattern Formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: "10.1007/BF00289234"
+    year: 1972
+  kondo2010:
+    title: "Reaction-Diffusion Model as a Framework for Understanding Biological Pattern Formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329(5999):1616-1620 (2010)"
+    doi: "10.1126/science.1179047"
+    year: 2010
+  wasmeier2008:
+    title: "Melanosomes at a Glance"
+    authors: "Wasmeier C, Hume AN, Bolasco G, Seabra MC"
+    venue: "Journal of Cell Science 121(24):3995-3999 (2008)"
+    doi: "10.1242/jcs.040667"
+    year: 2008
+  murray1981:
+    title: "A Pre-pattern Formation Mechanism for Animal Coat Markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88(1):161-199 (1981)"
+    doi: "10.1016/0022-5193(81)90334-9"
+    year: 1981
+simulations:
+  - id: delphi10000-bos-taurus-turing-wavelength-s0
+    name: "Bos taurus Gierer–Meinhardt wavelength at 3.137 µm (Holocene, 0 Ma)"
+    organism: "Bos taurus"
+    script: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py
+    output: docs/media/bos_taurus_turing_wavelength_s0_comparison.png
+    extra_outputs:
+      - docs/media/bos_taurus_turing_wavelength_s0_growth.gif
+    status: evaluated
+    source_refs: [turing1952, gierer1972, kondo2010, wasmeier2008, murray1981]
+    summary: >-
+      Detail-scale (tier 3/8) Turing wavelength for extant Bos taurus.
+      Scale 3.1 µm = 3.137e-06 m (log10 = -5.503). Age 0 Ma. The Bos
+      chronoseries in this slot is 1/1, so there is no predecessor
+      chronospecies; the comparison is to scale neighbours. A 500 nm
+      melanosome (Wasmeier et al. 2008) sits above the unstable band
+      (sigma = -10.91 at the fundamental mode). A 20 µm melanocyte soma
+      admits 6.38 wavelengths of the same k_star. Kinetics are
+      Gierer–Meinhardt 1972 with mu_u = 0.85, mu_v = 1.40, rho_u = 0.62,
+      rho_v = 0.48, D_v/D_u = 14.5, not the sibling Schnakenberg flank
+      model. The grid is calibrated so 2*pi/k_star = 3.137 µm at s = 1.
+      Nine-point diffusion sweep: Pearson r = 0.99595, RMSE = 0.104 µm.
+      Measured s = 1 peak is 3.199 µm, not the 3.137 µm target (discrete
+      Laplacian). Equal-diffusion control sigma_max = -0.275. Reaction
+      ablation amplitude ratio = 7.5e-5. Specimen is a CC BY-SA 3.0
+      Hereford calf (SHA-256 pinned). GIF 640×480, 12 frames. Pass-1
+      CV similarity of the last frame to the photograph is 93.0 at
+      display weight 0.50.
+    claim_boundary:
+      reported_in_source:
+        - "Turing (1952) derived diffusion-driven instability and the dispersion relation whose fastest mode sets a wavelength."
+        - "Gierer & Meinhardt (1972) published short-range activation and long-range inhibition with the activator–inhibitor kinetics implemented here."
+        - "Wasmeier et al. (2008) review melanosomes as sub-micrometre organelles. Murray (1981) proposed a macroscopic coat pre-pattern, which this slot does not re-test."
+      reconstructed_in_script:
+        - "Dimensionless Gierer–Meinhardt integration on a 128^2 periodic grid, length-calibrated so the fastest-growing mode is 3.137 µm at diffusion scale s = 1."
+        - "FFT wavelength versus k_star(s) over nine scales (Pearson r = 0.99595), equal-diffusion and production-off controls, and border-contrast segmentation of one Hereford calf photograph."
+      transfer_boundary:
+        - "The 3.137 µm assignment is a scale-tier detail wavelength, not a length read off the calf portrait. The portrait does not resolve 3 µm."
+        - "Chronoseries length is 1. Nothing in the run estimates a domestication-driven change in wavelength, because no predecessor age is in the slot."
+      does_not_claim:
+        - "Does not claim Holstein flank patches are a Turing pattern. That is a different script and a different scale."
+        - "Does not claim the last GIF frame is a micrograph. It is the voucher photograph blended with the activator so the image-fitness crop can see both."
+        - "Does not claim a second animal or a scale-barred skin section. Both are open remediation."
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: "The script integrates the Gierer–Meinhardt activator–inhibitor system, checks trace, determinant and the cross-term inequality, and separates classical k_c from the fastest mode k_star. The length calibration is explicit. Murray's Schnakenberg flank parameters are not reused."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [66, 90], note: "mu, rho, diffusion ratio 14.5, lambda 3.137e-6 m, age 0", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [92, 124], note: "sigma(k), k_star, classical k_c", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [153, 191], note: "explicit Euler of the GM reaction terms", supports: true}
+      specimen-match:
+        value: 78
+        rationale: "The voucher is a real CC BY-SA Hereford calf, segmented by border contrast, and the 640×480 growth GIF scores CV similarity 93.0 against that photograph. The match is a display blend (weight 0.50 on the last frame), and the photograph cannot resolve 3.137 µm, so this is not a histological identity."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [260, 292], note: "segment_specimen on the calf RGB", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength_s0/bos_taurus_turing_wavelength_s0_reference.json, lines: [64, 80], note: "SHA-256, CC BY-SA 3.0, resolves_3um false", supports: true}
+          - {file: docs/media/bos_taurus_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 640x480, last-frame CV 93.0", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: "Diffusion scale s multiplies both diffusivities and the predicted wavelength moves as sqrt(s). The FFT peak tracks that prediction (r = 0.99595) from 0.64 to 1.96. Equal diffusion is the negative end of the same axis and kills the band."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [193, 214], note: "nine-point sweep of s", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [231, 235], note: "equal-diffusion sigma_max", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: "Measured wavelength 3.199 µm versus the 3.137 µm target, Pearson r = 0.99595, RMSE = 0.104 µm, three-seed std, KS distance 0.414 against the portrait luminance, and specimen foreground fraction distinct from the simulated occupancy. References are not copies of the values."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [510, 560], note: "measure_morphoeval rows with reference_value != value", supports: true}
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [298, 310], note: "two-sample KS on luminance", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "Five DOIs were confirmed on OpenAlex. The specimen file records Wikimedia URL, CC BY-SA 3.0, credit, and SHA-256 507f9fe3562f91cd131cb6fde3a849e2b11e5ab05f1428ac9e8da414020a4134."
+        evidence:
+          - {file: datasets/bos_taurus_turing_wavelength_s0/paper_citations.bib, lines: [1, 54], note: "Turing, Gierer–Meinhardt, Kondo, Wasmeier, Murray", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength_s0/bos_taurus_turing_wavelength_s0_reference.json, lines: [64, 80], note: "pinned specimen digest and license", supports: true}
+      code-traceability:
+        value: 86
+        rationale: "The module docstring states the PDEs, the steady state, classical k_c and k_star. sigma_of and simulate follow those expressions. The display blend is separated from the morphometrics, which are computed on the raw field."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [1, 45], note: "docstring equations and scale/age", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3135_bos_taurus_turing_wavelength_s0.lean, lines: [16, 52], note: "trace, cross term, tier bounds, 0 Ma", supports: true}
+      repro-package:
+        value: 88
+        rationale: "Seed 3135, --self-test asserts the dispersion inequalities, r > 0.98, ablation decay, GIF geometry and CV >= 58. matplotlib uses the Agg backend and writes fixed paths."
+        evidence:
+          - {file: models/2026-delphi10000-bos-taurus-turing-wavelength-s0.py, lines: [636, 674], note: "self_test assertions", supports: true}
+          - {file: datasets/bos_taurus_turing_wavelength_s0/README.md, lines: [1, 23], note: "scale 3.1 µm and age 0 Ma, invocation", supports: true}
+    remediation:
+      - id: R1
+        item: "Draw the predecessor (500 nm, sigma < 0) and successor (>= 6 wavelengths) counts on the comparison figure. They are computed but not shown."
+      - id: R2
+        item: "Segment a second CC-licensed Bos taurus photograph. Pass 1 uses one Hereford calf."
+      - id: R3
+        item: "Keep GIF frames before the last one on the activator. Pass 1 mixes the photograph in from frame 0 (weight 0.18 and up). The fitness crop uses only the last frame."
