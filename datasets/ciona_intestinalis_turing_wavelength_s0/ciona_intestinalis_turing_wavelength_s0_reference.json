@@ -1,0 +1,82 @@
+{
+  "sim_id": "delphi10000-ciona-intestinalis-turing-wavelength-s0",
+  "slot": 3148,
+  "organism": "Ciona intestinalis",
+  "common_name": "vase tunicate",
+  "aristotelian_place": "II. Anaima (Invertebrata) -> Zoophyta & Vermes -> Ciona",
+  "scale": {
+    "label": "51 µm",
+    "meters": 5.056e-05,
+    "micrometres": 50.56,
+    "log10_m": -4.296,
+    "tier": "4_cellular_10um",
+    "variant": "detail",
+    "meaning": "Critical Turing wavelength of the Schnakenberg pair on a larval sensory-vesicle-sized patch. The tier label is 51 µm; the SI pin used by the solver is 5.056e-05 m = 50.56 µm."
+  },
+  "age": {
+    "ma": 0.0,
+    "period": "Holocene (Extant)",
+    "chronoseries": "1/1",
+    "lineage": "",
+    "temporal_predecessor": null,
+    "temporal_successor": null,
+    "what_changes_at_this_scale": "Nothing in the species name changes at 0 Ma (the series has one member). Relative to a finer melanosome scale (~1 µm) the 51 µm mode does not fit inside one granule. Relative to the adult body on the 10 mm scale bar (~34 mm in YPM IZ 082346) the same mode is repeated many times and is not resolved as a separate stripe. The quantity that is special to this slot is k_c, not a chronospecies boundary."
+  },
+  "equations": {
+    "kinetics": "du/dt = Du lap u + gamma (a - u + u^2 v); dv/dt = Dv lap v + gamma (b - u^2 v)",
+    "steady_state": "u* = a + b; v* = b / (a + b)^2",
+    "jacobian_parenthesis": "f_u = -1 + 2 u* v*; f_v = u*^2; g_u = -2 u* v*; g_v = -u*^2",
+    "wavenumber": "k_c^2 = gamma (Dv f_u + Du g_v) / (2 Du Dv)",
+    "wavelength": "lambda_c = 2 pi / k_c",
+    "boundary_condition": "periodic on a square patch of side 4 * lambda_c"
+  },
+  "state_variables": {
+    "u": "activator (pigment-promoting field); not identified with a named Ciona transcript",
+    "v": "inhibitor; longer range"
+  },
+  "parameters": {
+    "a": 0.1,
+    "b": 0.9,
+    "u_star": 1.0,
+    "v_star": 0.9,
+    "f_u": 0.8,
+    "f_v": 1.0,
+    "g_u": -1.8,
+    "g_v": -1.0,
+    "Du_base_um2": 8.0,
+    "Dv_base_um2": 80.0,
+    "diffusion_ratio": 10.0,
+    "time_scale": 30.0,
+    "Du_um2": 240.0,
+    "Dv_um2": 2400.0,
+    "grid": 80,
+    "wavelengths_across_patch": 4,
+    "steps": 1100,
+    "dt": 0.008,
+    "seed": 3148
+  },
+  "empirical_claims": [
+    "Turing (1952) gives the dispersion relation whose critical wavenumber is implemented here.",
+    "Schnakenberg (1979) supplies the two-species kinetics. The parameter numbers are chosen so lambda_c equals the slot pin; they are not a fit to a Ciona dose-response curve.",
+    "Ciona pigment cells have a neural-crest-like origin (Abitua et al. 2012). A related urochordate makes body pigment with migratory neural-crest-like cells (Jeffery et al. 2004).",
+    "The larval brain contains an ocellus and an otolith in the sensory vesicle (Hudson 2016; Kourakis et al. 2021). Hotta et al. (2007) stage the embryo through the hatching larva.",
+    "Brunetti et al. (2015) separate Ciona robusta (type A) from Ciona intestinalis (type B). The Peabody specimen is catalogued as Ciona intestinalis.",
+    "The adult photograph's pigment spacing, measured with its 10 mm bar, is not the 51 µm pin. That mismatch is a scale-transfer result, not a failure of k_c inside the detail patch."
+  ],
+  "specimen": {
+    "file": "Ciona_intestinalis_YPM_IZ_082346.jpg",
+    "sha256": "bacc05b7298b188c63b1a2ffadb993afd19275f8683ff3c66209c239c5fb90be",
+    "catalog_number": "YPM IZ 082346",
+    "photographer": "Eric A. Lazo-Wasem",
+    "license": "CC0",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ciona_intestinalis_(YPM_IZ_082346).jpeg",
+    "dataset_doi": "10.15468/0lkr3w",
+    "scale_bar": "10 mm",
+    "gallery_fallback_not_used": "datasets/species_gallery/II_Anaima_Invertebrata/Ciona_intestinalis.jpg"
+  },
+  "negative_controls": [
+    "Equal diffusion Du = Dv: cross term is negative and the critical mode decays.",
+    "gamma = 0: pure diffusion, the seeded cosine decays.",
+    "Adult speckle spacing versus the 51 µm pin: different scales."
+  ]
+}
