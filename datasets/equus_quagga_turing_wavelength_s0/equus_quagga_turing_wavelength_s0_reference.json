@@ -1,0 +1,83 @@
+{
+  "schema_version": "morphoeval-reference-2.0",
+  "slot": 3221,
+  "sim_id": "delphi10000-equus-quagga-turing-wavelength-s0",
+  "organism": "Equus quagga",
+  "common_name": "Plains zebra",
+  "scale": {
+    "stated_mm": 1.9,
+    "metres": 0.001883,
+    "log10": -2.725,
+    "tier": "6_organ_mm",
+    "variant": "detail_s0",
+    "note": "10^(-2.725) m = 0.001883 m, reported in the slot brief as 1.9 mm"
+  },
+  "evolutionary_history": {
+    "age_ma": 0.0,
+    "period": "Holocene (Extant)",
+    "chronoseries": "Equus 2/2",
+    "predecessor": "Equus scotti",
+    "what_changes": "At 1.883 mm the Holocene plains zebra selects a fastest Turing mode (vertical flank stripes). The Pleistocene predecessor Equus scotti is the equal-diffusion control: the onset numerator changes sign and no wavelength is selected."
+  },
+  "aristotelian_categories": {
+    "megiston_genos": "I. Enaima (Vertebrata)",
+    "subaltern_genos": "Mammalia (Zootoka)",
+    "biological_genus": "Equus",
+    "poion_form": "Stripes, Spots & Ocelli",
+    "poson_law": "Turing Wavenumber k_c",
+    "efficient_cause": "1. Chemical Turing / RD"
+  },
+  "equations": {
+    "kinetics": "Schnakenberg 1979: f = a - u + u^2 v, g = b - u^2 v",
+    "pde": "du/dt = Du lap(u) + gamma f; dv/dt = div(Dv grad v) + gamma g",
+    "steady_state": "u0 = a + b, v0 = b / u0^2",
+    "jacobian": "f_u = -1 + 2 u0 v0, f_v = u0^2, g_u = -2 u0 v0, g_v = -u0^2",
+    "onset_wavenumber": "k_c^2 = gamma (Dv,x f_u + Du g_v) / (2 Du Dv,x) for ky = 0",
+    "fast_wavenumber": "k_fast = argmax_k Re sigma(k, ky=0), with sigma from the gamma-scaled Jacobian",
+    "wavelength": "lambda = 2 pi / k_fast, pinned to 0.001883 m at gamma = 1.15"
+  },
+  "state_variables": ["u activator (melanic phase when high)", "v inhibitor"],
+  "boundary_conditions": "periodic flank patch; inhibitor diffusion anisotropic, faster along the anteroposterior axis so the selected wavevector is longitudinal and stripes stand perpendicular to the dorsal line (Bard 1977)",
+  "parameters": {
+    "a": 0.12,
+    "b": 0.90,
+    "Du": 1.0,
+    "d_ratio": 18.0,
+    "aniso_ap": 3.2,
+    "gamma": 1.15,
+    "n_waves_in_window": 10,
+    "seed": 3221,
+    "bard_initiation_m": 0.0004,
+    "growth_factor_reconstructed": 4.7075
+  },
+  "empirical_claims": {
+    "bard_1977_spacing_mm": 0.4,
+    "bard_1977_timing": "third embryonic week for plains zebra (E. burchelli), stripes perpendicular to the dorsal line",
+    "this_slot_detail_mm": 1.883,
+    "pde_vs_analytical_pearson_r": 0.99747,
+    "pde_vs_analytical_rmse_mm": 0.0666,
+    "nominal_measured_mm": 2.032,
+    "nominal_analytical_mm": 1.883,
+    "note": "The 2.03 mm figure is the periodic-domain FFT of the nonlinear field (nearest integer mode). It is not a second empirical caliper measurement."
+  },
+  "specimen": {
+    "file": "datasets/equus_quagga_turing_wavelength_s0/equus_quagga_specimen.jpg",
+    "sha256": "023d79e57ba357affc2b778082d3e23aef4a19dd272db7bd793c137b61f29ebb",
+    "source_file": "datasets/equus_quagga_turing_wavelength_s0/equus_quagga_namutoni_source.jpg",
+    "source_sha256": "1e7d0a7daa8a60fbb9de65be8ee0724cf9fa9f3667ccac5b44357e1f552360a9",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Equus_quagga_(Namutoni,_2012).jpg",
+    "creator": "Yathin S Krishnappa",
+    "license": "CC BY-SA 3.0",
+    "crop_box_ltrb": [120, 530, 480, 680],
+    "frame_px": [1280, 853],
+    "role": "Adult flank pattern class. Not a scale bar for the 1.883 mm fetal wavelength."
+  },
+  "sources": [
+    {"id": "turing1952", "doi": "10.1098/rstb.1952.0012"},
+    {"id": "schnakenberg1979", "doi": "10.1016/0022-5193(79)90042-0"},
+    {"id": "murray1981", "doi": "10.1016/0022-5193(81)90334-9"},
+    {"id": "bard1977", "doi": "10.1111/j.1469-7998.1977.tb04204.x"},
+    {"id": "bard1981", "doi": "10.1016/0022-5193(81)90109-0"},
+    {"id": "staddon2024", "doi": "10.1103/PhysRevE.110.034402"}
+  ]
+}

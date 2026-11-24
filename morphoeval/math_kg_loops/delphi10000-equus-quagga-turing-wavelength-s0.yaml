@@ -1,0 +1,49 @@
+sim_id: delphi10000-equus-quagga-turing-wavelength-s0
+slot: 3221
+organism: Equus quagga
+common_name: Plains zebra
+age_ma: 0.0
+geological_period: Holocene (Extant)
+predecessor: Equus scotti
+scale_m: 0.001883
+scale_mm_stated: 1.9
+log10_scale: -2.725
+scale_tier: 6_organ_mm
+math_family: Reaction-Diffusion & Turing Dispersion
+equations:
+- law_name: Bard growth from week-3 initiation to the s0 detail wavelength
+  formula: growth_steps = floor(lambda_detail_um / lambda_init_um) = floor(1883/400) = 4
+  lean_decl: MathOfBiology.Loop_3221.growth_steps
+  lean_theorem: MathOfBiology.Loop_3221.holocene_detail_is_four_initiation_spacings
+  lean_locus: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean#L9-L13
+  variables: lambda_detail = 1.883 mm at 0 Ma; lambda_init = 0.40 mm (Bard 1977)
+  role: Places this detail window on the post-initiation growth of the plains-zebra stripe mode
+  source_citation: Bard 1977 DOI:10.1111/j.1469-7998.1977.tb04204.x
+  code_locus: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py#L66-L67
+- law_name: Turing onset numerator for a dorsoventral stripe
+  formula: k_c^2 > 0 iff D_v,x * f_u + D_u * g_v > 0
+  lean_decl: MathOfBiology.Loop_3221.turing_numerator
+  lean_theorem: MathOfBiology.Loop_3221.quagga_onset_numerator_positive
+  lean_locus: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean#L16-L19
+  variables: scaled D_v=576, f_u=8, D_u=10, g_v=-10
+  role: Holocene E. quagga selects a finite critical wavenumber at this scale
+  source_citation: Turing 1952 DOI:10.1098/rstb.1952.0012
+  code_locus: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py#L110-L123
+- law_name: Equus scotti equal-diffusion control
+  formula: D_v = D_u implies D_v f_u + D_u g_v < 0
+  lean_decl: MathOfBiology.Loop_3221.turing_numerator
+  lean_theorem: MathOfBiology.Loop_3221.scotti_equal_diffusion_numerator_negative
+  lean_locus: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean#L21-L23
+  variables: D_v = D_u = 10 with the same Jacobian signs
+  role: Predecessor chronospecies has no selected 1.883 mm pigment wavelength
+  source_citation: Murray 1981 DOI:10.1016/0022-5193(81)90334-9
+  code_locus: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py#L645-L647
+- law_name: Ten stripes on the detail window
+  formula: N = L / lambda_c with L = 10 * 1.883 mm
+  lean_decl: MathOfBiology.Loop_3221.stripe_count
+  lean_theorem: MathOfBiology.Loop_3221.quagga_window_holds_ten_stripes
+  lean_locus: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean#L26-L29
+  variables: domain and wavelength in micrometres
+  role: Stripe count conserved from initiation if growth is uniform
+  source_citation: Bard 1977 DOI:10.1111/j.1469-7998.1977.tb04204.x
+  code_locus: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py#L75-L75

@@ -1,0 +1,143 @@
+# MorphoEval audit — Equus quagga Turing wavelength s0, Pass 1, 2026-10-27
+# Slot 3221. Detail scale 1.883 mm (stated 1.9 mm), Holocene 0 Ma.
+# Builder and assessor are the same agent. Scores follow the rendered run
+# (Pearson r 0.997, CV similarity 92.1 against the Namutoni flank crop).
+audit:
+  id: 2026-10-27-equus-quagga-turing-wavelength-s0-audit
+  rubric_version: 0.1.0
+  date: "2026-10-27"
+  publisher_orcid: "https://orcid.org/0009-0007-4948-9192"
+  assessor:
+    id: grok-4.7
+    label: "Grok 4.7 (builder-assessor, single agent; second assessor not run)"
+  domain: morphogenesis
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 0c76d15d14afcec6c366e1b9274a6586a0de48fc
+    note: "Pass 1 working tree on top of this commit. New slot-3221 files are not in the checkpoint commit yet."
+references:
+  turing1952:
+    title: "The Chemical Basis of Morphogenesis"
+    authors: "Turing AM"
+    venue: "Philosophical Transactions of the Royal Society B 237:37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+    year: 1952
+  schnakenberg1979:
+    title: "Simple chemical reaction systems with limit cycle behaviour"
+    authors: "Schnakenberg J"
+    venue: "Journal of Theoretical Biology 81:389-400 (1979)"
+    doi: 10.1016/0022-5193(79)90042-0
+    year: 1979
+  murray1981:
+    title: "A Pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88:161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+    year: 1981
+  bard1977:
+    title: "A unity underlying the different zebra striping patterns"
+    authors: "Bard JBL"
+    venue: "Journal of Zoology 183:527-539 (1977)"
+    doi: 10.1111/j.1469-7998.1977.tb04204.x
+    year: 1977
+  bard1981:
+    title: "A model for generating aspects of zebra and other mammalian coat patterns"
+    authors: "Bard JBL"
+    venue: "Journal of Theoretical Biology 93:363-385 (1981)"
+    doi: 10.1016/0022-5193(81)90109-0
+    year: 1981
+  staddon2024:
+    title: "How the zebra got its stripes: Curvature-dependent diffusion orients Turing patterns on three-dimensional surfaces"
+    authors: "Staddon MF"
+    venue: "Physical Review E 110:034402 (2024)"
+    doi: 10.1103/PhysRevE.110.034402
+    year: 2024
+simulations:
+  - id: delphi10000-equus-quagga-turing-wavelength-s0
+    name: "Equus quagga Holocene Turing wavelength at 1.9 mm (detail s0)"
+    organism: "Equus quagga"
+    script: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py
+    output: docs/media/equus_quagga_turing_wavelength_s0_comparison.png
+    status: evaluated
+    source_refs: [turing1952, schnakenberg1979, murray1981, bard1977, bard1981, staddon2024]
+    summary: >-
+      Schnakenberg kinetics with anteroposterior-biased inhibitor diffusion on a
+      periodic flank window of ten fastest-mode wavelengths. The length unit is
+      pinned so lambda(k_fast) = 1.883 mm (log10 = -2.725) at gamma = 1.15, age 0 Ma.
+      Bard 1977 initiation spacing is 0.40 mm; the growth factor 4.707 is reconstructed.
+      A gamma sweep gives Pearson r = 0.997 and RMSE = 0.067 mm between analytical
+      k_fast and the nonlinear FFT. The nominal FFT sits at 2.03 mm because the
+      periodic domain snaps to an integer mode. Equal diffusion (Equus scotti control)
+      returns the field to the homogeneous state (amplitude 3e-6 versus 3.65).
+      The Namutoni flank crop (CC BY-SA 3.0) and the rendered GIF share near-vertical
+      stripes; the simulation breaks into dashes and the photo is an adult animal,
+      so this is a pattern-class match, not a pixel identity.
+    claim_boundary:
+      reported_in_source:
+        - "Turing 1952: diffusion-driven instability and a critical wavenumber."
+        - "Schnakenberg 1979: the two-species kinetics used here."
+        - "Murray 1981: a reaction-diffusion pre-pattern for mammalian coat markings."
+        - "Bard 1977: plains-zebra stripes are about 0.4 mm apart and perpendicular to the dorsal line in the third embryonic week."
+      reconstructed_in_script:
+        - "The 1.883 mm detail length is the slot scale, obtained by pinning the fastest ky=0 mode, not a new measurement on a fetus."
+        - "Growth factor 4.707 = 1.883/0.40 is reconstructed. Anisotropic inhibitor diffusion stands in for the orientation Bard described and Staddon 2024 modelled with curvature; curvature itself is not solved."
+        - "Equus scotti is represented only as the equal-diffusion ablation. Its coat is not known from this run."
+      transfer_boundary:
+        - "The wildlife photograph is an adult flank at centimetre scale. It tests orientation and contrast, not the 1.883 mm fetal wavelength."
+      does_not_claim:
+        - "Does not claim 1.883 mm was calipered on a named Equus quagga specimen in this loop."
+        - "Does not claim Equus scotti was the direct anagenetic ancestor, only the assigned chronoseries predecessor."
+        - "Does not claim the broken Schnakenberg dashes are the adult stripe geometry."
+        - "Does not claim a second assessor scored this pass."
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: "The PDE, Jacobian, onset numerator, and growth-rate peak are the published Turing/Schnakenberg relations, with gamma on the reaction terms. Kinetics are Schnakenberg rather than a transcription of Murray's own rate laws, and the pattern is above onset so k_fast is longer than onset k_c."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [110, 176], note: "onset k_c, gamma-scaled dispersion, k_fast", supports: true}
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [186, 247], note: "semi-implicit Fourier integrator", supports: true}
+      specimen-match:
+        value: 82
+        rationale: "The GIF and the Namutoni flank crop are both high-contrast, near-vertical dark bands (gradients -2.5 deg and +2.5 deg). Computer-vision similarity of the last frame is 92.1. The simulation stripes break into dashes and omit legs, belly curve, and the sky, so the match is the stripe class, not the animal."
+        evidence:
+          - {file: docs/media/equus_quagga_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "flank crop beside the saturated field and the scotti control", supports: true}
+          - {file: docs/media/equus_quagga_turing_wavelength_s0_growth.gif, lines: [0, 0], note: "12 frames, 720x540, pattern emergence", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: "Raising gamma shortens both the analytical and the PDE wavelength together (r = 0.997). Setting the diffusion ratio to 1 extinguishes the pattern. Anisotropy is a real parameter but is not itself swept in the figure."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [408, 426], note: "gamma sweep versus FFT wavelength", supports: true}
+          - {file: docs/media/equus_quagga_turing_wavelength_s0_comparison.png, lines: [0, 0], note: "sweep panel and flat control", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: "Pearson r = 0.997 and RMSE = 0.067 mm on six gamma values. Specimen gradient, period, coherency, and luminance KS are measured on a segmented flank mask and are not copied onto the simulation (angles -2.5 vs 2.5 deg, periods 18.3 vs 32.0 px, KS D = 0.32). The nominal mode is 2.03 mm rather than 1.883 mm."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [308, 406], note: "flank segmentation, orientation, KS", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/equus_quagga_turing_wavelength_s0_metrics.json, lines: [0, 0], note: "sweep, KS, angles, ablation amplitudes", supports: true}
+      source-traceability:
+        value: 90
+        rationale: "DOIs for Turing, Schnakenberg, Murray, Bard 1977 and 1981, and Staddon 2024. The flank image is a documented crop of Yathin S Krishnappa's CC BY-SA 3.0 Namutoni photograph, SHA-256 pinned."
+        evidence:
+          - {file: datasets/equus_quagga_turing_wavelength_s0/paper_citations.bib, lines: [1, 65], note: "DOI records", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/equus_quagga_turing_wavelength_s0_reference.json, lines: [55, 78], note: "SHA-256, crop box, license, creator", supports: true}
+      code-traceability:
+        value: 84
+        rationale: "Steady state, Jacobian, onset k_c, and k_fast are named in the module docstring and in the functions that compute them. The Lean file checks the onset sign and the ten-stripe window, not the floating-point dispersion."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [1, 40], note: "equation block in the module docstring", supports: true}
+          - {file: morphoeval/lean/loops/Loop_3221_equus_quagga_turing_wavelength_s0.lean, lines: [9, 33], note: "five theorems, no sorry", supports: true}
+      repro-package:
+        value: 86
+        rationale: "Seed 3221, --self-test, and a single documented command. The full render finished in about 12 s and the self-test passed, including the pinned 1.883 mm wavelength and the ablation inequality."
+        evidence:
+          - {file: models/2026-delphi10000-equus-quagga-turing-wavelength-s0.py, lines: [634, 678], note: "self-test assertions", supports: true}
+          - {file: datasets/equus_quagga_turing_wavelength_s0/README.md, lines: [1, 24], note: "invocation, scale 1.9 mm, age 0 Ma", supports: true}
+    remediation:
+      - id: R1
+        item: "Only one flank crop is segmented. Add a second body region and report its period and angle separately."
+      - id: R2
+        item: "Nominal FFT wavelength is 2.03 mm against analytical 1.883 mm (integer mode on the periodic window). State that quantization in the fit rather than letting the headline lambda hide it, or refine the grid until the mode is closer."
+      - id: R3
+        item: "Schnakenberg stripes break into dashes. Test whether a stronger anteroposterior anisotropy, or an explicit stripe-stabilizing term, joins them without dropping the specimen CV match."
+      - id: R4
+        item: "Single builder-assessor. An independent second score is still open."
