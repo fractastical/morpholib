@@ -1,0 +1,61 @@
+sim_id: delphi10000-cornus-controversa-turing-wavelength-s0
+slot: 3155
+organism: Cornus controversa
+scale_m: 0.001939
+scale_mm: 1.939
+log10_scale: -2.712
+age_Ma: 0.0
+tier: 6_organ_mm
+math_family: Turing Reaction-Diffusion Wavelength Selection
+quantitative_law: Turing wavenumber k_c
+form: Stripes, Spots & Ocelli
+model_spec:
+  model: Schnakenberg (1979) kinetics with Turing (1952) critical wavenumber pinned to 1.939 mm
+  a: 0.06
+  b: 0.94
+  lambda_mm: 1.939
+  lambda_m: 0.001939
+  boundary: periodic
+  seed: 3155
+  grid_pass1: 96
+  domain_wavelengths_pass1: 8
+  inputs:
+    - datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_specimen.jpg
+    - datasets/cornus_controversa_turing_wavelength_s0/cornus_controversa_turing_wavelength_s0_reference.json
+equations:
+  - law_name: Schnakenberg steady state on the Cornus lamina patch
+    formula: u0 = a + b, v0 = b / u0^2, with a = 0.06 and b = 0.94
+    lean_decl: MathOfBiology.Loop_3155.traceJacobian
+    lean_theorem: MathOfBiology.Loop_3155.trace_stable_without_diffusion
+    lean_locus: morphoeval/lean/loops/Loop_3155_cornus_controversa_turing_wavelength_s0.lean#L10-L14
+    variables: fu = 0.880, gv = -1, trace = -0.120
+    role: Homogeneous kinetics are stable before diffusion is added
+    source_citation: Schnakenberg (1979) DOI:10.1016/0022-5193(79)90042-0
+    code_locus: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py
+  - law_name: Turing critical wavelength
+    formula: k_c^2 = (Dv fu + Du gv) / (2 Du Dv), lambda_c = 2 pi / k_c = 1.939 mm
+    lean_decl: MathOfBiology.Loop_3155.wavelength_closes_on_two_pi
+    lean_theorem: MathOfBiology.Loop_3155.wavelength_closes_on_two_pi
+    lean_locus: morphoeval/lean/loops/Loop_3155_cornus_controversa_turing_wavelength_s0.lean#L22-L26
+    variables: lambda_mm = 1.939, k_c ≈ 3.240 mm^-1
+    role: Selects the organ-detail pigment wavelength assigned to this slot
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py
+  - law_name: Equal-diffusion ablation
+    formula: When Du = Dv, h = Du (fu + gv) = Du * tr J < 0, so the Turing band is closed
+    lean_decl: MathOfBiology.Loop_3155.equal_diffusion_contrast_is_negative
+    lean_theorem: MathOfBiology.Loop_3155.equal_diffusion_contrast_is_negative
+    lean_locus: morphoeval/lean/loops/Loop_3155_cornus_controversa_turing_wavelength_s0.lean#L34-L36
+    variables: Du_scaled = 378, trace_scaled = -120
+    role: Negative control. Pattern amplitude must decay.
+    source_citation: Turing (1952) DOI:10.1098/rstb.1952.0012
+    code_locus: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py
+  - law_name: Holocene singleton chronoseries
+    formula: (length - index) + age_Ma = 0 for index = length = 1 and age = 0
+    lean_decl: MathOfBiology.Loop_3155.chronoseriesGap
+    lean_theorem: MathOfBiology.Loop_3155.holocene_singleton_has_no_temporal_successor
+    lean_locus: morphoeval/lean/loops/Loop_3155_cornus_controversa_turing_wavelength_s0.lean#L39-L44
+    variables: index = 1, length = 1, age_Ma = 0
+    role: Records that this slot has no predecessor chronospecies to difference against
+    source_citation: Xiang et al. (2006) DOI:10.2307/25065525
+    code_locus: models/2026-delphi10000-cornus-controversa-turing-wavelength-s0.py
