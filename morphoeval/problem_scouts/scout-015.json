@@ -1,0 +1,151 @@
+{
+  "scout": "scout-015",
+  "ground": "thompson",
+  "lens": "vision",
+  "candidates": [
+    {
+      "id": "scout-015-c01",
+      "title": "Monte Bolca (~50 Ma) fossil laterals: CV depth/SL from photographs vs tabulated ratios",
+      "gap": "The deep-horizon Monte Bolca engine test (OP-04) scored 6/16 published ratios against GLS predictions but never measured body depth from the fossil photographs themselves; published numbers could disagree with what a lateral image segmentation returns.",
+      "done": "For each of the 10 taxa in `datasets/thompson/monte_bolca_fossil_ratios.json` with a named holotype figure, CV-segment the lateral fish (same border-contrast pipeline as `compute_specimen_cv_signature`) and report BDmax_over_SL; pass if ≥8/10 agree with the JSON value within ±0.05 absolute (or inside a published [low,high] range), else fail with per-taxon deltas written to a new JSON results file.",
+      "tool_route": "Fetch lateral figures (Bannikov 2006/2010, Bellwood & Sorbini 1996 — Wikimedia/journal OA plates) into `.thompson_cache/monte_bolca/`; `python3 -c \"from pathlib import Path; from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\"` on each image using snout–caudal axis from foreground mask major axis and max perpendicular width as BDmax; compare to `monte_bolca_fossil_ratios.json`.",
+      "deciding_data": "In repo: `datasets/thompson/monte_bolca_fossil_ratios.json`. One named public fetch: holotype/fig lateral photos cited in each JSON `source` field (e.g. Geodiversitas 28(2) plates, Bellwood & Sorbini 1996 figs).",
+      "prior_attempts": "Fable / phylogenetic engine Monte Bolca block (`docs/THOMPSON_PHYLOGENETIC_PREDICTIONS.md`, `thompson/run_phylogenetic_prediction_engine.py`): null vs stasis on published ratios only (6/16 in interval); no CV-on-photo route attempted. OP-04 partial.",
+      "factors": {
+        "tool_fit": {"score": 21, "why": "`compute_specimen_cv_signature` segmentation plus axis-aligned width/length on still photos is the deciding evidence; full `verify_image_fitness.py` run is not required."},
+        "data_in_hand": {"score": 16, "why": "Ratios and citations in repo; fossil photos are one fetch per taxon from named publications, not wet lab."},
+        "falsifiable_done": {"score": 14, "why": "Fixed 10-taxon checklist with ±0.05 absolute tolerance against pre-tabulated JSON."},
+        "compute_in_repo": {"score": 13, "why": "Image download + batch CV on CPU completes in under a few hours."},
+        "isolation": {"score": 10, "why": "Closable as new cache images + one results JSON under `morphoeval/` or `thompson/` without editing portfolio scorers."},
+        "time_to_verdict": {"score": 8, "why": "Single batch pass once figures are cached."},
+        "not_blocked": {"score": 5, "why": "No recorded refutation of photo-vs-table ratio reconciliation for Bolca."}
+      }
+    },
+    {
+      "id": "scout-015-c02",
+      "title": "1917 exact-species photos: CV aspect ratio vs 17-landmark BDmax/SL proxy",
+      "gap": "Portfolio and blind tests use Claverie 17-LM configs on archival photos (`datasets/thompson/thompson_1917_exact_species_landmarks.json`), but nobody has checked whether photograph-based silhouette aspect ratio matches the landmark-derived depth/length that drives >50 Myr predictions.",
+      "done": "For all 9 entries in `thompson_1917_exact_species_landmarks.json` with `url`+`sha256`, after hash-verified fetch to `.thompson_cache/`, compute photo aspect ratio (CV mask major/minor axis) and landmark BDmax_over_SL from fractional LMs; pass if Pearson r ≥ 0.85 across species and no species exceeds |Δratio| > 0.12, else fail.",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` (refresh `cv_signature` on `datasets/thompson/scarus_pomacanthus_600pt_specimen.jpg` as sanity check); per-species `python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\"` + read landmarks JSON; write comparison table.",
+      "deciding_data": "In repo: `datasets/thompson/thompson_1917_exact_species_landmarks.json`, `trimmed_tps_Claverie2014.csv`. Public: Wikimedia/NOAA URLs listed per specimen in JSON (hash-locked).",
+      "prior_attempts": "Discovery chat log turn 9 (`docs/THOMPSON_1917_DISCOVERY_CHAT_LOG.md`) flagged stick-polygon vs silhouette visually; no automated 9-species correlation. Fish blind test used calliper BDmax, not photo CV (OP-04 related, different route).",
+      "factors": {
+        "tool_fit": {"score": 23, "why": "Named `compute_specimen_cv_signature` + deterministic mask metrics directly decide r and per-species tolerance."},
+        "data_in_hand": {"score": 18, "why": "Landmark table vendored; photo URLs and SHA-256 pins in repo JSON."},
+        "falsifiable_done": {"score": 15, "why": "Fixed n=9, r≥0.85 and |Δ|≤0.12 thresholds."},
+        "compute_in_repo": {"score": 14, "why": "Minutes of CPU after cache fetch."},
+        "isolation": {"score": 10, "why": "New results file only."},
+        "time_to_verdict": {"score": 9, "why": "One sitting once `.thompson_cache` photos exist."},
+        "not_blocked": {"score": 5, "why": "Route not previously scored as pass/fail."}
+      }
+    },
+    {
+      "id": "scout-015-c03",
+      "title": "Audit loophole: does `cv_sim_similarity` predict silhouette deformation success on Thompson fish pairs?",
+      "gap": "`thompson-scarus-pomacanthus` passes MorphoEval image threshold (cv_sim 65.5, image_fitness 78.2) while the registered silhouette test shows every deformation including TPS is no better than identity (IoU 0.662 baseline; oblique coaxial 0.618) per `datasets/thompson/README.md`.",
+      "done": "Pre-register (before unblinding any new pairs) that cv_sim≥58 implies IoU_warp≥0.70 for the best landmark-fitted warp on Commons `Scarus ghobban`→`Pomacanthus semicirculatus`; run `verify_image_fitness` on the foundational slug and independently compute IoU from `thompson/1917-thompson-scarus-pomacanthus.py --self-test` silhouette outputs; pass if implication holds, fail if cv_sim passes while IoU<0.70 (documented counterexample).",
+      "tool_route": "`python3 morphoeval/verify_image_fitness.py` (read `morphoeval/runs/image_fitness_and_provenance.json` entry for `thompson-scarus-pomacanthus`); `python3 thompson/1917-thompson-scarus-pomacanthus.py --self-test` for IoU table; optional `compute_sim_vs_specimen_cv_similarity` on `docs/media/thompson_scarus_pomacanthus.gif` vs `.thompson_cache/*semicirculatus*.jpg`.",
+      "deciding_data": "In repo: `datasets/thompson/scarus_pomacanthus_600pt_specimen.jpg`, `docs/media/thompson_scarus_pomacanthus.gif`, silhouette IoU table in `datasets/thompson/README.md`; photos fetched per README to `.thompson_cache/`.",
+      "prior_attempts": "Thompson fish manuscript and README recorded IoU failure 2026-10; Pass N+1 flagged `1917-thompson.py` self-test (OP-06 solved for runtime, not this metric link). No preregistered cv_sim↔IoU coupling.",
+      "factors": {
+        "tool_fit": {"score": 24, "why": "`verify_image_fitness.py` is the exact tool producing cv_sim and the audit pass/fail bit under test."},
+        "data_in_hand": {"score": 19, "why": "Canonical specimen, GIF, and IoU numbers already in repo; photos hash-pinned on first script run."},
+        "falsifiable_done": {"score": 15, "why": "Single implication with numeric IoU and cv_sim cutoffs from existing audit constants."},
+        "compute_in_repo": {"score": 14, "why": "Self-test + verifier rerun <1 h."},
+        "isolation": {"score": 10, "why": "Preregistration + results JSON only; no edits to verifier required for verdict."},
+        "time_to_verdict": {"score": 9, "why": "One loop."},
+        "not_blocked": {"score": 4, "why": "Scientific refutation of the fish transform exists, but this specific audit-metric bridge was not closed."}
+      }
+    },
+    {
+      "id": "scout-015-c04",
+      "title": "Vespinae D6: independent CV submarginal/spar canalization ratio from wing photographs",
+      "gap": "The 15.45× submarginal-cell vs leading-edge spar CV ratio (hypothesis D6, `docs/portfolio/vespinae_venation_mechanics.md`) was computed from landmark-derived cell areas on digitized wings, not from an independent photograph segmentation of the same cells.",
+      "done": "On ≥20 species-level mean wings from Perrard et al. (2014) source imagery (Abels & Wedmann 2021 dataset behind the 1,027-wing table), segment leading-edge spar and 1Rs–3Rs cells via CV masks (structure-tensor coherency peaks for veins); pass if median ratio_submarginal_cv_to_spar_cv is within [10.5, 20.5] (±35% of 15.45), else fail.",
+      "tool_route": "`python3 -c \"from morphoeval.verify_image_fitness import compute_specimen_cv_signature; ...\"` per wing image with manual ROI JSON preregistered; aggregate CVs; compare to `thompson/portfolio/results/vespinae_venation_mechanics.json` D6 fields.",
+      "deciding_data": "In repo: 1,027-wing landmarks via portfolio cache paths (`thompson/portfolio/groups/vespinae_wings.py`); named public: Perrard et al. 2014 J Evol Biol doi:10.1111/jeb.12523 / Abels & Wedmann 2021 wing images (Zenodo/MorphoSource as cited in portfolio).",
+      "prior_attempts": "Fable venation-mechanics run 2026-10-24: D6 ✓ on landmarks (ratio 15.45); no photo-segmentation replication. Pre-venation Vespinae W1–W7 failure (OP-10) used landmarks only.",
+      "factors": {
+        "tool_fit": {"score": 18, "why": "Specimen CV segmentation decides the ratio, but vein-specific ROIs need a thin wrapper around `compute_specimen_cv_signature`, not the full index sweep."},
+        "data_in_hand": {"score": 12, "why": "Landmarks in repo; high-resolution wing photos require one named fetch (not vendored)."},
+        "falsifiable_done": {"score": 14, "why": "Fixed band [10.5, 20.5] around preregistered 15.45×."},
+        "compute_in_repo": {"score": 11, "why": "Batch segmentation on tens of images is hours, not days."},
+        "isolation": {"score": 10, "why": "New preregistration + results under `morphoeval/` or `thompson/portfolio/results/` as additive file."},
+        "time_to_verdict": {"score": 6, "why": "Depends on sourcing wing TIFFs; scoring itself is one batch."},
+        "not_blocked": {"score": 5, "why": "Photo replication of D6 not attempted or refuted."}
+      }
+    },
+    {
+      "id": "scout-015-c05",
+      "title": "Bee fossil B8: measure Eocene forewing photographs vs lineage prediction RMS",
+      "gap": "Hypothesis B8 (fossil time-slice at 45 Ma) failed with an empty result object in `docs/portfolio/bee_wings.md` because no observed fossil wing shape entered the scorer—only extant tribe landmarks.",
+      "done": "From published Baltic amber forewing photographs for Electrapini and Melikertini (sources cited in `bee_wings.py` preregistration), CV-segment wing outline, Procrustes-register to 18-LM consensus, and compare RMS to hashed lineage predictions and extant consensus; pass if both fossil tribes beat consensus RMS (as B8 stated), else fail.",
+      "tool_route": "Fetch fossil wing photos to `.thompson_cache/antscan/fossil_wings/`; `compute_specimen_cv_signature` for mask; align with portfolio GPA code via new driver calling `thompson/portfolio/groups/bee_wings.py` prediction exports; vision lens supplies outlines, GM lens supplies RMS.",
+      "deciding_data": "In repo: `datasets/thompson/bees/bee_tribe_tree_dated.json`, bee wing landmarks in `.thompson_cache/antscan/bee_fossil_s004.xlsx`; public: Eocene hymenopteran wing figures from original amber papers (named in B8 prereg).",
+      "prior_attempts": "Fable bee_wings 2026-10-22: B8 ✗ with `{}`; OP-05 notes within-species bee P-matrix gap (different route). No fossil photo measurement.",
+      "factors": {
+        "tool_fit": {"score": 16, "why": "Segmentation is vision-decidable, but Procrustes RMS still needs portfolio GM code (hybrid route)."},
+        "data_in_hand": {"score": 10, "why": "Tree and extant wings in repo; fossil photos not vendored."},
+        "falsifiable_done": {"score": 13, "why": "B8 already states paired inequality vs consensus for two tribes."},
+        "compute_in_repo": {"score": 11, "why": "Few fossil images; moderate integration work."},
+        "isolation": {"score": 9, "why": "Additive driver + cache photos."},
+        "time_to_verdict": {"score": 5, "why": "Blocked on locating publishable amber photos."},
+        "not_blocked": {"score": 5, "why": "B8 failed for missing data, not refutation of photo route."}
+      }
+    },
+    {
+      "id": "scout-015-c06",
+      "title": "Leporidae 0/3 residue: lateral skull photograph depth/length vs 74-LM intraspecific spread (LS3)",
+      "gap": "OP-10 lists Leporidae 0/3 Thompson failures; LS3 rejected alignment of within-species variation with T7 (cos θ=0.43) using CT-derived landmarks only—no check that lateral skull photographs show the same non-Thompsonian intraspecific axis.",
+      "done": "For ≥15 Leporidae species with lateral skull photos (≥3 individuals each), CV depth/length from `compute_specimen_cv_signature` masks; compare coefficient of variation and correlation with 74-LM lateral BDmax/SL from Zenodo 7615230; pass if photo CV vector aligns with LM vector at |cos θ|>0.5, else fail (supports LS3 rejection on independent modality).",
+      "tool_route": "`python3 thompson/portfolio/fetch_inputs.py` (leporidae cache already used by scorer); fetch lateral photos from Sherratt & Kraatz 2023 supplemental or MorphoSource asset linked in Zenodo 7615230; batch `compute_specimen_cv_signature`; new comparison script as isolated file.",
+      "deciding_data": "In repo: `.thompson_cache/leporidae2023/symmetric_component_coords.csv`, `thompson/portfolio/results/leporidae_skulls.json`; public: Zenodo 7615230 supplemental imaging (if present) or MorphoSource DOI from paper.",
+      "prior_attempts": "Portfolio leporidae_skulls 2026-10-23: LS1–LS3 all ✗; OP-10 partial autopsy without photos. No vision replication.",
+      "factors": {
+        "tool_fit": {"score": 20, "why": "Photo depth/length from CV masks is the independent test of LS3."},
+        "data_in_hand": {"score": 11, "why": "Landmarks cached; skull photos not confirmed vendored in repo."},
+        "falsifiable_done": {"score": 13, "why": "|cos θ|>0.5 threshold mirrors LS3 landmark statement."},
+        "compute_in_repo": {"score": 12, "why": "Feasible once photos are sourced."},
+        "isolation": {"score": 10, "why": "New script + results only."},
+        "time_to_verdict": {"score": 5, "why": "Photo sourcing may exceed one sitting."},
+        "not_blocked": {"score": 5, "why": "Photo modality not tried."}
+      }
+    },
+    {
+      "id": "scout-015-c07",
+      "title": "Morpho forewing: photograph silhouette IoU vs 22-landmark male mean (fish stick-polygon analogue)",
+      "gap": "Morpho portfolio scored 4/4 on landmarks (`docs/portfolio/morpho_butterflies.md`) while the fish program showed 17-LM warps can worsen real silhouettes; butterfly wings may repeat that hidden mismatch at 22 LMs.",
+      "done": "For ≥10 Morpho species with dorsal forewing photographs (Zenodo 5391696 supplemental or iNaturalist research-grade laterals), CV-segment wing, Procrustes-align to 22-LM consensus shape, compute filled IoU between LM polygon and photo mask; pass if median IoU≥0.75, fail if median IoU<0.65 (fish-like failure zone).",
+      "tool_route": "`compute_specimen_cv_signature` on downloaded forewing photos; IoU against landmark hull from `Chazotetal_2021_forewing_ProcCoord.txt`; reference implementation pattern in `thompson/1917-thompson-scarus-pomacanthus.py` silhouette block.",
+      "deciding_data": "In repo: Morpho landmarks via portfolio cache; public: Chazot et al. 2021 Zenodo 5391696 (images if bundled) or species-linked Commons/iNaturalist CC-BY photos preregistered by species list.",
+      "prior_attempts": "Portfolio morpho_butterflies 2026-10-23: all hypotheses ✓ on landmarks only; no silhouette IoU. Fish stick-vs-silhouette diagnostic not extended to Lepidoptera.",
+      "factors": {
+        "tool_fit": {"score": 22, "why": "CV mask vs landmark polygon IoU is pure specimen vision measurement."},
+        "data_in_hand": {"score": 13, "why": "Landmarks in repo; photographs need one Zenodo/Commons fetch pass."},
+        "falsifiable_done": {"score": 14, "why": "Median IoU band [0.65, 0.75] pre-specified."},
+        "compute_in_repo": {"score": 13, "why": "Tens of images, CPU-only."},
+        "isolation": {"score": 10, "why": "Additive benchmark file."},
+        "time_to_verdict": {"score": 7, "why": "One batch after photo list is frozen."},
+        "not_blocked": {"score": 5, "why": "Not attempted for Morpho."}
+      }
+    },
+    {
+      "id": "scout-015-c08",
+      "title": "OP-10 portfolio autopsy via re-running Thompson-7 on CV signatures alone",
+      "gap": "OP-10 asks why Leporidae (0/3) and pre-venation Vespinae (0/7) failed—landmark scheme, tree, or biology—but `verify_image_fitness` does not ingest Procrustes landmarks or phylogeny.",
+      "done": "N/A for this lens: record as blocked for vision; success would require stating which lens owns it (`measure` / portfolio GM scorers).",
+      "tool_route": "Not runnable: `python3 morphoeval/verify_image_fitness.py` only scores Aristotelian model entries against specimen/sim GIF pairs, not `thompson/portfolio/groups/*.py` LOO outputs.",
+      "deciding_data": "In repo: `docs/portfolio/leporidae_skulls.md`, `docs/portfolio/vespinae_wings.md`, OP-10 in `docs/open-problems.json`.",
+      "prior_attempts": "Fable OP-10 partial; venation D1–D8 repair on landmarks/trees (7/8) does not substitute for W1–W7 global grid claims.",
+      "factors": {
+        "tool_fit": {"score": 2, "why": "Vision tool cannot reproduce Thompson-7 variance shares or LOO ratios; needs `measure_outputs.py` + portfolio scripts."},
+        "data_in_hand": {"score": 14, "why": "All landmark results already scored in repo."},
+        "falsifiable_done": {"score": 8, "why": "OP-10 done-criteria are GM/hypothesis based, not CV metrics."},
+        "compute_in_repo": {"score": 10, "why": "GM autopsy runs today but under wrong lens."},
+        "isolation": {"score": 9, "why": "Would be new markdown/json autopsy files."},
+        "time_to_verdict": {"score": 4, "why": "Wrong tool lengthens loop."},
+        "not_blocked": {"score": 3, "why": "Partial OP-10 work exists; re-proposing pure CV for T7 failure is a category error, not a fresh route."}
+      }
+    }
+  ]
+}
