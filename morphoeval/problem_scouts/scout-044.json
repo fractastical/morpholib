@@ -1,0 +1,329 @@
+{
+  "scout": "scout-044",
+  "ground": "bioelectric",
+  "lens": "simulation",
+  "candidates": [
+    {
+      "title": "Calibrate Cervera bipolar switch rule against Planform S1 octanol crop frequencies",
+      "gap": "The 2021 Cervera script still maps RD wavefront x* past a Planform pharynx-derived x*_b to a categorical double-head morphology, but morphoeval/audits/2026-10-17-cervera-audit-v2.yaml records that this crossing rule has no cited empirical test and only a body-width-weighted 1D area proxy for the photograph; S1–S9 frequencies in datasets/planform/planform_bioelectric_series_v1.json are never scored against competing phenotype rules.",
+      "done": "A new sweep script (new file under morphoeval/sweeps/) fits the existing S1-only link on octanol crop position, then reports hold-out RMSE (percentage points) for at least three explicit rules (pharynx-end crossing, fixed x*=0.5, anterior area-fraction threshold) on S1; the winning rule beats a constant double-head rate baseline by ≥5 RMSE points, and the JSON output lists RMSE per rule (scorer checks numerically, no judgment).",
+      "tool_route": "python3 models/planform_bioelectric.py --self-test && python3 models/2021-Cervera–Levin–Mafe.py --self-test && python3 morphoeval/sweeps/cervera_planform_s1_phenotype_rule_ablation.py --fixture datasets/planform/planform_bioelectric_series_v1.json --out /tmp/cervera_s1_rule_ablation.json",
+      "deciding_data": "In repo: datasets/planform/planform_bioelectric_series_v1.json (series S1 octanol × AP crop); rusty-matter crop metadata in datasets/planform/rusty_matter_planformdb_derived_v0.json.",
+      "prior_attempts": "GPT-5.6 Sol cervera-audit-v2 (2026-10-17) flagged the uncited pharynx-crossing rule and weak held-out RNAi fit (RMSE 23.5 pts); builder remediated f2_for_shift inversion and expanded --self-test but did not add Planform S1 rule competition.",
+      "factors": {
+        "tool_fit": {
+          "score": 22,
+          "why": "Decided by running Cervera RD sweeps (f2_sweep already in script) plus planform_bioelectric fixture loaders, orchestrated from a new sweep entrypoint."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "Planform S1–S9 derived fixture and rusty-matter pins are already vendored; no wet-lab fetch required."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Done is a JSON table of RMSE values per rule against a fixed 5-point baseline margin."
+        },
+        "compute_in_repo": {
+          "score": 13,
+          "why": "1D RD + fixture joins finish in minutes on the repo Python stack."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "Closable as morphoeval/sweeps/*.py plus a JSON artifact; zero edits to flagship model files."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One sweep run plus JSON diff against baseline in a single sitting."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Audit documented the gap; no prior attempt refuted the S1 rule-ablation route."
+        }
+      }
+    },
+    {
+      "id": "BE-CERV-NULL-01",
+      "title": "Does Cervera RD beat the Oviedo S1→S2 copy null on held-out innexin RNAi?",
+      "gap": "models/2026-wolfram-planform-multiway-rewriting.py --self-test shows a 0-parameter S1→S2 copy baseline (oviedo_s1_to_s2_copy_0param_r≈0.9479) beats the 2-parameter logistic on Planform S2, yet models/2021-Cervera–Levin–Mafe.py never reports the same head-to-head metric—only train RMSE on octanol and held-out innexin RNAi (RMSE≈23.5 pts, r≈0.94 per morphoeval/audits/2026-10-17-cervera-audit-v2.yaml).",
+      "done": "On the five crop manipulations in datasets/planform/planform_bioelectric_series_v1.json (S1/S2, excluding control rows), compute Pearson r and MAE between empirical S2 double-head frequencies and Cervera-predicted percentages from run_integrated_analysis. Verdict YES iff r > 0.9479 AND MAE < 0.149 (strictly beating the S1-copy null and logistic MAE from wolfram self-test); otherwise verdict NO with a JSON table of r/MAE for {Cervera, S1-copy, staircase, logistic}.",
+      "tool_route": "python3 models/planform_bioelectric.py --self-test && python3 models/2026-wolfram-planform-multiway-rewriting.py --self-test && python3 models/2021-Cervera–Levin–Mafe.py --self-test && python3 morphoeval/sweeps/cervera_vs_oviedo_null_baselines.py --fixture datasets/planform/planform_bioelectric_series_v1.json --out /tmp/cervera_null_head2head.json",
+      "deciding_data": "In repo: datasets/planform/planform_bioelectric_series_v1.json; null metrics emitted by wolfram fit_logistic_doublehead_vs_crop_position self-test.",
+      "prior_attempts": "GPT-5.6 Sol cervera-audit-v2 (2026-10-17) scored weak innexin transfer but predates the wolfram S1-copy null; docs/wolfram_planform_multiway_manuscript.tex §null-baseline audit documents copy beating logistic, not Cervera.",
+      "factors": {
+        "tool_fit": { "score": 22, "why": "Both wolfram and Cervera ship --self-test; only a thin morphoeval/sweeps comparator is missing." },
+        "data_in_hand": { "score": 20, "why": "S1/S2 frequencies are fully vendored in the Planform bioelectric fixture." },
+        "falsifiable_done": { "score": 15, "why": "Beat-or-lose uses fixed r/MAE thresholds copied from wolfram self-test outputs." },
+        "compute_in_repo": { "score": 14, "why": "RD solves plus fixture joins finish in minutes." },
+        "isolation": { "score": 10, "why": "New sweep script and JSON artifact only." },
+        "time_to_verdict": { "score": 8, "why": "One orchestrated run after self-tests pass." },
+        "not_blocked": { "score": 4, "why": "Weak Cervera transfer is documented but the S1-copy bar was never applied." }
+      }
+    },
+    {
+      "title": "Validate Beane (I_HK, I_IVM) phase diagram surrogate against full PDE head counts",
+      "gap": "models/2011-beane-planarian-hk-atpase-anterior.py builds a 9×9 head_count_grid with a fast analytical surrogate (lines ~492–499) for the (I_HK, I_IVM) morphospace panel, but the 12-check --self-test never compares that grid to simulate_planarian_bioelectric_pde head counts at the same overrides.",
+      "done": "Sweep script evaluates all 81 (I_HK, I_IVM) grid points with both the surrogate and the full PDE; done when max |n_heads_surrogate − n_heads_pde| == 0 and the script exits 0, or when it exits 1 and writes the first mismatch coordinates to JSON.",
+      "tool_route": "python3 models/2011-beane-planarian-hk-atpase-anterior.py --self-test && python3 morphoeval/sweeps/beane_ihk_ivm_grid_pde_crosscheck.py --seed 2011 --out /tmp/beane_grid_crosscheck.json",
+      "deciding_data": "In repo only: Beane model parameters and regime overrides; no external series required.",
+      "prior_attempts": "Pass 3 Beane audit (2026-10-19-planarian-hk-atpase-anterior-audit-v3) scored the 2D mesh and neoblast layers but did not cross-check the published phase-diagram surrogate grid.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Pure simulation crosscheck importing existing simulate_planarian_bioelectric_pde and evaluate_all_regimes_and_morphospace."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "All inputs are internal to the Beane script."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Binary exit code plus optional JSON with integer head-count mismatches."
+        },
+        "compute_in_repo": {
+          "score": 11,
+          "why": "81 full PDE solves are heavier but still sub-hour at steps≈1600."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New sweep file only; fix (if needed) would be a separate remediation PR."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One batch run; verdict is immediate from exit code."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No recorded refutation of this crosscheck route."
+        }
+      }
+    },
+    {
+      "title": "Link Planform S7 SCH-28080 crop axis to Beane I_HK dose-response sweep",
+      "gap": "planform_bioelectric.py documents series S7 (Beane 2011 Fig. 1D, SCH-28080 × AP crop, n≈650) and states S7–S8 test the hyperpolarization pole, but models/2011-beane-planarian-hk-atpase-anterior.py --self-test never compares its ihk_sweep head-fate curve to S7 outcome frequencies along the crop axis.",
+      "done": "Calibration script maps each S7 crop position to an I_HK override via the Beane anterior envelope, predicts double-head / headless fractions, and reports Spearman ρ against Planform S7 bin frequencies; done if ρ ≥ 0.65 with p < 0.05 (scipy) OR if ρ < 0.65 the JSON records 'refuted' with the numeric ρ.",
+      "tool_route": "python3 models/planform_bioelectric.py --self-test && python3 morphoeval/sweeps/beane_planform_s7_ihk_link.py --fixture datasets/planform/planform_bioelectric_series_v1.json --seed 2011",
+      "deciding_data": "In repo: planform_bioelectric_series_v1.json series S7; Beane ihk_sweep from evaluate_all_regimes_and_morphospace.",
+      "prior_attempts": "planform_bioelectric.py v1.0.0 (2026) extracted S7 but WP2+ link tests described in its docstring were not executed in any model --self-test.",
+      "factors": {
+        "tool_fit": {
+          "score": 21,
+          "why": "Uses existing ihk_sweep simulation plus fixture reader API (load_fixture / outcome_table)."
+        },
+        "data_in_hand": {
+          "score": 17,
+          "why": "S7 frequencies already in the derived Planform fixture."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Single Spearman ρ threshold with automatic pass/fail JSON."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Eleven-point ihk_sweep plus S7 rows is lightweight."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/sweeps script and JSON output only."
+        },
+        "time_to_verdict": {
+          "score": 8,
+          "why": "One script invocation returns ρ and p-value."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No prior swarm run registered this exact S7↔ihk_sweep test."
+        }
+      }
+    },
+    {
+      "title": "Cross-port parity: Levin Law-2 gap-junction ODE vs Cervera rusty-matter traces",
+      "gap": "models/2026-levin-channel-math-synthesis.py integrates a 20-cell Cervera–Levin–Mafé voltage-gated ODE (Law 2) and models/2021-Cervera–Levin–Mafe.py --self-test verifies rusty-matter trace parity, but no joint assertion equates posterior tail V_mem at matched gap-junction scales across datasets/planform/rusty_matter_planarian_traces.json scenarios.",
+      "done": "Crosscheck script loads pinned trace scenarios, runs Law-2 integration at analogous G_gj scale, and passes if max |V_post_L2 − posterior_mean_v| < 2.0 mV for every listed scenario (else writes per-scenario deltas JSON and exits 1).",
+      "tool_route": "python3 models/2026-levin-channel-math-synthesis.py --self-test && python3 models/2021-Cervera–Levin–Mafe.py --self-test && python3 morphoeval/sweeps/levin_law2_cervera_trace_parity.py --traces datasets/planform/rusty_matter_planarian_traces.json",
+      "deciding_data": "In repo: rusty_matter_planarian_traces.json and both model scripts with --self-test guards.",
+      "prior_attempts": "Levin YouTube math audit v3 (2026-10-24) scored Law 2 in isolation; Cervera audit v2 scored rusty-matter port parity separately—no combined test recorded.",
+      "factors": {
+        "tool_fit": {
+          "score": 20,
+          "why": "Both integrators already exist; sweep only orchestrates shared scenarios."
+        },
+        "data_in_hand": {
+          "score": 16,
+          "why": "Trace JSON and synthesis script pins are vendored."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Fixed 2 mV tolerance per scenario, machine-checkable."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Small ODE systems over handful of scenarios."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New sweep file; no edits to either port required for the test itself."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Sub-minute run after self-tests pass."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Gap noted across audits; route not previously refuted."
+        }
+      }
+    },
+    {
+      "title": "Necessity ablation for Pietak cryptic 2H0T washout memory latch",
+      "gap": "models/2017-pietak-bioelectric-morphogen-coupling.py --self-test asserts cryptic_memory_washout_2H0T stays 2H0T after eta_oct washout, but does not ablate the symmetric-depolarization / bistability lock to show the persistent memory is mechanism-dependent rather than a labeling artifact.",
+      "done": "Ablation sweep sets post-washout V_ant = V_post = −20 mV without the memory latch (or forces instant Boltzmann equilibrium) and passes only if p(2H0T) on the secondary cut drops below 0.05 while the canonical cryptic regime remains ≥ lower band edge from datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json (double_head_fraction_octanol band) minus 0.05.",
+      "tool_route": "python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test && python3 morphoeval/sweeps/pietak_cryptic_memory_ablation.py --seed 2017 --reference datasets/bioelectric_morphogen_coupling/bioelectric_morphogen_coupling_reference.json",
+      "deciding_data": "In repo: bioelectric_morphogen_coupling_reference.json empirical band; Pietak stochastic branching helpers inside the model module.",
+      "prior_attempts": "Pietak Pass 3 audit (Slot 082) validated cryptic regime in --self-test check 4 but did not run a washout-latch ablation.",
+      "factors": {
+        "tool_fit": {
+          "score": 19,
+          "why": "Uses existing simulate/evaluate functions with parameter ablations; no new PDE required."
+        },
+        "data_in_hand": {
+          "score": 15,
+          "why": "Reference band and regime definitions already in dataset JSON."
+        },
+        "falsifiable_done": {
+          "score": 13,
+          "why": "Two-sided numeric thresholds on p(2H0T) for ablation vs canonical."
+        },
+        "compute_in_repo": {
+          "score": 12,
+          "why": "Stochastic branching repeats are modest with fixed seeds."
+        },
+        "isolation": {
+          "score": 9,
+          "why": "Prefer sweep-only ablation via overrides; permanent fix may later touch the model (separate PR)."
+        },
+        "time_to_verdict": {
+          "score": 7,
+          "why": "One ablation sweep with seeded RNG."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "No audit refuted the latch-necessity hypothesis via simulation."
+        }
+      }
+    },
+    {
+      "title": "Register Pezzulo GJ-smoothing heat-kernel exponent in --self-test",
+      "gap": "models/2015-pezzulo-bioelectric-target-morphology-memory.py implements verify_gap_junction_smoothing_scaling (Jacobi sweep_values 4..64, predicted −1/2 log-log slope) for blastema gap-junction noise filtering, but run_self_test executes only 8 checks and never calls that scaling verification.",
+      "done": "Either extend --self-test with a 9th check calling verify_gap_junction_smoothing_scaling (remediation PR) OR a sweep script that imports it and passes when |fitted_slope + 0.5| ≤ 0.05; scorer reads printed [PASS] line or JSON slope field.",
+      "tool_route": "python3 morphoeval/sweeps/pezzulo_gj_smoothing_exponent_check.py && python3 models/2015-pezzulo-bioelectric-target-morphology-memory.py --self-test",
+      "deciding_data": "In repo: Pezzulo model constants GJ_SWEEPS, GJ_ALPHA; no external measurements.",
+      "prior_attempts": "Pezzulo Pass 2 audit (Slot 084, 91.6/100) scored VFE regimes but did not mention the GJ smoothing exponent check omission.",
+      "factors": {
+        "tool_fit": {
+          "score": 24,
+          "why": "Function already implemented; verdict is a deterministic numerical slope check."
+        },
+        "data_in_hand": {
+          "score": 20,
+          "why": "Pure in-silico Jacobi sweeps on synthetic noise fields."
+        },
+        "falsifiable_done": {
+          "score": 15,
+          "why": "Absolute slope error bound 0.05 against −1/2 prediction."
+        },
+        "compute_in_repo": {
+          "score": 15,
+          "why": "Five sweep sizes, instant."
+        },
+        "isolation": {
+          "score": 8,
+          "why": "Ideal path adds one self-test assert (touches model); sweep-only path stays isolated."
+        },
+        "time_to_verdict": {
+          "score": 10,
+          "why": "Single function call."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Unattempted; not refuted."
+        }
+      }
+    },
+    {
+      "title": "Tri-model planarian octanol/GJ-block 2H0T consensus check",
+      "gap": "Levin latent-space Claim 5 bundles Beane (Slot 081), Pietak (Slot 082), and Cervera (2021) as mutually reinforcing 2H0T evidence, but no automated sweep verifies that canonical octanol / gap-junction block regimes in all three scripts simultaneously predict two heads (or bipolar Cervera morphology) under shared eta_oct / f2 reductions.",
+      "done": "Orchestration script runs: (1) Beane octanol_gj_blockade_2H0T n_heads==2, (2) Pietak octanol_pulse_2H0T n_heads==2, (3) Cervera wavefront_for_f2(0.35) > x*_b for bipolar switch; JSON consensus true only if all three booleans true.",
+      "tool_route": "python3 models/2011-beane-planarian-hk-atpase-anterior.py --self-test && python3 models/2017-pietak-bioelectric-morphogen-coupling.py --self-test && python3 models/2021-Cervera–Levin–Mafe.py --self-test && python3 morphoeval/sweeps/planarian_2h0t_tri_model_consensus.py",
+      "deciding_data": "In repo: three model scripts and planarian reference regimes in datasets/planarian_hk_atpase_anterior/ and bioelectric_morphogen_coupling/.",
+      "prior_attempts": "docs/LEVIN_LATENT_SPACE_METHODS.md lists separate --self-test commands for each model; no combined consensus artifact in morphoeval/runs/.",
+      "factors": {
+        "tool_fit": {
+          "score": 23,
+          "why": "Imports published simulate/evaluate entrypoints; no new physics."
+        },
+        "data_in_hand": {
+          "score": 18,
+          "why": "All regime IDs and thresholds already encoded in models and dataset JSON."
+        },
+        "falsifiable_done": {
+          "score": 14,
+          "why": "Three boolean flags in JSON must all be true."
+        },
+        "compute_in_repo": {
+          "score": 14,
+          "why": "Three short deterministic regime evaluations."
+        },
+        "isolation": {
+          "score": 10,
+          "why": "New morphoeval/sweeps orchestrator only."
+        },
+        "time_to_verdict": {
+          "score": 9,
+          "why": "Runs immediately after per-model self-tests."
+        },
+        "not_blocked": {
+          "score": 5,
+          "why": "Consensus test not previously run or refuted."
+        }
+      }
+    },
+    {
+      "title": "Restore missing Keller (2009) Xenopus tropicalis bioelectric polarity simulator",
+      "gap": "morphoeval/audits/2026-10-19-xenopus-tropicalis-bioelectric-polarity-audit-v2.yaml cites models/2009-keller-xenopus-tropicalis-bioelectric-polarity.py (93.8/100) and datasets/xenopus_tropicalis_bioelectric_polarity/ holds pearson_r≈0.999 reference curves, but that model file is absent from the workspace tree so --self-test cannot be run.",
+      "done": "Not decidable by simulation lens alone until the script exists; remediation lens must recreate the model and pass --self-test with |pearson_r − reference| ≤ 0.001 using datasets/xenopus_tropicalis_bioelectric_polarity/xenopus_tropicalis_bioelectric_polarity_reference.json.",
+      "tool_route": "N/A for simulation-only (blocked); remediation route: 12-step MorphoEval loop from morphoeval/cloud/campaign_100_slots.yaml + python3 models/2009-keller-xenopus-tropicalis-bioelectric-polarity.py --self-test once restored.",
+      "deciding_data": "In repo: xenopus_tropicalis_bioelectric_polarity_reference.json; missing: model script referenced by audit.",
+      "prior_attempts": "Pass 2 audit recorded 93.8 score at commit 3aaa03d; subsequent repo state lost or never merged the script path (file not found on main checkout).",
+      "factors": {
+        "tool_fit": {
+          "score": 2,
+          "why": "Simulation lens requires an existing --self-test model; script missing—remediation lens must rebuild it."
+        },
+        "data_in_hand": {
+          "score": 14,
+          "why": "Reference JSON and audit measurements remain vendored."
+        },
+        "falsifiable_done": {
+          "score": 12,
+          "why": "Clear pearson_r tolerance against pinned reference once model exists."
+        },
+        "compute_in_repo": {
+          "score": 10,
+          "why": "Expected to be a lightweight 1D bistability fit script like other bioelectric polarity ports."
+        },
+        "isolation": {
+          "score": 6,
+          "why": "Recreating the model is a new file but collides with campaign slot ownership rules."
+        },
+        "time_to_verdict": {
+          "score": 3,
+          "why": "Requires full remediation pass, not one sweep."
+        },
+        "not_blocked": {
+          "score": 4,
+          "why": "Not refuted; simply missing artifact."
+        }
+      }
+    }
+  ]
+}
